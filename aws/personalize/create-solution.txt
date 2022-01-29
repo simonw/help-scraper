@@ -1,0 +1,329 @@
+CREATE-SOLUTION()                                            CREATE-SOLUTION()
+
+
+
+NAME
+       create-solution -
+
+DESCRIPTION
+       Creates  the  configuration  for  training  a model. A trained model is
+       known as a solution. After the configuration is created, you train  the
+       model  (create a solution) by calling the  CreateSolutionVersion opera-
+       tion. Every time you call CreateSolutionVersion , a new version of  the
+       solution is created.
+
+       After  creating  a  solution version, you check its accuracy by calling
+       GetSolutionMetrics . When you are satisfied with the version,  you  de-
+       ploy  it  using  CreateCampaign . The campaign provides recommendations
+       to a client through the GetRecommendations API.
+
+       To train a model, Amazon  Personalize  requires  training  data  and  a
+       recipe. The training data comes from the dataset group that you provide
+       in the request. A recipe specifies the training algorithm and a feature
+       transformation.  You can specify one of the predefined recipes provided
+       by Amazon Personalize. Alternatively, you can specify performAutoML and
+       Amazon  Personalize  will  analyze  your  data  and  select the optimum
+       USER_PERSONALIZATION recipe for you.
+
+       NOTE:
+              Amazon Personalize doesn't support configuring the  hpoObjective
+              for solution hyperparameter optimization at this time.
+
+          Status
+
+       A solution can be in one of the following states:
+
+       o CREATE PENDING > CREATE IN_PROGRESS > ACTIVE -or- CREATE FAILED
+
+       o DELETE PENDING > DELETE IN_PROGRESS
+
+       To  get the status of the solution, call  DescribeSolution . Wait until
+       the status shows as ACTIVE before calling CreateSolutionVersion .
+          Related APIs
+
+       o ListSolutions
+
+       o CreateSolutionVersion
+
+       o DescribeSolution
+
+       o DeleteSolution
+
+       o ListSolutionVersions
+
+       o DescribeSolutionVersion
+
+       See also: AWS API Documentation
+
+       See 'aws help' for descriptions of global parameters.
+
+SYNOPSIS
+            create-solution
+          --name <value>
+          [--perform-hpo | --no-perform-hpo]
+          [--perform-auto-ml | --no-perform-auto-ml]
+          [--recipe-arn <value>]
+          --dataset-group-arn <value>
+          [--event-type <value>]
+          [--solution-config <value>]
+          [--cli-input-json | --cli-input-yaml]
+          [--generate-cli-skeleton <value>]
+
+OPTIONS
+       --name (string)
+          The name for the solution.
+
+       --perform-hpo | --no-perform-hpo (boolean)
+          Whether to perform hyperparameter optimization (HPO) on  the  speci-
+          fied or selected recipe. The default is false .
+
+          When performing AutoML, this parameter is always true and you should
+          not set it to false .
+
+       --perform-auto-ml | --no-perform-auto-ml (boolean)
+          Whether to perform automated machine learning (AutoML). The  default
+          is false . For this case, you must specify recipeArn .
+
+          When  set  to  true , Amazon Personalize analyzes your training data
+          and selects the optimal USER_PERSONALIZATION recipe and hyperparame-
+          ters. In this case, you must omit recipeArn . Amazon Personalize de-
+          termines the optimal recipe by running tests with  different  values
+          for  the  hyperparameters.  AutoML lengthens the training process as
+          compared to selecting a specific recipe.
+
+       --recipe-arn (string)
+          The ARN of the recipe to use for model training. Only specified when
+          performAutoML is false.
+
+       --dataset-group-arn (string)
+          The  Amazon  Resource  Name (ARN) of the dataset group that provides
+          the training data.
+
+       --event-type (string)
+          When your have multiple event  types  (using  an  EVENT_TYPE  schema
+          field),  this  parameter  specifies  which  event type (for example,
+          'click' or 'like') is used for training the model.
+
+          If you do not provide an eventType , Amazon Personalize will use all
+          interactions for training with equal weight regardless of type.
+
+       --solution-config (structure)
+          The  configuration  to  use with the solution. When performAutoML is
+          set to true, Amazon Personalize only evaluates the autoMLConfig sec-
+          tion of the solution configuration.
+
+          NOTE:
+              Amazon  Personalize doesn't support configuring the hpoObjective
+              at this time.
+
+          eventValueThreshold -> (string)
+              Only events with a value greater than or equal to this threshold
+              are used for training a model.
+
+          hpoConfig -> (structure)
+              Describes the properties for hyperparameter optimization (HPO).
+
+              hpoObjective -> (structure)
+                 The metric to optimize during HPO.
+
+                 NOTE:
+                     Amazon Personalize doesn't support configuring the hpoOb-
+                     jective at this time.
+
+                 type -> (string)
+                     The type of the metric. Valid  values  are  Maximize  and
+                     Minimize .
+
+                 metricName -> (string)
+                     The name of the metric.
+
+                 metricRegex -> (string)
+                     A regular expression for finding the metric in the train-
+                     ing job logs.
+
+              hpoResourceConfig -> (structure)
+                 Describes the resource configuration for HPO.
+
+                 maxNumberOfTrainingJobs -> (string)
+                     The maximum number of training jobs when you create a so-
+                     lution  version.  The maximum value for maxNumberOfTrain-
+                     ingJobs is 40 .
+
+                 maxParallelTrainingJobs -> (string)
+                     The maximum number of parallel  training  jobs  when  you
+                     create  a solution version. The maximum value for maxPar-
+                     allelTrainingJobs is 10 .
+
+              algorithmHyperParameterRanges -> (structure)
+                 The hyperparameters and their allowable ranges.
+
+                 integerHyperParameterRanges -> (list)
+                     The integer-valued hyperparameters and their ranges.
+
+                     (structure)
+                        Provides the name and range of an  integer-valued  hy-
+                        perparameter.
+
+                        name -> (string)
+                            The name of the hyperparameter.
+
+                        minValue -> (integer)
+                            The  minimum  allowable value for the hyperparame-
+                            ter.
+
+                        maxValue -> (integer)
+                            The maximum allowable value for  the  hyperparame-
+                            ter.
+
+                 continuousHyperParameterRanges -> (list)
+                     The continuous hyperparameters and their ranges.
+
+                     (structure)
+                        Provides  the  name and range of a continuous hyperpa-
+                        rameter.
+
+                        name -> (string)
+                            The name of the hyperparameter.
+
+                        minValue -> (double)
+                            The minimum allowable value for  the  hyperparame-
+                            ter.
+
+                        maxValue -> (double)
+                            The  maximum  allowable value for the hyperparame-
+                            ter.
+
+                 categoricalHyperParameterRanges -> (list)
+                     The categorical hyperparameters and their ranges.
+
+                     (structure)
+                        Provides the name and range of a categorical  hyperpa-
+                        rameter.
+
+                        name -> (string)
+                            The name of the hyperparameter.
+
+                        values -> (list)
+                            A list of the categories for the hyperparameter.
+
+                            (string)
+
+          algorithmHyperParameters -> (map)
+              Lists the hyperparameter names and ranges.
+
+              key -> (string)
+
+              value -> (string)
+
+          featureTransformationParameters -> (map)
+              Lists the feature transformation parameters.
+
+              key -> (string)
+
+              value -> (string)
+
+          autoMLConfig -> (structure)
+              The   AutoMLConfig object containing a list of recipes to search
+              when AutoML is performed.
+
+              metricName -> (string)
+                 The metric to optimize.
+
+              recipeList -> (list)
+                 The list of candidate recipes.
+
+                 (string)
+
+          optimizationObjective -> (structure)
+              Describes the additional objective for  the  solution,  such  as
+              maximizing streaming minutes or increasing revenue. For more in-
+              formation see Optimizing a solution .
+
+              itemAttribute -> (string)
+                 The numerical metadata column in an Items dataset related  to
+                 the  optimization  objective.  For  example, VIDEO_LENGTH (to
+                 maximize streaming minutes), or PRICE (to maximize revenue).
+
+              objectiveSensitivity -> (string)
+                 Specifies how Amazon Personalize balances the  importance  of
+                 your optimization objective versus relevance.
+
+       JSON Syntax:
+
+          {
+            "eventValueThreshold": "string",
+            "hpoConfig": {
+              "hpoObjective": {
+                "type": "string",
+                "metricName": "string",
+                "metricRegex": "string"
+              },
+              "hpoResourceConfig": {
+                "maxNumberOfTrainingJobs": "string",
+                "maxParallelTrainingJobs": "string"
+              },
+              "algorithmHyperParameterRanges": {
+                "integerHyperParameterRanges": [
+                  {
+                    "name": "string",
+                    "minValue": integer,
+                    "maxValue": integer
+                  }
+                  ...
+                ],
+                "continuousHyperParameterRanges": [
+                  {
+                    "name": "string",
+                    "minValue": double,
+                    "maxValue": double
+                  }
+                  ...
+                ],
+                "categoricalHyperParameterRanges": [
+                  {
+                    "name": "string",
+                    "values": ["string", ...]
+                  }
+                  ...
+                ]
+              }
+            },
+            "algorithmHyperParameters": {"string": "string"
+              ...},
+            "featureTransformationParameters": {"string": "string"
+              ...},
+            "autoMLConfig": {
+              "metricName": "string",
+              "recipeList": ["string", ...]
+            },
+            "optimizationObjective": {
+              "itemAttribute": "string",
+              "objectiveSensitivity": "LOW"|"MEDIUM"|"HIGH"|"OFF"
+            }
+          }
+
+       --cli-input-json  |  --cli-input-yaml (string) Reads arguments from the
+       JSON string provided. The JSON string follows the  format  provided  by
+       --generate-cli-skeleton. If other arguments are provided on the command
+       line, those values will override the JSON-provided values.  It  is  not
+       possible to pass arbitrary binary values using a JSON-provided value as
+       the string will be taken literally. This may  not  be  specified  along
+       with --cli-input-yaml.
+
+       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
+       output without sending an API request. If provided with no value or the
+       value input, prints a sample input JSON that can be used as an argument
+       for --cli-input-json. Similarly, if provided yaml-input it will print a
+       sample  input  YAML that can be used with --cli-input-yaml. If provided
+       with the value output, it validates the command inputs  and  returns  a
+       sample output JSON for that command.
+
+       See 'aws help' for descriptions of global parameters.
+
+OUTPUT
+       solutionArn -> (string)
+          The ARN of the solution.
+
+
+
+                                                             CREATE-SOLUTION()

@@ -1,0 +1,575 @@
+CREATE-JOB()                                                      CREATE-JOB()
+
+
+
+NAME
+       create-job -
+
+DESCRIPTION
+       Creates  a  job  to  import  or  export data between Amazon S3 and your
+       on-premises data center. Your Amazon Web Services account must have the
+       right  trust  policies  and  permissions in place to create a job for a
+       Snow device. If you're creating a job for a node in a cluster, you only
+       need  to  provide the clusterId value; the other job attributes are in-
+       herited from the cluster.
+
+       NOTE:
+              Only the Snowball; Edge device type is supported  when  ordering
+              clustered jobs.
+
+              The device capacity is optional.
+
+              Availability  of  device types differ by Amazon Web Services Re-
+              gion. For more information about Region availability, see Amazon
+              Web Services Regional Services .
+
+          Snow Family Devices and their capacities.
+
+       o Snow Family device type: SNC1_SSD
+
+         o Capacity: T14
+
+         o Description: Snowcone
+
+       o Snow Family device type: SNC1_HDD
+
+         o Capacity: T8
+
+         o Description: Snowcone
+
+       o Device type: EDGE_S
+
+         o Capacity: T98
+
+         o Description: Snowball Edge Storage Optimized for data transfer only
+
+       o Device type: EDGE_CG
+
+         o Capacity: T42
+
+         o Description: Snowball Edge Compute Optimized with GPU
+
+       o Device type: EDGE_C
+
+         o Capacity: T42
+
+         o Description: Snowball Edge Compute Optimized without GPU
+
+       o Device type: EDGE
+
+         o Capacity: T100
+
+         o Description: Snowball Edge Storage Optimized with EC2 Compute
+
+       o Device type: STANDARD
+
+         o Capacity: T50
+
+         o Description: Original Snowball device
+
+         NOTE:
+            This  device is only available in the Ningxia, Beijing, and Singa-
+            pore Amazon Web Services Region
+
+       o Device type: STANDARD
+
+         o Capacity: T80
+
+         o Description: Original Snowball device
+
+         NOTE:
+            This device is only available in the Ningxia, Beijing, and  Singa-
+            pore Amazon Web Services Region.
+
+       See also: AWS API Documentation
+
+       See 'aws help' for descriptions of global parameters.
+
+SYNOPSIS
+            create-job
+          [--job-type <value>]
+          [--resources <value>]
+          [--on-device-service-configuration <value>]
+          [--description <value>]
+          [--address-id <value>]
+          [--kms-key-arn <value>]
+          [--role-arn <value>]
+          [--snowball-capacity-preference <value>]
+          [--shipping-option <value>]
+          [--notification <value>]
+          [--cluster-id <value>]
+          [--snowball-type <value>]
+          [--forwarding-address-id <value>]
+          [--tax-documents <value>]
+          [--device-configuration <value>]
+          [--remote-management <value>]
+          [--long-term-pricing-id <value>]
+          [--cli-input-json | --cli-input-yaml]
+          [--generate-cli-skeleton <value>]
+
+OPTIONS
+       --job-type (string)
+          Defines the type of job that you're creating.
+
+          Possible values:
+
+          o IMPORT
+
+          o EXPORT
+
+          o LOCAL_USE
+
+       --resources (structure)
+          Defines the Amazon S3 buckets associated with this job.
+
+          With IMPORT jobs, you specify the bucket or buckets that your trans-
+          ferred data will be imported into.
+
+          With EXPORT jobs, you specify the bucket or buckets that your trans-
+          ferred  data will be exported from. Optionally, you can also specify
+          a KeyRange value. If you choose to export a range,  you  define  the
+          length  of  the  range  by providing either an inclusive BeginMarker
+          value, an inclusive EndMarker value, or both. Ranges are  UTF-8  bi-
+          nary sorted.
+
+          S3Resources -> (list)
+              An array of S3Resource objects.
+
+              (structure)
+                 Each  S3Resource  object  represents an Amazon S3 bucket that
+                 your transferred data will be exported from or imported into.
+                 For  export  jobs,  this object can have an optional KeyRange
+                 value. The length of the range is defined  at  job  creation,
+                 and  has  either an inclusive BeginMarker , an inclusive End-
+                 Marker , or both. Ranges are UTF-8 binary sorted.
+
+                 BucketArn -> (string)
+                     The Amazon Resource Name (ARN) of an Amazon S3 bucket.
+
+                 KeyRange -> (structure)
+                     For export jobs, you can  provide  an  optional  KeyRange
+                     within  a  specific  Amazon  S3 bucket. The length of the
+                     range is defined at job creation, and has either  an  in-
+                     clusive  BeginMarker  , an inclusive EndMarker , or both.
+                     Ranges are UTF-8 binary sorted.
+
+                     BeginMarker -> (string)
+                        The key that starts an optional key range for  an  ex-
+                        port  job.  Ranges  are  inclusive  and  UTF-8  binary
+                        sorted.
+
+                     EndMarker -> (string)
+                        The key that ends an optional key range for an  export
+                        job. Ranges are inclusive and UTF-8 binary sorted.
+
+                 TargetOnDeviceServices -> (list)
+                     Specifies  the service or services on the Snow Family de-
+                     vice that your transferred data will be exported from  or
+                     imported  into.  Amazon Web Services Snow Family supports
+                     Amazon S3 and NFS (Network File System).
+
+                     (structure)
+                        An object that represents the service or  services  on
+                        the Snow Family device that your transferred data will
+                        be exported from or imported into. Amazon Web Services
+                        Snow  Family  supports Amazon S3 and NFS (Network File
+                        System).
+
+                        ServiceName -> (string)
+                            Specifies the name of the service on the Snow Fam-
+                            ily  device that your transferred data will be ex-
+                            ported from or imported into.
+
+                        TransferOption -> (string)
+                            Specifies whether the data is  being  imported  or
+                            exported.  You  can  import or export the data, or
+                            use it locally on the device.
+
+          LambdaResources -> (list)
+              The Python-language Lambda functions for this job.
+
+              (structure)
+                 Identifies
+
+                 LambdaArn -> (string)
+                     An Amazon Resource Name (ARN) that represents  an  Lambda
+                     function to be triggered by PUT object actions on the as-
+                     sociated local Amazon S3 resource.
+
+                 EventTriggers -> (list)
+                     The array of ARNs for  S3Resource objects to trigger  the
+                     LambdaResource objects associated with this job.
+
+                     (structure)
+                        The container for the  EventTriggerDefinition$EventRe-
+                        sourceARN .
+
+                        EventResourceARN -> (string)
+                            The Amazon Resource Name (ARN) for any local  Ama-
+                            zon S3 resource that is an Lambda function's event
+                            trigger associated with this job.
+
+          Ec2AmiResources -> (list)
+              The Amazon Machine Images (AMIs) associated with this job.
+
+              (structure)
+                 A JSON-formatted object that contains the IDs for  an  Amazon
+                 Machine  Image (AMI), including the Amazon EC2 AMI ID and the
+                 Snow device AMI ID. Each AMI has these two  IDs  to  simplify
+                 identifying the AMI in both the Amazon Web Services Cloud and
+                 on the device.
+
+                 AmiId -> (string)
+                     The ID of the AMI in Amazon EC2.
+
+                 SnowballAmiId -> (string)
+                     The ID of the AMI on the Snow device.
+
+       JSON Syntax:
+
+          {
+            "S3Resources": [
+              {
+                "BucketArn": "string",
+                "KeyRange": {
+                  "BeginMarker": "string",
+                  "EndMarker": "string"
+                },
+                "TargetOnDeviceServices": [
+                  {
+                    "ServiceName": "NFS_ON_DEVICE_SERVICE"|"S3_ON_DEVICE_SERVICE",
+                    "TransferOption": "IMPORT"|"EXPORT"|"LOCAL_USE"
+                  }
+                  ...
+                ]
+              }
+              ...
+            ],
+            "LambdaResources": [
+              {
+                "LambdaArn": "string",
+                "EventTriggers": [
+                  {
+                    "EventResourceARN": "string"
+                  }
+                  ...
+                ]
+              }
+              ...
+            ],
+            "Ec2AmiResources": [
+              {
+                "AmiId": "string",
+                "SnowballAmiId": "string"
+              }
+              ...
+            ]
+          }
+
+       --on-device-service-configuration (structure)
+          Specifies the service or services on the  Snow  Family  device  that
+          your transferred data will be exported from or imported into. Amazon
+          Web Services Snow Family supports Amazon S3 and  NFS  (Network  File
+          System)  and  the  Amazon  Web Services Storage Gateway service Tape
+          Gateway type.
+
+          NFSOnDeviceService -> (structure)
+              Represents the NFS (Network File System) service on a Snow  Fam-
+              ily device.
+
+              StorageLimit -> (integer)
+                 The maximum NFS storage for one Snow Family device.
+
+              StorageUnit -> (string)
+                 The scale unit of the NFS storage on the device.
+
+                 Valid values: TB.
+
+          TGWOnDeviceService -> (structure)
+              Represents  the  Storage  Gateway service Tape Gateway type on a
+              Snow Family device.
+
+              StorageLimit -> (integer)
+                 The maximum number of virtual tapes to store on one Snow Fam-
+                 ily  device. Due to physical resource limitations, this value
+                 must be set to 80 for Snowball Edge.
+
+              StorageUnit -> (string)
+                 The scale unit of the virtual tapes on the device.
+
+       Shorthand Syntax:
+
+          NFSOnDeviceService={StorageLimit=integer,StorageUnit=string},TGWOnDeviceService={StorageLimit=integer,StorageUnit=string}
+
+       JSON Syntax:
+
+          {
+            "NFSOnDeviceService": {
+              "StorageLimit": integer,
+              "StorageUnit": "TB"
+            },
+            "TGWOnDeviceService": {
+              "StorageLimit": integer,
+              "StorageUnit": "TB"
+            }
+          }
+
+       --description (string)
+          Defines an optional description of this specific  job,  for  example
+          Important Photos 2016-08-11 .
+
+       --address-id (string)
+          The ID for the address that you want the Snow device shipped to.
+
+       --kms-key-arn (string)
+          The  KmsKeyARN that you want to associate with this job. KmsKeyARN s
+          are created using the CreateKey Key Management Service (KMS) API ac-
+          tion.
+
+       --role-arn (string)
+          The  RoleARN that you want to associate with this job. RoleArn s are
+          created using the CreateRole Identity and  Access  Management  (IAM)
+          API action.
+
+       --snowball-capacity-preference (string)
+          If  your job is being created in one of the US regions, you have the
+          option of specifying what size Snow device you'd like for this  job.
+          In all other regions, Snowballs come with 80 TB in storage capacity.
+
+          For           more           information,           see           "-
+          https://docs.aws.amazon.com/snowball/latest/snowcone-guide/snow-de-
+          vice-types.html"  (Snow Family Devices and Capacity) in the Snowcone
+          User                  Guide                  or                   "-
+          https://docs.aws.amazon.com/snowball/latest/developer-guide/snow-de-
+          vice-types.html" (Snow Family Devices and Capacity) in the  Snowcone
+          User Guide .
+
+          Possible values:
+
+          o T50
+
+          o T80
+
+          o T100
+
+          o T42
+
+          o T98
+
+          o T8
+
+          o T14
+
+          o NoPreference
+
+       --shipping-option (string)
+          The shipping speed for this job. This speed doesn't dictate how soon
+          you'll get the Snow device, rather it  represents  how  quickly  the
+          Snow  device  moves  to  its  destination while in transit. Regional
+          shipping speeds are as follows:
+
+          o In Australia, you have access to express shipping. Typically, Snow
+            devices shipped express are delivered in about a day.
+
+          o In  the  European Union (EU), you have access to express shipping.
+            Typically, Snow devices shipped express are delivered in  about  a
+            day. In addition, most countries in the EU have access to standard
+            shipping, which typically takes less than a week, one way.
+
+          o In India, Snow devices are delivered in one to seven days.
+
+          o In the US, you have access to one-day shipping and  two-day  ship-
+            ping.
+
+          Possible values:
+
+          o SECOND_DAY
+
+          o NEXT_DAY
+
+          o EXPRESS
+
+          o STANDARD
+
+       --notification (structure)
+          Defines  the Amazon Simple Notification Service (Amazon SNS) notifi-
+          cation settings for this job.
+
+          SnsTopicARN -> (string)
+              The new SNS TopicArn that you want to associate with  this  job.
+              You  can create Amazon Resource Names (ARNs) for topics by using
+              the CreateTopic Amazon SNS API action.
+
+              You can subscribe email addresses to an Amazon SNS topic through
+              the  Amazon  Web  Services  Management  Console, or by using the
+              Subscribe Amazon Simple Notification Service  (Amazon  SNS)  API
+              action.
+
+          JobStatesToNotify -> (list)
+              The list of job states that will trigger a notification for this
+              job.
+
+              (string)
+
+          NotifyAll -> (boolean)
+              Any change in job state will trigger  a  notification  for  this
+              job.
+
+       Shorthand Syntax:
+
+          SnsTopicARN=string,JobStatesToNotify=string,string,NotifyAll=boolean
+
+       JSON Syntax:
+
+          {
+            "SnsTopicARN": "string",
+            "JobStatesToNotify": ["New"|"PreparingAppliance"|"PreparingShipment"|"InTransitToCustomer"|"WithCustomer"|"InTransitToAWS"|"WithAWSSortingFacility"|"WithAWS"|"InProgress"|"Complete"|"Cancelled"|"Listing"|"Pending", ...],
+            "NotifyAll": true|false
+          }
+
+       --cluster-id (string)
+          The  ID of a cluster. If you're creating a job for a node in a clus-
+          ter, you need to provide only this clusterId value.  The  other  job
+          attributes are inherited from the cluster.
+
+       --snowball-type (string)
+          The type of Snow Family Devices to use for this job.
+
+          NOTE:
+              For cluster jobs, Amazon Web Services Snow Family currently sup-
+              ports only the EDGE device type.
+
+          The type of Amazon Web Services Snow device to  use  for  this  job.
+          Currently, the only supported device type for cluster jobs is EDGE .
+
+          For  more information, see Snowball Edge Device Options in the Snow-
+          ball Edge Developer Guide.
+
+          For           more           information,           see           "-
+          https://docs.aws.amazon.com/snowball/latest/snowcone-guide/snow-de-
+          vice-types.html" (Snow Family Devices and Capacity) in the  Snowcone
+          User                   Guide                  or                  "-
+          https://docs.aws.amazon.com/snowball/latest/developer-guide/snow-de-
+          vice-types.html"  (Snow Family Devices and Capacity) in the Snowcone
+          User Guide .
+
+          Possible values:
+
+          o STANDARD
+
+          o EDGE
+
+          o EDGE_C
+
+          o EDGE_CG
+
+          o EDGE_S
+
+          o SNC1_HDD
+
+          o SNC1_SSD
+
+       --forwarding-address-id (string)
+          The forwarding address ID for a job. This field is not supported  in
+          most Regions.
+
+       --tax-documents (structure)
+          The tax documents required in your Amazon Web Services Region.
+
+          IND -> (structure)
+              The  tax documents required in Amazon Web Services Region in In-
+              dia.
+
+              GSTIN -> (string)
+                 The Goods and Services Tax (GST) documents required in Amazon
+                 Web Services Region in India.
+
+       Shorthand Syntax:
+
+          IND={GSTIN=string}
+
+       JSON Syntax:
+
+          {
+            "IND": {
+              "GSTIN": "string"
+            }
+          }
+
+       --device-configuration (structure)
+          Defines the device configuration for an Snowcone job.
+
+          For           more           information,           see           "-
+          https://docs.aws.amazon.com/snowball/latest/snowcone-guide/snow-de-
+          vice-types.html"  (Snow Family Devices and Capacity) in the Snowcone
+          User                  Guide                  or                   "-
+          https://docs.aws.amazon.com/snowball/latest/developer-guide/snow-de-
+          vice-types.html" (Snow Family Devices and Capacity) in the  Snowcone
+          User Guide .
+
+          SnowconeDeviceConfiguration -> (structure)
+              Returns  information about the device configuration for an Snow-
+              cone job.
+
+              WirelessConnection -> (structure)
+                 Configures the wireless connection for the Snowcone device.
+
+                 IsWifiEnabled -> (boolean)
+                     Enables the Wi-Fi adapter on an Snowcone device.
+
+       Shorthand Syntax:
+
+          SnowconeDeviceConfiguration={WirelessConnection={IsWifiEnabled=boolean}}
+
+       JSON Syntax:
+
+          {
+            "SnowconeDeviceConfiguration": {
+              "WirelessConnection": {
+                "IsWifiEnabled": true|false
+              }
+            }
+          }
+
+       --remote-management (string)
+          Allows you to securely operate and manage Snowcone devices  remotely
+          from  outside  of  your  internal network. When set to INSTALLED_AU-
+          TOSTART , remote management will automatically be available when the
+          device  arrives  at  your  location.  Otherwise, you need to use the
+          Snowball Client to manage the device.
+
+          Possible values:
+
+          o INSTALLED_ONLY
+
+          o INSTALLED_AUTOSTART
+
+       --long-term-pricing-id (string)
+          The ID of the long-term pricing type for the device.
+
+       --cli-input-json | --cli-input-yaml (string) Reads arguments  from  the
+       JSON  string  provided.  The JSON string follows the format provided by
+       --generate-cli-skeleton. If other arguments are provided on the command
+       line,  those  values  will override the JSON-provided values. It is not
+       possible to pass arbitrary binary values using a JSON-provided value as
+       the  string  will  be  taken literally. This may not be specified along
+       with --cli-input-yaml.
+
+       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
+       output without sending an API request. If provided with no value or the
+       value input, prints a sample input JSON that can be used as an argument
+       for --cli-input-json. Similarly, if provided yaml-input it will print a
+       sample input YAML that can be used with --cli-input-yaml.  If  provided
+       with  the  value  output, it validates the command inputs and returns a
+       sample output JSON for that command.
+
+       See 'aws help' for descriptions of global parameters.
+
+OUTPUT
+       JobId -> (string)
+          The  automatically   generated   ID   for   a   job,   for   example
+          JID123e4567-e89b-12d3-a456-426655440000 .
+
+
+
+                                                                  CREATE-JOB()

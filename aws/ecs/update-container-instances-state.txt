@@ -1,0 +1,785 @@
+UPDATE-CONTAINER-INSTANCES-STATE()          UPDATE-CONTAINER-INSTANCES-STATE()
+
+
+
+NAME
+       update-container-instances-state -
+
+DESCRIPTION
+       Modifies the status of an Amazon ECS container instance.
+
+       Once  a  container instance has reached an ACTIVE state, you can change
+       the status of a container instance to DRAINING to  manually  remove  an
+       instance  from a cluster, for example to perform system updates, update
+       the Docker daemon, or scale down the cluster size.
+
+       WARNING:
+          A container instance can't be  changed  to  DRAINING  until  it  has
+          reached an ACTIVE status. If the instance is in any other status, an
+          error will be received.
+
+       When you set a container instance to DRAINING , Amazon ECS prevents new
+       tasks  from being scheduled for placement on the container instance and
+       replacement service tasks are started on other container  instances  in
+       the  cluster  if the resources are available. Service tasks on the con-
+       tainer instance that are in the PENDING state are stopped immediately.
+
+       Service tasks on the container instance that are in the  RUNNING  state
+       are stopped and replaced according to the service's deployment configu-
+       ration parameters, minimumHealthyPercent and maximumPercent .  You  can
+       change  the  deployment configuration of your service using  UpdateSer-
+       vice .
+
+       o If minimumHealthyPercent is below 100%, the scheduler can ignore  de-
+         siredCount temporarily during task replacement. For example, desired-
+         Count is four tasks, a minimum of 50% allows the  scheduler  to  stop
+         two  existing  tasks before starting two new tasks. If the minimum is
+         100%, the service scheduler can't remove existing tasks until the re-
+         placement  tasks  are  considered healthy. Tasks for services that do
+         not use a load balancer are considered healthy if they're in the RUN-
+         NING  state.  Tasks for services that use a load balancer are consid-
+         ered healthy if they're in the RUNNING state and  the  container  in-
+         stance they're hosted on is reported as healthy by the load balancer.
+
+       o The  maximumPercent parameter represents an upper limit on the number
+         of running tasks during task replacement. You can use this to  define
+         the  replacement  batch  size.  For  example, if desiredCount is four
+         tasks, a maximum of 200% starts four new tasks  before  stopping  the
+         four  tasks  to  be  drained, provided that the cluster resources re-
+         quired to do this are available. If the maximum  is  100%,  then  re-
+         placement tasks can't start until the draining tasks have stopped.
+
+       Any PENDING or RUNNING tasks that do not belong to a service aren't af-
+       fected. You must wait for them to finish or stop them manually.
+
+       A container instance has completed draining when it has no more RUNNING
+       tasks. You can verify this using  ListTasks .
+
+       When a container instance has been drained, you can set a container in-
+       stance to ACTIVE status and once it has reached that status the  Amazon
+       ECS scheduler can begin scheduling tasks on the instance again.
+
+       See also: AWS API Documentation
+
+       See 'aws help' for descriptions of global parameters.
+
+SYNOPSIS
+            update-container-instances-state
+          [--cluster <value>]
+          --container-instances <value>
+          --status <value>
+          [--cli-input-json | --cli-input-yaml]
+          [--generate-cli-skeleton <value>]
+
+OPTIONS
+       --cluster (string)
+          The  short  name  or  full Amazon Resource Name (ARN) of the cluster
+          that hosts the container instance to update. If you do not specify a
+          cluster, the default cluster is assumed.
+
+       --container-instances (list)
+          A list of up to 10 container instance IDs or full ARN entries.
+
+          (string)
+
+       Syntax:
+
+          "string" "string" ...
+
+       --status (string)
+          The  container instance state to update the container instance with.
+          The only valid values for this action are ACTIVE and  DRAINING  .  A
+          container  instance  can  only be updated to DRAINING status once it
+          has reached an ACTIVE state. If a container instance is in REGISTER-
+          ING  , DEREGISTERING , or REGISTRATION_FAILED state you can describe
+          the container instance  but  can't  update  the  container  instance
+          state.
+
+          Possible values:
+
+          o ACTIVE
+
+          o DRAINING
+
+          o REGISTERING
+
+          o DEREGISTERING
+
+          o REGISTRATION_FAILED
+
+       --cli-input-json  |  --cli-input-yaml (string) Reads arguments from the
+       JSON string provided. The JSON string follows the  format  provided  by
+       --generate-cli-skeleton. If other arguments are provided on the command
+       line, those values will override the JSON-provided values.  It  is  not
+       possible to pass arbitrary binary values using a JSON-provided value as
+       the string will be taken literally. This may  not  be  specified  along
+       with --cli-input-yaml.
+
+       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
+       output without sending an API request. If provided with no value or the
+       value input, prints a sample input JSON that can be used as an argument
+       for --cli-input-json. Similarly, if provided yaml-input it will print a
+       sample  input  YAML that can be used with --cli-input-yaml. If provided
+       with the value output, it validates the command inputs  and  returns  a
+       sample output JSON for that command.
+
+       See 'aws help' for descriptions of global parameters.
+
+EXAMPLES
+       To update the state of a container instance
+
+       The following update-container-instances-state updates the state of the
+       specified container instance to DRAINING which will remove it from  the
+       cluster is it registered to.
+
+          aws ecs update-container-instances-state \
+              --container-instances 765936fadbdd46b5991a4bd70c2a43d4 \
+              --status DRAINING
+
+       Output:
+
+          {
+              "containerInstances": [
+                  {
+                      "containerInstanceArn": "arn:aws:ecs:us-west-2:130757420319:container-instance/default/765936fadbdd46b5991a4bd70c2a43d4",
+                      "ec2InstanceId": "i-013d87ffbb4d513bf",
+                      "version": 4390,
+                      "versionInfo": {
+                          "agentVersion": "1.29.0",
+                          "agentHash": "a190a73f",
+                          "dockerVersion": "DockerVersion:18.06.1-ce"
+                      },
+                      "remainingResources": [
+                          {
+                              "name": "CPU",
+                              "type": "INTEGER",
+                              "doubleValue": 0,
+                              "longValue": 0,
+                              "integerValue": 1536
+                          },
+                          {
+                              "name": "MEMORY",
+                              "type": "INTEGER",
+                              "doubleValue": 0,
+                              "longValue": 0,
+                              "integerValue": 2681
+                          },
+                          {
+                              "name": "PORTS",
+                              "type": "STRINGSET",
+                              "doubleValue": 0,
+                              "longValue": 0,
+                              "integerValue": 0,
+                              "stringSetValue": [
+                                  "22",
+                                  "2376",
+                                  "2375",
+                                  "51678",
+                                  "51679"
+                              ]
+                          },
+                          {
+                              "name": "PORTS_UDP",
+                              "type": "STRINGSET",
+                              "doubleValue": 0,
+                              "longValue": 0,
+                              "integerValue": 0,
+                              "stringSetValue": []
+                          }
+                      ],
+                      "registeredResources": [
+                          {
+                              "name": "CPU",
+                              "type": "INTEGER",
+                              "doubleValue": 0,
+                              "longValue": 0,
+                              "integerValue": 2048
+                          },
+                          {
+                              "name": "MEMORY",
+                              "type": "INTEGER",
+                              "doubleValue": 0,
+                              "longValue": 0,
+                              "integerValue": 3705
+                          },
+                          {
+                              "name": "PORTS",
+                              "type": "STRINGSET",
+                              "doubleValue": 0,
+                              "longValue": 0,
+                              "integerValue": 0,
+                              "stringSetValue": [
+                                  "22",
+                                  "2376",
+                                  "2375",
+                                  "51678",
+                                  "51679"
+                              ]
+                          },
+                          {
+                              "name": "PORTS_UDP",
+                              "type": "STRINGSET",
+                              "doubleValue": 0,
+                              "longValue": 0,
+                              "integerValue": 0,
+                              "stringSetValue": []
+                          }
+                      ],
+                      "status": "DRAINING",
+                      "agentConnected": true,
+                      "runningTasksCount": 2,
+                      "pendingTasksCount": 0,
+                      "attributes": [
+                          {
+                              "name": "ecs.capability.secrets.asm.environment-variables"
+                          },
+                          {
+                              "name": "ecs.capability.branch-cni-plugin-version",
+                              "value": "e0703516-"
+                          },
+                          {
+                              "name": "ecs.ami-id",
+                              "value": "ami-00e0090ac21971297"
+                          },
+                          {
+                              "name": "ecs.capability.secrets.asm.bootstrap.log-driver"
+                          },
+                          {
+                              "name": "com.amazonaws.ecs.capability.logging-driver.none"
+                          },
+                          {
+                              "name": "ecs.capability.ecr-endpoint"
+                          },
+                          {
+                              "name": "ecs.capability.docker-plugin.local"
+                          },
+                          {
+                              "name": "ecs.capability.task-cpu-mem-limit"
+                          },
+                          {
+                              "name": "ecs.capability.secrets.ssm.bootstrap.log-driver"
+                          },
+                          {
+                              "name": "com.amazonaws.ecs.capability.docker-remote-api.1.30"
+                          },
+                          {
+                              "name": "com.amazonaws.ecs.capability.docker-remote-api.1.31"
+                          },
+                          {
+                              "name": "com.amazonaws.ecs.capability.docker-remote-api.1.32"
+                          },
+                          {
+                              "name": "ecs.availability-zone",
+                              "value": "us-west-2c"
+                          },
+                          {
+                              "name": "ecs.capability.aws-appmesh"
+                          },
+                          {
+                              "name": "com.amazonaws.ecs.capability.logging-driver.awslogs"
+                          },
+                          {
+                              "name": "com.amazonaws.ecs.capability.docker-remote-api.1.24"
+                          },
+                          {
+                              "name": "ecs.capability.task-eni-trunking"
+                          },
+                          {
+                              "name": "com.amazonaws.ecs.capability.docker-remote-api.1.25"
+                          },
+                          {
+                              "name": "com.amazonaws.ecs.capability.docker-remote-api.1.26"
+                          },
+                          {
+                              "name": "com.amazonaws.ecs.capability.docker-remote-api.1.27"
+                          },
+                          {
+                              "name": "com.amazonaws.ecs.capability.docker-remote-api.1.28"
+                          },
+                          {
+                              "name": "com.amazonaws.ecs.capability.privileged-container"
+                          },
+                          {
+                              "name": "com.amazonaws.ecs.capability.docker-remote-api.1.29"
+                          },
+                          {
+                              "name": "ecs.cpu-architecture",
+                              "value": "x86_64"
+                          },
+                          {
+                              "name": "com.amazonaws.ecs.capability.ecr-auth"
+                          },
+                          {
+                              "name": "com.amazonaws.ecs.capability.docker-remote-api.1.20"
+                          },
+                          {
+                              "name": "ecs.os-type",
+                              "value": "linux"
+                          },
+                          {
+                              "name": "com.amazonaws.ecs.capability.docker-remote-api.1.21"
+                          },
+                          {
+                              "name": "com.amazonaws.ecs.capability.docker-remote-api.1.22"
+                          },
+                          {
+                              "name": "ecs.capability.task-eia"
+                          },
+                          {
+                              "name": "com.amazonaws.ecs.capability.docker-remote-api.1.23"
+                          },
+                          {
+                              "name": "ecs.capability.private-registry-authentication.secretsmanager"
+                          },
+                          {
+                              "name": "com.amazonaws.ecs.capability.logging-driver.syslog"
+                          },
+                          {
+                              "name": "com.amazonaws.ecs.capability.logging-driver.json-file"
+                          },
+                          {
+                              "name": "ecs.capability.execution-role-awslogs"
+                          },
+                          {
+                              "name": "ecs.vpc-id",
+                              "value": "vpc-1234"
+                          },
+                          {
+                              "name": "com.amazonaws.ecs.capability.docker-remote-api.1.17"
+                          },
+                          {
+                              "name": "com.amazonaws.ecs.capability.docker-remote-api.1.18"
+                          },
+                          {
+                              "name": "com.amazonaws.ecs.capability.docker-remote-api.1.19"
+                          },
+                          {
+                              "name": "ecs.capability.task-eni"
+                          },
+                          {
+                              "name": "ecs.capability.execution-role-ecr-pull"
+                          },
+                          {
+                              "name": "ecs.capability.container-health-check"
+                          },
+                          {
+                              "name": "ecs.subnet-id",
+                              "value": "subnet-1234"
+                          },
+                          {
+                              "name": "ecs.instance-type",
+                              "value": "c5.large"
+                          },
+                          {
+                              "name": "com.amazonaws.ecs.capability.task-iam-role-network-host"
+                          },
+                          {
+                              "name": "ecs.capability.container-ordering"
+                          },
+                          {
+                              "name": "ecs.capability.cni-plugin-version",
+                              "value": "91ccefc8-2019.06.0"
+                          },
+                          {
+                              "name": "ecs.capability.pid-ipc-namespace-sharing"
+                          },
+                          {
+                              "name": "ecs.capability.secrets.ssm.environment-variables"
+                          },
+                          {
+                              "name": "com.amazonaws.ecs.capability.task-iam-role"
+                          }
+                      ],
+                      "registeredAt": 1560788724.507,
+                      "attachments": [],
+                      "tags": []
+                  }
+              ],
+              "failures": []
+          }
+
+OUTPUT
+       containerInstances -> (list)
+          The list of container instances.
+
+          (structure)
+              An EC2 instance that's running the Amazon ECS agent and has been
+              registered with a cluster.
+
+              containerInstanceArn -> (string)
+                 The Amazon Resource Name (ARN) of the container instance. The
+                 ARN  contains  the arn:aws:ecs namespace, followed by the Re-
+                 gion of the container instance, the Amazon Web  Services  ac-
+                 count  ID  of the container instance owner, the container-in-
+                 stance namespace, and then the container instance ID. For ex-
+                 ample,        arn:aws:ecs:region:aws_account_id:container-in-
+                 stance/container_instance_ID .
+
+              ec2InstanceId -> (string)
+                 The ID of the container instance. For Amazon  EC2  instances,
+                 this  value  is  the Amazon EC2 instance ID. For external in-
+                 stances, this value is the Amazon Web Services  Systems  Man-
+                 ager managed instance ID.
+
+              capacityProviderName -> (string)
+                 The  capacity  provider  that's associated with the container
+                 instance.
+
+              version -> (long)
+                 The version counter for the container instance. Every time  a
+                 container  instance  experiences  a  change  that  triggers a
+                 CloudWatch event, the  version  counter  is  incremented.  If
+                 you're  replicating  your Amazon ECS container instance state
+                 with CloudWatch Events, you can compare the version of a con-
+                 tainer instance reported by the Amazon ECS APIs with the ver-
+                 sion reported in CloudWatch Events for the container instance
+                 (inside the detail object) to verify that the version in your
+                 event stream is current.
+
+              versionInfo -> (structure)
+                 The version information for the Amazon  ECS  container  agent
+                 and Docker daemon running on the container instance.
+
+                 agentVersion -> (string)
+                     The version number of the Amazon ECS container agent.
+
+                 agentHash -> (string)
+                     The  Git  commit  hash for the Amazon ECS container agent
+                     build on the amazon-ecs-agent GitHub repository.
+
+                 dockerVersion -> (string)
+                     The Docker version that's running on  the  container  in-
+                     stance.
+
+              remainingResources -> (list)
+                 For  CPU  and memory resource types, this parameter describes
+                 the remaining CPU and memory that wasn't already allocated to
+                 tasks  and is therefore available for new tasks. For port re-
+                 source types, this parameter describes the  ports  that  were
+                 reserved  by the Amazon ECS container agent (at instance reg-
+                 istration time) and any task containers  that  have  reserved
+                 port  mappings  on  the host (with the host or bridge network
+                 mode). Any port that's not specified here  is  available  for
+                 new tasks.
+
+                 (structure)
+                     Describes  the  resources  available  for a container in-
+                     stance.
+
+                     name -> (string)
+                        The name of the resource, such as CPU , MEMORY , PORTS
+                        , PORTS_UDP , or a user-defined resource.
+
+                     type -> (string)
+                        The type of the resource. Valid values: INTEGER , DOU-
+                        BLE , LONG , or STRINGSET .
+
+                     doubleValue -> (double)
+                        When the doubleValue type is set, the value of the re-
+                        source must be a double precision floating-point type.
+
+                     longValue -> (long)
+                        When  the  longValue type is set, the value of the re-
+                        source must be an  extended  precision  floating-point
+                        type.
+
+                     integerValue -> (integer)
+                        When  the  integerValue  type is set, the value of the
+                        resource must be an integer.
+
+                     stringSetValue -> (list)
+                        When the stringSetValue type is set, the value of  the
+                        resource must be a string type.
+
+                        (string)
+
+              registeredResources -> (list)
+                 For  CPU  and memory resource types, this parameter describes
+                 the amount of each resource that was available  on  the  con-
+                 tainer  instance  when the container agent registered it with
+                 Amazon ECS. This value represents the total amount of CPU and
+                 memory  that  can  be allocated on this container instance to
+                 tasks. For port resource types, this parameter describes  the
+                 ports  that  were  reserved by the Amazon ECS container agent
+                 when it registered the container instance with Amazon ECS.
+
+                 (structure)
+                     Describes the resources available  for  a  container  in-
+                     stance.
+
+                     name -> (string)
+                        The name of the resource, such as CPU , MEMORY , PORTS
+                        , PORTS_UDP , or a user-defined resource.
+
+                     type -> (string)
+                        The type of the resource. Valid values: INTEGER , DOU-
+                        BLE , LONG , or STRINGSET .
+
+                     doubleValue -> (double)
+                        When the doubleValue type is set, the value of the re-
+                        source must be a double precision floating-point type.
+
+                     longValue -> (long)
+                        When the longValue type is set, the value of  the  re-
+                        source  must  be  an extended precision floating-point
+                        type.
+
+                     integerValue -> (integer)
+                        When the integerValue type is set, the  value  of  the
+                        resource must be an integer.
+
+                     stringSetValue -> (list)
+                        When  the stringSetValue type is set, the value of the
+                        resource must be a string type.
+
+                        (string)
+
+              status -> (string)
+                 The status of the container instance. The  valid  values  are
+                 REGISTERING  ,  REGISTRATION_FAILED  ,  ACTIVE  ,  INACTIVE ,
+                 DEREGISTERING , or DRAINING .
+
+                 If your account has opted in to  the  awsvpcTrunking  account
+                 setting,  then  any  newly registered container instance will
+                 transition to a REGISTERING status while  the  trunk  elastic
+                 network  interface  is  provisioned  for the instance. If the
+                 registration fails, the instance will transition to a  REGIS-
+                 TRATION_FAILED  status.  You  can  describe the container in-
+                 stance and see the reason for failure in the statusReason pa-
+                 rameter.  Once  the container instance is terminated, the in-
+                 stance transitions to a DEREGISTERING status while the  trunk
+                 elastic network interface is deprovisioned. The instance then
+                 transitions to an INACTIVE status.
+
+                 The ACTIVE status indicates that the container  instance  can
+                 accept  tasks.  The  DRAINING indicates that new tasks aren't
+                 placed on the container instance and any service  tasks  run-
+                 ning  on  the container instance are removed if possible. For
+                 more information, see Container Instance Draining in the Ama-
+                 zon Elastic Container Service Developer Guide .
+
+              statusReason -> (string)
+                 The  reason  that  the container instance reached its current
+                 status.
+
+              agentConnected -> (boolean)
+                 This parameter returns true if the agent is connected to Ama-
+                 zon  ECS.  Registered instances with an agent that may be un-
+                 healthy or stopped return false . Only instances connected to
+                 an agent can accept placement requests.
+
+              runningTasksCount -> (integer)
+                 The number of tasks on the container instance that are in the
+                 RUNNING status.
+
+              pendingTasksCount -> (integer)
+                 The number of tasks on the container instance that are in the
+                 PENDING status.
+
+              agentUpdateStatus -> (string)
+                 The  status  of  the  most  recent agent update. If an update
+                 wasn't ever requested, this value is NULL .
+
+              attributes -> (list)
+                 The attributes set for the container instance, either by  the
+                 Amazon  ECS container agent at instance registration or manu-
+                 ally with the  PutAttributes operation.
+
+                 (structure)
+                     An attribute is a name-value pair that's associated  with
+                     an Amazon ECS object. Attributes enable you to extend the
+                     Amazon ECS data model by adding custom metadata  to  your
+                     resources.  For  more  information, see Attributes in the
+                     Amazon Elastic Container Service Developer Guide .
+
+                     name -> (string)
+                        The name of the attribute. The name must  contain  be-
+                        tween  1 and 128 characters. The name may contain let-
+                        ters (uppercase and lowercase), numbers, hyphens  (-),
+                        underscores (_), forward slashes (/), back slashes (),
+                        or periods (.).
+
+                     value -> (string)
+                        The value of the attribute. The value must contain be-
+                        tween  1  and  128  characters. It can contain letters
+                        (uppercase and lowercase), numbers, hyphens  (-),  un-
+                        derscores  (_),  periods  (.),  at  signs (@), forward
+                        slashes (/), back slashes (), colons (:),  or  spaces.
+                        The value can't can't start or end with a space.
+
+                     targetType -> (string)
+                        The  type  of the target to attach the attribute with.
+                        This parameter is required if you use the  short  form
+                        ID for a resource instead of the full ARN.
+
+                     targetId -> (string)
+                        The  ID  of the target. You can specify the short form
+                        ID for a resource or the  full  Amazon  Resource  Name
+                        (ARN).
+
+              registeredAt -> (timestamp)
+                 The  Unix  timestamp for the time when the container instance
+                 was registered.
+
+              attachments -> (list)
+                 The resources attached to a container instance, such as elas-
+                 tic network interfaces.
+
+                 (structure)
+                     An  object  representing a container instance or task at-
+                     tachment.
+
+                     id -> (string)
+                        The unique identifier for the attachment.
+
+                     type -> (string)
+                        The type of the attachment, such as  ElasticNetworkIn-
+                        terface .
+
+                     status -> (string)
+                        The status of the attachment. Valid values are PRECRE-
+                        ATED , CREATED , ATTACHING , ATTACHED  ,  DETACHING  ,
+                        DETACHED , DELETED , and FAILED .
+
+                     details -> (list)
+                        Details  of the attachment. For elastic network inter-
+                        faces, this includes the network interface ID, the MAC
+                        address, the subnet ID, and the private IPv4 address.
+
+                        (structure)
+                            A key-value pair object.
+
+                            name -> (string)
+                               The name of the key-value pair. For environment
+                               variables, this is the name of the  environment
+                               variable.
+
+                            value -> (string)
+                               The  value  of the key-value pair. For environ-
+                               ment variables, this is the value of the  envi-
+                               ronment variable.
+
+              tags -> (list)
+                 The metadata that you apply to the container instance to help
+                 you categorize and organize them. Each tag consists of a  key
+                 and an optional value. You define both.
+
+                 The following basic restrictions apply to tags:
+
+                 o Maximum number of tags per resource - 50
+
+                 o For  each  resource,  each tag key must be unique, and each
+                   tag key can have only one value.
+
+                 o Maximum key length - 128 Unicode characters in UTF-8
+
+                 o Maximum value length - 256 Unicode characters in UTF-8
+
+                 o If your tagging schema is used across multiple services and
+                   resources,  remember  that other services may have restric-
+                   tions on allowed characters. Generally  allowed  characters
+                   are:  letters,  numbers, and spaces representable in UTF-8,
+                   and the following characters: + - = . _ : / @.
+
+                 o Tag keys and values are case-sensitive.
+
+                 o Do not use aws: , AWS: , or any upper or lowercase combina-
+                   tion of such as a prefix for either keys or values as it is
+                   reserved for Amazon Web Services use. You  cannot  edit  or
+                   delete  tag keys or values with this prefix. Tags with this
+                   prefix do not count against your tags per resource limit.
+
+                 (structure)
+                     The metadata that you apply to a  resource  to  help  you
+                     categorize  and organize them. Each tag consists of a key
+                     and an optional value. You define them.
+
+                     The following basic restrictions apply to tags:
+
+                     o Maximum number of tags per resource - 50
+
+                     o For each resource, each tag key  must  be  unique,  and
+                       each tag key can have only one value.
+
+                     o Maximum key length - 128 Unicode characters in UTF-8
+
+                     o Maximum value length - 256 Unicode characters in UTF-8
+
+                     o If your tagging schema is used across multiple services
+                       and resources, remember that other  services  may  have
+                       restrictions  on  allowed characters. Generally allowed
+                       characters are: letters,  numbers,  and  spaces  repre-
+                       sentable  in UTF-8, and the following characters: + - =
+                       . _ : / @.
+
+                     o Tag keys and values are case-sensitive.
+
+                     o Do not use aws: , AWS: , or any upper or lowercase com-
+                       bination  of such as a prefix for either keys or values
+                       as it is reserved for Amazon Web Services use. You can-
+                       not edit or delete tag keys or values with this prefix.
+                       Tags with this prefix do not count  against  your  tags
+                       per resource limit.
+
+                     key -> (string)
+                        One part of a key-value pair that make up a tag. A key
+                        is a general label that acts like a category for  more
+                        specific tag values.
+
+                     value -> (string)
+                        The  optional  part of a key-value pair that make up a
+                        tag. A value acts as a descriptor within a  tag  cate-
+                        gory (key).
+
+              healthStatus -> (structure)
+                 An object representing the health status of the container in-
+                 stance.
+
+                 overallStatus -> (string)
+                     The overall health status of the container instance. This
+                     is  an  aggregate status of all container instance health
+                     checks.
+
+                 details -> (list)
+                     An array of objects representing the details of the  con-
+                     tainer instance health status.
+
+                     (structure)
+                        An  object  representing the result of a container in-
+                        stance health status check.
+
+                        type -> (string)
+                            The type of container instance health status  that
+                            was verified.
+
+                        status -> (string)
+                            The container instance health status.
+
+                        lastUpdated -> (timestamp)
+                            The Unix timestamp for when the container instance
+                            health status was last updated.
+
+                        lastStatusChange -> (timestamp)
+                            The Unix timestamp for when the container instance
+                            health status last changed.
+
+       failures -> (list)
+          Any failures associated with the call.
+
+          (structure)
+              A  failed resource. For a list of common causes, see API failure
+              reasons in the Amazon Elastic Container Service Developer  Guide
+              .
+
+              arn -> (string)
+                 The Amazon Resource Name (ARN) of the failed resource.
+
+              reason -> (string)
+                 The reason for the failure.
+
+              detail -> (string)
+                 The details of the failure.
+
+
+
+                                            UPDATE-CONTAINER-INSTANCES-STATE()

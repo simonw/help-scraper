@@ -1,0 +1,236 @@
+GET-PUBLIC-KEY()                                              GET-PUBLIC-KEY()
+
+
+
+NAME
+       get-public-key -
+
+DESCRIPTION
+       Returns the public key of an asymmetric KMS key. Unlike the private key
+       of a asymmetric KMS key, which never leaves  KMS  unencrypted,  callers
+       with  kms:GetPublicKey  permission  can  download  the public key of an
+       asymmetric KMS key. You can share the public key to allow others to en-
+       crypt  messages  and  verify signatures outside of KMS. For information
+       about symmetric and asymmetric KMS keys, see Using Symmetric and  Asym-
+       metric KMS keys in the Key Management Service Developer Guide .
+
+       You  do  not  need to download the public key. Instead, you can use the
+       public key within KMS by calling the  Encrypt ,  ReEncrypt , or  Verify
+       operations  with  the identifier of an asymmetric KMS key. When you use
+       the public key within KMS, you benefit from the authentication,  autho-
+       rization,  and  logging  that are part of every KMS operation. You also
+       reduce of risk of encrypting data that cannot be decrypted. These  fea-
+       tures  are  not effective outside of KMS. For details, see Special Con-
+       siderations for Downloading Public Keys .
+
+       To help you use the public key safely outside of KMS, GetPublicKey  re-
+       turns  important  information about the public key in the response, in-
+       cluding:
+
+       o KeySpec : The type of  key  material  in  the  public  key,  such  as
+         RSA_4096 or ECC_NIST_P521 .
+
+       o KeyUsage : Whether the key is used for encryption or signing.
+
+       o EncryptionAlgorithms  or SigningAlgorithms : A list of the encryption
+         algorithms or the signing algorithms for the key.
+
+       Although KMS cannot enforce these restrictions on external  operations,
+       it  is  crucial that you use this information to prevent the public key
+       from being used improperly. For example, you can prevent a public sign-
+       ing  key from being used encrypt data, or prevent a public key from be-
+       ing used with an encryption algorithm that is not supported by KMS. You
+       can  also  avoid errors, such as using the wrong signing algorithm in a
+       verification operation.
+
+       The KMS key that you use for this operation must be in a compatible key
+       state.  For  details,  see Key state: Effect on your KMS key in the Key
+       Management Service Developer Guide .
+          Cross-account use : Yes. To perform this operation with a KMS key in
+          a  different  Amazon  Web  Services  account, specify the key ARN or
+          alias ARN in the value of the KeyId parameter.
+
+          Required permissions : kms:GetPublicKey (key policy)
+
+          Related operations :  CreateKey
+
+       See also: AWS API Documentation
+
+       See 'aws help' for descriptions of global parameters.
+
+SYNOPSIS
+            get-public-key
+          --key-id <value>
+          [--grant-tokens <value>]
+          [--cli-input-json | --cli-input-yaml]
+          [--generate-cli-skeleton <value>]
+
+OPTIONS
+       --key-id (string)
+          Identifies the asymmetric KMS key that includes the public key.
+
+          To specify a KMS key, use its key ID, key ARN, alias name, or  alias
+          ARN.  When using an alias name, prefix it with "alias/" . To specify
+          a KMS key in a different Amazon Web Services account, you  must  use
+          the key ARN or alias ARN.
+
+          For example:
+
+          o Key ID: 1234abcd-12ab-34cd-56ef-1234567890ab
+
+          o Key                                                           ARN:
+            arn:aws:kms:us-east-2:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab
+
+          o Alias name: alias/ExampleAlias
+
+          o Alias ARN: arn:aws:kms:us-east-2:111122223333:alias/ExampleAlias
+
+          To  get  the key ID and key ARN for a KMS key, use  ListKeys or  De-
+          scribeKey . To get the alias name and alias ARN, use  ListAliases .
+
+       --grant-tokens (list)
+          A list of grant tokens.
+
+          Use a grant token when your permission to call this operation  comes
+          from  a  new  grant that has not yet achieved eventual consistency .
+          For more information, see Grant token and Using a grant token in the
+          Key Management Service Developer Guide .
+
+          (string)
+
+       Syntax:
+
+          "string" "string" ...
+
+       --cli-input-json  |  --cli-input-yaml (string) Reads arguments from the
+       JSON string provided. The JSON string follows the  format  provided  by
+       --generate-cli-skeleton. If other arguments are provided on the command
+       line, those values will override the JSON-provided values.  It  is  not
+       possible to pass arbitrary binary values using a JSON-provided value as
+       the string will be taken literally. This may  not  be  specified  along
+       with --cli-input-yaml.
+
+       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
+       output without sending an API request. If provided with no value or the
+       value input, prints a sample input JSON that can be used as an argument
+       for --cli-input-json. Similarly, if provided yaml-input it will print a
+       sample  input  YAML that can be used with --cli-input-yaml. If provided
+       with the value output, it validates the command inputs  and  returns  a
+       sample output JSON for that command.
+
+       See 'aws help' for descriptions of global parameters.
+
+EXAMPLES
+       Example 1: To download the public key of an asymmetric CMK
+
+       The  following  get-public-key  example  downloads the public key of an
+       asymmetric CMK.
+
+       In addition to returning the public key, the output  includes  informa-
+       tion that you need to use the public key safely outside of AWS KMS, in-
+       cluding the key usage and supported encryption algorithms.
+
+       Before running this command, replace the example key ID  with  a  valid
+       key ID from your AWS account.
+
+          aws kms get-public-key \
+              --key-id 1234abcd-12ab-34cd-56ef-1234567890ab
+
+       Output:
+
+          {
+              "KeyId": "arn:aws:kms:us-west-2:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab",
+              "PublicKey": "jANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAl5epvg1/QtJhxSi2g9SDEVg8QV/...",
+              "CustomerMasterKeySpec": "RSA_4096",
+              "KeyUsage": "ENCRYPT_DECRYPT",
+              "EncryptionAlgorithms": [
+                  "RSAES_OAEP_SHA_1",
+                  "RSAES_OAEP_SHA_256"
+              ]
+          }
+
+       For  more information about using asymmetric CMKs in AWS KMS, see Using
+       Symmetric and Asymmetric Keys in the AWS  Key  Management  Service  API
+       Reference.
+
+       Example 2: To convert a public key to DER format (Linux and macOS)
+
+       The  following  get-public-key  example  downloads the public key of an
+       asymmetric CMK and saves it in a DER file.
+
+       When you use the get-public-key command in the AWS CLI,  it  returns  a
+       DER-encoded  X.509 public key that is Base64-encoded. This example gets
+       the value of the PublicKey property as text. It Base64-decodes the Pub-
+       licKey  and  saves  it in the public_key.der file. The output parameter
+       returns the output as text, instead of JSON. The --query parameter gets
+       only  the  PublicKey  property, not the properties that you need to use
+       the public key safely outside of AWS KMS.
+
+       Before running this command, replace the example key ID  with  a  valid
+       key ID from your AWS account.
+
+          aws kms get-public-key \
+              --key-id 1234abcd-12ab-34cd-56ef-1234567890ab \
+              --output text \
+              --query PublicKey | base64 --decode > public_key.der
+
+       This command produces no output.
+
+       For  more information about using asymmetric CMKs in AWS KMS, see Using
+       Symmetric and Asymmetric Keys in the AWS  Key  Management  Service  API
+       Reference.
+
+OUTPUT
+       KeyId -> (string)
+          The  Amazon  Resource Name (key ARN ) of the asymmetric KMS key from
+          which the public key was downloaded.
+
+       PublicKey -> (blob)
+          The exported public key.
+
+          The value is a DER-encoded X.509 public key, also known as  Subject-
+          PublicKeyInfo (SPKI), as defined in RFC 5280 . When you use the HTTP
+          API or the Amazon Web Services CLI,  the  value  is  Base64-encoded.
+          Otherwise, it is not Base64-encoded.
+
+       CustomerMasterKeySpec -> (string)
+          Instead, use the KeySpec field in the GetPublicKey response.
+
+          The KeySpec and CustomerMasterKeySpec fields have the same value. We
+          recommend that you use the KeySpec field in your code.  However,  to
+          avoid breaking changes, KMS will support both fields.
+
+       KeySpec -> (string)
+          The type of the of the public key that was downloaded.
+
+       KeyUsage -> (string)
+          The  permitted  use  of the public key. Valid values are ENCRYPT_DE-
+          CRYPT or SIGN_VERIFY .
+
+          This information is critical. If a public key with  SIGN_VERIFY  key
+          usage  encrypts  data  outside  of KMS, the ciphertext cannot be de-
+          crypted.
+
+       EncryptionAlgorithms -> (list)
+          The encryption algorithms that KMS supports for this key.
+
+          This information is critical. If a public key encrypts data  outside
+          of  KMS by using an unsupported encryption algorithm, the ciphertext
+          cannot be decrypted.
+
+          This field appears in the response only when  the  KeyUsage  of  the
+          public key is ENCRYPT_DECRYPT .
+
+          (string)
+
+       SigningAlgorithms -> (list)
+          The signing algorithms that KMS supports for this key.
+
+          This  field  appears  in  the response only when the KeyUsage of the
+          public key is SIGN_VERIFY .
+
+          (string)
+
+
+
+                                                              GET-PUBLIC-KEY()

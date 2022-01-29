@@ -1,0 +1,205 @@
+STREAM-JOURNAL-TO-KINESIS()                        STREAM-JOURNAL-TO-KINESIS()
+
+
+
+NAME
+       stream-journal-to-kinesis -
+
+DESCRIPTION
+       Creates  a  journal  stream  for a given Amazon QLDB ledger. The stream
+       captures every document revision that  is  committed  to  the  ledger's
+       journal  and  delivers  the  data  to  a  specified Amazon Kinesis Data
+       Streams resource.
+
+       See also: AWS API Documentation
+
+       See 'aws help' for descriptions of global parameters.
+
+SYNOPSIS
+            stream-journal-to-kinesis
+          --ledger-name <value>
+          --role-arn <value>
+          [--tags <value>]
+          --inclusive-start-time <value>
+          [--exclusive-end-time <value>]
+          --kinesis-configuration <value>
+          --stream-name <value>
+          [--cli-input-json | --cli-input-yaml]
+          [--generate-cli-skeleton <value>]
+
+OPTIONS
+       --ledger-name (string)
+          The name of the ledger.
+
+       --role-arn (string)
+          The Amazon Resource Name (ARN) of the IAM role that grants QLDB per-
+          missions  for  a  journal  stream to write data records to a Kinesis
+          Data Streams resource.
+
+          To pass a role to QLDB when requesting a journal  stream,  you  must
+          have  permissions to perform the iam:PassRole action on the IAM role
+          resource. This is required for all journal stream requests.
+
+       --tags (map)
+          The key-value pairs to add as tags to the stream that  you  want  to
+          create.  Tag  keys are case sensitive. Tag values are case sensitive
+          and can be null.
+
+          key -> (string)
+
+          value -> (string)
+
+       Shorthand Syntax:
+
+          KeyName1=string,KeyName2=string
+
+       JSON Syntax:
+
+          {"string": "string"
+            ...}
+
+       --inclusive-start-time (timestamp)
+          The inclusive start date and time  from  which  to  start  streaming
+          journal  data. This parameter must be in ISO 8601 date and time for-
+          mat  and  in  Universal  Coordinated  Time   (UTC).   For   example:
+          2019-06-13T21:36:34Z .
+
+          The  InclusiveStartTime  cannot  be in the future and must be before
+          ExclusiveEndTime .
+
+          If you provide an InclusiveStartTime that  is  before  the  ledger's
+          CreationDateTime , QLDB effectively defaults it to the ledger's Cre-
+          ationDateTime .
+
+       --exclusive-end-time (timestamp)
+          The exclusive date and time that specifies when the stream ends.  If
+          you  don't define this parameter, the stream runs indefinitely until
+          you cancel it.
+
+          The ExclusiveEndTime must be in ISO 8601 date and time format and in
+          Universal  Coordinated Time (UTC). For example: 2019-06-13T21:36:34Z
+          .
+
+       --kinesis-configuration (structure)
+          The configuration settings of the Kinesis Data  Streams  destination
+          for your stream request.
+
+          StreamArn -> (string)
+              The  Amazon  Resource Name (ARN) of the Kinesis Data Streams re-
+              source.
+
+          AggregationEnabled -> (boolean)
+              Enables QLDB to publish multiple data records in a single  Kine-
+              sis  Data  Streams record, increasing the number of records sent
+              per API call.
+                 This option is enabled by default. Record aggregation has im-
+                 portant  implications  for  processing  records  and requires
+                 de-aggregation in your stream consumer. To  learn  more,  see
+                 KPL  Key  Concepts  and Consumer De-aggregation in the Amazon
+                 Kinesis Data Streams Developer Guide .
+
+       Shorthand Syntax:
+
+          StreamArn=string,AggregationEnabled=boolean
+
+       JSON Syntax:
+
+          {
+            "StreamArn": "string",
+            "AggregationEnabled": true|false
+          }
+
+       --stream-name (string)
+          The name that you  want  to  assign  to  the  QLDB  journal  stream.
+          User-defined  names  can help identify and indicate the purpose of a
+          stream.
+
+          Your stream name must be unique among other  active  streams  for  a
+          given  ledger.  Stream  names  have  the  same naming constraints as
+          ledger names, as defined in Quotas in Amazon QLDB in the Amazon QLDB
+          Developer Guide .
+
+       --cli-input-json  |  --cli-input-yaml (string) Reads arguments from the
+       JSON string provided. The JSON string follows the  format  provided  by
+       --generate-cli-skeleton. If other arguments are provided on the command
+       line, those values will override the JSON-provided values.  It  is  not
+       possible to pass arbitrary binary values using a JSON-provided value as
+       the string will be taken literally. This may  not  be  specified  along
+       with --cli-input-yaml.
+
+       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
+       output without sending an API request. If provided with no value or the
+       value input, prints a sample input JSON that can be used as an argument
+       for --cli-input-json. Similarly, if provided yaml-input it will print a
+       sample  input  YAML that can be used with --cli-input-yaml. If provided
+       with the value output, it validates the command inputs  and  returns  a
+       sample output JSON for that command.
+
+       See 'aws help' for descriptions of global parameters.
+
+EXAMPLES
+       Example  1:  To stream journal data to Kinesis Data Streams using input
+       files
+
+       The following stream-journal-to-kinesis example  creates  a  stream  of
+       journal  data within a specified date and time range from a ledger with
+       the name myExampleLedger. The stream sends the data to a specified Ama-
+       zon Kinesis data stream.
+
+          aws qldb stream-journal-to-kinesis \
+              --ledger-name myExampleLedger \
+              --inclusive-start-time 2020-05-29T00:00:00Z \
+              --exclusive-end-time 2020-05-29T23:59:59Z \
+              --role-arn arn:aws:iam::123456789012:role/my-kinesis-stream-role \
+              --kinesis-configuration file://my-kinesis-config.json \
+              --stream-name myExampleLedger-stream
+
+       Contents of my-kinesis-config.json:
+
+          {
+              "StreamArn": "arn:aws:kinesis:us-east-1:123456789012:stream/stream-for-qldb",
+              "AggregationEnabled": true
+          }
+
+       Output:
+
+          {
+              "StreamId": "7ISCkqwe4y25YyHLzYUFAf"
+          }
+
+       For  more  information,  see Streaming journal data from Amazon QLDB in
+       the Amazon QLDB Developer Guide.
+
+       Example 2: To stream journal data to Kinesis Data Streams using  short-
+       hand syntax
+
+       The  following  stream-journal-to-kinesis  example  creates a stream of
+       journal data within a specified date and time range from a ledger  with
+       the name myExampleLedger. The stream sends the data to a specified Ama-
+       zon Kinesis data stream.
+
+          aws qldb stream-journal-to-kinesis \
+              --ledger-name myExampleLedger \
+              --inclusive-start-time 2020-05-29T00:00:00Z \
+              --exclusive-end-time 2020-05-29T23:59:59Z \
+              --role-arn arn:aws:iam::123456789012:role/my-kinesis-stream-role \
+              --stream-name myExampleLedger-stream \
+              --kinesis-configuration StreamArn=arn:aws:kinesis:us-east-1:123456789012:stream/stream-for-qldb,AggregationEnabled=true
+
+       Output:
+
+          {
+              "StreamId": "7ISCkqwe4y25YyHLzYUFAf"
+          }
+
+       For more information, see Streaming journal data from  Amazon  QLDB  in
+       the Amazon QLDB Developer Guide.
+
+OUTPUT
+       StreamId -> (string)
+          The  UUID  (represented in Base62-encoded text) that QLDB assigns to
+          each QLDB journal stream.
+
+
+
+                                                   STREAM-JOURNAL-TO-KINESIS()

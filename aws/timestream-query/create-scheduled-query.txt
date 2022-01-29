@@ -1,0 +1,367 @@
+CREATE-SCHEDULED-QUERY()                              CREATE-SCHEDULED-QUERY()
+
+
+
+NAME
+       create-scheduled-query -
+
+DESCRIPTION
+       Create a scheduled query that will be run on your behalf at the config-
+       ured schedule. Timestream assumes the execution role provided  as  part
+       of  the  ScheduledQueryExecutionRoleArn parameter to run the query. You
+       can use the NotificationConfiguration parameter to configure  notifica-
+       tion for your scheduled query operations.
+
+       See also: AWS API Documentation
+
+       See 'aws help' for descriptions of global parameters.
+
+SYNOPSIS
+            create-scheduled-query
+          --name <value>
+          --query-string <value>
+          --schedule-configuration <value>
+          --notification-configuration <value>
+          [--target-configuration <value>]
+          [--client-token <value>]
+          --scheduled-query-execution-role-arn <value>
+          [--tags <value>]
+          [--kms-key-id <value>]
+          --error-report-configuration <value>
+          [--cli-input-json | --cli-input-yaml]
+          [--generate-cli-skeleton <value>]
+
+OPTIONS
+       --name (string)
+          Name of the scheduled query.
+
+       --query-string (string)
+          The  query  string  to  run. Parameter names can be specified in the
+          query string @ character followed by an identifier. The named Param-
+          eter  @scheduled_runtime is reserved and can be used in the query to
+          get the time at which the query is scheduled to run.
+
+          The timestamp calculated according to the ScheduleConfiguration  pa-
+          rameter,  will be the value of @scheduled_runtime paramater for each
+          query run. For example, consider an instance of  a  scheduled  query
+          executing  on  2021-12-01  00:00:00.  For this instance, the @sched-
+          uled_runtime parameter is initialized to  the  timestamp  2021-12-01
+          00:00:00 when invoking the query.
+
+       --schedule-configuration (structure)
+          The schedule configuration for the query.
+
+          ScheduleExpression -> (string)
+              An  expression  that denotes when to trigger the scheduled query
+              run. This can be a cron expression or a rate expression.
+
+       Shorthand Syntax:
+
+          ScheduleExpression=string
+
+       JSON Syntax:
+
+          {
+            "ScheduleExpression": "string"
+          }
+
+       --notification-configuration (structure)
+          Notification configuration for the scheduled query.  A  notification
+          is  sent  by Timestream when a query run finishes, when the state is
+          updated or when you delete it.
+
+          SnsConfiguration -> (structure)
+              Details on SNS configuration.
+
+              TopicArn -> (string)
+                 SNS topic ARN that the scheduled query  status  notifications
+                 will be sent to.
+
+       Shorthand Syntax:
+
+          SnsConfiguration={TopicArn=string}
+
+       JSON Syntax:
+
+          {
+            "SnsConfiguration": {
+              "TopicArn": "string"
+            }
+          }
+
+       --target-configuration (structure)
+          Configuration used for writing the result of a query.
+
+          TimestreamConfiguration -> (structure)
+              Configuration  needed to write data into the Timestream database
+              and table.
+
+              DatabaseName -> (string)
+                 Name of Timestream database to which the query result will be
+                 written.
+
+              TableName -> (string)
+                 Name  of Timestream table that the query result will be writ-
+                 ten to. The table should be within the same database that  is
+                 provided in Timestream configuration.
+
+              TimeColumn -> (string)
+                 Column from query result that should be used as the time col-
+                 umn in destination table. Column  type  for  this  should  be
+                 TIMESTAMP.
+
+              DimensionMappings -> (list)
+                 This  is  to allow mapping column(s) from the query result to
+                 the dimension in the destination table.
+
+                 (structure)
+                     This type is used to map column(s) from the query  result
+                     to a dimension in the destination table.
+
+                     Name -> (string)
+                        Column name from query result.
+
+                     DimensionValueType -> (string)
+                        Type for the dimension.
+
+              MultiMeasureMappings -> (structure)
+                 Multi-measure mappings.
+
+                 TargetMultiMeasureName -> (string)
+                     The  name of the target multi-measure name in the derived
+                     table. This input is required when  measureNameColumn  is
+                     not  provided.  If  MeasureNameColumn  is  provided, then
+                     value from that column  will  be  used  as  multi-measure
+                     name.
+
+                 MultiMeasureAttributeMappings -> (list)
+                     Required. Attribute mappings to be used for mapping query
+                     results to ingest data for multi-measure attributes.
+
+                     (structure)
+                        Attribute mapping for MULTI value measures.
+
+                        SourceColumn -> (string)
+                            Source column from where the attribute value is to
+                            be read.
+
+                        TargetMultiMeasureAttributeName -> (string)
+                            Custom  name  to be used for attribute name in de-
+                            rived table. If not provided, source  column  name
+                            would be used.
+
+                        MeasureValueType -> (string)
+                            Type  of  the attribute to be read from the source
+                            column.
+
+              MixedMeasureMappings -> (list)
+                 Specifies how to map measures to multi-measure records.
+
+                 (structure)
+                     MixedMeasureMappings are mappings that can be used to in-
+                     gest  data into a mixture of narrow and multi measures in
+                     the derived table.
+
+                     MeasureName -> (string)
+                        Refers to the value of measure_name in a  result  row.
+                        This  field  is  required if MeasureNameColumn is pro-
+                        vided.
+
+                     SourceColumn -> (string)
+                        This field refers to the source column from which mea-
+                        sure-value is to be read for result materialization.
+
+                     TargetMeasureName -> (string)
+                        Target  measure  name to be used. If not provided, the
+                        target measure name by default would  be  measure-name
+                        if provided, or sourceColumn otherwise.
+
+                     MeasureValueType -> (string)
+                        Type  of  the value that is to be read from sourceCol-
+                        umn. If the mapping is for  MULTI,  use  MeasureValue-
+                        Type.MULTI.
+
+                     MultiMeasureAttributeMappings -> (list)
+                        Required  when  measureValueType  is  MULTI. Attribute
+                        mappings for MULTI value measures.
+
+                        (structure)
+                            Attribute mapping for MULTI value measures.
+
+                            SourceColumn -> (string)
+                               Source column from where the attribute value is
+                               to be read.
+
+                            TargetMultiMeasureAttributeName -> (string)
+                               Custom  name  to  be used for attribute name in
+                               derived table. If not provided,  source  column
+                               name would be used.
+
+                            MeasureValueType -> (string)
+                               Type  of  the  attribute  to  be  read from the
+                               source column.
+
+              MeasureNameColumn -> (string)
+                 Name of the measure column.
+
+       JSON Syntax:
+
+          {
+            "TimestreamConfiguration": {
+              "DatabaseName": "string",
+              "TableName": "string",
+              "TimeColumn": "string",
+              "DimensionMappings": [
+                {
+                  "Name": "string",
+                  "DimensionValueType": "VARCHAR"
+                }
+                ...
+              ],
+              "MultiMeasureMappings": {
+                "TargetMultiMeasureName": "string",
+                "MultiMeasureAttributeMappings": [
+                  {
+                    "SourceColumn": "string",
+                    "TargetMultiMeasureAttributeName": "string",
+                    "MeasureValueType": "BIGINT"|"BOOLEAN"|"DOUBLE"|"VARCHAR"
+                  }
+                  ...
+                ]
+              },
+              "MixedMeasureMappings": [
+                {
+                  "MeasureName": "string",
+                  "SourceColumn": "string",
+                  "TargetMeasureName": "string",
+                  "MeasureValueType": "BIGINT"|"BOOLEAN"|"DOUBLE"|"VARCHAR"|"MULTI",
+                  "MultiMeasureAttributeMappings": [
+                    {
+                      "SourceColumn": "string",
+                      "TargetMultiMeasureAttributeName": "string",
+                      "MeasureValueType": "BIGINT"|"BOOLEAN"|"DOUBLE"|"VARCHAR"
+                    }
+                    ...
+                  ]
+                }
+                ...
+              ],
+              "MeasureNameColumn": "string"
+            }
+          }
+
+       --client-token (string)
+          Using a ClientToken makes the call to  CreateScheduledQuery  idempo-
+          tent,  in  other words, making the same request repeatedly will pro-
+          duce the same result. Making multiple identical CreateScheduledQuery
+          requests has the same effect as making a single request.
+
+          o If  CreateScheduledQuery  is  called  without  a ClientToken , the
+            Query SDK generates a ClientToken on your behalf.
+
+          o After 8 hours, any request with the same ClientToken is treated as
+            a new request.
+
+       --scheduled-query-execution-role-arn (string)
+          The  ARN  for  the IAM role that Timestream will assume when running
+          the scheduled query.
+
+       --tags (list)
+          A list of key-value pairs to label the scheduled query.
+
+          (structure)
+              A tag is a label that you assign to a Timestream database and/or
+              table. Each tag consists of a key and an optional value, both of
+              which you define. Tags enable you to categorize databases and/or
+              tables, for example, by purpose, owner, or environment.
+
+              Key -> (string)
+                 The key of the tag. Tag keys are case sensitive.
+
+              Value -> (string)
+                 The  value  of the tag. Tag values are case sensitive and can
+                 be null.
+
+       Shorthand Syntax:
+
+          Key=string,Value=string ...
+
+       JSON Syntax:
+
+          [
+            {
+              "Key": "string",
+              "Value": "string"
+            }
+            ...
+          ]
+
+       --kms-key-id (string)
+          The Amazon KMS key used to encrypt  the  scheduled  query  resource,
+          at-rest. If the Amazon KMS key is not specified, the scheduled query
+          resource will be encrypted with a Timestream owned Amazon  KMS  key.
+          To  specify a KMS key, use the key ID, key ARN, alias name, or alias
+          ARN. When using an alias name, prefix the name with alias/
+
+          If ErrorReportConfiguration uses SSE_KMS  as  encryption  type,  the
+          same KmsKeyId is used to encrypt the error report at rest.
+
+       --error-report-configuration (structure)
+          Configuration  for  error reporting. Error reports will be generated
+          when a problem is encountered when writing the query results.
+
+          S3Configuration -> (structure)
+              The S3 configuration for the error reports.
+
+              BucketName -> (string)
+                 Name of the S3 bucket under which error reports will be  cre-
+                 ated.
+
+              ObjectKeyPrefix -> (string)
+                 Prefix  for  the error report key. Timestream by default adds
+                 the following prefix to the error report path.
+
+              EncryptionOption -> (string)
+                 Encryption at rest options for the error reports. If  no  en-
+                 cryption  option  is specified, Timestream will choose SSE_S3
+                 as default.
+
+       Shorthand Syntax:
+
+          S3Configuration={BucketName=string,ObjectKeyPrefix=string,EncryptionOption=string}
+
+       JSON Syntax:
+
+          {
+            "S3Configuration": {
+              "BucketName": "string",
+              "ObjectKeyPrefix": "string",
+              "EncryptionOption": "SSE_S3"|"SSE_KMS"
+            }
+          }
+
+       --cli-input-json | --cli-input-yaml (string) Reads arguments  from  the
+       JSON  string  provided.  The JSON string follows the format provided by
+       --generate-cli-skeleton. If other arguments are provided on the command
+       line,  those  values  will override the JSON-provided values. It is not
+       possible to pass arbitrary binary values using a JSON-provided value as
+       the  string  will  be  taken literally. This may not be specified along
+       with --cli-input-yaml.
+
+       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
+       output without sending an API request. If provided with no value or the
+       value input, prints a sample input JSON that can be used as an argument
+       for --cli-input-json. Similarly, if provided yaml-input it will print a
+       sample input YAML that can be used with --cli-input-yaml.  If  provided
+       with  the  value  output, it validates the command inputs and returns a
+       sample output JSON for that command.
+
+       See 'aws help' for descriptions of global parameters.
+
+OUTPUT
+       Arn -> (string)
+          ARN for the created scheduled query.
+
+
+
+                                                      CREATE-SCHEDULED-QUERY()

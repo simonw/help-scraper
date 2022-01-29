@@ -1,0 +1,386 @@
+SEARCH-GAME-SESSIONS()                                  SEARCH-GAME-SESSIONS()
+
+
+
+NAME
+       search-game-sessions -
+
+DESCRIPTION
+       Retrieves  all active game sessions that match a set of search criteria
+       and sorts them into a specified order.
+
+       When searching for game sessions, you specify exactly where you want to
+       search  and  provide  a search filter expression, a sort expression, or
+       both. A search request can search only one fleet, but it can search all
+       of a fleet's locations.
+
+       This operation can be used in the following ways:
+
+       o To  search  all game sessions that are currently running on all loca-
+         tions in a fleet, provide a fleet or alias ID. This approach  returns
+         game  sessions  in  the  fleet's home Region and all remote locations
+         that fit the search criteria.
+
+       o To search all game sessions that are currently running on a  specific
+         fleet  location, provide a fleet or alias ID and a location name. For
+         location, you can specify a fleet's home Region or any  remote  loca-
+         tion.
+
+       Use  the  pagination parameters to retrieve results as a set of sequen-
+       tial pages.
+
+       If successful, a GameSession object is returned for each  game  session
+       that matches the request. Search finds game sessions that are in ACTIVE
+       status only. To retrieve information on game  sessions  in  other  sta-
+       tuses, use  DescribeGameSessions .
+
+       You can search or sort by the following game session attributes:
+
+       o gameSessionId  --  A  unique identifier for the game session. You can
+         use either a GameSessionId or GameSessionArn value.
+
+       o gameSessionName -- Name assigned to a game session. This value is set
+         when  requesting a new game session with  CreateGameSession or updat-
+         ing with  UpdateGameSession . Game session names do not  need  to  be
+         unique to a game session.
+
+       o gameSessionProperties  --  Custom  data  defined  in a game session's
+         GameProperty parameter. GameProperty values are stored  as  key:value
+         pairs;  the  filter  expression must indicate the key and a string to
+         search the data values for. For example, to search for game  sessions
+         with  custom  data  containing  the  key:value pair "gameMode:brawl",
+         specify the following: gameSessionProperties.gameMode = "brawl" . All
+         custom data values are searched as strings.
+
+       o maximumSessions  --  Maximum  number of player sessions allowed for a
+         game session. This value is set when requesting a  new  game  session
+         with  CreateGameSession or updating with  UpdateGameSession .
+
+       o creationTimeMillis  --  Value indicating when a game session was cre-
+         ated. It is expressed in Unix time as milliseconds.
+
+       o playerSessionCount -- Number of players currently connected to a game
+         session.  This  value  changes rapidly as players join the session or
+         drop out.
+
+       o hasAvailablePlayerSessions -- Boolean value indicating whether a game
+         session  has reached its maximum number of players. It is highly rec-
+         ommended that all search requests include this  filter  attribute  to
+         optimize search performance and return only sessions that players can
+         join.
+
+       NOTE:
+              Returned values for playerSessionCount and  hasAvailablePlayerS-
+              essions  change quickly as players join sessions and others drop
+              out. Results should be considered a snapshot in time. Be sure to
+              refresh  search  results often, and handle sessions that fill up
+              before a player can join.
+
+          Related actions
+              CreateGameSession |   DescribeGameSessions  |   DescribeGameSes-
+              sionDetails   |    SearchGameSessions   |   UpdateGameSession  |
+              GetGameSessionLogUrl   |    StartGameSessionPlacement   |    De-
+              scribeGameSessionPlacement  |   StopGameSessionPlacement  |  All
+              APIs by task
+
+       See also: AWS API Documentation
+
+       See 'aws help' for descriptions of global parameters.
+
+       search-game-sessions is a paginated operation. Multiple API  calls  may
+       be  issued in order to retrieve the entire data set of results. You can
+       disable pagination by providing the --no-paginate argument.  When using
+       --output  text  and  the  --query argument on a paginated response, the
+       --query argument must extract data from the results  of  the  following
+       query expressions: GameSessions
+
+SYNOPSIS
+            search-game-sessions
+          [--fleet-id <value>]
+          [--alias-id <value>]
+          [--location <value>]
+          [--filter-expression <value>]
+          [--sort-expression <value>]
+          [--cli-input-json | --cli-input-yaml]
+          [--starting-token <value>]
+          [--page-size <value>]
+          [--max-items <value>]
+          [--generate-cli-skeleton <value>]
+
+OPTIONS
+       --fleet-id (string)
+          A  unique  identifier  for  the fleet to search for active game ses-
+          sions. You can use either the fleet ID or ARN  value.  Each  request
+          must reference either a fleet ID or alias ID, but not both.
+
+       --alias-id (string)
+          A  unique  identifier  for  the  alias  associated with the fleet to
+          search for active game sessions. You can use either the alias ID  or
+          ARN  value.  Each  request must reference either a fleet ID or alias
+          ID, but not both.
+
+       --location (string)
+          A fleet location to search for game  sessions.  You  can  specify  a
+          fleet's  home  Region  or a remote location. Use the AWS Region code
+          format, such as us-west-2 .
+
+       --filter-expression (string)
+          String containing the search criteria for the session search. If  no
+          filter  expression  is included, the request returns results for all
+          game sessions in the fleet that are in ACTIVE status.
+
+          A filter expression can contain one  or  multiple  conditions.  Each
+          condition consists of the following:
+
+          o Operand  --  Name  of  a  game session attribute. Valid values are
+            gameSessionName , gameSessionId , gameSessionProperties , maximum-
+            Sessions , creationTimeMillis , playerSessionCount , hasAvailable-
+            PlayerSessions .
+
+          o Comparator -- Valid comparators are: = , <> , < , > , <= , >= .
+
+          o Value -- Value to be searched for. Values may be numbers,  boolean
+            values  (true/false)  or  strings depending on the operand. String
+            values are case sensitive and must be enclosed in  single  quotes.
+            Special  characters must be escaped. Boolean and string values can
+            only be used with the comparators = and <> . For example, the fol-
+            lowing  filter expression searches on gameSessionName : "FilterEx-
+            pression": "gameSessionName = 'Matt\\'s Awesome Game 1'" .
+
+          To chain multiple conditions in a single expression, use the logical
+          keywords  AND , OR , and NOT and parentheses as needed. For example:
+          x AND y AND NOT z , NOT (x OR y) .
+
+          Session search evaluates conditions from left  to  right  using  the
+          following precedence rules:
+
+          o = , <> , < , > , <= , >=
+
+          o Parentheses
+
+          o NOT
+
+          o AND
+
+          o OR
+
+          For  example, this filter expression retrieves game sessions hosting
+          at least ten players that have an  open  player  slot:  "maximumSes-
+          sions>=10 AND hasAvailablePlayerSessions=true" .
+
+       --sort-expression (string)
+          Instructions  on  how to sort the search results. If no sort expres-
+          sion is included, the request returns results  in  random  order.  A
+          sort expression consists of the following elements:
+
+          o Operand  --  Name  of  a  game session attribute. Valid values are
+            gameSessionName , gameSessionId , gameSessionProperties , maximum-
+            Sessions , creationTimeMillis , playerSessionCount , hasAvailable-
+            PlayerSessions .
+
+          o Order -- Valid sort orders are ASC (ascending) and DESC  (descend-
+            ing).
+
+          For example, this sort expression returns the oldest active sessions
+          first: "SortExpression": "creationTimeMillis ASC" . Results  with  a
+          null value for the sort operand are returned at the end of the list.
+
+       --cli-input-json  |  --cli-input-yaml (string) Reads arguments from the
+       JSON string provided. The JSON string follows the  format  provided  by
+       --generate-cli-skeleton. If other arguments are provided on the command
+       line, those values will override the JSON-provided values.  It  is  not
+       possible to pass arbitrary binary values using a JSON-provided value as
+       the string will be taken literally. This may  not  be  specified  along
+       with --cli-input-yaml.
+
+       --starting-token (string)
+          A  token to specify where to start paginating. This is the NextToken
+          from a previously truncated response.
+
+          For usage examples, see Pagination in the AWS Command Line Interface
+          User Guide .
+
+       --page-size (integer)
+          The  size of each page to get in the AWS service call. This does not
+          affect the number of items returned in the command's output. Setting
+          a  smaller  page  size results in more calls to the AWS service, re-
+          trieving fewer items in each call. This can  help  prevent  the  AWS
+          service calls from timing out.
+
+          For usage examples, see Pagination in the AWS Command Line Interface
+          User Guide .
+
+       --max-items (integer)
+          The total number of items to return in the command's output. If  the
+          total  number of items available is more than the value specified, a
+          NextToken is provided in the command's output. To resume pagination,
+          provide the NextToken value in the starting-token argument of a sub-
+          sequent command. Do not use the NextToken response element  directly
+          outside of the AWS CLI.
+
+          For usage examples, see Pagination in the AWS Command Line Interface
+          User Guide .
+
+       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
+       output without sending an API request. If provided with no value or the
+       value input, prints a sample input JSON that can be used as an argument
+       for --cli-input-json. Similarly, if provided yaml-input it will print a
+       sample input YAML that can be used with --cli-input-yaml.  If  provided
+       with  the  value  output, it validates the command inputs and returns a
+       sample output JSON for that command.
+
+       See 'aws help' for descriptions of global parameters.
+
+OUTPUT
+       GameSessions -> (list)
+          A collection of objects containing game session properties for  each
+          session that matches the request.
+
+          (structure)
+              Properties describing a game session.
+
+              A  game  session  in ACTIVE status can host players. When a game
+              session ends, its status is set to TERMINATED .
+
+              Once the session ends, the game session object is  retained  for
+              30 days. This means you can reuse idempotency token values after
+              this time. Game session logs are retained for 14 days.
+                 Related actions
+                     CreateGameSession   |    DescribeGameSessions   |     De-
+                     scribeGameSessionDetails  |   SearchGameSessions  |   Up-
+                     dateGameSession |  GetGameSessionLogUrl |   StartGameSes-
+                     sionPlacement     |     DescribeGameSessionPlacement    |
+                     StopGameSessionPlacement | All APIs by task
+
+              GameSessionId -> (string)
+                 A unique identifier for the game session. A game session  ARN
+                 has the following format: arn:aws:gamelift:<region>::gameses-
+                 sion/<fleet ID>/<custom ID string or idempotency token> .
+
+              Name -> (string)
+                 A descriptive label that is associated with a  game  session.
+                 Session names do not need to be unique.
+
+              FleetId -> (string)
+                 A  unique  identifier  for the fleet that the game session is
+                 running on.
+
+              FleetArn -> (string)
+                 The Amazon Resource Name (ARN ) associated with the  GameLift
+                 fleet that this game session is running on.
+
+              CreationTime -> (timestamp)
+                 A  time  stamp  indicating when this data object was created.
+                 Format is a number expressed in  Unix  time  as  milliseconds
+                 (for example "1469498468.057" ).
+
+              TerminationTime -> (timestamp)
+                 A time stamp indicating when this data object was terminated.
+                 Format is a number expressed in  Unix  time  as  milliseconds
+                 (for example "1469498468.057" ).
+
+              CurrentPlayerSessionCount -> (integer)
+                 Number of players currently in the game session.
+
+              MaximumPlayerSessionCount -> (integer)
+                 The  maximum number of players that can be connected simulta-
+                 neously to the game session.
+
+              Status -> (string)
+                 Current status of the game session. A game session must  have
+                 an ACTIVE status to have player sessions.
+
+              StatusReason -> (string)
+                 Provides  additional  information  about game session status.
+                 INTERRUPTED indicates that the game session was hosted  on  a
+                 spot  instance  that  was  reclaimed, causing the active game
+                 session to be terminated.
+
+              GameProperties -> (list)
+                 A set of custom properties for a game session,  formatted  as
+                 key:value pairs. These properties are passed to a game server
+                 process in the  GameSession object with a request to start  a
+                 new  game  session.  You  can search for active game sessions
+                 based on this custom data with  SearchGameSessions .
+
+                 (structure)
+                     Set of key-value pairs that contain information  about  a
+                     game  session.  When  included in a game session request,
+                     these properties communicate details to be used when set-
+                     ting  up  the new game session. For example, a game prop-
+                     erty might specify a game mode, level, or map. Game prop-
+                     erties  are passed to the game server process when initi-
+                     ating a new game session. For more information,  see  the
+                     GameLift Developer Guide .
+
+                     Key -> (string)
+                        The game property identifier.
+
+                     Value -> (string)
+                        The game property value.
+
+              IpAddress -> (string)
+                 The  IP address of the game session. To connect to a GameLift
+                 game server, an app needs both the IP address and  port  num-
+                 ber.
+
+              DnsName -> (string)
+                 The  DNS  identifier assigned to the instance that is running
+                 the game session. Values have the following format:
+
+                 o TLS-enabled  fleets:  <unique  identifier>.<region  identi-
+                   fier>.amazongamelift.com .
+
+                 o Non-TLS-enabled    fleets:   ec2-<unique   identifier>.com-
+                   pute.amazonaws.com . (See Amazon EC2 Instance IP Addressing
+                   .)
+
+                 When  connecting  to  a  game  session  that  is running on a
+                 TLS-enabled fleet, you must use the DNS name, not the IP  ad-
+                 dress.
+
+              Port -> (integer)
+                 The  port  number  for  the  game  session.  To  connect to a
+                 GameLift game server, an app needs both the  IP  address  and
+                 port number.
+
+              PlayerSessionCreationPolicy -> (string)
+                 Indicates  whether  or  not the game session is accepting new
+                 players.
+
+              CreatorId -> (string)
+                 A unique identifier for a player. This ID is used to  enforce
+                 a resource protection policy (if one exists), that limits the
+                 number of game sessions a player can create.
+
+              GameSessionData -> (string)
+                 A set of custom game session properties, formatted as a  sin-
+                 gle  string  value.  This  data  is  passed  to a game server
+                 process in the  GameSession object with a request to start  a
+                 new game session.
+
+              MatchmakerData -> (string)
+                 Information  about  the  matchmaking process that was used to
+                 create the game session. It is in JSON syntax, formatted as a
+                 string.  In  addition  the matchmaking configuration used, it
+                 contains data on all players assigned to the match, including
+                 player  attributes  and team assignments. For more details on
+                 matchmaker data, see Match Data . Matchmaker data  is  useful
+                 when  requesting match backfills, and is updated whenever new
+                 players are added during a successful backfill  (see   Start-
+                 MatchBackfill ).
+
+              Location -> (string)
+                 The  fleet  location  where the game session is running. This
+                 value might specify the fleet's home Region or a remote loca-
+                 tion.  Location  is  expressed  as an AWS Region code such as
+                 us-west-2 .
+
+       NextToken -> (string)
+          A token that indicates where to resume  retrieving  results  on  the
+          next  call to this operation. If no token is returned, these results
+          represent the end of the list.
+
+
+
+                                                        SEARCH-GAME-SESSIONS()

@@ -1,0 +1,425 @@
+START-MATCH-BACKFILL()                                  START-MATCH-BACKFILL()
+
+
+
+NAME
+       start-match-backfill -
+
+DESCRIPTION
+       Finds  new  players  to  fill open slots in currently running game ses-
+       sions. The backfill match  process  is  essentially  identical  to  the
+       process  of  forming new matches. Backfill requests use the same match-
+       maker that was used to make the original match, and they provide match-
+       making  data  for  all players currently in the game session. FlexMatch
+       uses this information to select new players so  that  backfilled  match
+       continues to meet the original match requirements.
+
+       When  using  FlexMatch with GameLift managed hosting, you can request a
+       backfill match from a client service by calling this operation  with  a
+       GameSession identifier. You also have the option of making backfill re-
+       quests directly from your game server. In response to a request,  Flex-
+       Match creates player sessions for the new players, updates the GameSes-
+       sion resource, and sends updated matchmaking data to the  game  server.
+       You  can  request a backfill match at any point after a game session is
+       started. Each game session can have only one active backfill request at
+       a  time;  a  subsequent  request automatically replaces the earlier re-
+       quest.
+
+       When using FlexMatch as a  standalone  component,  request  a  backfill
+       match  by  calling this operation without a game session identifier. As
+       with newly formed matches, matchmaking results are returned in a match-
+       making  event so that your game can update the game session that is be-
+       ing backfilled.
+
+       To request a backfill match, specify a unique ticket ID,  the  original
+       matchmaking configuration, and matchmaking data for all current players
+       in the game session being backfilled. Optionally, specify the  GameSes-
+       sion  ARN.  If  successful,  a match backfill ticket is created and re-
+       turned with status set to QUEUED. Track the status of backfill  tickets
+       using the same method for tracking tickets for new matches.
+          Learn more
+
+          Backfill existing games with FlexMatch
+
+          Matchmaking events (reference)
+
+          How GameLift FlexMatch works
+
+          Related actions
+              StartMatchmaking  |   DescribeMatchmaking  |   StopMatchmaking |
+              AcceptMatch |  StartMatchBackfill | All APIs by task
+
+       See also: AWS API Documentation
+
+       See 'aws help' for descriptions of global parameters.
+
+SYNOPSIS
+            start-match-backfill
+          [--ticket-id <value>]
+          --configuration-name <value>
+          [--game-session-arn <value>]
+          --players <value>
+          [--cli-input-json | --cli-input-yaml]
+          [--generate-cli-skeleton <value>]
+
+OPTIONS
+       --ticket-id (string)
+          A unique identifier for a matchmaking ticket. If  no  ticket  ID  is
+          specified  here,  Amazon GameLift will generate one in the form of a
+          UUID. Use this identifier to track the match backfill ticket  status
+          and retrieve match results.
+
+       --configuration-name (string)
+          Name  of  the matchmaker to use for this request. You can use either
+          the configuration name or ARN value. The ARN of the matchmaker  that
+          was  used  with the original game session is listed in the  GameSes-
+          sion object, MatchmakerData property.
+
+       --game-session-arn (string)
+          A unique identifier for the game session. Use the game  session  ID.
+          When  using FlexMatch as a standalone matchmaking solution, this pa-
+          rameter is not needed.
+
+       --players (list)
+          Match information on all players that are currently assigned to  the
+          game session. This information is used by the matchmaker to find new
+          players and add them to the existing game.
+
+          o PlayerID, PlayerAttributes, Team -- This information is maintained
+            in the  GameSession object, MatchmakerData property, for all play-
+            ers who are currently assigned to the game session. The matchmaker
+            data  is  in JSON syntax, formatted as a string. For more details,
+            see Match Data .
+
+          o LatencyInMs -- If the matchmaker uses player  latency,  include  a
+            latency  value, in milliseconds, for the Region that the game ses-
+            sion is currently in. Do not include latency values for any  other
+            Region.
+
+          (structure)
+              Represents  a player in matchmaking. When starting a matchmaking
+              request, a player has a player ID, attributes, and may have  la-
+              tency  data.  Team  information  is added after a match has been
+              successfully completed.
+
+              PlayerId -> (string)
+                 A unique identifier for a player
+
+              PlayerAttributes -> (map)
+                 A collection of key:value pairs containing player information
+                 for  use in matchmaking. Player attribute keys must match the
+                 playerAttributes used in a  matchmaking  rule  set.  Example:
+                 "PlayerAttributes":  {"skill": {"N": "23"}, "gameMode": {"S":
+                 "deathmatch"}} .
+
+                 key -> (string)
+
+                 value -> (structure)
+                     Values for use in  Player attribute key-value pairs. This
+                     object  lets  you specify an attribute value using any of
+                     the valid data types: string, number,  string  array,  or
+                     data  map. Each AttributeValue object can use only one of
+                     the available properties.
+
+                     S -> (string)
+                        For single string values. Maximum string length is 100
+                        characters.
+
+                     N -> (double)
+                        For number values, expressed as double.
+
+                     SL -> (list)
+                        For  a  list  of  up to 10 strings. Maximum length for
+                        each string is 100 characters.  Duplicate  values  are
+                        not  recognized; all occurrences of the repeated value
+                        after the first of a repeated value are ignored.
+
+                        (string)
+
+                     SDM -> (map)
+                        For a map of up to 10 data type:value  pairs.  Maximum
+                        length for each string value is 100 characters.
+
+                        key -> (string)
+
+                        value -> (double)
+
+              Team -> (string)
+                 Name  of  the team that the player is assigned to in a match.
+                 Team names are defined in a matchmaking rule set.
+
+              LatencyInMs -> (map)
+                 A set of values, expressed in  milliseconds,  that  indicates
+                 the  amount  of  latency  that a player experiences when con-
+                 nected to AWS Regions. If this property is present, FlexMatch
+                 considers placing the match only in Regions for which latency
+                 is reported.
+
+                 If a matchmaker has a rule  that  evaluates  player  latency,
+                 players must report latency in order to be matched. If no la-
+                 tency is reported in this scenario, FlexMatch assumes that no
+                 Regions  are  available  to  the player and the ticket is not
+                 matchable.
+
+                 key -> (string)
+
+                 value -> (integer)
+
+       Shorthand Syntax:
+
+          PlayerId=string,PlayerAttributes={KeyName1={S=string,N=double,SL=[string,string],SDM={KeyName1=double,KeyName2=double}},KeyName2={S=string,N=double,SL=[string,string],SDM={KeyName1=double,KeyName2=double}}},Team=string,LatencyInMs={KeyName1=integer,KeyName2=integer} ...
+
+       JSON Syntax:
+
+          [
+            {
+              "PlayerId": "string",
+              "PlayerAttributes": {"string": {
+                    "S": "string",
+                    "N": double,
+                    "SL": ["string", ...],
+                    "SDM": {"string": double
+                      ...}
+                  }
+                ...},
+              "Team": "string",
+              "LatencyInMs": {"string": integer
+                ...}
+            }
+            ...
+          ]
+
+       --cli-input-json | --cli-input-yaml (string) Reads arguments  from  the
+       JSON  string  provided.  The JSON string follows the format provided by
+       --generate-cli-skeleton. If other arguments are provided on the command
+       line,  those  values  will override the JSON-provided values. It is not
+       possible to pass arbitrary binary values using a JSON-provided value as
+       the  string  will  be  taken literally. This may not be specified along
+       with --cli-input-yaml.
+
+       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
+       output without sending an API request. If provided with no value or the
+       value input, prints a sample input JSON that can be used as an argument
+       for --cli-input-json. Similarly, if provided yaml-input it will print a
+       sample input YAML that can be used with --cli-input-yaml.  If  provided
+       with  the  value  output, it validates the command inputs and returns a
+       sample output JSON for that command.
+
+       See 'aws help' for descriptions of global parameters.
+
+OUTPUT
+       MatchmakingTicket -> (structure)
+          Ticket representing the backfill matchmaking  request.  This  object
+          includes  the  information  in the request, ticket status, and match
+          results as generated during the matchmaking process.
+
+          TicketId -> (string)
+              A unique identifier for a matchmaking ticket.
+
+          ConfigurationName -> (string)
+              Name of the  MatchmakingConfiguration that  is  used  with  this
+              ticket.  Matchmaking  configurations  determine  how players are
+              grouped into a match and how a new game session is  created  for
+              the match.
+
+          ConfigurationArn -> (string)
+              The  Amazon  Resource  Name  (ARN ) associated with the GameLift
+              matchmaking  configuration  resource  that  is  used  with  this
+              ticket.
+
+          Status -> (string)
+              Current status of the matchmaking request.
+
+              o QUEUED  --  The  matchmaking  request has been received and is
+                currently waiting to be processed.
+
+              o SEARCHING -- The matchmaking request is currently  being  pro-
+                cessed.
+
+              o REQUIRES_ACCEPTANCE -- A match has been proposed and the play-
+                ers must accept the match (see  AcceptMatch ). This status  is
+                used  only  with requests that use a matchmaking configuration
+                with a player acceptance requirement.
+
+              o PLACING -- The FlexMatch engine has matched players and is  in
+                the process of placing a new game session for the match.
+
+              o COMPLETED  --  Players have been matched and a game session is
+                ready to host the players. A ticket in this state contains the
+                necessary connection information for players.
+
+              o FAILED -- The matchmaking request was not completed.
+
+              o CANCELLED -- The matchmaking request was canceled. This may be
+                the result of a call to  StopMatchmaking or a  proposed  match
+                that one or more players failed to accept.
+
+              o TIMED_OUT -- The matchmaking request was not successful within
+                the duration specified in the matchmaking configuration.
+
+              NOTE:
+                 Matchmaking requests that fail to successfully complete (sta-
+                 tuses FAILED, CANCELLED, TIMED_OUT) can be resubmitted as new
+                 requests with new ticket IDs.
+
+          StatusReason -> (string)
+              Code to explain the current status. For example, a status reason
+              may  indicate when a ticket has returned to SEARCHING status af-
+              ter a proposed match fails to receive player acceptances.
+
+          StatusMessage -> (string)
+              Additional information about the current status.
+
+          StartTime -> (timestamp)
+              Time stamp indicating when  this  matchmaking  request  was  re-
+              ceived.  Format  is a number expressed in Unix time as millisec-
+              onds (for example "1469498468.057" ).
+
+          EndTime -> (timestamp)
+              Time stamp indicating when this matchmaking request stopped  be-
+              ing  processed  due to success, failure, or cancellation. Format
+              is a number expressed in Unix time as milliseconds (for  example
+              "1469498468.057" ).
+
+          Players -> (list)
+              A  set  of  Player  objects,  each representing a player to find
+              matches for. Players are identified by a unique  player  ID  and
+              may  include  latency  data  for  use during matchmaking. If the
+              ticket is in status COMPLETED , the Player objects  include  the
+              team the players were assigned to in the resulting match.
+
+              (structure)
+                 Represents a player in matchmaking. When starting a matchmak-
+                 ing request, a player has a player ID,  attributes,  and  may
+                 have  latency  data.  Team information is added after a match
+                 has been successfully completed.
+
+                 PlayerId -> (string)
+                     A unique identifier for a player
+
+                 PlayerAttributes -> (map)
+                     A collection of key:value pairs containing player  infor-
+                     mation for use in matchmaking. Player attribute keys must
+                     match the playerAttributes used  in  a  matchmaking  rule
+                     set.  Example: "PlayerAttributes": {"skill": {"N": "23"},
+                     "gameMode": {"S": "deathmatch"}} .
+
+                     key -> (string)
+
+                     value -> (structure)
+                        Values for use in  Player attribute  key-value  pairs.
+                        This  object lets you specify an attribute value using
+                        any of the valid data types:  string,  number,  string
+                        array, or data map. Each AttributeValue object can use
+                        only one of the available properties.
+
+                        S -> (string)
+                            For single string values. Maximum string length is
+                            100 characters.
+
+                        N -> (double)
+                            For number values, expressed as double.
+
+                        SL -> (list)
+                            For a list of up to 10 strings. Maximum length for
+                            each string is 100  characters.  Duplicate  values
+                            are  not  recognized;  all  occurrences of the re-
+                            peated value after the first of a  repeated  value
+                            are ignored.
+
+                            (string)
+
+                        SDM -> (map)
+                            For a map of up to 10 data type:value pairs. Maxi-
+                            mum length for each string value  is  100  charac-
+                            ters.
+
+                            key -> (string)
+
+                            value -> (double)
+
+                 Team -> (string)
+                     Name  of  the  team  that  the player is assigned to in a
+                     match. Team names are defined in a matchmaking rule set.
+
+                 LatencyInMs -> (map)
+                     A set of values, expressed in  milliseconds,  that  indi-
+                     cates  the  amount  of  latency that a player experiences
+                     when connected  to  AWS  Regions.  If  this  property  is
+                     present,  FlexMatch  considers  placing the match only in
+                     Regions for which latency is reported.
+
+                     If a matchmaker has a rule that evaluates player latency,
+                     players must report latency in order to be matched. If no
+                     latency is reported in this scenario,  FlexMatch  assumes
+                     that  no  Regions  are  available  to  the player and the
+                     ticket is not matchable.
+
+                     key -> (string)
+
+                     value -> (integer)
+
+          GameSessionConnectionInfo -> (structure)
+              Identifier and connection information of the game  session  cre-
+              ated for the match. This information is added to the ticket only
+              after the matchmaking request has been  successfully  completed.
+              This  parameter  is not set when FlexMatch is being used without
+              GameLift hosting.
+
+              GameSessionArn -> (string)
+                 A unique identifier for the game session. Use the  game  ses-
+                 sion ID.
+
+              IpAddress -> (string)
+                 The  IP address of the game session. To connect to a GameLift
+                 game server, an app needs both the IP address and  port  num-
+                 ber.
+
+              DnsName -> (string)
+                 The  DNS  identifier assigned to the instance that is running
+                 the game session. Values have the following format:
+
+                 o TLS-enabled  fleets:  <unique  identifier>.<region  identi-
+                   fier>.amazongamelift.com .
+
+                 o Non-TLS-enabled    fleets:   ec2-<unique   identifier>.com-
+                   pute.amazonaws.com . (See Amazon EC2 Instance IP Addressing
+                   .)
+
+                 When  connecting  to  a  game  session  that  is running on a
+                 TLS-enabled fleet, you must use the DNS name, not the IP  ad-
+                 dress.
+
+              Port -> (integer)
+                 The  port  number  for  the  game  session.  To  connect to a
+                 GameLift game server, an app needs both the  IP  address  and
+                 port number.
+
+              MatchedPlayerSessions -> (list)
+                 A  collection  of  player session IDs, one for each player ID
+                 that was included in the original matchmaking request.
+
+                 (structure)
+                     Represents a new player session that is created as a  re-
+                     sult  of a successful FlexMatch match. A successful match
+                     automatically  creates  new  player  sessions  for  every
+                     player ID in the original matchmaking request.
+
+                     When  players  connect  to the match's game session, they
+                     must include both player ID and player session ID in  or-
+                     der to claim their assigned player slot.
+
+                     PlayerId -> (string)
+                        A unique identifier for a player
+
+                     PlayerSessionId -> (string)
+                        A unique identifier for a player session
+
+          EstimatedWaitTime -> (integer)
+              Average  amount  of time (in seconds) that players are currently
+              waiting for a match. If there is not enough  recent  data,  this
+              property may be empty.
+
+
+
+                                                        START-MATCH-BACKFILL()

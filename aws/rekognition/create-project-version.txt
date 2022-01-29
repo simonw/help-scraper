@@ -1,0 +1,282 @@
+CREATE-PROJECT-VERSION()                              CREATE-PROJECT-VERSION()
+
+
+
+NAME
+       create-project-version -
+
+DESCRIPTION
+       Creates  a  new version of a model and begins training. Models are man-
+       aged as part of an Amazon Rekognition Custom Labels  project.  The  re-
+       sponse  from  CreateProjectVersion is an Amazon Resource Name (ARN) for
+       the version of the model.
+
+       Training uses the  training  and  test  datasets  associated  with  the
+       project.  For  more information, see Creating training and test dataset
+       in the Amazon Rekognition Custom Labels Developer Guide .
+
+       NOTE:
+          You can train a modelin  a  project  that  doesn't  have  associated
+          datasets  by specifying manifest files in the TrainingData and Test-
+          ingData fields.
+
+          If you open the console after training a model with manifest  files,
+          Amazon  Rekognition Custom Labels creates the datasets for you using
+          the most recent manifest files. You can no longer train a model ver-
+          sion for the project by specifying manifest files.
+
+          Instead  of  training with a project without associated datasets, we
+          recommend that you use the manifest files  to  create  training  and
+          test datasets for the project.
+
+       Training  takes  a while to complete. You can get the current status by
+       calling  DescribeProjectVersions . Training completed  successfully  if
+       the value of the Status field is TRAINING_COMPLETED .
+
+       If  training fails, see Debugging a failed model training in the Amazon
+       Rekognition Custom Labels developer guide.
+
+       Once training has successfully completed, call  DescribeProjectVersions
+       to  get  the training results and evaluate the model. For more informa-
+       tion, see Improving a trained Amazon Rekognition Custom Labels model in
+       the Amazon Rekognition Custom Labels developers guide.
+
+       After  evaluating  the model, you start the model by calling  StartPro-
+       jectVersion .
+
+       This operation requires permissions  to  perform  the  rekognition:Cre-
+       ateProjectVersion action.
+
+       See also: AWS API Documentation
+
+       See 'aws help' for descriptions of global parameters.
+
+SYNOPSIS
+            create-project-version
+          --project-arn <value>
+          --version-name <value>
+          --output-config <value>
+          [--training-data <value>]
+          [--testing-data <value>]
+          [--tags <value>]
+          [--kms-key-id <value>]
+          [--cli-input-json | --cli-input-yaml]
+          [--generate-cli-skeleton <value>]
+
+OPTIONS
+       --project-arn (string)
+          The ARN of the Amazon Rekognition Custom Labels project that manages
+          the model that you want to train.
+
+       --version-name (string)
+          A name for the version of the model. This value must be unique.
+
+       --output-config (structure)
+          The Amazon S3 bucket location to store the results of training.  The
+          S3  bucket  can  be  in  any  AWS  account as long as the caller has
+          s3:PutObject permissions on the S3 bucket.
+
+          S3Bucket -> (string)
+              The S3 bucket where training output is placed.
+
+          S3KeyPrefix -> (string)
+              The prefix applied to the training output files.
+
+       Shorthand Syntax:
+
+          S3Bucket=string,S3KeyPrefix=string
+
+       JSON Syntax:
+
+          {
+            "S3Bucket": "string",
+            "S3KeyPrefix": "string"
+          }
+
+       --training-data (structure)
+          Specifies an external manifest that the services uses to  train  the
+          model. If you specify TrainingData you must also specify TestingData
+          . The project must not have any associated datasets.
+
+          Assets -> (list)
+              A Sagemaker GroundTruth manifest file that contains the training
+              images (assets).
+
+              (structure)
+                 Assets  are  the  images that you use to train and evaluate a
+                 model version. Assets can also contain validation information
+                 that you use to debug a failed model training.
+
+                 GroundTruthManifest -> (structure)
+                     The  S3  bucket  that contains an Amazon Sagemaker Ground
+                     Truth format manifest file.
+
+                     S3Object -> (structure)
+                        Provides the S3 bucket name and object name.
+
+                        The region for the S3 bucket containing the S3  object
+                        must  match  the region you use for Amazon Rekognition
+                        operations.
+
+                        For Amazon Rekognition to process an  S3  object,  the
+                        user must have permission to access the S3 object. For
+                        more information, see Resource-Based Policies  in  the
+                        Amazon Rekognition Developer Guide.
+
+                        Bucket -> (string)
+                            Name of the S3 bucket.
+
+                        Name -> (string)
+                            S3 object key name.
+
+                        Version -> (string)
+                            If the bucket is versioning enabled, you can spec-
+                            ify the object version.
+
+       JSON Syntax:
+
+          {
+            "Assets": [
+              {
+                "GroundTruthManifest": {
+                  "S3Object": {
+                    "Bucket": "string",
+                    "Name": "string",
+                    "Version": "string"
+                  }
+                }
+              }
+              ...
+            ]
+          }
+
+       --testing-data (structure)
+          Specifies an external manifest that the service  uses  to  test  the
+          model. If you specify TestingData you must also specify TrainingData
+          . The project must not have any associated datasets.
+
+          Assets -> (list)
+              The assets used for testing.
+
+              (structure)
+                 Assets are the images that you use to train  and  evaluate  a
+                 model version. Assets can also contain validation information
+                 that you use to debug a failed model training.
+
+                 GroundTruthManifest -> (structure)
+                     The S3 bucket that contains an  Amazon  Sagemaker  Ground
+                     Truth format manifest file.
+
+                     S3Object -> (structure)
+                        Provides the S3 bucket name and object name.
+
+                        The  region for the S3 bucket containing the S3 object
+                        must match the region you use for  Amazon  Rekognition
+                        operations.
+
+                        For  Amazon  Rekognition  to process an S3 object, the
+                        user must have permission to access the S3 object. For
+                        more  information,  see Resource-Based Policies in the
+                        Amazon Rekognition Developer Guide.
+
+                        Bucket -> (string)
+                            Name of the S3 bucket.
+
+                        Name -> (string)
+                            S3 object key name.
+
+                        Version -> (string)
+                            If the bucket is versioning enabled, you can spec-
+                            ify the object version.
+
+          AutoCreate -> (boolean)
+              If  specified,  Amazon  Rekognition  Custom  Labels  temporarily
+              splits the training dataset (80%) to create a test dataset (20%)
+              for the training job. After training completes, the test dataset
+              is not stored and the training dataset reverts to  its  previous
+              size.
+
+       JSON Syntax:
+
+          {
+            "Assets": [
+              {
+                "GroundTruthManifest": {
+                  "S3Object": {
+                    "Bucket": "string",
+                    "Name": "string",
+                    "Version": "string"
+                  }
+                }
+              }
+              ...
+            ],
+            "AutoCreate": true|false
+          }
+
+       --tags (map)
+          A  set  of  tags  (key-value  pairs)  that you want to attach to the
+          model.
+
+          key -> (string)
+
+          value -> (string)
+
+       Shorthand Syntax:
+
+          KeyName1=string,KeyName2=string
+
+       JSON Syntax:
+
+          {"string": "string"
+            ...}
+
+       --kms-key-id (string)
+          The identifier for your AWS Key  Management  Service  key  (AWS  KMS
+          key). You can supply the Amazon Resource Name (ARN) of your KMS key,
+          the ID of your KMS key, an alias for your KMS key, or an alias  ARN.
+          The  key is used to encrypt training and test images copied into the
+          service for model training. Your source images are  unaffected.  The
+          key  is  also  used  to  encrypt training results and manifest files
+          written to the output Amazon S3 bucket (OutputConfig ).
+
+          If you choose to use your own KMS key, you need the  following  per-
+          missions on the KMS key.
+
+          o kms:CreateGrant
+
+          o kms:DescribeKey
+
+          o kms:GenerateDataKey
+
+          o kms:Decrypt
+
+          If  you  don't specify a value for KmsKeyId , images copied into the
+          service are encrypted using a key that AWS owns and manages.
+
+       --cli-input-json | --cli-input-yaml (string) Reads arguments  from  the
+       JSON  string  provided.  The JSON string follows the format provided by
+       --generate-cli-skeleton. If other arguments are provided on the command
+       line,  those  values  will override the JSON-provided values. It is not
+       possible to pass arbitrary binary values using a JSON-provided value as
+       the  string  will  be  taken literally. This may not be specified along
+       with --cli-input-yaml.
+
+       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
+       output without sending an API request. If provided with no value or the
+       value input, prints a sample input JSON that can be used as an argument
+       for --cli-input-json. Similarly, if provided yaml-input it will print a
+       sample input YAML that can be used with --cli-input-yaml.  If  provided
+       with  the  value  output, it validates the command inputs and returns a
+       sample output JSON for that command.
+
+       See 'aws help' for descriptions of global parameters.
+
+OUTPUT
+       ProjectVersionArn -> (string)
+          The ARN of the model version  that  was  created.  Use  DescribePro-
+          jectVersion to get the current status of the training operation.
+
+
+
+                                                      CREATE-PROJECT-VERSION()

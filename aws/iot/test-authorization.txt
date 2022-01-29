@@ -1,0 +1,256 @@
+TEST-AUTHORIZATION()                                      TEST-AUTHORIZATION()
+
+
+
+NAME
+       test-authorization -
+
+DESCRIPTION
+       Tests  if  a specified principal is authorized to perform an IoT action
+       on a specified resource. Use this to test and debug  the  authorization
+       behavior of devices that connect to the IoT device gateway.
+
+       Requires permission to access the TestAuthorization action.
+
+       See also: AWS API Documentation
+
+       See 'aws help' for descriptions of global parameters.
+
+SYNOPSIS
+            test-authorization
+          [--principal <value>]
+          [--cognito-identity-pool-id <value>]
+          --auth-infos <value>
+          [--client-id <value>]
+          [--policy-names-to-add <value>]
+          [--policy-names-to-skip <value>]
+          [--cli-input-json | --cli-input-yaml]
+          [--generate-cli-skeleton <value>]
+
+OPTIONS
+       --principal (string)
+          The  principal. Valid principals are CertificateArn (arn:aws:iot:re-
+          gion     :accountId     :cert/certificateId     ),     thingGroupArn
+          (arn:aws:iot:region :accountId :thinggroup/groupName ) and CognitoId
+          (region :id ).
+
+       --cognito-identity-pool-id (string)
+          The Cognito identity pool ID.
+
+       --auth-infos (list)
+          A list of authorization info objects. Simulating authorization  will
+          create a response for each authInfo object in the list.
+
+          (structure)
+              A collection of authorization information.
+
+              actionType -> (string)
+                 The  type  of  action for which the principal is being autho-
+                 rized.
+
+              resources -> (list)
+                 The resources for which the principal is being authorized  to
+                 perform the specified action.
+
+                 (string)
+
+       Shorthand Syntax:
+
+          actionType=string,resources=string,string ...
+
+       JSON Syntax:
+
+          [
+            {
+              "actionType": "PUBLISH"|"SUBSCRIBE"|"RECEIVE"|"CONNECT",
+              "resources": ["string", ...]
+            }
+            ...
+          ]
+
+       --client-id (string)
+          The MQTT client ID.
+
+       --policy-names-to-add (list)
+          When  testing  custom authorization, the policies specified here are
+          treated as if they are attached to the principal being authorized.
+
+          (string)
+
+       Syntax:
+
+          "string" "string" ...
+
+       --policy-names-to-skip (list)
+          When testing custom authorization, the policies specified  here  are
+          treated  as  if  they are not attached to the principal being autho-
+          rized.
+
+          (string)
+
+       Syntax:
+
+          "string" "string" ...
+
+       --cli-input-json | --cli-input-yaml (string) Reads arguments  from  the
+       JSON  string  provided.  The JSON string follows the format provided by
+       --generate-cli-skeleton. If other arguments are provided on the command
+       line,  those  values  will override the JSON-provided values. It is not
+       possible to pass arbitrary binary values using a JSON-provided value as
+       the  string  will  be  taken literally. This may not be specified along
+       with --cli-input-yaml.
+
+       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
+       output without sending an API request. If provided with no value or the
+       value input, prints a sample input JSON that can be used as an argument
+       for --cli-input-json. Similarly, if provided yaml-input it will print a
+       sample input YAML that can be used with --cli-input-yaml.  If  provided
+       with  the  value  output, it validates the command inputs and returns a
+       sample output JSON for that command.
+
+       See 'aws help' for descriptions of global parameters.
+
+EXAMPLES
+       To test your AWS IoT policies
+
+       The following test-authorization example tests the AWS IoT policies as-
+       sociated with the specified principal.
+
+          aws iot test-authorization \
+              --auth-infos actionType=CONNECT,resources=arn:aws:iot:us-east-1:123456789012:client/client1 \
+              --principal arn:aws:iot:us-west-2:123456789012:cert/aab1068f7f43ac3e3cae4b3a8aa3f308d2a750e6350507962e32c1eb465d9775
+
+       Output:
+
+          {
+              "authResults": [
+                  {
+                      "authInfo": {
+                          "actionType": "CONNECT",
+                          "resources": [
+                              "arn:aws:iot:us-east-1:123456789012:client/client1"
+                          ]
+                      },
+                      "allowed": {
+                          "policies": [
+                              {
+                                  "policyName": "TestPolicyAllowed",
+                                  "policyArn": "arn:aws:iot:us-west-2:123456789012:policy/TestPolicyAllowed"
+                              }
+                          ]
+                      },
+                      "denied": {
+                          "implicitDeny": {
+                              "policies": [
+                                  {
+                                      "policyName": "TestPolicyDenied",
+                                      "policyArn": "arn:aws:iot:us-west-2:123456789012:policy/TestPolicyDenied"
+                                  }
+                              ]
+                          },
+                          "explicitDeny": {
+                              "policies": [
+                                  {
+                                      "policyName": "TestPolicyExplicitDenied",
+                                      "policyArn": "arn:aws:iot:us-west-2:123456789012:policy/TestPolicyExplicitDenied"
+                                  }
+                              ]
+                          }
+                      },
+                      "authDecision": "IMPLICIT_DENY",
+                      "missingContextValues": []
+                  }
+              ]
+          }
+
+       For  more  information, see TestAuthorization in the AWS IoT API Refer-
+       ence.
+
+OUTPUT
+       authResults -> (list)
+          The authentication results.
+
+          (structure)
+              The authorizer result.
+
+              authInfo -> (structure)
+                 Authorization information.
+
+                 actionType -> (string)
+                     The type of action for which the principal is  being  au-
+                     thorized.
+
+                 resources -> (list)
+                     The resources for which the principal is being authorized
+                     to perform the specified action.
+
+                     (string)
+
+              allowed -> (structure)
+                 The policies and statements that allowed  the  specified  ac-
+                 tion.
+
+                 policies -> (list)
+                     A list of policies that allowed the authentication.
+
+                     (structure)
+                        Describes an IoT policy.
+
+                        policyName -> (string)
+                            The policy name.
+
+                        policyArn -> (string)
+                            The policy ARN.
+
+              denied -> (structure)
+                 The policies and statements that denied the specified action.
+
+                 implicitDeny -> (structure)
+                     Information  that  implicitly  denies  the authorization.
+                     When a policy doesn't explicitly deny or allow an  action
+                     on a resource it is considered an implicit deny.
+
+                     policies -> (list)
+                        Policies  that  don't contain a matching allow or deny
+                        statement for the specified action  on  the  specified
+                        resource.
+
+                        (structure)
+                            Describes an IoT policy.
+
+                            policyName -> (string)
+                               The policy name.
+
+                            policyArn -> (string)
+                               The policy ARN.
+
+                 explicitDeny -> (structure)
+                     Information that explicitly denies the authorization.
+
+                     policies -> (list)
+                        The policies that denied the authorization.
+
+                        (structure)
+                            Describes an IoT policy.
+
+                            policyName -> (string)
+                               The policy name.
+
+                            policyArn -> (string)
+                               The policy ARN.
+
+              authDecision -> (string)
+                 The  final  authorization decision of this scenario. Multiple
+                 statements are taken into account when determining the autho-
+                 rization  decision.  An  explicit deny statement can override
+                 multiple allow statements.
+
+              missingContextValues -> (list)
+                 Contains any missing context values  found  while  evaluating
+                 policy.
+
+                 (string)
+
+
+
+                                                          TEST-AUTHORIZATION()

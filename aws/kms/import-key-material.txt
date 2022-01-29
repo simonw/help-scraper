@@ -1,0 +1,189 @@
+IMPORT-KEY-MATERIAL()                                    IMPORT-KEY-MATERIAL()
+
+
+
+NAME
+       import-key-material -
+
+DESCRIPTION
+       Imports  key  material  into an existing symmetric KMS KMS key that was
+       created without key material. After you successfully import  key  mate-
+       rial  into  a KMS key, you can reimport the same key material into that
+       KMS key, but you cannot import different key material.
+
+       You cannot perform this operation on an asymmetric KMS key  or  on  any
+       KMS  key  in a different Amazon Web Services account. For more informa-
+       tion about creating KMS keys with no key material  and  then  importing
+       key  material, see Importing Key Material in the Key Management Service
+       Developer Guide .
+
+       Before using this operation, call   GetParametersForImport  .  Its  re-
+       sponse includes a public key and an import token. Use the public key to
+       encrypt the key material. Then, submit the import token from  the  same
+       GetParametersForImport response.
+
+       When calling this operation, you must specify the following values:
+
+       o The  key  ID or key ARN of a KMS key with no key material. Its Origin
+         must be EXTERNAL . To create a KMS key with  no  key  material,  call
+         CreateKey  and set the value of its Origin parameter to EXTERNAL . To
+         get the Origin of a KMS key, call  DescribeKey .)
+
+       o The encrypted key material. To get the public key to encrypt the  key
+         material, call  GetParametersForImport .
+
+       o The  import token that  GetParametersForImport returned. You must use
+         a public key and token from the same GetParametersForImport response.
+
+       o Whether the key material expires and if so, when. If you set an expi-
+         ration  date,  KMS  deletes  the key material from the KMS key on the
+         specified date, and the KMS key becomes unusable. To use the KMS  key
+         again,  you  must  reimport  the  same  key material. The only way to
+         change an expiration date is by reimporting the same key material and
+         specifying a new expiration date.
+
+       When this operation is successful, the key state of the KMS key changes
+       from PendingImport to Enabled , and you can use the KMS key.
+
+       If this operation fails, use the exception to help determine the  prob-
+       lem.  If the error is related to the key material, the import token, or
+       wrapping key, use  GetParametersForImport to get a new public  key  and
+       import token for the KMS key and repeat the import procedure. For help,
+       see How To Import Key Material in the Key Management Service  Developer
+       Guide .
+
+       The KMS key that you use for this operation must be in a compatible key
+       state. For details, see Key state: Effect on your KMS key  in  the  Key
+       Management Service Developer Guide .
+          Cross-account  use  : No. You cannot perform this operation on a KMS
+          key in a different Amazon Web Services account.
+
+          Required permissions : kms:ImportKeyMaterial (key policy)
+
+          Related operations:
+
+       o DeleteImportedKeyMaterial
+
+       o GetParametersForImport
+
+       See also: AWS API Documentation
+
+       See 'aws help' for descriptions of global parameters.
+
+SYNOPSIS
+            import-key-material
+          --key-id <value>
+          --import-token <value>
+          --encrypted-key-material <value>
+          [--valid-to <value>]
+          [--expiration-model <value>]
+          [--cli-input-json | --cli-input-yaml]
+          [--generate-cli-skeleton <value>]
+
+OPTIONS
+       --key-id (string)
+          The identifier of the symmetric KMS key that receives  the  imported
+          key  material.  The KMS key's Origin must be EXTERNAL . This must be
+          the same KMS key specified in the KeyID parameter of the correspond-
+          ing  GetParametersForImport request.
+
+          Specify the key ID or key ARN of the KMS key.
+
+          For example:
+
+          o Key ID: 1234abcd-12ab-34cd-56ef-1234567890ab
+
+          o Key                                                           ARN:
+            arn:aws:kms:us-east-2:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab
+
+          To  get  the key ID and key ARN for a KMS key, use  ListKeys or  De-
+          scribeKey .
+
+       --import-token (blob)
+          The import token that you received in the  response  to  a  previous
+          GetParametersForImport  request.  It  must be from the same response
+          that contained the public key that you used to encrypt the key mate-
+          rial.
+
+       --encrypted-key-material (blob)
+          The  encrypted  key material to import. The key material must be en-
+          crypted with the public wrapping  key  that   GetParametersForImport
+          returned,  using  the  wrapping  algorithm that you specified in the
+          same GetParametersForImport request.
+
+       --valid-to (timestamp)
+          The time at which the imported key material expires.  When  the  key
+          material  expires,  KMS deletes the key material and the KMS key be-
+          comes unusable. You must omit this parameter  when  the  Expiration-
+          Model  parameter  is set to KEY_MATERIAL_DOES_NOT_EXPIRE . Otherwise
+          it is required.
+
+       --expiration-model (string)
+          Specifies whether the key material expires. The default is KEY_MATE-
+          RIAL_EXPIRES , in which case you must include the ValidTo parameter.
+          When this parameter is set  to  KEY_MATERIAL_DOES_NOT_EXPIRE  ,  you
+          must omit the ValidTo parameter.
+
+          Possible values:
+
+          o KEY_MATERIAL_EXPIRES
+
+          o KEY_MATERIAL_DOES_NOT_EXPIRE
+
+       --cli-input-json  |  --cli-input-yaml (string) Reads arguments from the
+       JSON string provided. The JSON string follows the  format  provided  by
+       --generate-cli-skeleton. If other arguments are provided on the command
+       line, those values will override the JSON-provided values.  It  is  not
+       possible to pass arbitrary binary values using a JSON-provided value as
+       the string will be taken literally. This may  not  be  specified  along
+       with --cli-input-yaml.
+
+       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
+       output without sending an API request. If provided with no value or the
+       value input, prints a sample input JSON that can be used as an argument
+       for --cli-input-json. Similarly, if provided yaml-input it will print a
+       sample  input  YAML that can be used with --cli-input-yaml. If provided
+       with the value output, it validates the command inputs  and  returns  a
+       sample output JSON for that command.
+
+       See 'aws help' for descriptions of global parameters.
+
+EXAMPLES
+       To import key material into a KMS customer master key
+
+       The  following  import-key-material example uploads key material into a
+       CMK that was created with no key material. The key  state  of  the  CMK
+       must be PendingImport.
+
+       This  command  uses key material that you encrypted with the public key
+       that the get-parameters-for-import command returned. It also  uses  the
+       import token from the same get-parameters-for-import command.
+
+       The expiration-model parameter indicates that the key material automat-
+       ically expires on the date and time specified by the  valid-to  parame-
+       ter.  When  the key material expires, AWS KMS deletes the key material,
+       the key state of the CMK changes to Pending import and the CMK  becomes
+       unusable.  To restore the CMK, you must reimport the same key material.
+       To use different key material, you must create a new CMK.
+
+       Before running this command, replace the example key ID  with  a  valid
+       key ID or key ARN from your AWS account.
+
+          aws kms import-key-material \
+              --key-id 1234abcd-12ab-34cd-56ef-1234567890ab \
+              --encrypted-key-material fileb://EncryptedKeyMaterial.bin \
+              --import-token fileb://ImportToken.bin \
+              --expiration-model KEY_MATERIAL_EXPIRES \
+              --valid-to 2021-09-21T19:00:00Z
+
+       This command produces no output.
+
+       For  more  information  about importing key material, see Importing Key
+       Material in the AWS Key Management Service Developer Guide.
+
+OUTPUT
+       None
+
+
+
+                                                         IMPORT-KEY-MATERIAL()

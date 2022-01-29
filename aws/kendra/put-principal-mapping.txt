@@ -1,0 +1,193 @@
+PUT-PRINCIPAL-MAPPING()                                PUT-PRINCIPAL-MAPPING()
+
+
+
+NAME
+       put-principal-mapping -
+
+DESCRIPTION
+       Maps users to their groups so that you only need to provide the user ID
+       when you issue the query.
+
+       You can also map sub groups to groups. For example, the group  "Company
+       Intellectual  Property Teams" includes sub groups "Research" and "Engi-
+       neering". These sub groups include their own list of  users  or  people
+       who  work in these teams. Only users who work in research and engineer-
+       ing, and therefore belong in the intellectual property group,  can  see
+       top-secret company documents in their search results.
+
+       You  map  users  to their groups when you want to filter search results
+       for different users based on their groups access to documents. For more
+       information  on  filtering  search  results  for  different  users, see
+       Filtering on user context .
+
+       If more than five PUT actions for a group are currently  processing,  a
+       validation exception is thrown.
+          PutPrincipalMapping  is  currently  not  supported in the Amazon Web
+          Services GovCloud (US-West) region.
+
+       See also: AWS API Documentation
+
+       See 'aws help' for descriptions of global parameters.
+
+SYNOPSIS
+            put-principal-mapping
+          --index-id <value>
+          [--data-source-id <value>]
+          --group-id <value>
+          --group-members <value>
+          [--ordering-id <value>]
+          [--role-arn <value>]
+          [--cli-input-json | --cli-input-yaml]
+          [--generate-cli-skeleton <value>]
+
+OPTIONS
+       --index-id (string)
+          The identifier of the index you want to map users to their groups.
+
+       --data-source-id (string)
+          The identifier of the data source you want to  map  users  to  their
+          groups.
+
+          This  is useful if a group is tied to multiple data sources, but you
+          only want the group to access documents of a  certain  data  source.
+          For  example,  the  groups "Research", "Engineering", and "Sales and
+          Marketing" are all tied to the company's  documents  stored  in  the
+          data  sources Confluence and Salesforce. However, "Sales and Market-
+          ing" team only needs access to customer-related documents stored  in
+          Salesforce.
+
+       --group-id (string)
+          The identifier of the group you want to map its users to.
+
+       --group-members (structure)
+          The list that contains your users or sub groups that belong the same
+          group.
+
+          For example, the group "Company" includes the user "CEO" and the sub
+          groups "Research", "Engineering", and "Sales and Marketing".
+
+          If  you  have  more  than  1000 users and/or sub groups for a single
+          group, you need to provide the path to the S3 file that  lists  your
+          users  and  sub groups for a group. Your sub groups can contain more
+          than 1000 users, but the list of sub groups that belong to  a  group
+          (and/or users) must be no more than 1000.
+
+          MemberGroups -> (list)
+              A  list  of  sub groups that belong to a group. For example, the
+              sub groups "Research", "Engineering", and "Sales and  Marketing"
+              all belong to the group "Company".
+
+              (structure)
+                 The sub groups that belong to a group.
+
+                 GroupId -> (string)
+                     The  identifier  of  the  sub  group you want to map to a
+                     group.
+
+                 DataSourceId -> (string)
+                     The identifier of the data source for the sub  group  you
+                     want to map to a group.
+
+          MemberUsers -> (list)
+              A  list  of users that belong to a group. For example, a list of
+              interns all belong to the "Interns" group.
+
+              (structure)
+                 The users that belong to a group.
+
+                 UserId -> (string)
+                     The identifier of the user you want to map to a group.
+
+          S3PathforGroupMembers -> (structure)
+              If you have more than 1000 users and/or sub groups for a  single
+              group,  you  need  to provide the path to the S3 file that lists
+              your users and sub groups for a group. Your sub groups can  con-
+              tain  more  than 1000 users, but the list of sub groups that be-
+              long to a group (and/or users) must be no more than 1000.
+
+              You can download this example S3 file that uses the correct for-
+              mat  for  listing group members. Note, dataSourceId is optional.
+              The value of type for a group is always GROUP and for a user  it
+              is always USER .
+
+              Bucket -> (string)
+                 The name of the S3 bucket that contains the file.
+
+              Key -> (string)
+                 The name of the file.
+
+       Shorthand Syntax:
+
+          MemberGroups=[{GroupId=string,DataSourceId=string},{GroupId=string,DataSourceId=string}],MemberUsers=[{UserId=string},{UserId=string}],S3PathforGroupMembers={Bucket=string,Key=string}
+
+       JSON Syntax:
+
+          {
+            "MemberGroups": [
+              {
+                "GroupId": "string",
+                "DataSourceId": "string"
+              }
+              ...
+            ],
+            "MemberUsers": [
+              {
+                "UserId": "string"
+              }
+              ...
+            ],
+            "S3PathforGroupMembers": {
+              "Bucket": "string",
+              "Key": "string"
+            }
+          }
+
+       --ordering-id (long)
+          The  timestamp  identifier  you specify to ensure Amazon Kendra does
+          not override the latest PUT action with previous actions. The  high-
+          est  number  ID,  which is the ordering ID, is the latest action you
+          want to process and apply on top of other actions with lower  number
+          IDs.  This prevents previous actions with lower number IDs from pos-
+          sibly overriding the latest action.
+
+          The ordering ID can be the UNIX time of the last update you made  to
+          a  group members list. You would then provide this list when calling
+          PutPrincipalMapping . This ensures your PUT action for that  updated
+          group  with  the latest members list doesn't get overwritten by ear-
+          lier PUT actions for the same group which are yet to be processed.
+
+          The default ordering ID is the current  UNIX  time  in  milliseconds
+          that the action was received by Amazon Kendra.
+
+       --role-arn (string)
+          The  Amazon  Resource Name (ARN) of a role that has access to the S3
+          file that contains your list of users or sub groups that belong to a
+          group.
+
+          For more information, see IAM roles for Amazon Kendra .
+
+       --cli-input-json  |  --cli-input-yaml (string) Reads arguments from the
+       JSON string provided. The JSON string follows the  format  provided  by
+       --generate-cli-skeleton. If other arguments are provided on the command
+       line, those values will override the JSON-provided values.  It  is  not
+       possible to pass arbitrary binary values using a JSON-provided value as
+       the string will be taken literally. This may  not  be  specified  along
+       with --cli-input-yaml.
+
+       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
+       output without sending an API request. If provided with no value or the
+       value input, prints a sample input JSON that can be used as an argument
+       for --cli-input-json. Similarly, if provided yaml-input it will print a
+       sample  input  YAML that can be used with --cli-input-yaml. If provided
+       with the value output, it validates the command inputs  and  returns  a
+       sample output JSON for that command.
+
+       See 'aws help' for descriptions of global parameters.
+
+OUTPUT
+       None
+
+
+
+                                                       PUT-PRINCIPAL-MAPPING()

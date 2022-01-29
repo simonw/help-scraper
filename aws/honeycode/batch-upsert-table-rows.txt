@@ -1,0 +1,234 @@
+BATCH-UPSERT-TABLE-ROWS()                            BATCH-UPSERT-TABLE-ROWS()
+
+
+
+NAME
+       batch-upsert-table-rows -
+
+DESCRIPTION
+       The BatchUpsertTableRows API allows you to upsert one or more rows in a
+       table. The upsert operation takes a  filter  expression  as  input  and
+       evaluates  it to find matching rows on the destination table. If match-
+       ing rows are found, it will update the cells in the  matching  rows  to
+       new  values  specified in the request. If no matching rows are found, a
+       new row is added at the end of the table and the cells in that row  are
+       set to the new values specified in the request.
+
+       You  can specify the values to set in some or all of the columns in the
+       table for the matching or newly appended rows. If a column is  not  ex-
+       plicitly  specified  for a particular row, then that column will not be
+       updated for that row. To clear out the data in  a  specific  cell,  you
+       need to set the value as an empty string ("").
+
+       See also: AWS API Documentation
+
+       See 'aws help' for descriptions of global parameters.
+
+SYNOPSIS
+            batch-upsert-table-rows
+          --workbook-id <value>
+          --table-id <value>
+          --rows-to-upsert <value>
+          [--client-request-token <value>]
+          [--cli-input-json | --cli-input-yaml]
+          [--generate-cli-skeleton <value>]
+
+OPTIONS
+       --workbook-id (string)
+          The ID of the workbook where the rows are being upserted.
+
+          If  a  workbook  with  the specified id could not be found, this API
+          throws ResourceNotFoundException.
+
+       --table-id (string)
+          The ID of the table where the rows are being upserted.
+
+          If a table with the specified id could not be found, this API throws
+          ResourceNotFoundException.
+
+       --rows-to-upsert (list)
+          The  list  of  rows  to  upsert in the table. Each item in this list
+          needs to have a batch item id to uniquely identify  the  element  in
+          the request, a filter expression to find the rows to update for that
+          element and the cell values to set for each column in  the  upserted
+          rows. You need to specify at least one item in this list.
+
+          Note  that  if  one  of  the filter formulas in the request fails to
+          evaluate because of an error or one of the column ids in any of  the
+          rows  does not exist in the table, then the request fails and no up-
+          dates are made to the table.
+
+          (structure)
+              Data needed to upsert rows in a table as part of a  single  item
+              in the BatchUpsertTableRows request.
+
+              batchItemId -> (string)
+                 An  external  identifier that represents a single item in the
+                 request that is being upserted as part  of  the  BatchUpsert-
+                 TableRows request. This can be any string that you can use to
+                 identify the item in the  request.  The  BatchUpsertTableRows
+                 API  puts  the  batch  item id in the results to allow you to
+                 link data in the request to data in the results.
+
+              filter -> (structure)
+                 The filter formula to use to find existing matching  rows  to
+                 update. The formula needs to return zero or more rows. If the
+                 formula returns 0 rows, then a new row will  be  appended  in
+                 the  target  table.  If the formula returns one or more rows,
+                 then the returned rows will be updated.
+
+                 Note that the filter formula needs to return  rows  from  the
+                 target table for the upsert operation to succeed. If the fil-
+                 ter formula has a syntax error or it doesn't evaluate to zero
+                 or  more rows in the target table for any one item in the in-
+                 put list, then the entire BatchUpsertTableRows request  fails
+                 and no updates are made to the table.
+
+                 formula -> (string)
+                     A  formula  representing  a  filter function that returns
+                     zero or more matching rows from a table.  Valid  formulas
+                     in  this  field  return  a list of rows from a table. The
+                     most common ways of writing a formula to return a list of
+                     rows  are to use the FindRow() or Filter() functions. Any
+                     other formula that returns zero or more rows is also  ac-
+                     ceptable.  For example, you can use a formula that points
+                     to a cell that contains a filter function.
+
+                 contextRowId -> (string)
+                     The optional contextRowId attribute can be used to  spec-
+                     ify  the  row id of the context row if the filter formula
+                     contains unqualified  references  to  table  columns  and
+                     needs a context row to evaluate them successfully.
+
+              cellsToUpdate -> (map)
+                 A  map representing the cells to update for the matching rows
+                 or an appended row. The key is the column id of the cell  and
+                 the value is the CellInput object that represents the data to
+                 set in that cell.
+
+                 key -> (string)
+
+                 value -> (structure)
+                     CellInput object contains the data needed  to  create  or
+                     update cells in a table.
+
+                     NOTE:
+                        CellInput  object  has  only  a  facts field or a fact
+                        field, but not both. A 400 bad request will be  thrown
+                        if both fact and facts field are present.
+
+                     fact -> (string)
+                        Fact  represents the data that is entered into a cell.
+                        This data can be free text or a formula. Formulas need
+                        to start with the equals (=) sign.
+
+                     facts -> (list)
+                        A list representing the values that are entered into a
+                        ROWSET cell. Facts list can have either only values or
+                        rowIDs, and rowIDs should from the same table.
+
+                        (string)
+
+       Shorthand Syntax:
+
+          batchItemId=string,filter={formula=string,contextRowId=string},cellsToUpdate={KeyName1={fact=string,facts=[string,string]},KeyName2={fact=string,facts=[string,string]}} ...
+
+       JSON Syntax:
+
+          [
+            {
+              "batchItemId": "string",
+              "filter": {
+                "formula": "string",
+                "contextRowId": "string"
+              },
+              "cellsToUpdate": {"string": {
+                    "fact": "string",
+                    "facts": ["string", ...]
+                  }
+                ...}
+            }
+            ...
+          ]
+
+       --client-request-token (string)
+          The  request  token for performing the update action. Request tokens
+          help to identify duplicate requests. If a call times  out  or  fails
+          due  to  a transient error like a failed network connection, you can
+          retry the call with the same request token. The service ensures that
+          if  the  first  call  using  that request token is successfully per-
+          formed, the second call will not perform the action again.
+
+          Note that request tokens are valid only for a few minutes. You  can-
+          not use request tokens to dedupe requests spanning hours or days.
+
+       --cli-input-json  |  --cli-input-yaml (string) Reads arguments from the
+       JSON string provided. The JSON string follows the  format  provided  by
+       --generate-cli-skeleton. If other arguments are provided on the command
+       line, those values will override the JSON-provided values.  It  is  not
+       possible to pass arbitrary binary values using a JSON-provided value as
+       the string will be taken literally. This may  not  be  specified  along
+       with --cli-input-yaml.
+
+       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
+       output without sending an API request. If provided with no value or the
+       value input, prints a sample input JSON that can be used as an argument
+       for --cli-input-json. Similarly, if provided yaml-input it will print a
+       sample  input  YAML that can be used with --cli-input-yaml. If provided
+       with the value output, it validates the command inputs  and  returns  a
+       sample output JSON for that command.
+
+       See 'aws help' for descriptions of global parameters.
+
+OUTPUT
+       rows -> (map)
+          A map with the batch item id as the key and the result of the upsert
+          operation as the value. The result of the upsert operation specifies
+          whether  existing rows were updated or a new row was appended, along
+          with the list of row ids that were affected.
+
+          key -> (string)
+
+          value -> (structure)
+              An object that represents the result of a single upsert row  re-
+              quest.
+
+              rowIds -> (list)
+                 The  list  of  row ids that were changed as part of an upsert
+                 row operation. If the upsert resulted in an update, this list
+                 could potentially contain multiple rows that matched the fil-
+                 ter and hence got updated. If the upsert resulted in  an  ap-
+                 pend,  this  list would only have the single row that was ap-
+                 pended.
+
+                 (string)
+
+              upsertAction -> (string)
+                 The result of the upsert action.
+
+       workbookCursor -> (long)
+          The updated workbook cursor after updating or appending rows in  the
+          table.
+
+       failedBatchItems -> (list)
+          The  list of batch items in the request that could not be updated or
+          appended in the table. Each element in this list contains  one  item
+          from  the  request that could not be updated in the table along with
+          the reason why that item could not be updated or appended.
+
+          (structure)
+              A single item in a batch that failed to perform the intended ac-
+              tion because of an error preventing it from succeeding.
+
+              id -> (string)
+                 The  id of the batch item that failed. This is the batch item
+                 id for the BatchCreateTableRows and BatchUpsertTableRows  op-
+                 erations  and  the  row  id  for the BatchUpdateTableRows and
+                 BatchDeleteTableRows operations.
+
+              errorMessage -> (string)
+                 The error message that indicates why the batch item failed.
+
+
+
+                                                     BATCH-UPSERT-TABLE-ROWS()

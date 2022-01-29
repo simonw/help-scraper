@@ -1,0 +1,820 @@
+SUBMIT-JOB()                                                      SUBMIT-JOB()
+
+
+
+NAME
+       submit-job -
+
+DESCRIPTION
+       Submits  an Batch job from a job definition. Parameters that are speci-
+       fied during  SubmitJob override parameters defined in the  job  defini-
+       tion.  vCPU  and  memory  requirements  that  are  specified in the re-
+       sourceRequirements objects in the job  definition  are  the  exception.
+       They  can't  be  overridden this way using the memory and vcpus parame-
+       ters. Rather, you must specify updates to job definition parameters  in
+       a ResourceRequirements object that's included in the containerOverrides
+       parameter.
+
+       NOTE:
+          Job queues with a scheduling policy are limited to 500  active  fair
+          share identifiers at a time.
+
+       WARNING:
+          Jobs  that  run  on Fargate resources can't be guaranteed to run for
+          more than 14 days. This is because, after 14 days, Fargate resources
+          might become unavailable and job might be terminated.
+
+       See also: AWS API Documentation
+
+       See 'aws help' for descriptions of global parameters.
+
+SYNOPSIS
+            submit-job
+          --job-name <value>
+          --job-queue <value>
+          [--share-identifier <value>]
+          [--scheduling-priority-override <value>]
+          [--array-properties <value>]
+          [--depends-on <value>]
+          --job-definition <value>
+          [--parameters <value>]
+          [--container-overrides <value>]
+          [--node-overrides <value>]
+          [--retry-strategy <value>]
+          [--propagate-tags | --no-propagate-tags]
+          [--timeout <value>]
+          [--tags <value>]
+          [--cli-input-json | --cli-input-yaml]
+          [--generate-cli-skeleton <value>]
+
+OPTIONS
+       --job-name (string)
+          The  name  of  the  job. It can be up to 128 letters long. The first
+          character must be alphanumeric, can contain uppercase and  lowercase
+          letters, numbers, hyphens (-), and underscores (_).
+
+       --job-queue (string)
+          The job queue where the job is submitted. You can specify either the
+          name or the Amazon Resource Name (ARN) of the queue.
+
+       --share-identifier (string)
+          The share identifier for the job.
+
+       --scheduling-priority-override (integer)
+          The scheduling priority for the job. This will only affect  jobs  in
+          job  queues  with a fair share policy. Jobs with a higher scheduling
+          priority will be scheduled before jobs with a lower scheduling  pri-
+          ority. This will override any scheduling priority in the job defini-
+          tion.
+
+          The minimum supported value is 0 and the maximum supported value  is
+          9999.
+
+       --array-properties (structure)
+          The  array properties for the submitted job, such as the size of the
+          array. The array size can be between 2 and 10,000.  If  you  specify
+          array properties for a job, it becomes an array job. For more infor-
+          mation, see Array Jobs in the Batch User Guide .
+
+          size -> (integer)
+              The size of the array job.
+
+       Shorthand Syntax:
+
+          size=integer
+
+       JSON Syntax:
+
+          {
+            "size": integer
+          }
+
+       --depends-on (list)
+          A list of dependencies for the job. A job can depend upon a  maximum
+          of  20  jobs.  You  can specify a SEQUENTIAL type dependency without
+          specifying a job ID for array jobs so that each child array job com-
+          pletes  sequentially,  starting  at index 0. You can also specify an
+          N_TO_N type dependency with a job ID for array jobs. In  that  case,
+          each  index  child of this job must wait for the corresponding index
+          child of each dependency to complete before it can begin.
+
+          (structure)
+              An object representing an Batch job dependency.
+
+              jobId -> (string)
+                 The job ID of the Batch job associated with this dependency.
+
+              type -> (string)
+                 The type of the job dependency.
+
+       Shorthand Syntax:
+
+          jobId=string,type=string ...
+
+       JSON Syntax:
+
+          [
+            {
+              "jobId": "string",
+              "type": "N_TO_N"|"SEQUENTIAL"
+            }
+            ...
+          ]
+
+       --job-definition (string)
+          The job definition used by this job. This value can be one of name ,
+          name:revision  , or the Amazon Resource Name (ARN) for the job defi-
+          nition. If name is specified without a revision then the latest  ac-
+          tive revision is used.
+
+       --parameters (map)
+          Additional  parameters passed to the job that replace parameter sub-
+          stitution placeholders that are set in the job  definition.  Parame-
+          ters  are specified as a key and value pair mapping. Parameters in a
+          SubmitJob request override any corresponding parameter defaults from
+          the job definition.
+
+          key -> (string)
+
+          value -> (string)
+
+       Shorthand Syntax:
+
+          KeyName1=string,KeyName2=string
+
+       JSON Syntax:
+
+          {"string": "string"
+            ...}
+
+       --container-overrides (structure)
+          A  list  of  container overrides in the JSON format that specify the
+          name of a container in the specified job definition  and  the  over-
+          rides  it should receive. You can override the default command for a
+          container, which is specified in the job definition  or  the  Docker
+          image, with a command override. You can also override existing envi-
+          ronment variables on a container or add new environment variables to
+          it with an environment override.
+
+          vcpus -> (integer)
+              This  parameter is deprecated, use resourceRequirements to over-
+              ride the vcpus parameter that's set in the job definition.  It's
+              not  supported  for jobs that run on Fargate resources. For jobs
+              run on EC2 resources, it overrides the vcpus  parameter  set  in
+              the  job  definition,  but doesn't override any vCPU requirement
+              specified in the resourceRequirements structure in the job defi-
+              nition.  To override vCPU requirements that are specified in the
+              resourceRequirements  structure  in  the  job  definition,   re-
+              sourceRequirements  must  be specified in the SubmitJob request,
+              with type set to VCPU and value set to the new value.  For  more
+              information, see Can't override job definition resource require-
+              ments in the Batch User Guide .
+
+          memory -> (integer)
+              This parameter is deprecated, use resourceRequirements to  over-
+              ride  the  memory  requirements specified in the job definition.
+              It's not supported for jobs that run on Fargate  resources.  For
+              jobs run on EC2 resources, it overrides the memory parameter set
+              in the job definition, but doesn't override any memory  require-
+              ment  specified in the resourceRequirements structure in the job
+              definition. To override memory requirements that  are  specified
+              in the resourceRequirements structure in the job definition, re-
+              sourceRequirements must be specified in the  SubmitJob  request,
+              with type set to MEMORY and value set to the new value. For more
+              information, see Can't override job definition resource require-
+              ments in the Batch User Guide .
+
+          command -> (list)
+              The  command to send to the container that overrides the default
+              command from the Docker image or the job definition.
+
+              (string)
+
+          instanceType -> (string)
+              The instance type to use for a multi-node parallel job.
+
+              NOTE:
+                 This parameter isn't applicable to single-node container jobs
+                 or  jobs that run on Fargate resources, and shouldn't be pro-
+                 vided.
+
+          environment -> (list)
+              The environment variables to send to the container. You can  add
+              new  environment  variables, which are added to the container at
+              launch, or you can override the existing  environment  variables
+              from the Docker image or the job definition.
+
+              NOTE:
+                 Environment  variables  must  not start with AWS_BATCH ; this
+                 naming convention is reserved for variables that are  set  by
+                 the Batch service.
+
+              (structure)
+                 A key-value pair object.
+
+                 name -> (string)
+                     The  name  of  the  key-value pair. For environment vari-
+                     ables, this is the name of the environment variable.
+
+                 value -> (string)
+                     The value of the key-value pair.  For  environment  vari-
+                     ables, this is the value of the environment variable.
+
+          resourceRequirements -> (list)
+              The  type and amount of resources to assign to a container. This
+              overrides the settings in the job definition. The supported  re-
+              sources include GPU , MEMORY , and VCPU .
+
+              (structure)
+                 The  type  and amount of a resource to assign to a container.
+                 The supported resources include GPU , MEMORY , and VCPU .
+
+                 value -> (string)
+                     The quantity of the specified resource to reserve for the
+                     container. The values vary based on the type specified.
+                        type="GPU"
+
+                     The number of physical GPUs to reserve for the container.
+                     The number of GPUs reserved for all containers in  a  job
+                     shouldn't exceed the number of available GPUs on the com-
+                     pute resource that the job is launched on.
+
+                     NOTE:
+                        GPUs are not available for jobs that  are  running  on
+                        Fargate resources.
+
+                        type="MEMORY"
+
+                     The  memory hard limit (in MiB) present to the container.
+                     This parameter is supported for jobs that are running  on
+                     EC2  resources.  If your container attempts to exceed the
+                     memory specified, the container is terminated.  This  pa-
+                     rameter  maps to Memory in the Create a container section
+                     of the Docker Remote  API  and  the  --memory  option  to
+                     docker  run  .  You must specify at least 4 MiB of memory
+                     for a job. This is required but can be specified in  sev-
+                     eral  places  for multi-node parallel (MNP) jobs. It must
+                     be specified for each node at least once. This  parameter
+                     maps  to  Memory in the Create a container section of the
+                     Docker Remote API and the --memory option to docker run .
+
+                     NOTE:
+                        If you're trying to maximize your resource utilization
+                        by  providing your jobs as much memory as possible for
+                        a particular instance type, see Memory  Management  in
+                        the Batch User Guide .
+
+                     For  jobs  that  are  running  on Fargate resources, then
+                     value is the hard limit (in MiB), and must match  one  of
+                     the  supported  values and the VCPU values must be one of
+                     the values supported for that memory value.
+                            value = 512
+
+                        VCPU = 0.25
+                            value = 1024
+
+                        VCPU = 0.25 or 0.5
+                            value = 2048
+
+                        VCPU = 0.25, 0.5, or 1
+                            value = 3072
+
+                        VCPU = 0.5, or 1
+                            value = 4096
+
+                        VCPU = 0.5, 1, or 2
+                            value = 5120, 6144, or 7168
+
+                        VCPU = 1 or 2
+                            value = 8192
+
+                        VCPU = 1, 2, or 4
+                            value = 9216, 10240, 11264, 12288,  13312,  14336,
+                            15360, or 16384
+
+                        VCPU = 2 or 4
+                            value  = 17408, 18432, 19456, 20480, 21504, 22528,
+                            23552, 24576, 25600, 26624, 27648,  28672,  29696,
+                            or 30720
+
+                        VCPU = 4
+                            type="VCPU"
+
+                     The  number of vCPUs reserved for the container. This pa-
+                     rameter maps to CpuShares in the Create a container  sec-
+                     tion of the Docker Remote API and the --cpu-shares option
+                     to docker run . Each vCPU  is  equivalent  to  1,024  CPU
+                     shares.  For EC2 resources, you must specify at least one
+                     vCPU. This is required but can be  specified  in  several
+                     places; it must be specified for each node at least once.
+
+                     For  jobs  that  are  running  on Fargate resources, then
+                     value must match one of the supported values and the MEM-
+                     ORY  values  must be one of the values supported for that
+                     VCPU value. The supported values are 0.25, 0.5, 1, 2, and
+                     4
+                            value = 0.25
+
+                        MEMORY = 512, 1024, or 2048
+                            value = 0.5
+
+                        MEMORY = 1024, 2048, 3072, or 4096
+                            value = 1
+
+                        MEMORY = 2048, 3072, 4096, 5120, 6144, 7168, or 8192
+                            value = 2
+
+                        MEMORY  =  4096,  5120, 6144, 7168, 8192, 9216, 10240,
+                        11264, 12288, 13312, 14336, 15360, or 16384
+                            value = 4
+
+                        MEMORY =  8192,  9216,  10240,  11264,  12288,  13312,
+                        14336,  15360,  16384,  17408,  18432,  19456,  20480,
+                        21504,  22528,  23552,  24576,  25600,  26624,  27648,
+                        28672, 29696, or 30720
+
+                 type -> (string)
+                     The  type  of resource to assign to a container. The sup-
+                     ported resources include GPU , MEMORY , and VCPU .
+
+       Shorthand Syntax:
+
+          vcpus=integer,memory=integer,command=string,string,instanceType=string,environment=[{name=string,value=string},{name=string,value=string}],resourceRequirements=[{value=string,type=string},{value=string,type=string}]
+
+       JSON Syntax:
+
+          {
+            "vcpus": integer,
+            "memory": integer,
+            "command": ["string", ...],
+            "instanceType": "string",
+            "environment": [
+              {
+                "name": "string",
+                "value": "string"
+              }
+              ...
+            ],
+            "resourceRequirements": [
+              {
+                "value": "string",
+                "type": "GPU"|"VCPU"|"MEMORY"
+              }
+              ...
+            ]
+          }
+
+       --node-overrides (structure)
+          A list of node overrides in JSON format that specify the node  range
+          to target and the container overrides for that node range.
+
+          NOTE:
+              This parameter isn't applicable to jobs that are running on Far-
+              gate resources; use containerOverrides instead.
+
+          numNodes -> (integer)
+              The number of nodes to use with a multi-node parallel job.  This
+              value  overrides  the  number of nodes that are specified in the
+              job definition. To use this override:
+
+              o There must be at least one node range in your  job  definition
+                that has an open upper boundary (such as : or n: ).
+
+              o The lower boundary of the node range specified in the job def-
+                inition must be fewer than the number of  nodes  specified  in
+                the override.
+
+              o The  main  node  index specified in the job definition must be
+                fewer than the number of nodes specified in the override.
+
+          nodePropertyOverrides -> (list)
+              The node property overrides for the job.
+
+              (structure)
+                 Object representing any node overrides to  a  job  definition
+                 that's used in a  SubmitJob API operation.
+
+                 targetNodes -> (string)
+                     The  range of nodes, using node index values, that's used
+                     to override. A range of 0:3 indicates  nodes  with  index
+                     values  of  0  through 3 . If the starting range value is
+                     omitted (:n ), then 0 is used to start the range. If  the
+                     ending  range  value  is  omitted (n: ), then the highest
+                     possible node index is used to end the range.
+
+                 containerOverrides -> (structure)
+                     The overrides that should be sent to a node range.
+
+                     vcpus -> (integer)
+                        This parameter is deprecated, use resourceRequirements
+                        to  override the vcpus parameter that's set in the job
+                        definition. It's not supported for jobs  that  run  on
+                        Fargate  resources.  For jobs run on EC2 resources, it
+                        overrides the vcpus parameter set in the  job  defini-
+                        tion, but doesn't override any vCPU requirement speci-
+                        fied in the resourceRequirements structure in the  job
+                        definition.  To  override  vCPU  requirements that are
+                        specified in the resourceRequirements structure in the
+                        job definition, resourceRequirements must be specified
+                        in the SubmitJob request, with type set  to  VCPU  and
+                        value  set to the new value. For more information, see
+                        Can't override job definition resource requirements in
+                        the Batch User Guide .
+
+                     memory -> (integer)
+                        This parameter is deprecated, use resourceRequirements
+                        to override the memory requirements specified  in  the
+                        job  definition.  It's not supported for jobs that run
+                        on Fargate resources. For jobs run on  EC2  resources,
+                        it overrides the memory parameter set in the job defi-
+                        nition, but doesn't override  any  memory  requirement
+                        specified in the resourceRequirements structure in the
+                        job definition. To override memory  requirements  that
+                        are specified in the resourceRequirements structure in
+                        the job definition, resourceRequirements must be spec-
+                        ified  in the SubmitJob request, with type set to MEM-
+                        ORY and value set to the new value. For more  informa-
+                        tion,  see  Can't override job definition resource re-
+                        quirements in the Batch User Guide .
+
+                     command -> (list)
+                        The command to send to the  container  that  overrides
+                        the  default  command from the Docker image or the job
+                        definition.
+
+                        (string)
+
+                     instanceType -> (string)
+                        The instance type to use  for  a  multi-node  parallel
+                        job.
+
+                        NOTE:
+                            This  parameter  isn't  applicable  to single-node
+                            container jobs or jobs that  run  on  Fargate  re-
+                            sources, and shouldn't be provided.
+
+                     environment -> (list)
+                        The  environment  variables  to send to the container.
+                        You can add new environment variables, which are added
+                        to  the  container  at launch, or you can override the
+                        existing environment variables from the  Docker  image
+                        or the job definition.
+
+                        NOTE:
+                            Environment   variables   must   not   start  with
+                            AWS_BATCH ; this naming convention is reserved for
+                            variables that are set by the Batch service.
+
+                        (structure)
+                            A key-value pair object.
+
+                            name -> (string)
+                               The name of the key-value pair. For environment
+                               variables, this is the name of the  environment
+                               variable.
+
+                            value -> (string)
+                               The  value  of the key-value pair. For environ-
+                               ment variables, this is the value of the  envi-
+                               ronment variable.
+
+                     resourceRequirements -> (list)
+                        The  type  and amount of resources to assign to a con-
+                        tainer. This overrides the settings in the job defini-
+                        tion.  The  supported resources include GPU , MEMORY ,
+                        and VCPU .
+
+                        (structure)
+                            The type and amount of a resource to assign  to  a
+                            container.  The  supported resources include GPU ,
+                            MEMORY , and VCPU .
+
+                            value -> (string)
+                               The quantity of the specified resource  to  re-
+                               serve  for the container. The values vary based
+                               on the type specified.
+                                   type="GPU"
+
+                               The number of physical GPUs to reserve for  the
+                               container.  The number of GPUs reserved for all
+                               containers in a job shouldn't exceed the number
+                               of  available GPUs on the compute resource that
+                               the job is launched on.
+
+                               NOTE:
+                                   GPUs are not available for  jobs  that  are
+                                   running on Fargate resources.
+
+                                   type="MEMORY"
+
+                               The  memory  hard limit (in MiB) present to the
+                               container. This parameter is supported for jobs
+                               that are running on EC2 resources. If your con-
+                               tainer attempts to exceed the memory specified,
+                               the  container  is  terminated.  This parameter
+                               maps to Memory in the Create a  container  sec-
+                               tion  of the Docker Remote API and the --memory
+                               option to docker run  .  You  must  specify  at
+                               least  4  MiB  of memory for a job. This is re-
+                               quired but can be specified in  several  places
+                               for  multi-node parallel (MNP) jobs. It must be
+                               specified for each node at least once. This pa-
+                               rameter  maps  to  Memory  in the Create a con-
+                               tainer section of the Docker Remote API and the
+                               --memory option to docker run .
+
+                               NOTE:
+                                   If  you're trying to maximize your resource
+                                   utilization by providing your jobs as  much
+                                   memory  as  possible  for  a particular in-
+                                   stance type, see Memory Management  in  the
+                                   Batch User Guide .
+
+                               For jobs that are running on Fargate resources,
+                               then value is the hard limit (in MiB), and must
+                               match  one of the supported values and the VCPU
+                               values must be one of the values supported  for
+                               that memory value.
+                                      value = 512
+
+                                   VCPU = 0.25
+                                      value = 1024
+
+                                   VCPU = 0.25 or 0.5
+                                      value = 2048
+
+                                   VCPU = 0.25, 0.5, or 1
+                                      value = 3072
+
+                                   VCPU = 0.5, or 1
+                                      value = 4096
+
+                                   VCPU = 0.5, 1, or 2
+                                      value = 5120, 6144, or 7168
+
+                                   VCPU = 1 or 2
+                                      value = 8192
+
+                                   VCPU = 1, 2, or 4
+                                      value   =  9216,  10240,  11264,  12288,
+                                      13312, 14336, 15360, or 16384
+
+                                   VCPU = 2 or 4
+                                      value  =  17408,  18432,  19456,  20480,
+                                      21504,   22528,   23552,  24576,  25600,
+                                      26624, 27648, 28672, 29696, or 30720
+
+                                   VCPU = 4
+                                      type="VCPU"
+
+                               The number of vCPUs reserved for the container.
+                               This  parameter maps to CpuShares in the Create
+                               a container section of the  Docker  Remote  API
+                               and  the  --cpu-shares  option  to docker run .
+                               Each vCPU is equivalent to  1,024  CPU  shares.
+                               For  EC2  resources,  you must specify at least
+                               one vCPU. This is required but can be specified
+                               in  several  places;  it  must be specified for
+                               each node at least once.
+
+                               For jobs that are running on Fargate resources,
+                               then value must match one of the supported val-
+                               ues and the MEMORY values must be  one  of  the
+                               values  supported for that VCPU value. The sup-
+                               ported values are 0.25, 0.5, 1, 2, and 4
+                                      value = 0.25
+
+                                   MEMORY = 512, 1024, or 2048
+                                      value = 0.5
+
+                                   MEMORY = 1024, 2048, 3072, or 4096
+                                      value = 1
+
+                                   MEMORY =  2048,  3072,  4096,  5120,  6144,
+                                   7168, or 8192
+                                      value = 2
+
+                                   MEMORY  =  4096,  5120,  6144,  7168, 8192,
+                                   9216, 10240, 11264,  12288,  13312,  14336,
+                                   15360, or 16384
+                                      value = 4
+
+                                   MEMORY  =  8192, 9216, 10240, 11264, 12288,
+                                   13312, 14336, 15360, 16384,  17408,  18432,
+                                   19456,  20480,  21504, 22528, 23552, 24576,
+                                   25600, 26624, 27648, 28672, 29696, or 30720
+
+                            type -> (string)
+                               The type of resource to assign to a  container.
+                               The  supported resources include GPU , MEMORY ,
+                               and VCPU .
+
+       JSON Syntax:
+
+          {
+            "numNodes": integer,
+            "nodePropertyOverrides": [
+              {
+                "targetNodes": "string",
+                "containerOverrides": {
+                  "vcpus": integer,
+                  "memory": integer,
+                  "command": ["string", ...],
+                  "instanceType": "string",
+                  "environment": [
+                    {
+                      "name": "string",
+                      "value": "string"
+                    }
+                    ...
+                  ],
+                  "resourceRequirements": [
+                    {
+                      "value": "string",
+                      "type": "GPU"|"VCPU"|"MEMORY"
+                    }
+                    ...
+                  ]
+                }
+              }
+              ...
+            ]
+          }
+
+       --retry-strategy (structure)
+          The retry strategy to use for failed jobs from this  SubmitJob oper-
+          ation.  When  a  retry  strategy is specified here, it overrides the
+          retry strategy defined in the job definition.
+
+          attempts -> (integer)
+              The number of times to move a job to the  RUNNABLE  status.  You
+              can  specify between 1 and 10 attempts. If the value of attempts
+              is greater than one, the job is retried on failure the same num-
+              ber of attempts as the value.
+
+          evaluateOnExit -> (list)
+              Array of up to 5 objects that specify conditions under which the
+              job should be retried or failed. If this parameter is specified,
+              then the attempts parameter must also be specified.
+
+              (structure)
+                 Specifies  a  set  of  conditions to be met, and an action to
+                 take (RETRY or EXIT ) if all conditions are met.
+
+                 onStatusReason -> (string)
+                     Contains a glob pattern to match against the StatusReason
+                     returned  for a job. The pattern can be up to 512 charac-
+                     ters in length. It can contain letters, numbers,  periods
+                     (.),  colons  (:),  and  white space (including spaces or
+                     tabs). It can optionally end with an asterisk (*) so that
+                     only the start of the string needs to be an exact match.
+
+                     The string can be between 1 and 512 characters in length.
+
+                 onReason -> (string)
+                     Contains  a  glob pattern to match against the Reason re-
+                     turned for a job. The pattern can be up to 512 characters
+                     in  length. It can contain letters, numbers, periods (.),
+                     colons (:), and white space (including spaces and  tabs).
+                     It  can  optionally end with an asterisk (*) so that only
+                     the start of the string needs to be an exact match.
+
+                     The string can be between 1 and 512 characters in length.
+
+                 onExitCode -> (string)
+                     Contains a glob pattern to match against the decimal rep-
+                     resentation  of the ExitCode returned for a job. The pat-
+                     tern can be up to 512 characters in length. It  can  con-
+                     tain  only numbers, and can optionally end with an aster-
+                     isk (*) so that only the start of the string needs to  be
+                     an exact match.
+
+                     The string can be between 1 and 512 characters in length.
+
+                 action -> (string)
+                     Specifies the action to take if all of the specified con-
+                     ditions (onStatusReason , onReason , and onExitCode ) are
+                     met. The values aren't case sensitive.
+
+       Shorthand Syntax:
+
+          attempts=integer,evaluateOnExit=[{onStatusReason=string,onReason=string,onExitCode=string,action=string},{onStatusReason=string,onReason=string,onExitCode=string,action=string}]
+
+       JSON Syntax:
+
+          {
+            "attempts": integer,
+            "evaluateOnExit": [
+              {
+                "onStatusReason": "string",
+                "onReason": "string",
+                "onExitCode": "string",
+                "action": "RETRY"|"EXIT"
+              }
+              ...
+            ]
+          }
+
+       --propagate-tags | --no-propagate-tags (boolean)
+          Specifies  whether to propagate the tags from the job or job defini-
+          tion to the corresponding Amazon ECS task. If no value is specified,
+          the tags aren't propagated. Tags can only be propagated to the tasks
+          during task creation. For tags with the  same  name,  job  tags  are
+          given  priority  over  job  definitions tags. If the total number of
+          combined tags from the job and job definition is over 50, the job is
+          moved  to  the  FAILED state. When specified, this overrides the tag
+          propagation setting in the job definition.
+
+       --timeout (structure)
+          The timeout configuration for this   SubmitJob  operation.  You  can
+          specify a timeout duration after which Batch terminates your jobs if
+          they haven't finished. If a job is terminated due to a  timeout,  it
+          isn't retried. The minimum value for the timeout is 60 seconds. This
+          configuration overrides any timeout configuration specified  in  the
+          job  definition.  For  array  jobs, child jobs have the same timeout
+          configuration as the parent job. For more information, see Job Time-
+          outs in the Amazon Elastic Container Service Developer Guide .
+
+          attemptDurationSeconds -> (integer)
+              The  time  duration  in seconds (measured from the job attempt's
+              startedAt timestamp) after which Batch terminates your  jobs  if
+              they  have not finished. The minimum value for the timeout is 60
+              seconds.
+
+       Shorthand Syntax:
+
+          attemptDurationSeconds=integer
+
+       JSON Syntax:
+
+          {
+            "attemptDurationSeconds": integer
+          }
+
+       --tags (map)
+          The tags that you apply to the job request to  help  you  categorize
+          and  organize  your resources. Each tag consists of a key and an op-
+          tional value. For more information, see Tagging Amazon Web  Services
+          Resources in Amazon Web Services General Reference .
+
+          key -> (string)
+
+          value -> (string)
+
+       Shorthand Syntax:
+
+          KeyName1=string,KeyName2=string
+
+       JSON Syntax:
+
+          {"string": "string"
+            ...}
+
+       --cli-input-json  |  --cli-input-yaml (string) Reads arguments from the
+       JSON string provided. The JSON string follows the  format  provided  by
+       --generate-cli-skeleton. If other arguments are provided on the command
+       line, those values will override the JSON-provided values.  It  is  not
+       possible to pass arbitrary binary values using a JSON-provided value as
+       the string will be taken literally. This may  not  be  specified  along
+       with --cli-input-yaml.
+
+       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
+       output without sending an API request. If provided with no value or the
+       value input, prints a sample input JSON that can be used as an argument
+       for --cli-input-json. Similarly, if provided yaml-input it will print a
+       sample  input  YAML that can be used with --cli-input-yaml. If provided
+       with the value output, it validates the command inputs  and  returns  a
+       sample output JSON for that command.
+
+       See 'aws help' for descriptions of global parameters.
+
+EXAMPLES
+       To submit a job
+
+       This example submits a simple container job called example to the High-
+       Priority job queue.
+
+       Command:
+
+          aws batch submit-job --job-name example --job-queue HighPriority  --job-definition sleep60
+
+       Output:
+
+          {
+              "jobName": "example",
+              "jobId": "876da822-4198-45f2-a252-6cea32512ea8"
+          }
+
+OUTPUT
+       jobArn -> (string)
+          The Amazon Resource Name (ARN) for the job.
+
+       jobName -> (string)
+          The name of the job.
+
+       jobId -> (string)
+          The unique identifier for the job.
+
+
+
+                                                                  SUBMIT-JOB()

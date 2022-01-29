@@ -1,0 +1,615 @@
+BATCH-PUT-DOCUMENT()                                      BATCH-PUT-DOCUMENT()
+
+
+
+NAME
+       batch-put-document -
+
+DESCRIPTION
+       Adds one or more documents to an index.
+
+       The  BatchPutDocument  operation enables you to ingest inline documents
+       or a set of documents stored in an Amazon S3 bucket. Use this operation
+       to ingest your text and unstructured text into an index, add custom at-
+       tributes to the documents, and to attach an access control list to  the
+       documents added to the index.
+
+       The  documents  are indexed asynchronously. You can see the progress of
+       the batch using Amazon Web Services CloudWatch. Any error messages  re-
+       lated  to  processing  the  batch  are sent to your Amazon Web Services
+       CloudWatch log.
+
+       See also: AWS API Documentation
+
+       See 'aws help' for descriptions of global parameters.
+
+SYNOPSIS
+            batch-put-document
+          --index-id <value>
+          [--role-arn <value>]
+          --documents <value>
+          [--custom-document-enrichment-configuration <value>]
+          [--cli-input-json | --cli-input-yaml]
+          [--generate-cli-skeleton <value>]
+
+OPTIONS
+       --index-id (string)
+          The identifier of the index to add the documents  to.  You  need  to
+          create the index first using the CreateIndex operation.
+
+       --role-arn (string)
+          The  Amazon Resource Name (ARN) of a role that is allowed to run the
+          BatchPutDocument operation. For more information, see IAM Roles  for
+          Amazon Kendra .
+
+       --documents (list)
+          One or more documents to add to the index.
+
+          Documents can include custom attributes. For example, 'DataSourceId'
+          and 'DataSourceSyncJobId' are custom attributes that provide  infor-
+          mation on the synchronization of documents running on a data source.
+          Note, 'DataSourceSyncJobId' could be an optional custom attribute as
+          Amazon Kendra will use the ID of a running sync job.
+
+          Documents have the following file size limits.
+
+          o 5 MB total size for inline documents
+
+          o 50 MB total size for files from an S3 bucket
+
+          o 5 MB extracted text for any file
+
+          For more information about file size and transaction per second quo-
+          tas, see Quotas .
+
+          (structure)
+              A document in an index.
+
+              Id -> (string)
+                 A unique identifier of the document in the index.
+
+              Title -> (string)
+                 The title of the document.
+
+              Blob -> (blob)
+                 The contents of the document.
+
+                 Documents passed to the Blob parameter  must  be  base64  en-
+                 coded.  Your  code might not need to encode the document file
+                 bytes if you're using an Amazon Web Services SDK to call Ama-
+                 zon  Kendra  operations. If you are calling the Amazon Kendra
+                 endpoint directly using REST, you must base64 encode the con-
+                 tents before sending.
+
+              S3Path -> (structure)
+                 Information  required to find a specific file in an Amazon S3
+                 bucket.
+
+                 Bucket -> (string)
+                     The name of the S3 bucket that contains the file.
+
+                 Key -> (string)
+                     The name of the file.
+
+              Attributes -> (list)
+                 Custom attributes to apply to the document.  Use  the  custom
+                 attributes  to  provide additional information for searching,
+                 to provide facets for refining searches, and to provide addi-
+                 tional information in the query response.
+
+                 (structure)
+                     A custom attribute value assigned to a document.
+
+                     For more information on how to create custom document at-
+                     tributes, see Custom Attributes .
+
+                     Key -> (string)
+                        The identifier for the attribute.
+
+                     Value -> (structure)
+                        The value of the attribute.
+
+                        StringValue -> (string)
+                            A string, such as "department".
+
+                        StringListValue -> (list)
+                            A list of strings.
+
+                            (string)
+
+                        LongValue -> (long)
+                            A long integer value.
+
+                        DateValue -> (timestamp)
+                            A date expressed as an ISO 8601 string.
+
+                            It is important for the time zone to  be  included
+                            in  the  ISO  8601  date-time format. For example,
+                            2012-03-25T12:30:10+01:00   is   the   ISO    8601
+                            date-time  format  for  March 25th 2012 at 12:30PM
+                            (plus 10 seconds) in Central European Time.
+
+              AccessControlList -> (list)
+                 Information on user and group access rights,  which  is  used
+                 for user context filtering.
+
+                 (structure)
+                     Provides  user  and group information for document access
+                     filtering.
+
+                     Name -> (string)
+                        The name of the user or group.
+
+                     Type -> (string)
+                        The type of principal.
+
+                     Access -> (string)
+                        Whether to allow or deny access to the principal.
+
+                     DataSourceId -> (string)
+                        The identifier of the data source the principal should
+                        access documents from.
+
+              HierarchicalAccessControlList -> (list)
+                 The  list  of  principal  lists that define the hierarchy for
+                 which documents users should have access to.
+
+                 (structure)
+                     Information to define the hierarchy for  which  documents
+                     users should have access to.
+
+                     PrincipalList -> (list)
+                        A  list  of  principal lists that define the hierarchy
+                        for which documents users should have access to.  Each
+                        hierarchical  list  specifies  which user or group has
+                        allow or deny access for each document.
+
+                        (structure)
+                            Provides user and group information  for  document
+                            access filtering.
+
+                            Name -> (string)
+                               The name of the user or group.
+
+                            Type -> (string)
+                               The type of principal.
+
+                            Access -> (string)
+                               Whether  to allow or deny access to the princi-
+                               pal.
+
+                            DataSourceId -> (string)
+                               The identifier of the data source the principal
+                               should access documents from.
+
+              ContentType -> (string)
+                 The file type of the document in the Blob field.
+
+       JSON Syntax:
+
+          [
+            {
+              "Id": "string",
+              "Title": "string",
+              "Blob": blob,
+              "S3Path": {
+                "Bucket": "string",
+                "Key": "string"
+              },
+              "Attributes": [
+                {
+                  "Key": "string",
+                  "Value": {
+                    "StringValue": "string",
+                    "StringListValue": ["string", ...],
+                    "LongValue": long,
+                    "DateValue": timestamp
+                  }
+                }
+                ...
+              ],
+              "AccessControlList": [
+                {
+                  "Name": "string",
+                  "Type": "USER"|"GROUP",
+                  "Access": "ALLOW"|"DENY",
+                  "DataSourceId": "string"
+                }
+                ...
+              ],
+              "HierarchicalAccessControlList": [
+                {
+                  "PrincipalList": [
+                    {
+                      "Name": "string",
+                      "Type": "USER"|"GROUP",
+                      "Access": "ALLOW"|"DENY",
+                      "DataSourceId": "string"
+                    }
+                    ...
+                  ]
+                }
+                ...
+              ],
+              "ContentType": "PDF"|"HTML"|"MS_WORD"|"PLAIN_TEXT"|"PPT"
+            }
+            ...
+          ]
+
+       --custom-document-enrichment-configuration (structure)
+          Configuration  information  for  altering your document metadata and
+          content during the document  ingestion  process  when  you  use  the
+          BatchPutDocument operation.
+
+          For  more  information  on how to create, modify and delete document
+          metadata, or make other content alterations when  you  ingest  docu-
+          ments  into  Amazon Kendra, see Customizing document metadata during
+          the ingestion process .
+
+          InlineConfigurations -> (list)
+              Configuration information to alter document attributes or  meta-
+              data  fields  and  content  when ingesting documents into Amazon
+              Kendra.
+
+              (structure)
+                 Provides the configuration  information  for  applying  basic
+                 logic  to  alter document metadata and content when ingesting
+                 documents into Amazon Kendra. To apply advanced logic, to  go
+                 beyond    what   you   can   do   with   basic   logic,   see
+                 HookConfiguration .
+
+                 For more information, see Customizing document metadata  dur-
+                 ing the ingestion process .
+
+                 Condition -> (structure)
+                     Configuration  of the condition used for the target docu-
+                     ment attribute or metadata field when ingesting documents
+                     into Amazon Kendra.
+
+                     ConditionDocumentAttributeKey -> (string)
+                        The  identifier of the document attribute used for the
+                        condition.
+
+                        For example, 'Source_URI' could be an  identifier  for
+                        the  attribute  or metadata field that contains source
+                        URIs associated with the documents.
+
+                        Amazon  Kendra  currently  does  not  support   _docu-
+                        ment_body as an attribute key used for the condition.
+
+                     Operator -> (string)
+                        The condition operator.
+
+                        For example, you can use 'Contains' to partially match
+                        a string.
+
+                     ConditionOnValue -> (structure)
+                        The value used by the operator.
+
+                        For example, you can specify the value 'financial' for
+                        strings in the 'Source_URI' field that partially match
+                        or contain this value.
+
+                        StringValue -> (string)
+                            A string, such as "department".
+
+                        StringListValue -> (list)
+                            A list of strings.
+
+                            (string)
+
+                        LongValue -> (long)
+                            A long integer value.
+
+                        DateValue -> (timestamp)
+                            A date expressed as an ISO 8601 string.
+
+                            It is important for the time zone to  be  included
+                            in  the  ISO  8601  date-time format. For example,
+                            2012-03-25T12:30:10+01:00   is   the   ISO    8601
+                            date-time  format  for  March 25th 2012 at 12:30PM
+                            (plus 10 seconds) in Central European Time.
+
+                 Target -> (structure)
+                     Configuration of the target document attribute  or  meta-
+                     data  field  when ingesting documents into Amazon Kendra.
+                     You can also include a value.
+
+                     TargetDocumentAttributeKey -> (string)
+                        The identifier of the  target  document  attribute  or
+                        metadata field.
+
+                        For  example,  'Department' could be an identifier for
+                        the target attribute or metadata field  that  includes
+                        the department names associated with the documents.
+
+                     TargetDocumentAttributeValueDeletion -> (boolean)
+                        TRUE  to  delete  the  existing  target value for your
+                        specified target attribute key. You  cannot  create  a
+                        target value and set this to TRUE . To create a target
+                        value (TargetDocumentAttributeValue  ),  set  this  to
+                        FALSE .
+
+                     TargetDocumentAttributeValue -> (structure)
+                        The target value you want to create for the target at-
+                        tribute.
+
+                        For example, 'Finance' could be the target  value  for
+                        the target attribute key 'Department'.
+
+                        StringValue -> (string)
+                            A string, such as "department".
+
+                        StringListValue -> (list)
+                            A list of strings.
+
+                            (string)
+
+                        LongValue -> (long)
+                            A long integer value.
+
+                        DateValue -> (timestamp)
+                            A date expressed as an ISO 8601 string.
+
+                            It  is  important for the time zone to be included
+                            in the ISO 8601  date-time  format.  For  example,
+                            2012-03-25T12:30:10+01:00    is   the   ISO   8601
+                            date-time format for March 25th  2012  at  12:30PM
+                            (plus 10 seconds) in Central European Time.
+
+                 DocumentContentDeletion -> (boolean)
+                     TRUE to delete content if the condition used for the tar-
+                     get attribute is met.
+
+          PreExtractionHookConfiguration -> (structure)
+              Configuration information for  invoking  a  Lambda  function  in
+              Lambda  on the original or raw documents before extracting their
+              metadata and text. You can use a Lambda function  to  apply  ad-
+              vanced logic for creating, modifying, or deleting document meta-
+              data and content. For more information, see Advanced data manip-
+              ulation .
+
+              InvocationCondition -> (structure)
+                 The  condition  used for when a Lambda function should be in-
+                 voked.
+
+                 For example, you can specify a condition that  if  there  are
+                 empty  date-time  values,  then Amazon Kendra should invoke a
+                 function that inserts the current date-time.
+
+                 ConditionDocumentAttributeKey -> (string)
+                     The identifier of the document  attribute  used  for  the
+                     condition.
+
+                     For  example, 'Source_URI' could be an identifier for the
+                     attribute or metadata field that contains source URIs as-
+                     sociated with the documents.
+
+                     Amazon  Kendra  currently does not support _document_body
+                     as an attribute key used for the condition.
+
+                 Operator -> (string)
+                     The condition operator.
+
+                     For example, you can use 'Contains' to partially match  a
+                     string.
+
+                 ConditionOnValue -> (structure)
+                     The value used by the operator.
+
+                     For  example,  you  can specify the value 'financial' for
+                     strings in the 'Source_URI' field that partially match or
+                     contain this value.
+
+                     StringValue -> (string)
+                        A string, such as "department".
+
+                     StringListValue -> (list)
+                        A list of strings.
+
+                        (string)
+
+                     LongValue -> (long)
+                        A long integer value.
+
+                     DateValue -> (timestamp)
+                        A date expressed as an ISO 8601 string.
+
+                        It  is  important  for the time zone to be included in
+                        the  ISO   8601   date-time   format.   For   example,
+                        2012-03-25T12:30:10+01:00  is  the  ISO 8601 date-time
+                        format for March 25th 2012 at 12:30PM  (plus  10  sec-
+                        onds) in Central European Time.
+
+              LambdaArn -> (string)
+                 The  Amazon  Resource Name (ARN) of a role with permission to
+                 run a Lambda function during ingestion. For more information,
+                 see IAM roles for Amazon Kendra .
+
+              S3Bucket -> (string)
+                 Stores  the original, raw documents or the structured, parsed
+                 documents before and after altering them. For  more  informa-
+                 tion, see Data contracts for Lambda functions .
+
+          PostExtractionHookConfiguration -> (structure)
+              Configuration  information  for  invoking  a  Lambda function in
+              Lambda on the structured documents with their metadata and  text
+              extracted. You can use a Lambda function to apply advanced logic
+              for creating, modifying, or deleting document metadata and  con-
+              tent. For more information, see Advanced data manipulation .
+
+              InvocationCondition -> (structure)
+                 The  condition  used for when a Lambda function should be in-
+                 voked.
+
+                 For example, you can specify a condition that  if  there  are
+                 empty  date-time  values,  then Amazon Kendra should invoke a
+                 function that inserts the current date-time.
+
+                 ConditionDocumentAttributeKey -> (string)
+                     The identifier of the document  attribute  used  for  the
+                     condition.
+
+                     For  example, 'Source_URI' could be an identifier for the
+                     attribute or metadata field that contains source URIs as-
+                     sociated with the documents.
+
+                     Amazon  Kendra  currently does not support _document_body
+                     as an attribute key used for the condition.
+
+                 Operator -> (string)
+                     The condition operator.
+
+                     For example, you can use 'Contains' to partially match  a
+                     string.
+
+                 ConditionOnValue -> (structure)
+                     The value used by the operator.
+
+                     For  example,  you  can specify the value 'financial' for
+                     strings in the 'Source_URI' field that partially match or
+                     contain this value.
+
+                     StringValue -> (string)
+                        A string, such as "department".
+
+                     StringListValue -> (list)
+                        A list of strings.
+
+                        (string)
+
+                     LongValue -> (long)
+                        A long integer value.
+
+                     DateValue -> (timestamp)
+                        A date expressed as an ISO 8601 string.
+
+                        It  is  important  for the time zone to be included in
+                        the  ISO   8601   date-time   format.   For   example,
+                        2012-03-25T12:30:10+01:00  is  the  ISO 8601 date-time
+                        format for March 25th 2012 at 12:30PM  (plus  10  sec-
+                        onds) in Central European Time.
+
+              LambdaArn -> (string)
+                 The  Amazon  Resource Name (ARN) of a role with permission to
+                 run a Lambda function during ingestion. For more information,
+                 see IAM roles for Amazon Kendra .
+
+              S3Bucket -> (string)
+                 Stores  the original, raw documents or the structured, parsed
+                 documents before and after altering them. For  more  informa-
+                 tion, see Data contracts for Lambda functions .
+
+          RoleArn -> (string)
+              The  Amazon Resource Name (ARN) of a role with permission to run
+              PreExtractionHookConfiguration and  PostExtractionHookConfigura-
+              tion for altering document metadata and content during the docu-
+              ment ingestion process. For more information, see IAM roles  for
+              Amazon Kendra .
+
+       JSON Syntax:
+
+          {
+            "InlineConfigurations": [
+              {
+                "Condition": {
+                  "ConditionDocumentAttributeKey": "string",
+                  "Operator": "GreaterThan"|"GreaterThanOrEquals"|"LessThan"|"LessThanOrEquals"|"Equals"|"NotEquals"|"Contains"|"NotContains"|"Exists"|"NotExists"|"BeginsWith",
+                  "ConditionOnValue": {
+                    "StringValue": "string",
+                    "StringListValue": ["string", ...],
+                    "LongValue": long,
+                    "DateValue": timestamp
+                  }
+                },
+                "Target": {
+                  "TargetDocumentAttributeKey": "string",
+                  "TargetDocumentAttributeValueDeletion": true|false,
+                  "TargetDocumentAttributeValue": {
+                    "StringValue": "string",
+                    "StringListValue": ["string", ...],
+                    "LongValue": long,
+                    "DateValue": timestamp
+                  }
+                },
+                "DocumentContentDeletion": true|false
+              }
+              ...
+            ],
+            "PreExtractionHookConfiguration": {
+              "InvocationCondition": {
+                "ConditionDocumentAttributeKey": "string",
+                "Operator": "GreaterThan"|"GreaterThanOrEquals"|"LessThan"|"LessThanOrEquals"|"Equals"|"NotEquals"|"Contains"|"NotContains"|"Exists"|"NotExists"|"BeginsWith",
+                "ConditionOnValue": {
+                  "StringValue": "string",
+                  "StringListValue": ["string", ...],
+                  "LongValue": long,
+                  "DateValue": timestamp
+                }
+              },
+              "LambdaArn": "string",
+              "S3Bucket": "string"
+            },
+            "PostExtractionHookConfiguration": {
+              "InvocationCondition": {
+                "ConditionDocumentAttributeKey": "string",
+                "Operator": "GreaterThan"|"GreaterThanOrEquals"|"LessThan"|"LessThanOrEquals"|"Equals"|"NotEquals"|"Contains"|"NotContains"|"Exists"|"NotExists"|"BeginsWith",
+                "ConditionOnValue": {
+                  "StringValue": "string",
+                  "StringListValue": ["string", ...],
+                  "LongValue": long,
+                  "DateValue": timestamp
+                }
+              },
+              "LambdaArn": "string",
+              "S3Bucket": "string"
+            },
+            "RoleArn": "string"
+          }
+
+       --cli-input-json  |  --cli-input-yaml (string) Reads arguments from the
+       JSON string provided. The JSON string follows the  format  provided  by
+       --generate-cli-skeleton. If other arguments are provided on the command
+       line, those values will override the JSON-provided values.  It  is  not
+       possible to pass arbitrary binary values using a JSON-provided value as
+       the string will be taken literally. This may  not  be  specified  along
+       with --cli-input-yaml.
+
+       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
+       output without sending an API request. If provided with no value or the
+       value input, prints a sample input JSON that can be used as an argument
+       for --cli-input-json. Similarly, if provided yaml-input it will print a
+       sample  input  YAML that can be used with --cli-input-yaml. If provided
+       with the value output, it validates the command inputs  and  returns  a
+       sample output JSON for that command.
+
+       See 'aws help' for descriptions of global parameters.
+
+OUTPUT
+       FailedDocuments -> (list)
+          A  list  of  documents  that were not added to the index because the
+          document failed a validation check. Each document contains an  error
+          message that indicates why the document couldn't be added to the in-
+          dex.
+
+          If there was an error adding a document to an index the error is re-
+          ported in your Amazon Web Services CloudWatch log. For more informa-
+          tion, see Monitoring Amazon Kendra with Amazon CloudWatch Logs
+
+          (structure)
+              Provides information about a document that could not be indexed.
+
+              Id -> (string)
+                 The unique identifier of the document.
+
+              ErrorCode -> (string)
+                 The type of error that caused the document to fail to be  in-
+                 dexed.
+
+              ErrorMessage -> (string)
+                 A description of the reason why the document could not be in-
+                 dexed.
+
+
+
+                                                          BATCH-PUT-DOCUMENT()

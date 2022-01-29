@@ -1,0 +1,252 @@
+START-SEGMENT-DETECTION()                            START-SEGMENT-DETECTION()
+
+
+
+NAME
+       start-segment-detection -
+
+DESCRIPTION
+       Starts asynchronous detection of segment detection in a stored video.
+
+       Amazon  Rekognition  Video  can detect segments in a video stored in an
+       Amazon S3 bucket. Use  Video to specify the bucket name and  the  file-
+       name  of the video. StartSegmentDetection returns a job identifier (Jo-
+       bId ) which you use to get the results of the operation.  When  segment
+       detection  is finished, Amazon Rekognition Video publishes a completion
+       status to the Amazon Simple Notification Service topic that you specify
+       in NotificationChannel .
+
+       You  can use the Filters ( StartSegmentDetectionFilters ) input parame-
+       ter to specify the minimum detection confidence  returned  in  the  re-
+       sponse. Within Filters , use ShotFilter ( StartShotDetectionFilter ) to
+       filter detected shots. Use TechnicalCueFilter ( StartTechnicalCueDetec-
+       tionFilter ) to filter technical cues.
+
+       To get the results of the segment detection operation, first check that
+       the status value published to the Amazon SNS topic is  SUCCEEDED  .  if
+       so, call  GetSegmentDetection and pass the job identifier (JobId ) from
+       the initial call to StartSegmentDetection .
+
+       For more information, see Detecting Video Segments in Stored  Video  in
+       the Amazon Rekognition Developer Guide.
+
+       See also: AWS API Documentation
+
+       See 'aws help' for descriptions of global parameters.
+
+SYNOPSIS
+            start-segment-detection
+          --video <value>
+          [--client-request-token <value>]
+          [--notification-channel <value>]
+          [--job-tag <value>]
+          [--filters <value>]
+          --segment-types <value>
+          [--cli-input-json | --cli-input-yaml]
+          [--generate-cli-skeleton <value>]
+
+OPTIONS
+       --video (structure)
+          Video  file  stored in an Amazon S3 bucket. Amazon Rekognition video
+          start operations such as  StartLabelDetection use Video to specify a
+          video  for  analysis.  The supported file formats are .mp4, .mov and
+          .avi.
+
+          S3Object -> (structure)
+              The Amazon S3 bucket name and file name for the video.
+
+              Bucket -> (string)
+                 Name of the S3 bucket.
+
+              Name -> (string)
+                 S3 object key name.
+
+              Version -> (string)
+                 If the bucket is versioning enabled, you can specify the  ob-
+                 ject version.
+
+       Shorthand Syntax:
+
+          S3Object={Bucket=string,Name=string,Version=string}
+
+       JSON Syntax:
+
+          {
+            "S3Object": {
+              "Bucket": "string",
+              "Name": "string",
+              "Version": "string"
+            }
+          }
+
+       --client-request-token (string)
+          Idempotent  token used to identify the start request. If you use the
+          same token with multiple StartSegmentDetection  requests,  the  same
+          JobId  is  returned.  Use ClientRequestToken to prevent the same job
+          from being accidently started more than once.
+
+       --notification-channel (structure)
+          The ARN of the Amazon SNS topic to which you want Amazon Rekognition
+          Video  to publish the completion status of the segment detection op-
+          eration. Note that the Amazon SNS topic must have a topic name  that
+          begins  with  AmazonRekognition  if you are using the AmazonRekogni-
+          tionServiceRole permissions policy to access the topic.
+
+          SNSTopicArn -> (string)
+              The Amazon SNS topic to which Amazon Rekognition  to  posts  the
+              completion status.
+
+          RoleArn -> (string)
+              The  ARN of an IAM role that gives Amazon Rekognition publishing
+              permissions to the Amazon SNS topic.
+
+       Shorthand Syntax:
+
+          SNSTopicArn=string,RoleArn=string
+
+       JSON Syntax:
+
+          {
+            "SNSTopicArn": "string",
+            "RoleArn": "string"
+          }
+
+       --job-tag (string)
+          An identifier you specify that's returned in the completion  notifi-
+          cation  that's  published to your Amazon Simple Notification Service
+          topic. For example, you can use JobTag to  group  related  jobs  and
+          identify them in the completion notification.
+
+       --filters (structure)
+          Filters for technical cue or shot detection.
+
+          TechnicalCueFilter -> (structure)
+              Filters that are specific to technical cues.
+
+              MinSegmentConfidence -> (float)
+                 Specifies  the  minimum  confidence  that  Amazon Rekognition
+                 Video must have in order to return a detected segment. Confi-
+                 dence  represents  how  certain  Amazon Rekognition is that a
+                 segment is correctly identified. 0 is the lowest  confidence.
+                 100  is  the  highest  confidence.  Amazon  Rekognition Video
+                 doesn't return any segments with  a  confidence  level  lower
+                 than this specified value.
+
+                 If  you don't specify MinSegmentConfidence , GetSegmentDetec-
+                 tion returns segments with confidence values greater than  or
+                 equal to 50 percent.
+
+              BlackFrame -> (structure)
+                 A filter that allows you to control the black frame detection
+                 by specifying the black levels and pixel  coverage  of  black
+                 pixels  in  a  frame.  Videos can come from multiple sources,
+                 formats, and time periods, with different standards and vary-
+                 ing  noise  levels for black frames that need to be accounted
+                 for.
+
+                 MaxPixelThreshold -> (float)
+                     A threshold used to determine the maximum luminance value
+                     for a pixel to be considered black. In a full color range
+                     video, luminance values range from 0-255. A  pixel  value
+                     of 0 is pure black, and the most strict filter. The maxi-
+                     mum  black  pixel   value   is   computed   as   follows:
+                     max_black_pixel_value   =   minimum_luminance  +  MaxPix-
+                     elThreshold
+                     *
+                     luminance_range.
+
+                     For example,  for  a  full  range  video  with  BlackPix-
+                     elThreshold  =  0.1,  max_black_pixel_value  is 0 + 0.1 *
+                     (255-0) = 25.5.
+
+                     The default value of MaxPixelThreshold is 0.2, which maps
+                     to  a max_black_pixel_value of 51 for a full range video.
+                     You can lower this threshold to be more strict  on  black
+                     levels.
+
+                 MinCoveragePercentage -> (float)
+                     The  minimum percentage of pixels in a frame that need to
+                     have a luminance below the  max_black_pixel_value  for  a
+                     frame to be considered a black frame. Luminance is calcu-
+                     lated using the BT.709 matrix.
+
+                     The default value is 99, which means at least 99% of  all
+                     pixels  in  the frame are black pixels as per the MaxPix-
+                     elThreshold set. You can reduce this value to allow  more
+                     noise on the black frame.
+
+          ShotFilter -> (structure)
+              Filters that are specific to shot detections.
+
+              MinSegmentConfidence -> (float)
+                 Specifies  the  minimum  confidence  that  Amazon Rekognition
+                 Video must have in order to return a detected segment. Confi-
+                 dence  represents  how  certain  Amazon Rekognition is that a
+                 segment is correctly identified. 0 is the lowest  confidence.
+                 100  is  the  highest  confidence.  Amazon  Rekognition Video
+                 doesn't return any segments with  a  confidence  level  lower
+                 than this specified value.
+
+                 If you don't specify MinSegmentConfidence , the GetSegmentDe-
+                 tection returns segments with confidence values greater  than
+                 or equal to 50 percent.
+
+       Shorthand Syntax:
+
+          TechnicalCueFilter={MinSegmentConfidence=float,BlackFrame={MaxPixelThreshold=float,MinCoveragePercentage=float}},ShotFilter={MinSegmentConfidence=float}
+
+       JSON Syntax:
+
+          {
+            "TechnicalCueFilter": {
+              "MinSegmentConfidence": float,
+              "BlackFrame": {
+                "MaxPixelThreshold": float,
+                "MinCoveragePercentage": float
+              }
+            },
+            "ShotFilter": {
+              "MinSegmentConfidence": float
+            }
+          }
+
+       --segment-types (list)
+          An  array  of segment types to detect in the video. Valid values are
+          TECHNICAL_CUE and SHOT.
+
+          (string)
+
+       Syntax:
+
+          "string" "string" ...
+
+          Where valid values are:
+            TECHNICAL_CUE
+            SHOT
+
+       --cli-input-json | --cli-input-yaml (string) Reads arguments  from  the
+       JSON  string  provided.  The JSON string follows the format provided by
+       --generate-cli-skeleton. If other arguments are provided on the command
+       line,  those  values  will override the JSON-provided values. It is not
+       possible to pass arbitrary binary values using a JSON-provided value as
+       the  string  will  be  taken literally. This may not be specified along
+       with --cli-input-yaml.
+
+       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
+       output without sending an API request. If provided with no value or the
+       value input, prints a sample input JSON that can be used as an argument
+       for --cli-input-json. Similarly, if provided yaml-input it will print a
+       sample input YAML that can be used with --cli-input-yaml.  If  provided
+       with  the  value  output, it validates the command inputs and returns a
+       sample output JSON for that command.
+
+       See 'aws help' for descriptions of global parameters.
+
+OUTPUT
+       JobId -> (string)
+          Unique identifier for the segment detection job. The  JobId  is  re-
+          turned from StartSegmentDetection .
+
+
+
+                                                     START-SEGMENT-DETECTION()

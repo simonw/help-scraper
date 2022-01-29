@@ -1,0 +1,556 @@
+UPDATE-EVENT-SOURCE-MAPPING()                    UPDATE-EVENT-SOURCE-MAPPING()
+
+
+
+NAME
+       update-event-source-mapping -
+
+DESCRIPTION
+       Updates  an  event  source  mapping.  You  can change the function that
+       Lambda invokes, or pause invocation and resume later from the same  lo-
+       cation.
+
+       For  details  about  how  to configure different event sources, see the
+       following topics.
+
+       o Amazon DynamoDB Streams
+
+       o Amazon Kinesis
+
+       o Amazon SQS
+
+       o Amazon MQ and RabbitMQ
+
+       o Amazon MSK
+
+       o Apache Kafka
+
+       The following error handling options  are  only  available  for  stream
+       sources (DynamoDB and Kinesis):
+
+       o BisectBatchOnFunctionError  - If the function returns an error, split
+         the batch in two and retry.
+
+       o DestinationConfig - Send discarded records to an Amazon SQS queue  or
+         Amazon SNS topic.
+
+       o MaximumRecordAgeInSeconds  - Discard records older than the specified
+         age. The default value is infinite (-1). When set to  infinite  (-1),
+         failed records are retried until the record expires
+
+       o MaximumRetryAttempts  - Discard records after the specified number of
+         retries. The default value is infinite (-1).  When  set  to  infinite
+         (-1), failed records are retried until the record expires.
+
+       o ParallelizationFactor - Process multiple batches from each shard con-
+         currently.
+
+       For information about which  configuration  parameters  apply  to  each
+       event source, see the following topics.
+
+       o Amazon DynamoDB Streams
+
+       o Amazon Kinesis
+
+       o Amazon SQS
+
+       o Amazon MQ and RabbitMQ
+
+       o Amazon MSK
+
+       o Apache Kafka
+
+       See also: AWS API Documentation
+
+       See 'aws help' for descriptions of global parameters.
+
+SYNOPSIS
+            update-event-source-mapping
+          --uuid <value>
+          [--function-name <value>]
+          [--enabled | --no-enabled]
+          [--batch-size <value>]
+          [--filter-criteria <value>]
+          [--maximum-batching-window-in-seconds <value>]
+          [--destination-config <value>]
+          [--maximum-record-age-in-seconds <value>]
+          [--bisect-batch-on-function-error | --no-bisect-batch-on-function-error]
+          [--maximum-retry-attempts <value>]
+          [--parallelization-factor <value>]
+          [--source-access-configurations <value>]
+          [--tumbling-window-in-seconds <value>]
+          [--function-response-types <value>]
+          [--cli-input-json | --cli-input-yaml]
+          [--generate-cli-skeleton <value>]
+
+OPTIONS
+       --uuid (string)
+          The identifier of the event source mapping.
+
+       --function-name (string)
+          The name of the Lambda function.
+              Name formats
+
+          o Function name - MyFunction .
+
+          o Function  ARN - arn:aws:lambda:us-west-2:123456789012:function:My-
+            Function .
+
+          o Version or Alias ARN - arn:aws:lambda:us-west-2:123456789012:func-
+            tion:MyFunction:PROD .
+
+          o Partial ARN - 123456789012:function:MyFunction .
+
+          The  length  constraint applies only to the full ARN. If you specify
+          only the function name, it's limited to 64 characters in length.
+
+       --enabled | --no-enabled (boolean)
+          When true, the event source mapping is active.  When  false,  Lambda
+          pauses polling and invocation.
+
+          Default: True
+
+       --batch-size (integer)
+          The  maximum  number of records in each batch that Lambda pulls from
+          your stream or queue and sends to your function. Lambda  passes  all
+          of  the records in the batch to the function in a single call, up to
+          the payload limit for synchronous invocation (6 MB).
+
+          o Amazon Kinesis - Default 100. Max 10,000.
+
+          o Amazon DynamoDB Streams - Default 100. Max 1,000.
+
+          o Amazon Simple Queue Service - Default 10. For standard queues  the
+            max is 10,000. For FIFO queues the max is 10.
+
+          o Amazon  Managed  Streaming  for  Apache  Kafka  - Default 100. Max
+            10,000.
+
+          o Self-Managed Apache Kafka - Default 100. Max 10,000.
+
+          o Amazon MQ (ActiveMQ and RabbitMQ) - Default 100. Max 10,000.
+
+       --filter-criteria (structure)
+          (Streams and Amazon SQS) An object that defines the filter  criteria
+          that  determine whether Lambda should process an event. For more in-
+          formation, see Lambda event filtering .
+
+          Filters -> (list)
+              A list of filters.
+
+              (structure)
+                 A structure within a FilterCriteria object  that  defines  an
+                 event filtering pattern.
+
+                 Pattern -> (string)
+                     A filter pattern. For more information on the syntax of a
+                     filter pattern, see Filter rule syntax .
+
+       Shorthand Syntax:
+
+          Filters=[{Pattern=string},{Pattern=string}]
+
+       JSON Syntax:
+
+          {
+            "Filters": [
+              {
+                "Pattern": "string"
+              }
+              ...
+            ]
+          }
+
+       --maximum-batching-window-in-seconds (integer)
+          (Streams and Amazon SQS standard queues) The maximum amount of time,
+          in seconds, that Lambda spends gathering records before invoking the
+          function.
+
+          Default: 0
+
+          Related setting: When you set BatchSize to a value greater than  10,
+          you must set MaximumBatchingWindowInSeconds to at least 1.
+
+       --destination-config (structure)
+          (Streams  only)  An Amazon SQS queue or Amazon SNS topic destination
+          for discarded records.
+
+          OnSuccess -> (structure)
+              The destination configuration for successful invocations.
+
+              Destination -> (string)
+                 The Amazon Resource Name (ARN) of the destination resource.
+
+          OnFailure -> (structure)
+              The destination configuration for failed invocations.
+
+              Destination -> (string)
+                 The Amazon Resource Name (ARN) of the destination resource.
+
+       Shorthand Syntax:
+
+          OnSuccess={Destination=string},OnFailure={Destination=string}
+
+       JSON Syntax:
+
+          {
+            "OnSuccess": {
+              "Destination": "string"
+            },
+            "OnFailure": {
+              "Destination": "string"
+            }
+          }
+
+       --maximum-record-age-in-seconds (integer)
+          (Streams only) Discard records older than the specified age. The de-
+          fault value is infinite (-1).
+
+       --bisect-batch-on-function-error  | --no-bisect-batch-on-function-error
+       (boolean)
+          (Streams only) If the function returns an error, split the batch  in
+          two and retry.
+
+       --maximum-retry-attempts (integer)
+          (Streams  only)  Discard  records  after the specified number of re-
+          tries. The default value is infinite  (-1).  When  set  to  infinite
+          (-1), failed records will be retried until the record expires.
+
+       --parallelization-factor (integer)
+          (Streams only) The number of batches to process from each shard con-
+          currently.
+
+       --source-access-configurations (list)
+          An array of authentication protocols or VPC components  required  to
+          secure your event source.
+
+          (structure)
+              To  secure and define access to your event source, you can spec-
+              ify the authentication  protocol,  VPC  components,  or  virtual
+              host.
+
+              Type -> (string)
+                 The  type of authentication protocol, VPC components, or vir-
+                 tual   host   for   your   event   source.    For    example:
+                 "Type":"SASL_SCRAM_512_AUTH" .
+
+                 o BASIC_AUTH  -  (Amazon  MQ) The Secrets Manager secret that
+                   stores your broker credentials.
+
+                 o BASIC_AUTH - (Self-managed Apache Kafka) The  Secrets  Man-
+                   ager ARN of your secret key used for SASL/PLAIN authentica-
+                   tion of your Apache Kafka brokers.
+
+                 o VPC_SUBNET - The subnets associated with your  VPC.  Lambda
+                   connects to these subnets to fetch data from your self-man-
+                   aged Apache Kafka cluster.
+
+                 o VPC_SECURITY_GROUP - The VPC security group used to  manage
+                   access to your self-managed Apache Kafka brokers.
+
+                 o SASL_SCRAM_256_AUTH  -  The Secrets Manager ARN of your se-
+                   cret key used for SASL  SCRAM-256  authentication  of  your
+                   self-managed Apache Kafka brokers.
+
+                 o SASL_SCRAM_512_AUTH  -  The Secrets Manager ARN of your se-
+                   cret key used for SASL  SCRAM-512  authentication  of  your
+                   self-managed Apache Kafka brokers.
+
+                 o VIRTUAL_HOST  - (Amazon MQ) The name of the virtual host in
+                   your RabbitMQ broker. Lambda uses this RabbitMQ host as the
+                   event source. This property cannot be specified in an Upda-
+                   teEventSourceMapping API call.
+
+                 o CLIENT_CERTIFICATE_TLS_AUTH  -  (Amazon  MSK,  Self-managed
+                   Apache  Kafka)  The  Secrets Manager ARN of your secret key
+                   containing the certificate chain (X.509 PEM),  private  key
+                   (PKCS#8  PEM), and private key password (optional) used for
+                   mutual TLS authentication of your MSK/Apache Kafka brokers.
+
+                 o SERVER_ROOT_CA_CERTIFICATE -  (Self-managed  Apache  Kafka)
+                   The  Secrets  Manager ARN of your secret key containing the
+                   root CA certificate (X.509 PEM) used for TLS encryption  of
+                   your Apache Kafka brokers.
+
+              URI -> (string)
+                 The  value  for your chosen configuration in Type . For exam-
+                 ple: "URI": "arn:aws:secretsmanager:us-east-1:01234567890:se-
+                 cret:MyBrokerSecretName" .
+
+       Shorthand Syntax:
+
+          Type=string,URI=string ...
+
+       JSON Syntax:
+
+          [
+            {
+              "Type": "BASIC_AUTH"|"VPC_SUBNET"|"VPC_SECURITY_GROUP"|"SASL_SCRAM_512_AUTH"|"SASL_SCRAM_256_AUTH"|"VIRTUAL_HOST"|"CLIENT_CERTIFICATE_TLS_AUTH"|"SERVER_ROOT_CA_CERTIFICATE",
+              "URI": "string"
+            }
+            ...
+          ]
+
+       --tumbling-window-in-seconds (integer)
+          (Streams  only)  The duration in seconds of a processing window. The
+          range is between 1 second up to 900 seconds.
+
+       --function-response-types (list)
+          (Streams and Amazon SQS) A list of current response type  enums  ap-
+          plied to the event source mapping.
+
+          (string)
+
+       Syntax:
+
+          "string" "string" ...
+
+          Where valid values are:
+            ReportBatchItemFailures
+
+       --cli-input-json  |  --cli-input-yaml (string) Reads arguments from the
+       JSON string provided. The JSON string follows the  format  provided  by
+       --generate-cli-skeleton. If other arguments are provided on the command
+       line, those values will override the JSON-provided values.  It  is  not
+       possible to pass arbitrary binary values using a JSON-provided value as
+       the string will be taken literally. This may  not  be  specified  along
+       with --cli-input-yaml.
+
+       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
+       output without sending an API request. If provided with no value or the
+       value input, prints a sample input JSON that can be used as an argument
+       for --cli-input-json. Similarly, if provided yaml-input it will print a
+       sample  input  YAML that can be used with --cli-input-yaml. If provided
+       with the value output, it validates the command inputs  and  returns  a
+       sample output JSON for that command.
+
+       See 'aws help' for descriptions of global parameters.
+
+EXAMPLES
+       To  update  the mapping between an event source and an AWS Lambda func-
+       tion
+
+       The following update-event-source-mapping  example  updates  the  batch
+       size to 8 in the specified mapping.
+
+          aws lambda update-event-source-mapping \
+              --uuid  "a1b2c3d4-5678-90ab-cdef-11111EXAMPLE" \
+              --batch-size 8
+
+       Output:
+
+          {
+              "UUID": "a1b2c3d4-5678-90ab-cdef-11111EXAMPLE",
+              "StateTransitionReason": "USER_INITIATED",
+              "LastModified": 1569284520.333,
+              "BatchSize": 8,
+              "State": "Updating",
+              "FunctionArn": "arn:aws:lambda:us-west-2:123456789012:function:my-function",
+              "EventSourceArn": "arn:aws:sqs:us-west-2:123456789012:mySQSqueue"
+          }
+
+       For  more  information,  see AWS Lambda Event Source Mapping in the AWS
+       Lambda Developer Guide.
+
+OUTPUT
+       UUID -> (string)
+          The identifier of the event source mapping.
+
+       StartingPosition -> (string)
+          The position in a stream from which to start reading.  Required  for
+          Amazon  Kinesis,  Amazon  DynamoDB,  and  Amazon MSK stream sources.
+          AT_TIMESTAMP is supported only for Amazon Kinesis streams.
+
+       StartingPositionTimestamp -> (timestamp)
+          With StartingPosition set to AT_TIMESTAMP , the time from  which  to
+          start reading.
+
+       BatchSize -> (integer)
+          The  maximum  number of records in each batch that Lambda pulls from
+          your stream or queue and sends to your function. Lambda  passes  all
+          of  the records in the batch to the function in a single call, up to
+          the payload limit for synchronous invocation (6 MB).
+
+          Default value: Varies by service. For Amazon SQS, the default is 10.
+          For all other services, the default is 100.
+
+          Related  setting: When you set BatchSize to a value greater than 10,
+          you must set MaximumBatchingWindowInSeconds to at least 1.
+
+       MaximumBatchingWindowInSeconds -> (integer)
+          (Streams and Amazon SQS standard queues) The maximum amount of time,
+          in seconds, that Lambda spends gathering records before invoking the
+          function.
+
+          Default: 0
+
+          Related setting: When you set BatchSize to a value greater than  10,
+          you must set MaximumBatchingWindowInSeconds to at least 1.
+
+       ParallelizationFactor -> (integer)
+          (Streams  only)  The  number of batches to process concurrently from
+          each shard. The default value is 1.
+
+       EventSourceArn -> (string)
+          The Amazon Resource Name (ARN) of the event source.
+
+       FilterCriteria -> (structure)
+          (Streams and Amazon SQS) An object that defines the filter  criteria
+          that  determine whether Lambda should process an event. For more in-
+          formation, see Lambda event filtering .
+
+          Filters -> (list)
+              A list of filters.
+
+              (structure)
+                 A structure within a FilterCriteria object  that  defines  an
+                 event filtering pattern.
+
+                 Pattern -> (string)
+                     A filter pattern. For more information on the syntax of a
+                     filter pattern, see Filter rule syntax .
+
+       FunctionArn -> (string)
+          The ARN of the Lambda function.
+
+       LastModified -> (timestamp)
+          The date that the event source mapping was last updated or that  its
+          state changed.
+
+       LastProcessingResult -> (string)
+          The result of the last Lambda invocation of your function.
+
+       State -> (string)
+          The  state of the event source mapping. It can be one of the follow-
+          ing: Creating , Enabling , Enabled , Disabling , Disabled , Updating
+          , or Deleting .
+
+       StateTransitionReason -> (string)
+          Indicates whether a user or Lambda made the last change to the event
+          source mapping.
+
+       DestinationConfig -> (structure)
+          (Streams only) An Amazon SQS queue or Amazon SNS  topic  destination
+          for discarded records.
+
+          OnSuccess -> (structure)
+              The destination configuration for successful invocations.
+
+              Destination -> (string)
+                 The Amazon Resource Name (ARN) of the destination resource.
+
+          OnFailure -> (structure)
+              The destination configuration for failed invocations.
+
+              Destination -> (string)
+                 The Amazon Resource Name (ARN) of the destination resource.
+
+       Topics -> (list)
+          The name of the Kafka topic.
+
+          (string)
+
+       Queues -> (list)
+          (Amazon  MQ)  The  name of the Amazon MQ broker destination queue to
+          consume.
+
+          (string)
+
+       SourceAccessConfigurations -> (list)
+          An array of the authentication protocol, VPC components, or  virtual
+          host to secure and define your event source.
+
+          (structure)
+              To  secure and define access to your event source, you can spec-
+              ify the authentication  protocol,  VPC  components,  or  virtual
+              host.
+
+              Type -> (string)
+                 The  type of authentication protocol, VPC components, or vir-
+                 tual   host   for   your   event   source.    For    example:
+                 "Type":"SASL_SCRAM_512_AUTH" .
+
+                 o BASIC_AUTH  -  (Amazon  MQ) The Secrets Manager secret that
+                   stores your broker credentials.
+
+                 o BASIC_AUTH - (Self-managed Apache Kafka) The  Secrets  Man-
+                   ager ARN of your secret key used for SASL/PLAIN authentica-
+                   tion of your Apache Kafka brokers.
+
+                 o VPC_SUBNET - The subnets associated with your  VPC.  Lambda
+                   connects to these subnets to fetch data from your self-man-
+                   aged Apache Kafka cluster.
+
+                 o VPC_SECURITY_GROUP - The VPC security group used to  manage
+                   access to your self-managed Apache Kafka brokers.
+
+                 o SASL_SCRAM_256_AUTH  -  The Secrets Manager ARN of your se-
+                   cret key used for SASL  SCRAM-256  authentication  of  your
+                   self-managed Apache Kafka brokers.
+
+                 o SASL_SCRAM_512_AUTH  -  The Secrets Manager ARN of your se-
+                   cret key used for SASL  SCRAM-512  authentication  of  your
+                   self-managed Apache Kafka brokers.
+
+                 o VIRTUAL_HOST  - (Amazon MQ) The name of the virtual host in
+                   your RabbitMQ broker. Lambda uses this RabbitMQ host as the
+                   event source. This property cannot be specified in an Upda-
+                   teEventSourceMapping API call.
+
+                 o CLIENT_CERTIFICATE_TLS_AUTH  -  (Amazon  MSK,  Self-managed
+                   Apache  Kafka)  The  Secrets Manager ARN of your secret key
+                   containing the certificate chain (X.509 PEM),  private  key
+                   (PKCS#8  PEM), and private key password (optional) used for
+                   mutual TLS authentication of your MSK/Apache Kafka brokers.
+
+                 o SERVER_ROOT_CA_CERTIFICATE -  (Self-managed  Apache  Kafka)
+                   The  Secrets  Manager ARN of your secret key containing the
+                   root CA certificate (X.509 PEM) used for TLS encryption  of
+                   your Apache Kafka brokers.
+
+              URI -> (string)
+                 The  value  for your chosen configuration in Type . For exam-
+                 ple: "URI": "arn:aws:secretsmanager:us-east-1:01234567890:se-
+                 cret:MyBrokerSecretName" .
+
+       SelfManagedEventSource -> (structure)
+          The self-managed Apache Kafka cluster for your event source.
+
+          Endpoints -> (map)
+              The list of bootstrap servers for your Kafka brokers in the fol-
+              lowing            format:             "KAFKA_BOOTSTRAP_SERVERS":
+              ["abc.xyz.com:xxxx","abc2.xyz.com:xxxx"] .
+
+              key -> (string)
+
+              value -> (list)
+                 (string)
+
+       MaximumRecordAgeInSeconds -> (integer)
+          (Streams only) Discard records older than the specified age. The de-
+          fault value is -1, which sets the maximum age to infinite. When  the
+          value is set to infinite, Lambda never discards old records.
+
+       BisectBatchOnFunctionError -> (boolean)
+          (Streams  only) If the function returns an error, split the batch in
+          two and retry. The default value is false.
+
+       MaximumRetryAttempts -> (integer)
+          (Streams only) Discard records after the  specified  number  of  re-
+          tries. The default value is -1, which sets the maximum number of re-
+          tries to infinite. When MaximumRetryAttempts is infinite, Lambda re-
+          tries failed records until the record expires in the event source.
+
+       TumblingWindowInSeconds -> (integer)
+          (Streams  only)  The duration in seconds of a processing window. The
+          range is 1900 seconds.
+
+       FunctionResponseTypes -> (list)
+          (Streams only) A list of current response type enums applied to  the
+          event source mapping.
+
+          (string)
+
+
+
+                                                 UPDATE-EVENT-SOURCE-MAPPING()

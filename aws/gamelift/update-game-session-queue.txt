@@ -1,0 +1,410 @@
+UPDATE-GAME-SESSION-QUEUE()                        UPDATE-GAME-SESSION-QUEUE()
+
+
+
+NAME
+       update-game-session-queue -
+
+DESCRIPTION
+       Updates the configuration of a game session queue, which determines how
+       the queue processes new game  session  requests.  To  update  settings,
+       specify the queue name to be updated and provide the new settings. When
+       updating destinations, provide a complete list of destinations.
+          Learn more
+
+          Using Multi-Region Queues
+
+          Related actions
+              CreateGameSessionQueue  |   DescribeGameSessionQueues   |    Up-
+              dateGameSessionQueue  |   DeleteGameSessionQueue  |  All APIs by
+              task
+
+       See also: AWS API Documentation
+
+       See 'aws help' for descriptions of global parameters.
+
+SYNOPSIS
+            update-game-session-queue
+          --name <value>
+          [--timeout-in-seconds <value>]
+          [--player-latency-policies <value>]
+          [--destinations <value>]
+          [--filter-configuration <value>]
+          [--priority-configuration <value>]
+          [--custom-event-data <value>]
+          [--notification-target <value>]
+          [--cli-input-json | --cli-input-yaml]
+          [--generate-cli-skeleton <value>]
+
+OPTIONS
+       --name (string)
+          A descriptive label that is  associated  with  game  session  queue.
+          Queue  names  must  be unique within each Region. You can use either
+          the queue ID or ARN value.
+
+       --timeout-in-seconds (integer)
+          The maximum time, in seconds, that a new game session placement  re-
+          quest  remains  in  the queue. When a request exceeds this time, the
+          game session placement changes to a TIMED_OUT status.
+
+       --player-latency-policies (list)
+          A set of policies that act as a sliding cap on player latency. Flee-
+          tIQ works to deliver low latency for most players in a game session.
+          These policies ensure that no individual player can be placed into a
+          game with unreasonably high latency. Use multiple policies to gradu-
+          ally relax latency requirements a step at a time. Multiple  policies
+          are  applied  based  on their maximum allowed latency, starting with
+          the lowest value. When updating policies, provide a complete collec-
+          tion of policies.
+
+          (structure)
+              Sets  a  latency  cap for individual players when placing a game
+              session. With a latency policy in force, a game  session  cannot
+              be  placed  in  a  fleet location where a player reports latency
+              higher than the cap. Latency policies are used only with  place-
+              ment request that provide player latency information. Player la-
+              tency policies can be stacked to  gradually  relax  latency  re-
+              quirements over time.
+
+              Latency policies are part of a  GameSessionQueue .
+
+              MaximumIndividualPlayerLatencyMilliseconds -> (integer)
+                 The  maximum latency value that is allowed for any player, in
+                 milliseconds. All policies must have a  value  set  for  this
+                 property.
+
+              PolicyDurationSeconds -> (integer)
+                 The  length  of time, in seconds, that the policy is enforced
+                 while placing a new game session. A null value for this prop-
+                 erty  means that the policy is enforced until the queue times
+                 out.
+
+       Shorthand Syntax:
+
+          MaximumIndividualPlayerLatencyMilliseconds=integer,PolicyDurationSeconds=integer ...
+
+       JSON Syntax:
+
+          [
+            {
+              "MaximumIndividualPlayerLatencyMilliseconds": integer,
+              "PolicyDurationSeconds": integer
+            }
+            ...
+          ]
+
+       --destinations (list)
+          A list of fleets and/or fleet aliases that can be  used  to  fulfill
+          game session placement requests in the queue. Destinations are iden-
+          tified by either a fleet ARN or a fleet alias ARN, and are listed in
+          order  of  placement  preference. When updating this list, provide a
+          complete list of destinations.
+
+          (structure)
+              A fleet or alias designated in a game session queue. Queues ful-
+              fill  requests  for new game sessions by placing a new game ses-
+              sion on any of the queue's destinations.
+
+              Destinations are part of a  GameSessionQueue .
+
+              DestinationArn -> (string)
+                 The Amazon Resource Name (ARN) that is assigned to  fleet  or
+                 fleet alias. ARNs, which include a fleet ID or alias ID and a
+                 Region name, provide a unique identifier across all Regions.
+
+       Shorthand Syntax:
+
+          DestinationArn=string ...
+
+       JSON Syntax:
+
+          [
+            {
+              "DestinationArn": "string"
+            }
+            ...
+          ]
+
+       --filter-configuration (structure)
+          A list of locations where a queue is allowed to place new game  ses-
+          sions. Locations are specified in the form of AWS Region codes, such
+          as us-west-2 . If this parameter is not set, game  sessions  can  be
+          placed  in any queue location. To remove an existing filter configu-
+          ration, pass in an empty set.
+
+          AllowedLocations -> (list)
+              A list of locations to allow game session placement in,  in  the
+              form of AWS Region codes such as us-west-2 .
+
+              (string)
+
+       Shorthand Syntax:
+
+          AllowedLocations=string,string
+
+       JSON Syntax:
+
+          {
+            "AllowedLocations": ["string", ...]
+          }
+
+       --priority-configuration (structure)
+          Custom  settings to use when prioritizing destinations and locations
+          for game session placements. This configuration replaces the FleetIQ
+          default  prioritization process. Priority types that are not explic-
+          itly named will be automatically applied at the end of the prioriti-
+          zation  process.  To remove an existing priority configuration, pass
+          in an empty set.
+
+          PriorityOrder -> (list)
+              The recommended sequence to use when prioritizing where to place
+              new game sessions. Each type can only be listed once.
+
+              o LATENCY  --  FleetIQ  prioritizes  locations where the average
+                player latency (provided in each game session request) is low-
+                est.
+
+              o COST  -- FleetIQ prioritizes destinations with the lowest cur-
+                rent hosting costs. Cost is evaluated based on  the  location,
+                instance  type,  and  fleet  type (Spot or On-Demand) for each
+                destination in the queue.
+
+              o DESTINATION -- FleetIQ prioritizes based  on  the  order  that
+                destinations are listed in the queue configuration.
+
+              o LOCATION -- FleetIQ prioritizes based on the provided order of
+                locations, as defined in LocationOrder .
+
+              (string)
+
+          LocationOrder -> (list)
+              The prioritization order to use for fleet  locations,  when  the
+              PriorityOrder property includes LOCATION . Locations are identi-
+              fied by AWS Region codes such as us-west-2 . Each  location  can
+              only be listed once.
+
+              (string)
+
+       Shorthand Syntax:
+
+          PriorityOrder=string,string,LocationOrder=string,string
+
+       JSON Syntax:
+
+          {
+            "PriorityOrder": ["LATENCY"|"COST"|"DESTINATION"|"LOCATION", ...],
+            "LocationOrder": ["string", ...]
+          }
+
+       --custom-event-data (string)
+          Information  to be added to all events that are related to this game
+          session queue.
+
+       --notification-target (string)
+          An SNS topic ARN that is set up to receive  game  session  placement
+          notifications.  See Setting up notifications for game session place-
+          ment .
+
+       --cli-input-json | --cli-input-yaml (string) Reads arguments  from  the
+       JSON  string  provided.  The JSON string follows the format provided by
+       --generate-cli-skeleton. If other arguments are provided on the command
+       line,  those  values  will override the JSON-provided values. It is not
+       possible to pass arbitrary binary values using a JSON-provided value as
+       the  string  will  be  taken literally. This may not be specified along
+       with --cli-input-yaml.
+
+       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
+       output without sending an API request. If provided with no value or the
+       value input, prints a sample input JSON that can be used as an argument
+       for --cli-input-json. Similarly, if provided yaml-input it will print a
+       sample input YAML that can be used with --cli-input-yaml.  If  provided
+       with  the  value  output, it validates the command inputs and returns a
+       sample output JSON for that command.
+
+       See 'aws help' for descriptions of global parameters.
+
+EXAMPLES
+       To update a game session queue configuration
+
+       The following update-game-session-queue example adds a new  destination
+       and  updates  the  player latency policies for an existing game session
+       queue.
+
+          aws gamelift update-game-session-queue \
+              --name MegaFrogRace-NA \
+              --destinations file://destinations.json \
+              --player-latency-policies file://latency-policies.json
+
+       Contents of destinations.json:
+
+          {
+              "Destinations": [
+                  {"DestinationArn": "arn:aws:gamelift:us-west-2::fleet/fleet-1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d"},
+                  {"DestinationArn": "arn:aws:gamelift:us-east-1::fleet/fleet-5c6d3c4d-5e6f-7a8b-9c0d-1e2f3a4b5a2b"},
+                  {"DestinationArn": "arn:aws:gamelift:us-east-1::alias/alias-11aa22bb-3c4d-5e6f-000a-1111aaaa22bb"}
+              ]
+          }
+
+       Contents of latency-policies.json:
+
+          {
+              "PlayerLatencyPolicies": [
+                  {"MaximumIndividualPlayerLatencyMilliseconds": 200},
+                  {"MaximumIndividualPlayerLatencyMilliseconds": 150, "PolicyDurationSeconds": 120},
+                  {"MaximumIndividualPlayerLatencyMilliseconds": 100, "PolicyDurationSeconds": 120}
+              ]
+          }
+
+       Output:
+
+          {
+              "GameSessionQueue": {
+                  "Destinations": [
+                      {"DestinationArn": "arn:aws:gamelift:us-west-2::fleet/fleet-1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d"},
+                      {"DestinationArn": "arn:aws:gamelift:us-east-1::fleet/fleet-5c6d3c4d-5e6f-7a8b-9c0d-1e2f3a4b5a2b"},
+                      {"DestinationArn": "arn:aws:gamelift:us-east-1::alias/alias-11aa22bb-3c4d-5e6f-000a-1111aaaa22bb"}
+                  ],
+                  "GameSessionQueueArn": "arn:aws:gamelift:us-west-2:111122223333:gamesessionqueue/MegaFrogRace-NA",
+                  "Name": "MegaFrogRace-NA",
+                  "TimeoutInSeconds": 600,
+                  "PlayerLatencyPolicies": [
+                      {"MaximumIndividualPlayerLatencyMilliseconds": 200},
+                      {"MaximumIndividualPlayerLatencyMilliseconds": 150, "PolicyDurationSeconds": 120},
+                      {"MaximumIndividualPlayerLatencyMilliseconds": 100, "PolicyDurationSeconds": 120}
+                  ]
+              }
+          }
+
+       For more information, see  Using  Multi-Region  Queues  in  the  Amazon
+       GameLift Developer Guide.
+
+OUTPUT
+       GameSessionQueue -> (structure)
+          An object that describes the newly updated game session queue.
+
+          Name -> (string)
+              A  descriptive label that is associated with game session queue.
+              Queue names must be unique within each Region.
+
+          GameSessionQueueArn -> (string)
+              The Amazon Resource Name (ARN ) that is assigned to  a  GameLift
+              game session queue resource and uniquely identifies it. ARNs are
+              unique  across  all  Regions.  Format  is  arn:aws:gamelift:<re-
+              gion>::gamesessionqueue/<queue  name>  . In a GameLift game ses-
+              sion queue ARN, the resource ID matches the Name value.
+
+          TimeoutInSeconds -> (integer)
+              The maximum time, in seconds, that a new game session  placement
+              request  remains in the queue. When a request exceeds this time,
+              the game session placement changes to a TIMED_OUT status.
+
+          PlayerLatencyPolicies -> (list)
+              A set of policies that act as a sliding cap on  player  latency.
+              FleetIQ  works to deliver low latency for most players in a game
+              session. These policies ensure that no individual player can  be
+              placed  into a game with unreasonably high latency. Use multiple
+              policies to gradually relax latency requirements  a  step  at  a
+              time.  Multiple  policies are applied based on their maximum al-
+              lowed latency, starting with the lowest value.
+
+              (structure)
+                 Sets a latency cap for individual players when placing a game
+                 session.  With a latency policy in force, a game session can-
+                 not be placed in a fleet location where a player reports  la-
+                 tency  higher  than  the  cap. Latency policies are used only
+                 with placement request that provide player  latency  informa-
+                 tion. Player latency policies can be stacked to gradually re-
+                 lax latency requirements over time.
+
+                 Latency policies are part of a  GameSessionQueue .
+
+                 MaximumIndividualPlayerLatencyMilliseconds -> (integer)
+                     The maximum latency value that is allowed for any player,
+                     in  milliseconds.  All policies must have a value set for
+                     this property.
+
+                 PolicyDurationSeconds -> (integer)
+                     The length of time, in seconds, that the  policy  is  en-
+                     forced while placing a new game session. A null value for
+                     this property means that the policy is enforced until the
+                     queue times out.
+
+          Destinations -> (list)
+              A  list  of fleets and/or fleet aliases that can be used to ful-
+              fill game session placement requests in the queue.  Destinations
+              are  identified  by either a fleet ARN or a fleet alias ARN, and
+              are listed in order of placement preference.
+
+              (structure)
+                 A fleet or alias designated in a game session  queue.  Queues
+                 fulfill  requests for new game sessions by placing a new game
+                 session on any of the queue's destinations.
+
+                 Destinations are part of a  GameSessionQueue .
+
+                 DestinationArn -> (string)
+                     The Amazon Resource Name (ARN) that is assigned to  fleet
+                     or  fleet  alias. ARNs, which include a fleet ID or alias
+                     ID and a Region name, provide a unique identifier  across
+                     all Regions.
+
+          FilterConfiguration -> (structure)
+              A  list  of locations where a queue is allowed to place new game
+              sessions. Locations are specified in  the  form  of  AWS  Region
+              codes,  such  as  us-west-2 . If this parameter is not set, game
+              sessions can be placed in any queue location.
+
+              AllowedLocations -> (list)
+                 A list of locations to allow game session  placement  in,  in
+                 the form of AWS Region codes such as us-west-2 .
+
+                 (string)
+
+          PriorityConfiguration -> (structure)
+              Custom  settings to use when prioritizing destinations and loca-
+              tions for game session placements. This  configuration  replaces
+              the  FleetIQ default prioritization process. Priority types that
+              are not explicitly named will be automatically  applied  at  the
+              end of the prioritization process.
+
+              PriorityOrder -> (list)
+                 The  recommended  sequence  to use when prioritizing where to
+                 place new game sessions. Each type can only be listed once.
+
+                 o LATENCY -- FleetIQ prioritizes locations where the  average
+                   player  latency  (provided in each game session request) is
+                   lowest.
+
+                 o COST -- FleetIQ prioritizes destinations  with  the  lowest
+                   current hosting costs. Cost is evaluated based on the loca-
+                   tion, instance type, and fleet type (Spot or On-Demand) for
+                   each destination in the queue.
+
+                 o DESTINATION  -- FleetIQ prioritizes based on the order that
+                   destinations are listed in the queue configuration.
+
+                 o LOCATION -- FleetIQ prioritizes based on the provided order
+                   of locations, as defined in LocationOrder .
+
+                 (string)
+
+              LocationOrder -> (list)
+                 The prioritization order to use for fleet locations, when the
+                 PriorityOrder property  includes  LOCATION  .  Locations  are
+                 identified by AWS Region codes such as us-west-2 . Each loca-
+                 tion can only be listed once.
+
+                 (string)
+
+          CustomEventData -> (string)
+              Information that is added to all events that are related to this
+              game session queue.
+
+          NotificationTarget -> (string)
+              An  SNS  topic ARN that is set up to receive game session place-
+              ment notifications. See Setting up notifications for  game  ses-
+              sion placement .
+
+
+
+                                                   UPDATE-GAME-SESSION-QUEUE()

@@ -1,0 +1,1840 @@
+UPDATE-SERVICE()                                              UPDATE-SERVICE()
+
+
+
+NAME
+       update-service -
+
+DESCRIPTION
+       WARNING:
+          Updating  the task placement strategies and constraints on an Amazon
+          ECS service remains in preview and is a Beta Service as  defined  by
+          and  subject to the Beta Service Participation Service Terms located
+          at https://aws.amazon.com/service-terms ("Beta Terms").  These  Beta
+          Terms apply to your participation in this preview.
+
+       Modifies the parameters of a service.
+
+       For services using the rolling update (ECS ) deployment controller, the
+       desired count, deployment configuration,  network  configuration,  task
+       placement  constraints  and  strategies, or task definition used can be
+       updated.
+
+       For services using the blue/green (CODE_DEPLOY ) deployment controller,
+       only  the  desired count, deployment configuration, task placement con-
+       straints and strategies, and health check grace period can  be  updated
+       using this API. If the network configuration, platform version, or task
+       definition need to be updated, a new CodeDeploy deployment is  created.
+       For more information, see CreateDeployment in the CodeDeploy API Refer-
+       ence .
+
+       For services using an external deployment controller,  you  can  update
+       only  the desired count, task placement constraints and strategies, and
+       health check grace period using this API. If the launch type, load bal-
+       ancer, network configuration, platform version, or task definition need
+       to be updated, create a new task set. For more information,  see   Cre-
+       ateTaskSet .
+
+       You  can add to or subtract from the number of instantiations of a task
+       definition in a service by specifying the cluster that the  service  is
+       running in and a new desiredCount parameter.
+
+       If  you have updated the Docker image of your application, you can cre-
+       ate a new task definition with that image and deploy it  to  your  ser-
+       vice.  The service scheduler uses the minimum healthy percent and maxi-
+       mum percent parameters (in the service's deployment  configuration)  to
+       determine the deployment strategy.
+
+       NOTE:
+          If your updated Docker image uses the same tag as what is in the ex-
+          isting task definition for your service (for example,  my_image:lat-
+          est  ), you don't need to create a new revision of your task defini-
+          tion. You can update the service using  the  forceNewDeployment  op-
+          tion.  The new tasks launched by the deployment pull the current im-
+          age/tag combination from your repository when they start.
+
+       You can also update the deployment configuration of a service.  When  a
+       deployment  is  triggered by updating the task definition of a service,
+       the service scheduler uses  the  deployment  configuration  parameters,
+       minimumHealthyPercent  and maximumPercent , to determine the deployment
+       strategy.
+
+       o If minimumHealthyPercent is below 100%, the scheduler can ignore  de-
+         siredCount  temporarily during a deployment. For example, if desired-
+         Count is four tasks, a minimum of 50% allows the  scheduler  to  stop
+         two  existing tasks before starting two new tasks. Tasks for services
+         that don't use a load balancer are considered healthy if  they're  in
+         the  RUNNING  state.  Tasks for services that use a load balancer are
+         considered healthy if they're in the RUNNING state and the  container
+         instance  they're  hosted  on is reported as healthy by the load bal-
+         ancer.
+
+       o The maximumPercent parameter represents an upper limit on the  number
+         of  running  tasks  during a deployment. You can use it to define the
+         deployment batch size. For example, if desiredCount is four tasks,  a
+         maximum  of 200% starts four new tasks before stopping the four older
+         tasks (provided that the cluster resources required to  do  this  are
+         available).
+
+       When  UpdateService stops a task during a deployment, the equivalent of
+       docker stop is issued to the containers running in the task.  This  re-
+       sults in a SIGTERM and a 30-second timeout. After this, SIGKILL is sent
+       and the containers are forcibly stopped. If the container  handles  the
+       SIGTERM  gracefully  and  exits within 30 seconds from receiving it, no
+       SIGKILL is sent.
+
+       When the service scheduler  launches  new  tasks,  it  determines  task
+       placement in your cluster with the following logic.
+
+       o Determine  which  of the container instances in your cluster can sup-
+         port your service's task definition. For example, they have  the  re-
+         quired CPU, memory, ports, and container instance attributes.
+
+       o By  default,  the  service scheduler attempts to balance tasks across
+         Availability Zones in this manner even though you can choose  a  dif-
+         ferent placement strategy.
+
+         o Sort  the valid container instances by the fewest number of running
+           tasks for this service in the same Availability  Zone  as  the  in-
+           stance.  For  example,  if  zone A has one running service task and
+           zones B and C each have zero, valid container instances  in  either
+           zone B or C are considered optimal for placement.
+
+         o Place  the new service task on a valid container instance in an op-
+           timal Availability Zone (based on  the  previous  steps),  favoring
+           container  instances  with  the  fewest number of running tasks for
+           this service.
+
+       When the service scheduler stops running tasks, it attempts to maintain
+       balance across the Availability Zones in your cluster using the follow-
+       ing logic:
+
+       o Sort the container instances by the largest number of  running  tasks
+         for  this  service in the same Availability Zone as the instance. For
+         example, if zone A has one running service task and  zones  B  and  C
+         each  have two, container instances in either zone B or C are consid-
+         ered optimal for termination.
+
+       o Stop the task on a container instance in an optimal Availability Zone
+         (based  on the previous steps), favoring container instances with the
+         largest number of running tasks for this service.
+
+       See also: AWS API Documentation
+
+       See 'aws help' for descriptions of global parameters.
+
+SYNOPSIS
+            update-service
+          [--cluster <value>]
+          --service <value>
+          [--desired-count <value>]
+          [--task-definition <value>]
+          [--capacity-provider-strategy <value>]
+          [--deployment-configuration <value>]
+          [--network-configuration <value>]
+          [--placement-constraints <value>]
+          [--placement-strategy <value>]
+          [--platform-version <value>]
+          [--force-new-deployment | --no-force-new-deployment]
+          [--health-check-grace-period-seconds <value>]
+          [--enable-execute-command | --disable-execute-command]
+          [--cli-input-json | --cli-input-yaml]
+          [--generate-cli-skeleton <value>]
+
+OPTIONS
+       --cluster (string)
+          The short name or full Amazon Resource Name  (ARN)  of  the  cluster
+          that  your service runs on. If you do not specify a cluster, the de-
+          fault cluster is assumed.
+
+       --service (string)
+          The name of the service to update.
+
+       --desired-count (integer)
+          The number of instantiations of the task to place and  keep  running
+          in your service.
+
+       --task-definition (string)
+          The  family  and revision (family:revision ) or full ARN of the task
+          definition to run in your service. If a revision is  not  specified,
+          the  latest  ACTIVE revision is used. If you modify the task defini-
+          tion with UpdateService , Amazon ECS spawns a task with the new ver-
+          sion of the task definition and then stops an old task after the new
+          version is running.
+
+       --capacity-provider-strategy (list)
+          The capacity provider strategy to update the service to use.
+
+          if the service uses the default capacity provider strategy  for  the
+          cluster,  the  service  can  be  updated to use one or more capacity
+          providers as opposed to the default capacity provider strategy. How-
+          ever,  when  a  service is using a capacity provider strategy that's
+          not the default capacity provider strategy, the service can't be up-
+          dated to use the cluster's default capacity provider strategy.
+
+          A  capacity  provider  strategy  consists  of  one  or more capacity
+          providers along with the base and weight to assign to them. A capac-
+          ity provider must be associated with the cluster to be used in a ca-
+          pacity provider strategy. The   PutClusterCapacityProviders  API  is
+          used  to associate a capacity provider with a cluster. Only capacity
+          providers with an ACTIVE or UPDATING status can be used.
+
+          If specifying a capacity provider that uses an Auto  Scaling  group,
+          the   capacity  provider  must  already  be  created.  New  capacity
+          providers can be created with the  CreateCapacityProvider API opera-
+          tion.
+
+          To  use  a  Fargate capacity provider, specify either the FARGATE or
+          FARGATE_SPOT capacity providers. The Fargate capacity providers  are
+          available  to  all  accounts  and  only need to be associated with a
+          cluster to be used.
+
+          The  PutClusterCapacityProviders API operation is used to update the
+          list of available capacity providers for a cluster after the cluster
+          is created.
+
+          (structure)
+              The details of a capacity provider strategy. A capacity provider
+              strategy  can  be  set when using the  RunTask or  CreateCluster
+              APIs or as the default capacity provider strategy for a  cluster
+              with the  CreateCluster API.
+
+              Only capacity providers that are already associated with a clus-
+              ter and have an ACTIVE or UPDATING status can be used in  a  ca-
+              pacity  provider  strategy. The  PutClusterCapacityProviders API
+              is used to associate a capacity provider with a cluster.
+
+              If specifying a capacity provider  that  uses  an  Auto  Scaling
+              group,  the  capacity provider must already be created. New Auto
+              Scaling group capacity providers can be created with  the   Cre-
+              ateCapacityProvider API operation.
+
+              To  use  a Fargate capacity provider, specify either the FARGATE
+              or  FARGATE_SPOT  capacity  providers.  The   Fargate   capacity
+              providers  are available to all accounts and only need to be as-
+              sociated with a cluster to be used in a capacity provider strat-
+              egy.
+
+              A capacity provider strategy may contain a maximum of 6 capacity
+              providers.
+
+              capacityProvider -> (string)
+                 The short name of the capacity provider.
+
+              weight -> (integer)
+                 The weight value designates the relative  percentage  of  the
+                 total  number of tasks launched that should use the specified
+                 capacity provider. The weight value is taken into  considera-
+                 tion after the base value, if defined, is satisfied.
+
+                 If  no  weight  value is specified, the default value of 0 is
+                 used. When multiple capacity providers are specified within a
+                 capacity  provider  strategy,  at  least  one of the capacity
+                 providers must have a weight value greater than zero and  any
+                 capacity  providers with a weight of 0 can't be used to place
+                 tasks. If you specify multiple capacity providers in a strat-
+                 egy  that  all have a weight of 0 , any RunTask or CreateSer-
+                 vice actions using the capacity provider strategy will fail.
+
+                 An example scenario for using weights is defining a  strategy
+                 that  contains  two capacity providers and both have a weight
+                 of 1 , then when the base is satisfied,  the  tasks  will  be
+                 split  evenly  across  the two capacity providers. Using that
+                 same logic,  if  you  specify  a  weight  of  1  for  capaci-
+                 tyProviderA  and  a  weight of 4 for capacityProviderB , then
+                 for every one task that's run using capacityProviderA ,  four
+                 tasks would use capacityProviderB .
+
+              base -> (integer)
+                 The  base  value  designates how many tasks, at a minimum, to
+                 run on the specified capacity  provider.  Only  one  capacity
+                 provider  in a capacity provider strategy can have a base de-
+                 fined. If no value is specified, the default value  of  0  is
+                 used.
+
+       Shorthand Syntax:
+
+          capacityProvider=string,weight=integer,base=integer ...
+
+       JSON Syntax:
+
+          [
+            {
+              "capacityProvider": "string",
+              "weight": integer,
+              "base": integer
+            }
+            ...
+          ]
+
+       --deployment-configuration (structure)
+          Optional  deployment parameters that control how many tasks run dur-
+          ing the deployment and the ordering of stopping and starting tasks.
+
+          deploymentCircuitBreaker -> (structure)
+
+              NOTE:
+                 The deployment circuit breaker can only be used for  services
+                 using the rolling update (ECS ) deployment type.
+
+              The  deployment circuit breaker determines whether a service de-
+              ployment will fail if the service can't reach a steady state. If
+              deployment circuit breaker is enabled, a service deployment will
+              transition to a failed state and stop launching  new  tasks.  If
+              rollback  is  enabled, when a service deployment fails, the ser-
+              vice is rolled back to the last deployment that  completed  suc-
+              cessfully.
+
+              enable -> (boolean)
+                 Determines  whether  to enable the deployment circuit breaker
+                 logic for the service.
+
+              rollback -> (boolean)
+                 Determines whether to enable Amazon ECS to roll back the ser-
+                 vice  if  a service deployment fails. If rollback is enabled,
+                 when a service deployment fails, the service is  rolled  back
+                 to the last deployment that completed successfully.
+
+          maximumPercent -> (integer)
+              If a service is using the rolling update (ECS ) deployment type,
+              the maximum percent parameter represents an upper limit  on  the
+              number  of tasks in a service that are allowed in the RUNNING or
+              PENDING state during a deployment, as a percentage  of  the  de-
+              sired number of tasks (rounded down to the nearest integer), and
+              while any container instances are in the DRAINING state  if  the
+              service contains tasks using the EC2 launch type. This parameter
+              enables you to define the deployment batch size. For example, if
+              your  service  has  a desired number of four tasks and a maximum
+              percent value of 200%, the scheduler may start  four  new  tasks
+              before  stopping the four older tasks (provided that the cluster
+              resources required to do this are available). The default  value
+              for maximum percent is 200%.
+
+              If  a service is using the blue/green (CODE_DEPLOY ) or EXTERNAL
+              deployment types and tasks that use the  EC2  launch  type,  the
+              maximum percent value is set to the default value and is used to
+              define the upper limit on the number of the tasks in the service
+              that  remain  in the RUNNING state while the container instances
+              are in the DRAINING state. If the tasks in the service  use  the
+              Fargate  launch type, the maximum percent value is not used, al-
+              though it is returned when describing your service.
+
+          minimumHealthyPercent -> (integer)
+              If a service is using the rolling update (ECS ) deployment type,
+              the minimum healthy percent represents a lower limit on the num-
+              ber of tasks in a service that must remain in the RUNNING  state
+              during  a  deployment,  as a percentage of the desired number of
+              tasks (rounded up to the nearest integer), and  while  any  con-
+              tainer  instances  are in the DRAINING state if the service con-
+              tains tasks using the EC2 launch type.  This  parameter  enables
+              you to deploy without using additional cluster capacity. For ex-
+              ample, if your service has a desired number of four tasks and  a
+              minimum  healthy  percent of 50%, the scheduler may stop two ex-
+              isting tasks to free up cluster capacity before starting two new
+              tasks.  Tasks  for  services that do not use a load balancer are
+              considered healthy if they're in the RUNNING  state;  tasks  for
+              services  that  do use a load balancer are considered healthy if
+              they're in the RUNNING state and they're reported as healthy  by
+              the load balancer. The default value for minimum healthy percent
+              is 100%.
+
+              If a service is using the blue/green (CODE_DEPLOY ) or  EXTERNAL
+              deployment  types  and  tasks  that use the EC2 launch type, the
+              minimum healthy percent value is set to the default value and is
+              used to define the lower limit on the number of the tasks in the
+              service that remain in the RUNNING state while the container in-
+              stances  are  in the DRAINING state. If the tasks in the service
+              use the Fargate launch type, the minimum healthy  percent  value
+              is  not  used, although it is returned when describing your ser-
+              vice.
+
+       Shorthand Syntax:
+
+          deploymentCircuitBreaker={enable=boolean,rollback=boolean},maximumPercent=integer,minimumHealthyPercent=integer
+
+       JSON Syntax:
+
+          {
+            "deploymentCircuitBreaker": {
+              "enable": true|false,
+              "rollback": true|false
+            },
+            "maximumPercent": integer,
+            "minimumHealthyPercent": integer
+          }
+
+       --network-configuration (structure)
+          An object representing the network configuration for the service.
+
+          awsvpcConfiguration -> (structure)
+              The VPC subnets and security groups that are associated  with  a
+              task.
+
+              NOTE:
+                 All  specified  subnets  and security groups must be from the
+                 same VPC.
+
+              subnets -> (list)
+                 The IDs of the subnets associated with the task  or  service.
+                 There's  a  limit  of  16  subnets  that can be specified per
+                 AwsVpcConfiguration .
+
+                 NOTE:
+                     All specified subnets must be from the same VPC.
+
+                 (string)
+
+              securityGroups -> (list)
+                 The IDs of the security groups associated with  the  task  or
+                 service.  If  you don't specify a security group, the default
+                 security group for the VPC is used. There's a limit of 5  se-
+                 curity groups that can be specified per AwsVpcConfiguration .
+
+                 NOTE:
+                     All specified security groups must be from the same VPC.
+
+                 (string)
+
+              assignPublicIp -> (string)
+                 Whether  the task's elastic network interface receives a pub-
+                 lic IP address. The default value is DISABLED .
+
+       Shorthand Syntax:
+
+          awsvpcConfiguration={subnets=[string,string],securityGroups=[string,string],assignPublicIp=string}
+
+       JSON Syntax:
+
+          {
+            "awsvpcConfiguration": {
+              "subnets": ["string", ...],
+              "securityGroups": ["string", ...],
+              "assignPublicIp": "ENABLED"|"DISABLED"
+            }
+          }
+
+       --placement-constraints (list)
+          An array of task placement constraint objects to update the  service
+          to use. If no value is specified, the existing placement constraints
+          for the service will remain unchanged. If this value  is  specified,
+          it  will override any existing placement constraints defined for the
+          service. To remove all existing placement  constraints,  specify  an
+          empty array.
+
+          You  can  specify  a  maximum  of 10 constraints for each task. This
+          limit includes constraints in the task definition and  those  speci-
+          fied at runtime.
+
+          (structure)
+              An  object representing a constraint on task placement. For more
+              information, see Task Placement Constraints in the Amazon  Elas-
+              tic Container Service Developer Guide .
+
+              NOTE:
+                 If  you're using the Fargate launch type, task placement con-
+                 straints aren't supported.
+
+              type -> (string)
+                 The type of constraint. Use distinctInstance to  ensure  that
+                 each  task  in  a  particular group is running on a different
+                 container instance. Use memberOf to restrict the selection to
+                 a group of valid candidates.
+
+              expression -> (string)
+                 A  cluster  query  language  expression  to apply to the con-
+                 straint. The expression can have a  maximum  length  of  2000
+                 characters. You can't specify an expression if the constraint
+                 type is distinctInstance . For more information, see  Cluster
+                 query language in the Amazon Elastic Container Service Devel-
+                 oper Guide .
+
+       Shorthand Syntax:
+
+          type=string,expression=string ...
+
+       JSON Syntax:
+
+          [
+            {
+              "type": "distinctInstance"|"memberOf",
+              "expression": "string"
+            }
+            ...
+          ]
+
+       --placement-strategy (list)
+          The task placement strategy objects to update the service to use. If
+          no  value is specified, the existing placement strategy for the ser-
+          vice will remain unchanged. If this  value  is  specified,  it  will
+          override the existing placement strategy defined for the service. To
+          remove an existing placement strategy, specify an empty object.
+
+          You can specify a maximum of five strategy rules for each service.
+
+          (structure)
+              The task placement strategy for a task or service. For more  in-
+              formation,  see  Task Placement Strategies in the Amazon Elastic
+              Container Service Developer Guide .
+
+              type -> (string)
+                 The type of placement strategy. The random placement strategy
+                 randomly  places  tasks  on  available candidates. The spread
+                 placement strategy spreads placement across available  candi-
+                 dates evenly based on the field parameter. The binpack strat-
+                 egy places tasks on available candidates that have the  least
+                 available  amount  of  the resource that's specified with the
+                 field parameter. For example, if you  binpack  on  memory,  a
+                 task  is  placed on the instance with the least amount of re-
+                 maining memory but still enough to run the task.
+
+              field -> (string)
+                 The field to apply the placement strategy  against.  For  the
+                 spread  placement  strategy,  valid values are instanceId (or
+                 host , which has the same effect), or any platform or  custom
+                 attribute that's applied to a container instance, such as at-
+                 tribute:ecs.availability-zone .  For  the  binpack  placement
+                 strategy,  valid  values  are cpu and memory . For the random
+                 placement strategy, this field is not used.
+
+       Shorthand Syntax:
+
+          type=string,field=string ...
+
+       JSON Syntax:
+
+          [
+            {
+              "type": "random"|"spread"|"binpack",
+              "field": "string"
+            }
+            ...
+          ]
+
+       --platform-version (string)
+          The platform version that your tasks in the service run on. A  plat-
+          form  version  is  only specified for tasks using the Fargate launch
+          type. If a platform version is not specified,  the  LATEST  platform
+          version is used. For more information, see Fargate Platform Versions
+          in the Amazon Elastic Container Service Developer Guide .
+
+       --force-new-deployment | --no-force-new-deployment (boolean)
+          Determines whether to force a new deployment of the service. By  de-
+          fault, deployments aren't forced. You can use this option to start a
+          new deployment with no service definition changes. For example,  you
+          can  update  a  service's tasks to use a newer Docker image with the
+          same image/tag combination (my_image:latest )  or  to  roll  Fargate
+          tasks onto a newer platform version.
+
+       --health-check-grace-period-seconds (integer)
+          The  period  of time, in seconds, that the Amazon ECS service sched-
+          uler ignores unhealthy Elastic Load Balancing target  health  checks
+          after  a  task has first started. This is only valid if your service
+          is configured to use a load balancer. If your service's tasks take a
+          while  to start and respond to Elastic Load Balancing health checks,
+          you can specify a health check grace period of up  to  2,147,483,647
+          seconds.  During that time, the Amazon ECS service scheduler ignores
+          the Elastic Load Balancing health check status.  This  grace  period
+          can  prevent  the  ECS  service  scheduler from marking tasks as un-
+          healthy and stopping them before they have time to come up.
+
+       --enable-execute-command | --disable-execute-command (boolean)
+          If true , this enables execute command  functionality  on  all  task
+          containers.
+
+          If  you do not want to override the value that was set when the ser-
+          vice was created, you can set this to null when performing this  ac-
+          tion.
+
+       --cli-input-json  |  --cli-input-yaml (string) Reads arguments from the
+       JSON string provided. The JSON string follows the  format  provided  by
+       --generate-cli-skeleton. If other arguments are provided on the command
+       line, those values will override the JSON-provided values.  It  is  not
+       possible to pass arbitrary binary values using a JSON-provided value as
+       the string will be taken literally. This may  not  be  specified  along
+       with --cli-input-yaml.
+
+       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
+       output without sending an API request. If provided with no value or the
+       value input, prints a sample input JSON that can be used as an argument
+       for --cli-input-json. Similarly, if provided yaml-input it will print a
+       sample  input  YAML that can be used with --cli-input-yaml. If provided
+       with the value output, it validates the command inputs  and  returns  a
+       sample output JSON for that command.
+
+       See 'aws help' for descriptions of global parameters.
+
+EXAMPLES
+       Example 1: To change the task definition used in a service
+
+       The  following  update-service example updates the my-http-service ser-
+       vice to use the amazon-ecs-sample task definition.
+
+          aws ecs update-service --service my-http-service --task-definition amazon-ecs-sample
+
+       Example 2: To change the number of tasks in a service
+
+       The following update-service example updates the desired task count  of
+       the service my-http-service to 3.
+
+          aws ecs update-service --service my-http-service --desired-count 3
+
+       For  more  information, see Updating a Service in the Amazon ECS Devel-
+       oper Guide.
+
+OUTPUT
+       service -> (structure)
+          The full description of your service following the update call.
+
+          serviceArn -> (string)
+              The ARN that  identifies  the  service.  The  ARN  contains  the
+              arn:aws:ecs  namespace,  followed  by the Region of the service,
+              the Amazon Web Services account ID of  the  service  owner,  the
+              service  namespace,  and  then  the  service  name. For example,
+              arn:aws:ecs:region:012345678910:service/my-service .
+
+          serviceName -> (string)
+              The name of your service. Up to 255 letters (uppercase and  low-
+              ercase),  numbers, underscores, and hyphens are allowed. Service
+              names must be unique within a cluster.  However,  you  can  have
+              similarly named services in multiple clusters within a Region or
+              across multiple Regions.
+
+          clusterArn -> (string)
+              The Amazon Resource Name (ARN) of the  cluster  that  hosts  the
+              service.
+
+          loadBalancers -> (list)
+              A  list of Elastic Load Balancing load balancer objects. It con-
+              tains the load balancer name, the container name, and  the  con-
+              tainer port to access from the load balancer. The container name
+              is as it appears in a container definition.
+
+              (structure)
+                 The load balancer configuration to use with a service or task
+                 set.
+
+                 For specific notes and restrictions regarding the use of load
+                 balancers with services and task sets, see the  CreateService
+                 and CreateTaskSet actions.
+
+                 targetGroupArn -> (string)
+                     The  full  Amazon Resource Name (ARN) of the Elastic Load
+                     Balancing target group or groups associated with  a  ser-
+                     vice or task set.
+
+                     A target group ARN is only specified when using an Appli-
+                     cation Load Balancer or Network Load Balancer. If  you're
+                     using a Classic Load Balancer, omit the target group ARN.
+
+                     For services using the ECS deployment controller, you can
+                     specify one or multiple target groups. For more  informa-
+                     tion,  see Registering Multiple Target Groups with a Ser-
+                     vice in the Amazon Elastic  Container  Service  Developer
+                     Guide .
+
+                     For services using the CODE_DEPLOY deployment controller,
+                     you're required to define two target groups for the  load
+                     balancer. For more information, see Blue/Green Deployment
+                     with CodeDeploy in the Amazon Elastic  Container  Service
+                     Developer Guide .
+
+                     WARNING:
+                        If your service's task definition uses the awsvpc net-
+                        work mode, you must choose ip as the target type,  not
+                        instance  .  Do  this when creating your target groups
+                        because tasks that use the awsvpc network mode are as-
+                        sociated  with  an  elastic  network interface, not an
+                        Amazon EC2 instance. This network mode is required for
+                        the Fargate launch type.
+
+                 loadBalancerName -> (string)
+                     The  name of the load balancer to associate with the Ama-
+                     zon ECS service or task set.
+
+                     A load balancer name is only specified when using a Clas-
+                     sic  Load  Balancer. If you are using an Application Load
+                     Balancer or a Network Load  Balancer  the  load  balancer
+                     name parameter should be omitted.
+
+                 containerName -> (string)
+                     The  name  of the container (as it appears in a container
+                     definition) to associate with the load balancer.
+
+                 containerPort -> (integer)
+                     The port on the container to associate with the load bal-
+                     ancer.  This  port  must correspond to a containerPort in
+                     the task definition the tasks in the service  are  using.
+                     For tasks that use the EC2 launch type, the container in-
+                     stance they're launched on must allow ingress traffic  on
+                     the hostPort of the port mapping.
+
+          serviceRegistries -> (list)
+              The  details  for  the service discovery registries to assign to
+              this service. For more information, see Service Discovery .
+
+              (structure)
+                 The details for the service registry.
+
+                 registryArn -> (string)
+                     The Amazon Resource Name (ARN) of the  service  registry.
+                     The  currently  supported  service registry is Cloud Map.
+                     For more information, see CreateService .
+
+                 port -> (integer)
+                     The port value used if  your  service  discovery  service
+                     specified an SRV record. This field might be used if both
+                     the awsvpc network mode and SRV records are used.
+
+                 containerName -> (string)
+                     The container name value to be used for your service dis-
+                     covery  service. It's already specified in the task defi-
+                     nition. If the task definition  that  your  service  task
+                     specifies  uses the bridge or host network mode, you must
+                     specify a  containerName  and  containerPort  combination
+                     from  the  task  definition.  If the task definition that
+                     your service task specifies uses the awsvpc network  mode
+                     and  a  type SRV DNS record is used, you must specify ei-
+                     ther a containerName and containerPort combination  or  a
+                     port value. However, you can't specify both.
+
+                 containerPort -> (integer)
+                     The port value to be used for your service discovery ser-
+                     vice. It's already specified in the task  definition.  If
+                     the  task definition your service task specifies uses the
+                     bridge or host network mode, you must specify a  contain-
+                     erName  and containerPort combination from the task defi-
+                     nition. If the task definition your service  task  speci-
+                     fies  uses  the  awsvpc  network  mode and a type SRV DNS
+                     record is used, you must specify either  a  containerName
+                     and  containerPort  combination or a port value. However,
+                     you can't specify both.
+
+          status -> (string)
+              The status of the service. The valid values are ACTIVE ,  DRAIN-
+              ING , or INACTIVE .
+
+          desiredCount -> (integer)
+              The  desired  number of instantiations of the task definition to
+              keep running on the service. This value is  specified  when  the
+              service  is created with  CreateService , and it can be modified
+              with  UpdateService .
+
+          runningCount -> (integer)
+              The number of tasks in the  cluster  that  are  in  the  RUNNING
+              state.
+
+          pendingCount -> (integer)
+              The  number  of  tasks  in  the  cluster that are in the PENDING
+              state.
+
+          launchType -> (string)
+              The launch type  the  service  is  using.  When  using  the  De-
+              scribeServices  API,  this  field  is omitted if the service was
+              created using a capacity provider strategy.
+
+          capacityProviderStrategy -> (list)
+              The capacity provider strategy the service uses. When using  the
+              DescribeServices  API,  this field is omitted if the service was
+              created using a launch type.
+
+              (structure)
+                 The details of  a  capacity  provider  strategy.  A  capacity
+                 provider strategy can be set when using the  RunTask or  Cre-
+                 ateCluster APIs or as the default capacity provider  strategy
+                 for a cluster with the  CreateCluster API.
+
+                 Only  capacity  providers  that are already associated with a
+                 cluster and have an ACTIVE or UPDATING status can be used  in
+                 a   capacity   provider   strategy.   The   PutClusterCapaci-
+                 tyProviders API is used to associate a capacity provider with
+                 a cluster.
+
+                 If  specifying  a capacity provider that uses an Auto Scaling
+                 group, the capacity provider must  already  be  created.  New
+                 Auto Scaling group capacity providers can be created with the
+                 CreateCapacityProvider API operation.
+
+                 To use a Fargate capacity provider, specify either  the  FAR-
+                 GATE or FARGATE_SPOT capacity providers. The Fargate capacity
+                 providers are available to all accounts and only need  to  be
+                 associated  with  a cluster to be used in a capacity provider
+                 strategy.
+
+                 A capacity provider strategy may contain a maximum of  6  ca-
+                 pacity providers.
+
+                 capacityProvider -> (string)
+                     The short name of the capacity provider.
+
+                 weight -> (integer)
+                     The  weight  value  designates the relative percentage of
+                     the total number of tasks launched that  should  use  the
+                     specified  capacity  provider.  The weight value is taken
+                     into consideration after the base value, if  defined,  is
+                     satisfied.
+
+                     If  no  weight value is specified, the default value of 0
+                     is used. When multiple capacity providers  are  specified
+                     within  a capacity provider strategy, at least one of the
+                     capacity providers must have a weight value greater  than
+                     zero  and any capacity providers with a weight of 0 can't
+                     be used to place tasks. If you specify multiple  capacity
+                     providers in a strategy that all have a weight of 0 , any
+                     RunTask  or  CreateService  actions  using  the  capacity
+                     provider strategy will fail.
+
+                     An  example  scenario  for  using  weights  is defining a
+                     strategy that contains two capacity  providers  and  both
+                     have a weight of 1 , then when the base is satisfied, the
+                     tasks will  be  split  evenly  across  the  two  capacity
+                     providers. Using that same logic, if you specify a weight
+                     of 1 for capacityProviderA and a weight of 4 for  capaci-
+                     tyProviderB  ,  then  for every one task that's run using
+                     capacityProviderA  ,  four  tasks   would   use   capaci-
+                     tyProviderB .
+
+                 base -> (integer)
+                     The  base  value designates how many tasks, at a minimum,
+                     to run on the specified capacity provider. Only  one  ca-
+                     pacity  provider in a capacity provider strategy can have
+                     a base defined. If no value  is  specified,  the  default
+                     value of 0 is used.
+
+          platformVersion -> (string)
+              The  platform version to run your service on. A platform version
+              is only specified for tasks that are hosted on Fargate.  If  one
+              isn't  specified,  the LATEST platform version is used. For more
+              information, see Fargate Platform Versions in the Amazon Elastic
+              Container Service Developer Guide .
+
+          platformFamily -> (string)
+              The  operating  system  that your tasks in the service run on. A
+              platform family is specified only for tasks  using  the  Fargate
+              launch type.
+
+              All  tasks  that  run  as part of this service must use the same
+              platformFamily value as the service (for example, LINUX ).
+
+          taskDefinition -> (string)
+              The task definition to use for tasks in the service. This  value
+              is  specified  when the service is created with  CreateService ,
+              and it can be modified with  UpdateService .
+
+          deploymentConfiguration -> (structure)
+              Optional deployment parameters that control how many  tasks  run
+              during  the deployment and the ordering of stopping and starting
+              tasks.
+
+              deploymentCircuitBreaker -> (structure)
+
+                 NOTE:
+                     The deployment circuit breaker can only be used for  ser-
+                     vices using the rolling update (ECS ) deployment type.
+
+                 The  deployment  circuit breaker determines whether a service
+                 deployment will fail if the  service  can't  reach  a  steady
+                 state.  If  deployment  circuit breaker is enabled, a service
+                 deployment will transition to a failed state and stop launch-
+                 ing new tasks. If rollback is enabled, when a service deploy-
+                 ment fails, the service is rolled back to the last deployment
+                 that completed successfully.
+
+                 enable -> (boolean)
+                     Determines  whether  to  enable  the  deployment  circuit
+                     breaker logic for the service.
+
+                 rollback -> (boolean)
+                     Determines whether to enable Amazon ECS to roll back  the
+                     service if a service deployment fails. If rollback is en-
+                     abled, when a service deployment fails,  the  service  is
+                     rolled  back  to  the last deployment that completed suc-
+                     cessfully.
+
+              maximumPercent -> (integer)
+                 If a service is using the rolling update  (ECS  )  deployment
+                 type, the maximum percent parameter represents an upper limit
+                 on the number of tasks in a service that are allowed  in  the
+                 RUNNING or PENDING state during a deployment, as a percentage
+                 of the desired number of tasks (rounded down to  the  nearest
+                 integer), and while any container instances are in the DRAIN-
+                 ING state if the service contains tasks using the EC2  launch
+                 type.  This  parameter  enables  you to define the deployment
+                 batch size. For example, if your service has a desired number
+                 of four tasks and a maximum percent value of 200%, the sched-
+                 uler may start four new tasks before stopping the four  older
+                 tasks  (provided  that  the  cluster resources required to do
+                 this are available). The default value for maximum percent is
+                 200%.
+
+                 If a service is using the blue/green (CODE_DEPLOY ) or EXTER-
+                 NAL deployment types and tasks that use the EC2 launch  type,
+                 the  maximum percent value is set to the default value and is
+                 used to define the upper limit on the number of the tasks  in
+                 the  service  that remain in the RUNNING state while the con-
+                 tainer instances are in the DRAINING state. If the  tasks  in
+                 the  service use the Fargate launch type, the maximum percent
+                 value is not used, although it is  returned  when  describing
+                 your service.
+
+              minimumHealthyPercent -> (integer)
+                 If  a  service  is using the rolling update (ECS ) deployment
+                 type, the minimum healthy percent represents a lower limit on
+                 the number of tasks in a service that must remain in the RUN-
+                 NING state during a deployment, as a percentage  of  the  de-
+                 sired  number  of  tasks (rounded up to the nearest integer),
+                 and while any container instances are in the  DRAINING  state
+                 if the service contains tasks using the EC2 launch type. This
+                 parameter enables you  to  deploy  without  using  additional
+                 cluster  capacity. For example, if your service has a desired
+                 number of four tasks and a minimum healthy  percent  of  50%,
+                 the  scheduler may stop two existing tasks to free up cluster
+                 capacity before starting two new tasks.  Tasks  for  services
+                 that  do  not  use  a load balancer are considered healthy if
+                 they're in the RUNNING state; tasks for services that do  use
+                 a load balancer are considered healthy if they're in the RUN-
+                 NING state and they're reported as healthy by the  load  bal-
+                 ancer. The default value for minimum healthy percent is 100%.
+
+                 If a service is using the blue/green (CODE_DEPLOY ) or EXTER-
+                 NAL deployment types and tasks that use the EC2 launch  type,
+                 the minimum healthy percent value is set to the default value
+                 and is used to define the lower limit on the  number  of  the
+                 tasks  in  the service that remain in the RUNNING state while
+                 the container instances are in the  DRAINING  state.  If  the
+                 tasks in the service use the Fargate launch type, the minimum
+                 healthy percent value is not used, although  it  is  returned
+                 when describing your service.
+
+          taskSets -> (list)
+              Information about a set of Amazon ECS tasks in either an CodeDe-
+              ploy or an EXTERNAL deployment. An Amazon ECS task set  includes
+              details  such as the desired number of tasks, how many tasks are
+              running, and whether the task set serves production traffic.
+
+              (structure)
+                 Information about a set of Amazon ECS tasks in either an Cod-
+                 eDeploy or an EXTERNAL deployment. An Amazon ECS task set in-
+                 cludes details such as the desired number of tasks, how  many
+                 tasks are running, and whether the task set serves production
+                 traffic.
+
+                 id -> (string)
+                     The ID of the task set.
+
+                 taskSetArn -> (string)
+                     The Amazon Resource Name (ARN) of the task set.
+
+                 serviceArn -> (string)
+                     The Amazon Resource Name (ARN) of the  service  the  task
+                     set exists in.
+
+                 clusterArn -> (string)
+                     The  Amazon  Resource  Name (ARN) of the cluster that the
+                     service that hosts the task set exists in.
+
+                 startedBy -> (string)
+                     The tag specified when a task set is started. If an  Cod-
+                     eDeploy  deployment  created  the task set, the startedBy
+                     parameter is CODE_DEPLOY . If an external deployment cre-
+                     ated the task set, the startedBy field isn't used.
+
+                 externalId -> (string)
+                     The external ID associated with the task set.
+
+                     If  an  CodeDeploy deployment created a task set, the ex-
+                     ternalId parameter contains the CodeDeploy deployment ID.
+
+                     If a task set is created for an external  deployment  and
+                     is  associated with a service discovery registry, the ex-
+                     ternalId parameter contains the  ECS_TASK_SET_EXTERNAL_ID
+                     Cloud Map attribute.
+
+                 status -> (string)
+                     The  status of the task set. The following describes each
+                     state.
+                        PRIMARY
+
+                     The task set is serving production traffic.
+                        ACTIVE
+
+                     The task set isn't serving production traffic.
+                        DRAINING
+
+                     The tasks in the task set are being  stopped,  and  their
+                     corresponding  targets  are being deregistered from their
+                     target group.
+
+                 taskDefinition -> (string)
+                     The task definition that the task set is using.
+
+                 computedDesiredCount -> (integer)
+                     The computed desired count for the task set. This is cal-
+                     culated  by multiplying the service's desiredCount by the
+                     task set's scale percentage. The result is always rounded
+                     up. For example, if the computed desired count is 1.2, it
+                     rounds up to 2 tasks.
+
+                 pendingCount -> (integer)
+                     The number of tasks in the task set that are in the PEND-
+                     ING  status  during  a  deployment. A task in the PENDING
+                     state is preparing to enter the RUNNING state. A task set
+                     enters  the PENDING status when it launches for the first
+                     time or when it's restarted after being  in  the  STOPPED
+                     state.
+
+                 runningCount -> (integer)
+                     The  number of tasks in the task set that are in the RUN-
+                     NING status during a deployment. A task  in  the  RUNNING
+                     state is running and ready for use.
+
+                 createdAt -> (timestamp)
+                     The  Unix  timestamp  for  the time when the task set was
+                     created.
+
+                 updatedAt -> (timestamp)
+                     The Unix timestamp for the time when  the  task  set  was
+                     last updated.
+
+                 launchType -> (string)
+                     The  launch type the tasks in the task set are using. For
+                     more information, see Amazon ECS launch types in the Ama-
+                     zon Elastic Container Service Developer Guide .
+
+                 capacityProviderStrategy -> (list)
+                     The  capacity  provider strategy that are associated with
+                     the task set.
+
+                     (structure)
+                        The details of a capacity provider strategy. A  capac-
+                        ity  provider strategy can be set when using the  Run-
+                        Task or  CreateCluster APIs or as the default capacity
+                        provider  strategy for a cluster with the  CreateClus-
+                        ter API.
+
+                        Only capacity providers that  are  already  associated
+                        with  a  cluster and have an ACTIVE or UPDATING status
+                        can be used in a capacity provider strategy. The  Put-
+                        ClusterCapacityProviders  API  is  used to associate a
+                        capacity provider with a cluster.
+
+                        If specifying a capacity provider that  uses  an  Auto
+                        Scaling  group,  the capacity provider must already be
+                        created. New Auto Scaling group capacity providers can
+                        be created with the  CreateCapacityProvider API opera-
+                        tion.
+
+                        To use a Fargate capacity provider, specify either the
+                        FARGATE  or  FARGATE_SPOT capacity providers. The Far-
+                        gate capacity providers are available to all  accounts
+                        and  only  need  to be associated with a cluster to be
+                        used in a capacity provider strategy.
+
+                        A capacity provider strategy may contain a maximum  of
+                        6 capacity providers.
+
+                        capacityProvider -> (string)
+                            The short name of the capacity provider.
+
+                        weight -> (integer)
+                            The  weight value designates the relative percent-
+                            age of the total number  of  tasks  launched  that
+                            should  use  the  specified capacity provider. The
+                            weight value is taken into consideration after the
+                            base value, if defined, is satisfied.
+
+                            If no weight value is specified, the default value
+                            of 0 is used. When multiple capacity providers are
+                            specified  within a capacity provider strategy, at
+                            least one of the capacity providers  must  have  a
+                            weight  value  greater  than zero and any capacity
+                            providers with a weight of  0  can't  be  used  to
+                            place  tasks.  If  you  specify  multiple capacity
+                            providers in a strategy that all have a weight  of
+                            0 , any RunTask or CreateService actions using the
+                            capacity provider strategy will fail.
+
+                            An example scenario for using weights is  defining
+                            a  strategy  that  contains two capacity providers
+                            and both have a weight of 1 , then when  the  base
+                            is  satisfied,  the  tasks  will  be  split evenly
+                            across the two capacity providers. Using that same
+                            logic,  if  you  specify a weight of 1 for capaci-
+                            tyProviderA  and  a  weight  of  4   for   capaci-
+                            tyProviderB  ,  then for every one task that's run
+                            using capacityProviderA , four tasks would use ca-
+                            pacityProviderB .
+
+                        base -> (integer)
+                            The  base  value  designates  how many tasks, at a
+                            minimum,  to  run  on   the   specified   capacity
+                            provider. Only one capacity provider in a capacity
+                            provider strategy can have a base defined.  If  no
+                            value  is  specified,  the  default  value of 0 is
+                            used.
+
+                 platformVersion -> (string)
+                     The Fargate platform version where the tasks in the  task
+                     set are running. A platform version is only specified for
+                     tasks run on Fargate. For more information,  see  Fargate
+                     platform versions in the Amazon Elastic Container Service
+                     Developer Guide .
+
+                 platformFamily -> (string)
+                     The operating system that your tasks in the set are  run-
+                     ning  on.  A  platform family is specified only for tasks
+                     that use the Fargate launch type.
+
+                     All tasks in the set must have the same value.
+
+                 networkConfiguration -> (structure)
+                     The network configuration for the task set.
+
+                     awsvpcConfiguration -> (structure)
+                        The VPC subnets and security groups that  are  associ-
+                        ated with a task.
+
+                        NOTE:
+                            All  specified subnets and security groups must be
+                            from the same VPC.
+
+                        subnets -> (list)
+                            The IDs of the subnets associated with the task or
+                            service. There's a limit of 16 subnets that can be
+                            specified per AwsVpcConfiguration .
+
+                            NOTE:
+                               All specified subnets must  be  from  the  same
+                               VPC.
+
+                            (string)
+
+                        securityGroups -> (list)
+                            The IDs of the security groups associated with the
+                            task or service. If you don't specify  a  security
+                            group,  the  default security group for the VPC is
+                            used. There's a limit of 5  security  groups  that
+                            can be specified per AwsVpcConfiguration .
+
+                            NOTE:
+                               All  specified security groups must be from the
+                               same VPC.
+
+                            (string)
+
+                        assignPublicIp -> (string)
+                            Whether the task's elastic network  interface  re-
+                            ceives  a  public IP address. The default value is
+                            DISABLED .
+
+                 loadBalancers -> (list)
+                     Details on a load balancer that are used with a task set.
+
+                     (structure)
+                        The load balancer configuration to use with a  service
+                        or task set.
+
+                        For  specific notes and restrictions regarding the use
+                        of load balancers with services and task sets, see the
+                        CreateService and CreateTaskSet actions.
+
+                        targetGroupArn -> (string)
+                            The full Amazon Resource Name (ARN) of the Elastic
+                            Load Balancing target group or  groups  associated
+                            with a service or task set.
+
+                            A target group ARN is only specified when using an
+                            Application Load Balancer  or  Network  Load  Bal-
+                            ancer.  If  you're  using a Classic Load Balancer,
+                            omit the target group ARN.
+
+                            For services using the ECS deployment  controller,
+                            you can specify one or multiple target groups. For
+                            more information, see Registering Multiple  Target
+                            Groups  with  a Service in the Amazon Elastic Con-
+                            tainer Service Developer Guide .
+
+                            For services using the CODE_DEPLOY deployment con-
+                            troller,  you're  required  to  define  two target
+                            groups for the load balancer.  For  more  informa-
+                            tion, see Blue/Green Deployment with CodeDeploy in
+                            the Amazon  Elastic  Container  Service  Developer
+                            Guide .
+
+                            WARNING:
+                               If  your  service's  task  definition  uses the
+                               awsvpc network mode, you must choose ip as  the
+                               target type, not instance . Do this when creat-
+                               ing your target groups because tasks  that  use
+                               the  awsvpc network mode are associated with an
+                               elastic network interface, not  an  Amazon  EC2
+                               instance. This network mode is required for the
+                               Fargate launch type.
+
+                        loadBalancerName -> (string)
+                            The name of the load balancer  to  associate  with
+                            the Amazon ECS service or task set.
+
+                            A  load balancer name is only specified when using
+                            a Classic Load Balancer. If you are using  an  Ap-
+                            plication Load Balancer or a Network Load Balancer
+                            the load balancer name parameter should  be  omit-
+                            ted.
+
+                        containerName -> (string)
+                            The name of the container (as it appears in a con-
+                            tainer definition) to associate with the load bal-
+                            ancer.
+
+                        containerPort -> (integer)
+                            The  port  on  the container to associate with the
+                            load balancer. This port must correspond to a con-
+                            tainerPort in the task definition the tasks in the
+                            service are using. For  tasks  that  use  the  EC2
+                            launch   type,   the  container  instance  they're
+                            launched on must  allow  ingress  traffic  on  the
+                            hostPort of the port mapping.
+
+                 serviceRegistries -> (list)
+                     The  details  for the service discovery registries to as-
+                     sign to this task set. For more information, see  Service
+                     discovery .
+
+                     (structure)
+                        The details for the service registry.
+
+                        registryArn -> (string)
+                            The Amazon Resource Name (ARN) of the service reg-
+                            istry. The currently supported service registry is
+                            Cloud Map. For more information, see CreateService
+                            .
+
+                        port -> (integer)
+                            The port value used if your service discovery ser-
+                            vice  specified an SRV record. This field might be
+                            used if both  the  awsvpc  network  mode  and  SRV
+                            records are used.
+
+                        containerName -> (string)
+                            The  container name value to be used for your ser-
+                            vice discovery service. It's already specified  in
+                            the  task  definition. If the task definition that
+                            your service task specifies  uses  the  bridge  or
+                            host  network  mode, you must specify a container-
+                            Name and containerPort combination from  the  task
+                            definition.  If the task definition that your ser-
+                            vice task specifies uses the awsvpc  network  mode
+                            and  a type SRV DNS record is used, you must spec-
+                            ify either a containerName and containerPort  com-
+                            bination or a port value. However, you can't spec-
+                            ify both.
+
+                        containerPort -> (integer)
+                            The port value to be used for your service discov-
+                            ery  service.  It's  already specified in the task
+                            definition. If the task  definition  your  service
+                            task  specifies  uses  the  bridge or host network
+                            mode, you must specify a  containerName  and  con-
+                            tainerPort  combination  from the task definition.
+                            If the task definition your service task specifies
+                            uses  the  awsvpc  network mode and a type SRV DNS
+                            record is used, you must specify either a contain-
+                            erName  and  containerPort  combination  or a port
+                            value. However, you can't specify both.
+
+                 scale -> (structure)
+                     A floating-point percentage of  your  desired  number  of
+                     tasks to place and keep running in the task set.
+
+                     value -> (double)
+                        The value, specified as a percent total of a service's
+                        desiredCount , to scale the task set. Accepted  values
+                        are numbers between 0 and 100.
+
+                     unit -> (string)
+                        The unit of measure for the scale value.
+
+                 stabilityStatus -> (string)
+                     The stability status. This indicates whether the task set
+                     has reached a steady state. If the  following  conditions
+                     are met, the task set sre in STEADY_STATE :
+
+                     o The  task runningCount is equal to the computedDesired-
+                       Count .
+
+                     o The pendingCount is 0 .
+
+                     o There are no tasks that are running  on  container  in-
+                       stances in the DRAINING status.
+
+                     o All  tasks are reporting a healthy status from the load
+                       balancers,  service  discovery,  and  container  health
+                       checks.
+
+                     If any of those conditions aren't met, the stability sta-
+                     tus returns STABILIZING .
+
+                 stabilityStatusAt -> (timestamp)
+                     The Unix timestamp for the time when the task set stabil-
+                     ity status was retrieved.
+
+                 tags -> (list)
+                     The  metadata  that you apply to the task set to help you
+                     categorize and organize them. Each tag consists of a  key
+                     and an optional value. You define both.
+
+                     The following basic restrictions apply to tags:
+
+                     o Maximum number of tags per resource - 50
+
+                     o For  each  resource,  each  tag key must be unique, and
+                       each tag key can have only one value.
+
+                     o Maximum key length - 128 Unicode characters in UTF-8
+
+                     o Maximum value length - 256 Unicode characters in UTF-8
+
+                     o If your tagging schema is used across multiple services
+                       and  resources,  remember  that other services may have
+                       restrictions on allowed characters.  Generally  allowed
+                       characters  are:  letters,  numbers,  and spaces repre-
+                       sentable in UTF-8, and the following characters: + -  =
+                       . _ : / @.
+
+                     o Tag keys and values are case-sensitive.
+
+                     o Do not use aws: , AWS: , or any upper or lowercase com-
+                       bination of such as a prefix for either keys or  values
+                       as it is reserved for Amazon Web Services use. You can-
+                       not edit or delete tag keys or values with this prefix.
+                       Tags  with  this  prefix do not count against your tags
+                       per resource limit.
+
+                     (structure)
+                        The metadata that you apply to a resource to help  you
+                        categorize  and  organize them. Each tag consists of a
+                        key and an optional value. You define them.
+
+                        The following basic restrictions apply to tags:
+
+                        o Maximum number of tags per resource - 50
+
+                        o For each resource, each tag key must be unique,  and
+                          each tag key can have only one value.
+
+                        o Maximum key length - 128 Unicode characters in UTF-8
+
+                        o Maximum  value  length  -  256 Unicode characters in
+                          UTF-8
+
+                        o If your tagging schema is used across multiple  ser-
+                          vices  and  resources,  remember that other services
+                          may have restrictions on allowed characters.  Gener-
+                          ally  allowed  characters are: letters, numbers, and
+                          spaces representable in  UTF-8,  and  the  following
+                          characters: + - = . _ : / @.
+
+                        o Tag keys and values are case-sensitive.
+
+                        o Do  not  use aws: , AWS: , or any upper or lowercase
+                          combination of such as a prefix for either  keys  or
+                          values  as  it  is  reserved for Amazon Web Services
+                          use. You cannot edit or delete tag  keys  or  values
+                          with this prefix. Tags with this prefix do not count
+                          against your tags per resource limit.
+
+                        key -> (string)
+                            One part of a key-value pair that make up a tag. A
+                            key  is  a general label that acts like a category
+                            for more specific tag values.
+
+                        value -> (string)
+                            The optional part of a key-value pair that make up
+                            a  tag.  A value acts as a descriptor within a tag
+                            category (key).
+
+          deployments -> (list)
+              The current state of deployments for the service.
+
+              (structure)
+                 The details of an Amazon ECS service deployment. This is used
+                 only when a service uses the ECS deployment controller type.
+
+                 id -> (string)
+                     The ID of the deployment.
+
+                 status -> (string)
+                     The  status  of  the  deployment. The following describes
+                     each state.
+                        PRIMARY
+
+                     The most recent deployment of a service.
+                        ACTIVE
+
+                     A service deployment that still has  running  tasks,  but
+                     are  in  the process of being replaced with a new PRIMARY
+                     deployment.
+                        INACTIVE
+
+                     A deployment that has been completely replaced.
+
+                 taskDefinition -> (string)
+                     The most recent task definition that  was  specified  for
+                     the tasks in the service to use.
+
+                 desiredCount -> (integer)
+                     The most recent desired count of tasks that was specified
+                     for the service to deploy or maintain.
+
+                 pendingCount -> (integer)
+                     The number of tasks in the deployment  that  are  in  the
+                     PENDING status.
+
+                 runningCount -> (integer)
+                     The  number  of  tasks  in the deployment that are in the
+                     RUNNING status.
+
+                 failedTasks -> (integer)
+                     The number of consecutively failed tasks in  the  deploy-
+                     ment.  A  task  is  considered  a  failure if the service
+                     scheduler can't launch the task, the task doesn't transi-
+                     tion  to  a  RUNNING state, or if it fails any of its de-
+                     fined health checks and is stopped.
+
+                     NOTE:
+                        Once a service deployment has one or more successfully
+                        running  tasks,  the  failed task count resets to zero
+                        and stops being evaluated.
+
+                 createdAt -> (timestamp)
+                     The Unix timestamp for the time when the service  deploy-
+                     ment was created.
+
+                 updatedAt -> (timestamp)
+                     The  Unix timestamp for the time when the service deploy-
+                     ment was last updated.
+
+                 capacityProviderStrategy -> (list)
+                     The capacity provider strategy that the deployment is us-
+                     ing.
+
+                     (structure)
+                        The  details of a capacity provider strategy. A capac-
+                        ity provider strategy can be set when using the   Run-
+                        Task or  CreateCluster APIs or as the default capacity
+                        provider strategy for a cluster with the   CreateClus-
+                        ter API.
+
+                        Only  capacity  providers  that are already associated
+                        with a cluster and have an ACTIVE or  UPDATING  status
+                        can be used in a capacity provider strategy. The  Put-
+                        ClusterCapacityProviders API is used  to  associate  a
+                        capacity provider with a cluster.
+
+                        If  specifying  a  capacity provider that uses an Auto
+                        Scaling group, the capacity provider must  already  be
+                        created. New Auto Scaling group capacity providers can
+                        be created with the  CreateCapacityProvider API opera-
+                        tion.
+
+                        To use a Fargate capacity provider, specify either the
+                        FARGATE or FARGATE_SPOT capacity providers.  The  Far-
+                        gate  capacity providers are available to all accounts
+                        and only need to be associated with a  cluster  to  be
+                        used in a capacity provider strategy.
+
+                        A  capacity provider strategy may contain a maximum of
+                        6 capacity providers.
+
+                        capacityProvider -> (string)
+                            The short name of the capacity provider.
+
+                        weight -> (integer)
+                            The weight value designates the relative  percent-
+                            age  of  the  total  number of tasks launched that
+                            should use the specified  capacity  provider.  The
+                            weight value is taken into consideration after the
+                            base value, if defined, is satisfied.
+
+                            If no weight value is specified, the default value
+                            of 0 is used. When multiple capacity providers are
+                            specified within a capacity provider strategy,  at
+                            least  one  of  the capacity providers must have a
+                            weight value greater than zero  and  any  capacity
+                            providers  with  a  weight  of  0 can't be used to
+                            place tasks.  If  you  specify  multiple  capacity
+                            providers  in a strategy that all have a weight of
+                            0 , any RunTask or CreateService actions using the
+                            capacity provider strategy will fail.
+
+                            An  example scenario for using weights is defining
+                            a strategy that contains  two  capacity  providers
+                            and  both  have a weight of 1 , then when the base
+                            is satisfied,  the  tasks  will  be  split  evenly
+                            across the two capacity providers. Using that same
+                            logic, if you specify a weight of  1  for  capaci-
+                            tyProviderA   and   a  weight  of  4  for  capaci-
+                            tyProviderB , then for every one task  that's  run
+                            using capacityProviderA , four tasks would use ca-
+                            pacityProviderB .
+
+                        base -> (integer)
+                            The base value designates how  many  tasks,  at  a
+                            minimum,   to   run   on  the  specified  capacity
+                            provider. Only one capacity provider in a capacity
+                            provider  strategy  can have a base defined. If no
+                            value is specified, the  default  value  of  0  is
+                            used.
+
+                 launchType -> (string)
+                     The  launch  type the tasks in the service are using. For
+                     more information, see Amazon ECS Launch Types in the Ama-
+                     zon Elastic Container Service Developer Guide .
+
+                 platformVersion -> (string)
+                     The  platform  version that your tasks in the service run
+                     on. A platform version is only specified for tasks  using
+                     the Fargate launch type. If one isn't specified, the LAT-
+                     EST platform version is used. For more  information,  see
+                     Fargate Platform Versions in the Amazon Elastic Container
+                     Service Developer Guide .
+
+                 platformFamily -> (string)
+                     The operating system that your tasks in the  service,  or
+                     tasks are running on. A platform family is specified only
+                     for tasks using the Fargate launch type.
+
+                     All tasks that run as part of this service must  use  the
+                     same  platformFamily  value  as the service, for example,
+                     LINUX. .
+
+                 networkConfiguration -> (structure)
+                     The VPC subnet and security group configuration for tasks
+                     that receive their own elastic network interface by using
+                     the awsvpc networking mode.
+
+                     awsvpcConfiguration -> (structure)
+                        The VPC subnets and security groups that  are  associ-
+                        ated with a task.
+
+                        NOTE:
+                            All  specified subnets and security groups must be
+                            from the same VPC.
+
+                        subnets -> (list)
+                            The IDs of the subnets associated with the task or
+                            service. There's a limit of 16 subnets that can be
+                            specified per AwsVpcConfiguration .
+
+                            NOTE:
+                               All specified subnets must  be  from  the  same
+                               VPC.
+
+                            (string)
+
+                        securityGroups -> (list)
+                            The IDs of the security groups associated with the
+                            task or service. If you don't specify  a  security
+                            group,  the  default security group for the VPC is
+                            used. There's a limit of 5  security  groups  that
+                            can be specified per AwsVpcConfiguration .
+
+                            NOTE:
+                               All  specified security groups must be from the
+                               same VPC.
+
+                            (string)
+
+                        assignPublicIp -> (string)
+                            Whether the task's elastic network  interface  re-
+                            ceives  a  public IP address. The default value is
+                            DISABLED .
+
+                 rolloutState -> (string)
+
+                     NOTE:
+                        The rolloutState of a service  is  only  returned  for
+                        services that use the rolling update (ECS ) deployment
+                        type that aren't behind a Classic Load Balancer.
+
+                     The rollout state of the deployment. When a  service  de-
+                     ployment  is  started, it begins in an IN_PROGRESS state.
+                     When the service reaches a steady state,  the  deployment
+                     transitions to a COMPLETED state. If the service fails to
+                     reach a steady state and circuit breaker is enabled,  the
+                     deployment transitions to a FAILED state. A deployment in
+                     FAILED state doesn't launch any new tasks. For  more  in-
+                     formation, see  DeploymentCircuitBreaker .
+
+                 rolloutStateReason -> (string)
+                     A description of the rollout state of a deployment.
+
+          roleArn -> (string)
+              The  ARN  of the IAM role that's associated with the service. It
+              allows the Amazon ECS container agent to register container  in-
+              stances with an Elastic Load Balancing load balancer.
+
+          events -> (list)
+              The  event stream for your service. A maximum of 100 of the lat-
+              est events are displayed.
+
+              (structure)
+                 The details for an event that's associated with a service.
+
+                 id -> (string)
+                     The ID string for the event.
+
+                 createdAt -> (timestamp)
+                     The Unix timestamp for the time when the event was  trig-
+                     gered.
+
+                 message -> (string)
+                     The event message.
+
+          createdAt -> (timestamp)
+              The Unix timestamp for the time when the service was created.
+
+          placementConstraints -> (list)
+              The placement constraints for the tasks in the service.
+
+              (structure)
+                 An  object  representing  a constraint on task placement. For
+                 more information, see Task Placement Constraints in the  Ama-
+                 zon Elastic Container Service Developer Guide .
+
+                 NOTE:
+                     If  you're  using the Fargate launch type, task placement
+                     constraints aren't supported.
+
+                 type -> (string)
+                     The type of constraint. Use  distinctInstance  to  ensure
+                     that each task in a particular group is running on a dif-
+                     ferent container instance. Use memberOf to  restrict  the
+                     selection to a group of valid candidates.
+
+                 expression -> (string)
+                     A  cluster query language expression to apply to the con-
+                     straint. The expression can have a maximum length of 2000
+                     characters.  You  can't specify an expression if the con-
+                     straint type is distinctInstance . For more  information,
+                     see  Cluster  query  language  in the Amazon Elastic Con-
+                     tainer Service Developer Guide .
+
+          placementStrategy -> (list)
+              The placement strategy that determines how tasks for the service
+              are placed.
+
+              (structure)
+                 The  task  placement strategy for a task or service. For more
+                 information, see Task  Placement  Strategies  in  the  Amazon
+                 Elastic Container Service Developer Guide .
+
+                 type -> (string)
+                     The  type  of  placement  strategy.  The random placement
+                     strategy randomly places tasks on  available  candidates.
+                     The  spread  placement  strategy spreads placement across
+                     available candidates evenly based on the field parameter.
+                     The binpack strategy places tasks on available candidates
+                     that have the least  available  amount  of  the  resource
+                     that's  specified  with the field parameter. For example,
+                     if you binpack on memory, a task is  placed  on  the  in-
+                     stance  with  the  least  amount  of remaining memory but
+                     still enough to run the task.
+
+                 field -> (string)
+                     The field to apply the placement  strategy  against.  For
+                     the  spread  placement strategy, valid values are instan-
+                     ceId (or host , which has the same effect), or any  plat-
+                     form  or  custom  attribute that's applied to a container
+                     instance, such as attribute:ecs.availability-zone  .  For
+                     the  binpack placement strategy, valid values are cpu and
+                     memory . For the random placement strategy, this field is
+                     not used.
+
+          networkConfiguration -> (structure)
+              The  VPC  subnet and security group configuration for tasks that
+              receive their own elastic network interface by using the  awsvpc
+              networking mode.
+
+              awsvpcConfiguration -> (structure)
+                 The  VPC subnets and security groups that are associated with
+                 a task.
+
+                 NOTE:
+                     All specified subnets and security groups  must  be  from
+                     the same VPC.
+
+                 subnets -> (list)
+                     The  IDs  of the subnets associated with the task or ser-
+                     vice. There's a limit of 16 subnets that can be specified
+                     per AwsVpcConfiguration .
+
+                     NOTE:
+                        All specified subnets must be from the same VPC.
+
+                     (string)
+
+                 securityGroups -> (list)
+                     The  IDs  of the security groups associated with the task
+                     or service. If you don't specify a  security  group,  the
+                     default  security  group  for  the VPC is used. There's a
+                     limit of 5 security groups  that  can  be  specified  per
+                     AwsVpcConfiguration .
+
+                     NOTE:
+                        All  specified  security  groups must be from the same
+                        VPC.
+
+                     (string)
+
+                 assignPublicIp -> (string)
+                     Whether the task's elastic network interface  receives  a
+                     public IP address. The default value is DISABLED .
+
+          healthCheckGracePeriodSeconds -> (integer)
+              The  period  of  time,  in  seconds, that the Amazon ECS service
+              scheduler ignores unhealthy Elastic Load Balancing target health
+              checks after a task has first started.
+
+          schedulingStrategy -> (string)
+              The  scheduling strategy to use for the service. For more infor-
+              mation, see Services .
+
+              There are two service scheduler strategies available.
+
+              o REPLICA -The replica scheduling strategy places and  maintains
+                the  desired  number of tasks across your cluster. By default,
+                the service scheduler spreads tasks across Availability Zones.
+                You  can use task placement strategies and constraints to cus-
+                tomize task placement decisions.
+
+              o DAEMON -The daemon scheduling  strategy  deploys  exactly  one
+                task  on each active container instance. This taskmeets all of
+                the task placement constraints that you specify in your  clus-
+                ter.  The  service scheduler also evaluates the task placement
+                constraints for running tasks. It stop tasks that  don't  meet
+                the placement constraints.
+
+              NOTE:
+                 Fargate tasks don't support the DAEMON scheduling strategy.
+
+          deploymentController -> (structure)
+              The  deployment controller type the service is using. When using
+              the DescribeServices API, this field is omitted if  the  service
+              uses the ECS deployment controller type.
+
+              type -> (string)
+                 The deployment controller type to use.
+
+                 There are three deployment controller types available:
+                     ECS
+
+                 The  rolling update (ECS ) deployment type involves replacing
+                 the current running version of the container with the  latest
+                 version.  The number of containers Amazon ECS adds or removes
+                 from the service during a rolling update is controlled by ad-
+                 justing  the  minimum and maximum number of healthy tasks al-
+                 lowed during a service deployment, as specified in  the   De-
+                 ploymentConfiguration .
+                     CODE_DEPLOY
+
+                 The  blue/green  (CODE_DEPLOY  )  deployment  type  uses  the
+                 blue/green deployment model powered by CodeDeploy, which  al-
+                 lows you to verify a new deployment of a service before send-
+                 ing production traffic to it.
+                     EXTERNAL
+
+                 The external (EXTERNAL ) deployment type enables you  to  use
+                 any  third-party  deployment controller for full control over
+                 the deployment process for an Amazon ECS service.
+
+          tags -> (list)
+              The metadata that you apply to the service to help  you  catego-
+              rize  and  organize  them. Each tag consists of a key and an op-
+              tional value. You define bot the key and value.
+
+              The following basic restrictions apply to tags:
+
+              o Maximum number of tags per resource - 50
+
+              o For each resource, each tag key must be unique, and  each  tag
+                key can have only one value.
+
+              o Maximum key length - 128 Unicode characters in UTF-8
+
+              o Maximum value length - 256 Unicode characters in UTF-8
+
+              o If  your  tagging  schema is used across multiple services and
+                resources, remember that other services may have  restrictions
+                on  allowed characters. Generally allowed characters are: let-
+                ters, numbers, and spaces representable in UTF-8, and the fol-
+                lowing characters: + - = . _ : / @.
+
+              o Tag keys and values are case-sensitive.
+
+              o Do not use aws: , AWS: , or any upper or lowercase combination
+                of such as a prefix for either keys or values  as  it  is  re-
+                served  for Amazon Web Services use. You cannot edit or delete
+                tag keys or values with this prefix. Tags with this prefix  do
+                not count against your tags per resource limit.
+
+              (structure)
+                 The metadata that you apply to a resource to help you catego-
+                 rize and organize them. Each tag consists of a key and an op-
+                 tional value. You define them.
+
+                 The following basic restrictions apply to tags:
+
+                 o Maximum number of tags per resource - 50
+
+                 o For  each  resource,  each tag key must be unique, and each
+                   tag key can have only one value.
+
+                 o Maximum key length - 128 Unicode characters in UTF-8
+
+                 o Maximum value length - 256 Unicode characters in UTF-8
+
+                 o If your tagging schema is used across multiple services and
+                   resources,  remember  that other services may have restric-
+                   tions on allowed characters. Generally  allowed  characters
+                   are:  letters,  numbers, and spaces representable in UTF-8,
+                   and the following characters: + - = . _ : / @.
+
+                 o Tag keys and values are case-sensitive.
+
+                 o Do not use aws: , AWS: , or any upper or lowercase combina-
+                   tion of such as a prefix for either keys or values as it is
+                   reserved for Amazon Web Services use. You  cannot  edit  or
+                   delete  tag keys or values with this prefix. Tags with this
+                   prefix do not count against your tags per resource limit.
+
+                 key -> (string)
+                     One part of a key-value pair that make up a tag. A key is
+                     a  general  label that acts like a category for more spe-
+                     cific tag values.
+
+                 value -> (string)
+                     The optional part of a key-value pair that make up a tag.
+                     A value acts as a descriptor within a tag category (key).
+
+          createdBy -> (string)
+              The principal that created the service.
+
+          enableECSManagedTags -> (boolean)
+              Determines  whether  to  enable  Amazon ECS managed tags for the
+              tasks in the service. For more  information,  see  Tagging  Your
+              Amazon ECS Resources in the Amazon Elastic Container Service De-
+              veloper Guide .
+
+          propagateTags -> (string)
+              Determines whether to propagate the tags from the  task  defini-
+              tion  or  the service to the task. If no value is specified, the
+              tags aren't propagated.
+
+          enableExecuteCommand -> (boolean)
+              Determines whether the execute command functionality is  enabled
+              for  the service. If true , the execute command functionality is
+              enabled for all containers in tasks as part of the service.
+
+
+
+                                                              UPDATE-SERVICE()

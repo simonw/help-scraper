@@ -1,0 +1,469 @@
+CREATE-STACK()                                                  CREATE-STACK()
+
+
+
+NAME
+       create-stack -
+
+DESCRIPTION
+       Creates  a stack as specified in the template. After the call completes
+       successfully, the stack creation starts. You can check  the  status  of
+       the stack via the  DescribeStacks API.
+
+       See also: AWS API Documentation
+
+       See 'aws help' for descriptions of global parameters.
+
+SYNOPSIS
+            create-stack
+          --stack-name <value>
+          [--template-body <value>]
+          [--template-url <value>]
+          [--parameters <value>]
+          [--disable-rollback | --no-disable-rollback]
+          [--rollback-configuration <value>]
+          [--timeout-in-minutes <value>]
+          [--notification-arns <value>]
+          [--capabilities <value>]
+          [--resource-types <value>]
+          [--role-arn <value>]
+          [--on-failure <value>]
+          [--stack-policy-body <value>]
+          [--stack-policy-url <value>]
+          [--tags <value>]
+          [--client-request-token <value>]
+          [--enable-termination-protection | --no-enable-termination-protection]
+          [--cli-input-json | --cli-input-yaml]
+          [--generate-cli-skeleton <value>]
+
+OPTIONS
+       --stack-name (string)
+          The  name that is associated with the stack. The name must be unique
+          in the Region in which you are creating the stack.
+
+          NOTE:
+              A stack name can contain only alphanumeric characters (case sen-
+              sitive)  and hyphens. It must start with an alphabetical charac-
+              ter and cannot be longer than 128 characters.
+
+       --template-body (string)
+          Structure containing the template body with a minimum  length  of  1
+          byte  and a maximum length of 51,200 bytes. For more information, go
+          to Template Anatomy in the CloudFormation User Guide.
+
+          Conditional: You must specify either the TemplateBody or the Templa-
+          teURL parameter, but not both.
+
+       --template-url (string)
+          Location of file containing the template body. The URL must point to
+          a template (max size: 460,800 bytes) that is located in an Amazon S3
+          bucket  or  a  Systems Manager document. For more information, go to
+          the Template Anatomy in the CloudFormation User Guide.
+
+          Conditional: You must specify either the TemplateBody or the Templa-
+          teURL parameter, but not both.
+
+       --parameters (list)
+          A list of Parameter structures that specify input parameters for the
+          stack. For more information, see the Parameter data type.
+
+          (structure)
+              The Parameter data type.
+
+              ParameterKey -> (string)
+                 The key associated with the parameter. If you don't specify a
+                 key and value for a particular parameter, CloudFormation uses
+                 the default value that is specified in your template.
+
+              ParameterValue -> (string)
+                 The input value associated with the parameter.
+
+              UsePreviousValue -> (boolean)
+                 During a stack update, use the existing parameter value  that
+                 the  stack is using for a given parameter key. If you specify
+                 true , do not specify a parameter value.
+
+              ResolvedValue -> (string)
+                 Read-only. Read-only. The value that corresponds to a SSM pa-
+                 rameter   key.   This  field  is  returned  only  for  `  SSM
+                 https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/parameters-section-structure.html#aws-ssm-parameter-types`__
+                 parameter types in the template.
+
+       Shorthand Syntax:
+
+          ParameterKey=string,ParameterValue=string,UsePreviousValue=boolean,ResolvedValue=string ...
+
+       JSON Syntax:
+
+          [
+            {
+              "ParameterKey": "string",
+              "ParameterValue": "string",
+              "UsePreviousValue": true|false,
+              "ResolvedValue": "string"
+            }
+            ...
+          ]
+
+       --disable-rollback | --no-disable-rollback (boolean)
+          Set  to  true  to  disable  rollback  of the stack if stack creation
+          failed. You can specify either DisableRollback or  OnFailure  ,  but
+          not both.
+
+          Default: false
+
+       --rollback-configuration (structure)
+          The  rollback  triggers  for  CloudFormation to monitor during stack
+          creation and updating operations, and for the  specified  monitoring
+          period afterwards.
+
+          RollbackTriggers -> (list)
+              The triggers to monitor during stack creation or update actions.
+
+              By default, CloudFormation saves the rollback triggers specified
+              for a stack and applies them to any subsequent update operations
+              for  the  stack, unless you specify otherwise. If you do specify
+              rollback triggers for this parameter, those triggers replace any
+              list of triggers previously specified for the stack. This means:
+
+              o To  use  the  rollback  triggers previously specified for this
+                stack, if any, don't specify this parameter.
+
+              o To specify new or updated rollback triggers, you must  specify
+                all the triggers that you want used for this stack, even trig-
+                gers you've specifed before (for example,  when  creating  the
+                stack  or  during  a previous stack update). Any triggers that
+                you don't include in the  updated  list  of  triggers  are  no
+                longer applied to the stack.
+
+              o To  remove  all currently specified triggers, specify an empty
+                list for this parameter.
+
+              If a specified trigger is missing, the  entire  stack  operation
+              fails and is rolled back.
+
+              (structure)
+                 A  rollback  trigger  CloudFormation monitors during creation
+                 and updating of stacks. If any of the alarms you specify goes
+                 to ALARM state during the stack operation or within the spec-
+                 ified monitoring period afterwards, CloudFormation rolls back
+                 the entire stack operation.
+
+                 Arn -> (string)
+                     The Amazon Resource Name (ARN) of the rollback trigger.
+
+                     If a specified trigger is missing, the entire stack oper-
+                     ation fails and is rolled back.
+
+                 Type -> (string)
+                     The resource type of the rollback trigger. Specify either
+                     AWS::CloudWatch::Alarm or AWS::CloudWatch::CompositeAlarm
+                     resource types.
+
+          MonitoringTimeInMinutes -> (integer)
+              The amount of time,  in  minutes,  during  which  CloudFormation
+              should  monitor  all  the rollback triggers after the stack cre-
+              ation or update operation deploys all necessary resources.
+
+              The default is 0 minutes.
+
+              If you specify a monitoring period but do not specify any  roll-
+              back  triggers,  CloudFormation still waits the specified period
+              of time before cleaning up old  resources  after  update  opera-
+              tions.  You can use this monitoring period to perform any manual
+              stack validation desired, and manually cancel the stack creation
+              or update (using CancelUpdateStack , for example) as necessary.
+
+              If  you specify 0 for this parameter, CloudFormation still moni-
+              tors the specified rollback triggers during stack  creation  and
+              update  operations.  Then, for update operations, it begins dis-
+              posing of old resources  immediately  once  the  operation  com-
+              pletes.
+
+       Shorthand Syntax:
+
+          RollbackTriggers=[{Arn=string,Type=string},{Arn=string,Type=string}],MonitoringTimeInMinutes=integer
+
+       JSON Syntax:
+
+          {
+            "RollbackTriggers": [
+              {
+                "Arn": "string",
+                "Type": "string"
+              }
+              ...
+            ],
+            "MonitoringTimeInMinutes": integer
+          }
+
+       --timeout-in-minutes (integer)
+          The  amount  of  time  that can pass before the stack status becomes
+          CREATE_FAILED; if DisableRollback is not set or is set  to  false  ,
+          the stack will be rolled back.
+
+       --notification-arns (list)
+          The  Simple  Notification  Service (SNS) topic ARNs to publish stack
+          related events. You can find your SNS topic ARNs using the SNS  con-
+          sole or your Command Line Interface (CLI).
+
+          (string)
+
+       Syntax:
+
+          "string" "string" ...
+
+       --capabilities (list)
+          In  some cases, you must explicitly acknowledge that your stack tem-
+          plate contains certain capabilities in order for  CloudFormation  to
+          create the stack.
+
+          o CAPABILITY_IAM  and  CAPABILITY_NAMED_IAM    Some  stack templates
+            might include resources that can affect permissions in your Amazon
+            Web  Services  account;  for example, by creating new Identity and
+            Access Management (IAM) users. For those stacks, you must  explic-
+            itly acknowledge this by specifying one of these capabilities. The
+            following IAM resources require you to specify either the CAPABIL-
+            ITY_IAM or CAPABILITY_NAMED_IAM capability.
+
+            o If you have IAM resources, you can specify either capability.
+
+            o If  you  have  IAM resources with custom names, you must specify
+              CAPABILITY_NAMED_IAM .
+
+            o If you don't specify either of these  capabilities,  CloudForma-
+              tion returns an InsufficientCapabilities error.
+
+          If  your  stack template contains these resources, we recommend that
+          you review all permissions associated with them and edit their  per-
+          missions if necessary.
+
+              o AWS::IAM::AccessKey
+
+              o AWS::IAM::Group
+
+              o AWS::IAM::InstanceProfile
+
+              o AWS::IAM::Policy
+
+              o AWS::IAM::Role
+
+              o AWS::IAM::User
+
+              o AWS::IAM::UserToGroupAddition
+
+          For more information, see Acknowledging IAM Resources in CloudForma-
+          tion Templates .
+
+          o CAPABILITY_AUTO_EXPAND   Some template contain macros. Macros per-
+            form  custom  processing on templates; this can include simple ac-
+            tions like find-and-replace operations, all the way  to  extensive
+            transformations  of entire templates. Because of this, users typi-
+            cally create a change set from the  processed  template,  so  that
+            they can review the changes resulting from the macros before actu-
+            ally creating the stack. If your stack template  contains  one  or
+            more  macros,  and  you choose to create a stack directly from the
+            processed template, without first reviewing the resulting  changes
+            in  a  change  set, you must acknowledge this capability. This in-
+            cludes the AWS::Include and AWS::Serverless transforms, which  are
+            macros  hosted  by  CloudFormation.  If you want to create a stack
+            from a stack template that contains macros and nested stacks,  you
+            must  create the stack directly from the template using this capa-
+            bility.
+
+          WARNING:
+                 You should only create stacks directly from a stack  template
+                 that  contains  macros  if you know what processing the macro
+                 performs. Each macro relies on an underlying  Lambda  service
+                 function  for  processing  stack templates. Be aware that the
+                 Lambda function owner can update the function operation with-
+                 out CloudFormation being notified.
+
+              For more information, see Using CloudFormation Macros to Perform
+              Custom Processing on Templates .
+
+          (string)
+
+       Syntax:
+
+          "string" "string" ...
+
+          Where valid values are:
+            CAPABILITY_IAM
+            CAPABILITY_NAMED_IAM
+            CAPABILITY_AUTO_EXPAND
+
+       --resource-types (list)
+          The template resource types that you have permissions to  work  with
+          for   this   create  stack  action,  such  as  AWS::EC2::Instance  ,
+          AWS::EC2::* , or Custom::MyCustomInstance . Use the following syntax
+          to describe template resource types: AWS::* (for all Amazon Web Ser-
+          vices  resources),  Custom::*  (for  all  custom  resources),   Cus-
+          tom::*logical_ID*  `` (for a specific custom resource), ``AWS::*ser-
+          vice_name* ::* (for all resources of a particular  Amazon  Web  Ser-
+          vices service), and
+          ``
+          AWS::service_name  ::resource_logical_ID  ``  (for a specific Amazon
+          Web Services resource).
+
+          If the list of resource types doesn't include a resource that you're
+          creating,  the  stack  creation  fails.  By  default, CloudFormation
+          grants permissions to all resource types. Identity and  Access  Man-
+          agement (IAM) uses this parameter for CloudFormation-specific condi-
+          tion keys in IAM policies. For more information, see Controlling Ac-
+          cess with Identity and Access Management .
+
+          (string)
+
+       Syntax:
+
+          "string" "string" ...
+
+       --role-arn (string)
+          The  Amazon Resource Name (ARN) of an Identity and Access Management
+          (IAM) role that CloudFormation assumes to create the  stack.  Cloud-
+          Formation  uses the role's credentials to make calls on your behalf.
+          CloudFormation always uses this role for all  future  operations  on
+          the stack. As long as users have permission to operate on the stack,
+          CloudFormation uses this role even if the users don't  have  permis-
+          sion to pass it. Ensure that the role grants least privilege.
+
+          If  you don't specify a value, CloudFormation uses the role that was
+          previously associated with the  stack.  If  no  role  is  available,
+          CloudFormation  uses a temporary session that is generated from your
+          user credentials.
+
+       --on-failure (string)
+          Determines what action will be taken if stack creation  fails.  This
+          must be one of: DO_NOTHING, ROLLBACK, or DELETE. You can specify ei-
+          ther OnFailure or DisableRollback , but not both.
+
+          Default: ROLLBACK
+
+          Possible values:
+
+          o DO_NOTHING
+
+          o ROLLBACK
+
+          o DELETE
+
+       --stack-policy-body (string)
+          Structure containing the stack policy body. For more information, go
+          to  Prevent  Updates  to  Stack Resources in the CloudFormation User
+          Guide . You can specify either the StackPolicyBody or the StackPoli-
+          cyURL parameter, but not both.
+
+       --stack-policy-url (string)
+          Location  of  a file containing the stack policy. The URL must point
+          to a policy (maximum size: 16 KB) located in an  S3  bucket  in  the
+          same Region as the stack. You can specify either the StackPolicyBody
+          or the StackPolicyURL parameter, but not both.
+
+       --tags (list)
+          Key-value pairs to associate with this  stack.  CloudFormation  also
+          propagates these tags to the resources created in the stack. A maxi-
+          mum number of 50 tags can be specified.
+
+          (structure)
+              The Tag type enables you to specify a key-value pair that can be
+              used to store information about an CloudFormation stack.
+
+              Key -> (string)
+                 Required  . A string used to identify this tag. You can spec-
+                 ify a maximum of 128 characters for a tag key. Tags owned  by
+                 Amazon  Web  Services (Amazon Web Services) have the reserved
+                 prefix: aws: .
+
+              Value -> (string)
+                 Required . A string containing the value for  this  tag.  You
+                 can specify a maximum of 256 characters for a tag value.
+
+       Shorthand Syntax:
+
+          Key=string,Value=string ...
+
+       JSON Syntax:
+
+          [
+            {
+              "Key": "string",
+              "Value": "string"
+            }
+            ...
+          ]
+
+       --client-request-token (string)
+          A unique identifier for this CreateStack request. Specify this token
+          if you plan to retry requests  so  that  CloudFormation  knows  that
+          you're  not  attempting  to  create  a stack with the same name. You
+          might retry CreateStack requests to ensure that CloudFormation  suc-
+          cessfully received them.
+
+          All  events  triggered  by  a given stack operation are assigned the
+          same client request token, which you can use  to  track  operations.
+          For  example,  if you execute a CreateStack operation with the token
+          token1 , then all the StackEvents generated by that  operation  will
+          have ClientRequestToken set as token1 .
+
+          In the console, stack operations display the client request token on
+          the Events tab. Stack operations that are initiated from the console
+          use  the  token  format  Console-StackOperation-ID , which helps you
+          easily identify the stack operation . For example, if you  create  a
+          stack using the console, each stack event would be assigned the same
+          token     in     the     following     format:      Console-CreateS-
+          tack-7f59c3cf-00d2-40c7-b2ff-e75db0987002 .
+
+       --enable-termination-protection   |  --no-enable-termination-protection
+       (boolean)
+          Whether to enable termination protection on the specified stack.  If
+          a  user  attempts  to delete a stack with termination protection en-
+          abled, the operation fails and the stack remains unchanged. For more
+          information, see Protecting a Stack From Being Deleted in the Cloud-
+          Formation User Guide . Termination protection is disabled on  stacks
+          by default.
+
+          For  nested stacks , termination protection is set on the root stack
+          and cannot be changed directly on the nested stack.
+
+       --cli-input-json | --cli-input-yaml (string) Reads arguments  from  the
+       JSON  string  provided.  The JSON string follows the format provided by
+       --generate-cli-skeleton. If other arguments are provided on the command
+       line,  those  values  will override the JSON-provided values. It is not
+       possible to pass arbitrary binary values using a JSON-provided value as
+       the  string  will  be  taken literally. This may not be specified along
+       with --cli-input-yaml.
+
+       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
+       output without sending an API request. If provided with no value or the
+       value input, prints a sample input JSON that can be used as an argument
+       for --cli-input-json. Similarly, if provided yaml-input it will print a
+       sample input YAML that can be used with --cli-input-yaml.  If  provided
+       with  the  value  output, it validates the command inputs and returns a
+       sample output JSON for that command.
+
+       See 'aws help' for descriptions of global parameters.
+
+EXAMPLES
+       To create an AWS CloudFormation stack
+
+       The following create-stacks command  creates  a  stack  with  the  name
+       myteststack using the sampletemplate.json template:
+
+          aws cloudformation create-stack --stack-name myteststack --template-body file://sampletemplate.json --parameters ParameterKey=KeyPairName,ParameterValue=TestKey ParameterKey=SubnetIDs,ParameterValue=SubnetID1\\,SubnetID2
+
+       Output:
+
+          {
+              "StackId": "arn:aws:cloudformation:us-east-1:123456789012:stack/myteststack/466df9e0-0dff-08e3-8e2f-5088487c4896"
+          }
+
+       For more information, see Stacks in the AWS CloudFormation User Guide.
+
+OUTPUT
+       StackId -> (string)
+          Unique identifier of the stack.
+
+
+
+                                                                CREATE-STACK()

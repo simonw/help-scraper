@@ -1,0 +1,638 @@
+COPY-OBJECT()                                                    COPY-OBJECT()
+
+
+
+NAME
+       copy-object -
+
+DESCRIPTION
+       Creates a copy of an object that is already stored in Amazon S3.
+
+       NOTE:
+          You  can  store  individual  objects of up to 5 TB in Amazon S3. You
+          create a copy of your object up to 5 GB in size in a  single  atomic
+          action using this API. However, to copy an object greater than 5 GB,
+          you must use the multipart upload Upload Part - Copy API.  For  more
+          information, see Copy Object Using the REST Multipart Upload API .
+
+       All  copy  requests  must be authenticated. Additionally, you must have
+       read access to the source object and write access  to  the  destination
+       bucket. For more information, see REST Authentication . Both the Region
+       that you want to copy the object from and the Region that you  want  to
+       copy the object to must be enabled for your account.
+
+       A  copy  request might return an error when Amazon S3 receives the copy
+       request or while Amazon S3 is copying the files. If  the  error  occurs
+       before  the copy action starts, you receive a standard Amazon S3 error.
+       If the error occurs during the copy operation, the  error  response  is
+       embedded  in the 200 OK response. This means that a 200 OK response can
+       contain either a success or an error. Design your application to  parse
+       the contents of the response and handle it appropriately.
+
+       If  the  copy  is  successful,  you receive a response with information
+       about the copied object.
+
+       NOTE:
+          If the request is an HTTP 1.1 request, the  response  is  chunk  en-
+          coded.  If it were not, it would not contain the content-length, and
+          you would need to read the entire body.
+
+       The copy request charge is based on the storage class and  Region  that
+       you  specify  for  the destination object. For pricing information, see
+       Amazon S3 pricing .
+
+       WARNING:
+              Amazon S3 transfer acceleration does  not  support  cross-Region
+              copies.  If you request a cross-Region copy using a transfer ac-
+              celeration endpoint, you get a 400 Bad Request error.  For  more
+              information, see Transfer Acceleration .
+
+          Metadata
+
+       When  copying  an  object,  you  can preserve all metadata (default) or
+       specify new metadata. However, the ACL is not preserved and is  set  to
+       private  for  the  user making the request. To override the default ACL
+       setting, specify a new ACL when generating a copy request. For more in-
+       formation, see Using ACLs .
+
+       To  specify whether you want the object metadata copied from the source
+       object or replaced with metadata provided in the request, you  can  op-
+       tionally  add  the x-amz-metadata-directive header. When you grant per-
+       missions, you can use the s3:x-amz-metadata-directive condition key  to
+       enforce  certain  metadata behavior when objects are uploaded. For more
+       information, see Specifying Conditions in a Policy  in  the  Amazon  S3
+       User  Guide . For a complete list of Amazon S3-specific condition keys,
+       see Actions, Resources, and Condition Keys for Amazon S3 .
+          ** x-amz-copy-source-if Headers**
+
+       To only copy an object under certain conditions, such  as  whether  the
+       Etag matches or whether the object was modified before or after a spec-
+       ified date, use the following request parameters:
+
+       o x-amz-copy-source-if-match
+
+       o x-amz-copy-source-if-none-match
+
+       o x-amz-copy-source-if-unmodified-since
+
+       o x-amz-copy-source-if-modified-since
+
+       If both the x-amz-copy-source-if-match and x-amz-copy-source-if-unmodi-
+       fied-since  headers are present in the request and evaluate as follows,
+       Amazon S3 returns 200 OK and copies the data:
+
+       o x-amz-copy-source-if-match condition evaluates to true
+
+       o x-amz-copy-source-if-unmodified-since condition evaluates to false
+
+       If       both       the       x-amz-copy-source-if-none-match       and
+       x-amz-copy-source-if-modified-since  headers are present in the request
+       and evaluate as follows, Amazon S3 returns the 412 Precondition  Failed
+       response code:
+
+       o x-amz-copy-source-if-none-match condition evaluates to false
+
+       o x-amz-copy-source-if-modified-since condition evaluates to true
+
+       NOTE:
+              All  headers with the x-amz- prefix, including x-amz-copy-source
+              , must be signed.
+
+          Server-side encryption
+
+       When you perform a CopyObject operation, you can optionally use the ap-
+       propriate  encryption-related  headers  to  encrypt  the  object  using
+       server-side encryption with Amazon Web Services managed encryption keys
+       (SSE-S3  or  SSE-KMS)  or  a  customer-provided  encryption  key.  With
+       server-side encryption, Amazon S3 encrypts your data as it writes it to
+       disks in its data centers and decrypts the data when you access it. For
+       more information about server-side encryption,  see  Using  Server-Side
+       Encryption .
+
+       If  a  target  object uses SSE-KMS, you can enable an S3 Bucket Key for
+       the object. For more information, see Amazon S3 Bucket Keys in the Ama-
+       zon S3 User Guide .
+          Access Control List (ACL)-Specific Request Headers
+
+       When  copying  an  object,  you  can  optionally  use  headers to grant
+       ACL-based permissions. By default, all objects are  private.  Only  the
+       owner  has full access control. When adding a new object, you can grant
+       permissions to individual Amazon Web Services accounts or to predefined
+       groups  defined  by  Amazon S3. These permissions are then added to the
+       ACL on the object. For more information, see Access Control List  (ACL)
+       Overview and Managing ACLs Using the REST API .
+
+       If  the bucket that you're copying objects to uses the bucket owner en-
+       forced setting for S3 Object Ownership, ACLs are disabled and no longer
+       affect  permissions.  Buckets that use this setting only accept PUT re-
+       quests that don't specify an ACL or PUT requests  that  specify  bucket
+       owner  full  control ACLs, such as the bucket-owner-full-control canned
+       ACL or an equivalent form of this ACL expressed in the XML format.
+
+       For more information, see Controlling ownership  of  objects  and  dis-
+       abling ACLs in the Amazon S3 User Guide .
+
+       NOTE:
+              If your bucket uses the bucket owner enforced setting for Object
+              Ownership, all objects written to the bucket by any account will
+              be owned by the bucket owner.
+
+          Storage Class Options
+
+       You can use the CopyObject action to change the storage class of an ob-
+       ject that is already stored in Amazon S3 using the StorageClass parame-
+       ter.  For  more  information, see Storage Classes in the Amazon S3 User
+       Guide .
+          Versioning
+
+       By default, x-amz-copy-source identifies the current version of an  ob-
+       ject  to copy. If the current version is a delete marker, Amazon S3 be-
+       haves as if the object was deleted. To copy a  different  version,  use
+       the versionId subresource.
+
+       If  you  enable  versioning on the target bucket, Amazon S3 generates a
+       unique version ID for the object being copied. This version ID is  dif-
+       ferent  from the version ID of the source object. Amazon S3 returns the
+       version ID of the copied object in the x-amz-version-id response header
+       in the response.
+
+       If you do not enable versioning or suspend it on the target bucket, the
+       version ID that Amazon S3 generates is always null.
+
+       If the source object's storage class is GLACIER,  you  must  restore  a
+       copy  of  this  object before you can use it as a source object for the
+       copy operation. For more information, see RestoreObject .
+
+       The following operations are related to CopyObject :
+
+       o PutObject
+
+       o GetObject
+
+       For more information, see Copying Objects .
+
+       See also: AWS API Documentation
+
+       See 'aws help' for descriptions of global parameters.
+
+SYNOPSIS
+            copy-object
+          [--acl <value>]
+          --bucket <value>
+          [--cache-control <value>]
+          [--content-disposition <value>]
+          [--content-encoding <value>]
+          [--content-language <value>]
+          [--content-type <value>]
+          --copy-source <value>
+          [--copy-source-if-match <value>]
+          [--copy-source-if-modified-since <value>]
+          [--copy-source-if-none-match <value>]
+          [--copy-source-if-unmodified-since <value>]
+          [--expires <value>]
+          [--grant-full-control <value>]
+          [--grant-read <value>]
+          [--grant-read-acp <value>]
+          [--grant-write-acp <value>]
+          --key <value>
+          [--metadata <value>]
+          [--metadata-directive <value>]
+          [--tagging-directive <value>]
+          [--server-side-encryption <value>]
+          [--storage-class <value>]
+          [--website-redirect-location <value>]
+          [--sse-customer-algorithm <value>]
+          [--sse-customer-key <value>]
+          [--sse-customer-key-md5 <value>]
+          [--ssekms-key-id <value>]
+          [--ssekms-encryption-context <value>]
+          [--bucket-key-enabled | --no-bucket-key-enabled]
+          [--copy-source-sse-customer-algorithm <value>]
+          [--copy-source-sse-customer-key <value>]
+          [--copy-source-sse-customer-key-md5 <value>]
+          [--request-payer <value>]
+          [--tagging <value>]
+          [--object-lock-mode <value>]
+          [--object-lock-retain-until-date <value>]
+          [--object-lock-legal-hold-status <value>]
+          [--expected-bucket-owner <value>]
+          [--expected-source-bucket-owner <value>]
+          [--cli-input-json | --cli-input-yaml]
+          [--generate-cli-skeleton <value>]
+
+OPTIONS
+       --acl (string)
+          The canned ACL to apply to the object.
+
+          This action is not supported by Amazon S3 on Outposts.
+
+          Possible values:
+
+          o private
+
+          o public-read
+
+          o public-read-write
+
+          o authenticated-read
+
+          o aws-exec-read
+
+          o bucket-owner-read
+
+          o bucket-owner-full-control
+
+       --bucket (string)
+          The name of the destination bucket.
+
+          When using this action with an access point,  you  must  direct  re-
+          quests to the access point hostname. The access point hostname takes
+          the form AccessPointName -AccountId  .s3-accesspoint.*Region*  .ama-
+          zonaws.com.  When using this action with an access point through the
+          Amazon Web Services SDKs, you provide the access point ARN in  place
+          of  the  bucket  name. For more information about access point ARNs,
+          see Using access points in the Amazon S3 User Guide .
+
+          When using this action with Amazon S3 on Outposts, you  must  direct
+          requests to the S3 on Outposts hostname. The S3 on Outposts hostname
+          takes the  form  AccessPointName  -AccountId  .*outpostID*  .s3-out-
+          posts.*Region*  .amazonaws.com.  When  using this action using S3 on
+          Outposts through the Amazon Web Services SDKs, you provide the  Out-
+          posts  bucket  ARN in place of the bucket name. For more information
+          about S3 on Outposts ARNs, see Using S3 on Outposts in the Amazon S3
+          User Guide .
+
+       --cache-control (string)
+          Specifies caching behavior along the request/reply chain.
+
+       --content-disposition (string)
+          Specifies presentational information for the object.
+
+       --content-encoding (string)
+          Specifies what content encodings have been applied to the object and
+          thus what decoding mechanisms must be  applied  to  obtain  the  me-
+          dia-type referenced by the Content-Type header field.
+
+       --content-language (string)
+          The language the content is in.
+
+       --content-type (string)
+          A standard MIME type describing the format of the object data.
+
+       --copy-source (string)
+          Specifies  the source object for the copy operation. You specify the
+          value in one of two formats, depending on whether you want to access
+          the source object through an access point :
+
+          o For objects not accessed through an access point, specify the name
+            of the source bucket and the key of the source  object,  separated
+            by  a  slash  (/).  For  example, to copy the object reports/janu-
+            ary.pdf  from  the  bucket  awsexamplebucket  ,  use   awsexample-
+            bucket/reports/january.pdf . The value must be URL encoded.
+
+          o For objects accessed through access points, specify the Amazon Re-
+            source Name (ARN) of the object as  accessed  through  the  access
+            point,   in  the  format  arn:aws:s3:<Region>:<account-id>:access-
+            point/<access-point-name>/object/<key> . For example, to copy  the
+            object  reports/january.pdf  through  access point my-access-point
+            owned by account 123456789012 in Region us-west-2 ,  use  the  URL
+            encoding  of  arn:aws:s3:us-west-2:123456789012:accesspoint/my-ac-
+            cess-point/object/reports/january.pdf . The value must be URL  en-
+            coded.
+
+          NOTE:
+                 Amazon  S3  supports copy operations using access points only
+                 when the source and destination buckets are in the same  Ama-
+                 zon Web Services Region.
+
+              Alternatively,  for  objects  accessed through Amazon S3 on Out-
+              posts, specify the ARN of the object as accessed in  the  format
+              arn:aws:s3-outposts:<Region>:<account-id>:outpost/<out-
+              post-id>/object/<key> . For example,  to  copy  the  object  re-
+              ports/january.pdf  through  outpost  my-outpost owned by account
+              123456789012 in Region us-west-2  ,  use  the  URL  encoding  of
+              arn:aws:s3-outposts:us-west-2:123456789012:outpost/my-out-
+              post/object/reports/january.pdf . The value must be URL encoded.
+
+          To copy a specific version of  an  object,  append  ?versionId=<ver-
+          sion-id>  to  the value (for example, awsexamplebucket/reports/janu-
+          ary.pdf?versionId=QUpfdndhfd8438MNFDN93jdnJFkdmqnh893  ).   If   you
+          don't  specify  a version ID, Amazon S3 copies the latest version of
+          the source object.
+
+       --copy-source-if-match (string)
+          Copies the object if its entity tag  (ETag)  matches  the  specified
+          tag.
+
+       --copy-source-if-modified-since (timestamp)
+          Copies the object if it has been modified since the specified time.
+
+       --copy-source-if-none-match (string)
+          Copies  the  object  if  its entity tag (ETag) is different than the
+          specified ETag.
+
+       --copy-source-if-unmodified-since (timestamp)
+          Copies the object if it hasn't been  modified  since  the  specified
+          time.
+
+       --expires (timestamp)
+          The date and time at which the object is no longer cacheable.
+
+       --grant-full-control (string)
+          Gives  the  grantee READ, READ_ACP, and WRITE_ACP permissions on the
+          object.
+
+          This action is not supported by Amazon S3 on Outposts.
+
+       --grant-read (string)
+          Allows grantee to read the object data and its metadata.
+
+          This action is not supported by Amazon S3 on Outposts.
+
+       --grant-read-acp (string)
+          Allows grantee to read the object ACL.
+
+          This action is not supported by Amazon S3 on Outposts.
+
+       --grant-write-acp (string)
+          Allows grantee to write the ACL for the applicable object.
+
+          This action is not supported by Amazon S3 on Outposts.
+
+       --key (string)
+          The key of the destination object.
+
+       --metadata (map)
+          A map of metadata to store with the object in S3.
+
+          key -> (string)
+
+          value -> (string)
+
+       Shorthand Syntax:
+
+          KeyName1=string,KeyName2=string
+
+       JSON Syntax:
+
+          {"string": "string"
+            ...}
+
+       --metadata-directive (string)
+          Specifies whether the metadata is copied from the source  object  or
+          replaced with metadata provided in the request.
+
+          Possible values:
+
+          o COPY
+
+          o REPLACE
+
+       --tagging-directive (string)
+          Specifies  whether the object tag-set are copied from the source ob-
+          ject or replaced with tag-set provided in the request.
+
+          Possible values:
+
+          o COPY
+
+          o REPLACE
+
+       --server-side-encryption (string)
+          The server-side encryption algorithm used when storing  this  object
+          in Amazon S3 (for example, AES256, aws:kms).
+
+          Possible values:
+
+          o AES256
+
+          o aws:kms
+
+       --storage-class (string)
+          By default, Amazon S3 uses the STANDARD Storage Class to store newly
+          created objects. The STANDARD storage class provides high durability
+          and high availability. Depending on performance needs, you can spec-
+          ify a different Storage Class. Amazon S3 on Outposts only  uses  the
+          OUTPOSTS Storage Class. For more information, see Storage Classes in
+          the Amazon S3 User Guide .
+
+          Possible values:
+
+          o STANDARD
+
+          o REDUCED_REDUNDANCY
+
+          o STANDARD_IA
+
+          o ONEZONE_IA
+
+          o INTELLIGENT_TIERING
+
+          o GLACIER
+
+          o DEEP_ARCHIVE
+
+          o OUTPOSTS
+
+          o GLACIER_IR
+
+       --website-redirect-location (string)
+          If the bucket is configured as a  website,  redirects  requests  for
+          this  object  to another object in the same bucket or to an external
+          URL. Amazon S3 stores the value of this header in the  object  meta-
+          data.
+
+       --sse-customer-algorithm (string)
+          Specifies  the  algorithm  to use to when encrypting the object (for
+          example, AES256).
+
+       --sse-customer-key (string)
+          Specifies the customer-provided encryption key for Amazon S3 to  use
+          in  encrypting data. This value is used to store the object and then
+          it is discarded; Amazon S3 does not store the  encryption  key.  The
+          key  must be appropriate for use with the algorithm specified in the
+          x-amz-server-side-encryption-customer-algorithm header.
+
+       --sse-customer-key-md5 (string)
+          Specifies the 128-bit MD5 digest of the encryption key according  to
+          RFC  1321.  Amazon S3 uses this header for a message integrity check
+          to ensure that the encryption key was transmitted without error.
+
+       --ssekms-key-id (string)
+          Specifies the Amazon Web Services KMS key ID to use for  object  en-
+          cryption. All GET and PUT requests for an object protected by Amazon
+          Web Services KMS will fail if not made via SSL or using  SigV4.  For
+          information  about configuring using any of the officially supported
+          Amazon Web Services SDKs and Amazon Web Services CLI, see Specifying
+          the  Signature  Version  in  Request Authentication in the Amazon S3
+          User Guide .
+
+       --ssekms-encryption-context (string)
+          Specifies the Amazon Web Services KMS Encryption Context to use  for
+          object  encryption.  The  value  of  this header is a base64-encoded
+          UTF-8 string holding JSON  with  the  encryption  context  key-value
+          pairs.
+
+       --bucket-key-enabled | --no-bucket-key-enabled (boolean)
+          Specifies  whether  Amazon S3 should use an S3 Bucket Key for object
+          encryption with server-side encryption using AWS KMS (SSE-KMS). Set-
+          ting  this  header  to true causes Amazon S3 to use an S3 Bucket Key
+          for object encryption with SSE-KMS.
+
+          Specifying this header with a COPY action doesnt affect bucket-level
+          settings for S3 Bucket Key.
+
+       --copy-source-sse-customer-algorithm (string)
+          Specifies  the  algorithm  to  use when decrypting the source object
+          (for example, AES256).
+
+       --copy-source-sse-customer-key (string)
+          Specifies the customer-provided encryption key for Amazon S3 to  use
+          to  decrypt  the  source object. The encryption key provided in this
+          header must be one that was used when the source object was created.
+
+       --copy-source-sse-customer-key-md5 (string)
+          Specifies the 128-bit MD5 digest of the encryption key according  to
+          RFC  1321.  Amazon S3 uses this header for a message integrity check
+          to ensure that the encryption key was transmitted without error.
+
+       --request-payer (string)
+          Confirms that the requester knows that they will be charged for  the
+          request.  Bucket owners need not specify this parameter in their re-
+          quests. For information about  downloading  objects  from  requester
+          pays  buckets,  see Downloading Objects in Requestor Pays Buckets in
+          the Amazon S3 User Guide .
+
+          Possible values:
+
+          o requester
+
+       --tagging (string)
+          The tag-set for the object destination object  this  value  must  be
+          used  in conjunction with the TaggingDirective . The tag-set must be
+          encoded as URL Query parameters.
+
+       --object-lock-mode (string)
+          The Object Lock mode that you want to apply to the copied object.
+
+          Possible values:
+
+          o GOVERNANCE
+
+          o COMPLIANCE
+
+       --object-lock-retain-until-date (timestamp)
+          The date and time when you want the copied object's Object  Lock  to
+          expire.
+
+       --object-lock-legal-hold-status (string)
+          Specifies  whether  you want to apply a Legal Hold to the copied ob-
+          ject.
+
+          Possible values:
+
+          o ON
+
+          o OFF
+
+       --expected-bucket-owner (string)
+          The account ID of the expected destination bucket owner. If the des-
+          tination  bucket  is  owned by a different account, the request will
+          fail with an HTTP 403 (Access Denied) error.
+
+       --expected-source-bucket-owner (string)
+          The account ID of the expected source bucket owner.  If  the  source
+          bucket  is  owned by a different account, the request will fail with
+          an HTTP 403 (Access Denied) error.
+
+       --cli-input-json | --cli-input-yaml (string) Reads arguments  from  the
+       JSON  string  provided.  The JSON string follows the format provided by
+       --generate-cli-skeleton. If other arguments are provided on the command
+       line,  those  values  will override the JSON-provided values. It is not
+       possible to pass arbitrary binary values using a JSON-provided value as
+       the  string  will  be  taken literally. This may not be specified along
+       with --cli-input-yaml.
+
+       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
+       output without sending an API request. If provided with no value or the
+       value input, prints a sample input JSON that can be used as an argument
+       for --cli-input-json. Similarly, if provided yaml-input it will print a
+       sample input YAML that can be used with --cli-input-yaml.  If  provided
+       with  the  value  output, it validates the command inputs and returns a
+       sample output JSON for that command.
+
+       See 'aws help' for descriptions of global parameters.
+
+EXAMPLES
+       The following command copies an object from bucket-1 to bucket-2:
+
+          aws s3api copy-object --copy-source bucket-1/test.txt --key test.txt --bucket bucket-2
+
+       Output:
+
+          {
+              "CopyObjectResult": {
+                  "LastModified": "2015-11-10T01:07:25.000Z",
+                  "ETag": "\"589c8b79c230a6ecd5a7e1d040a9a030\""
+              },
+              "VersionId": "YdnYvTCVDqRRFA.NFJjy36p0hxifMlkA"
+          }
+
+OUTPUT
+       CopyObjectResult -> (structure)
+          Container for all response elements.
+
+          ETag -> (string)
+              Returns the ETag of the  new  object.  The  ETag  reflects  only
+              changes to the contents of an object, not its metadata.
+
+          LastModified -> (timestamp)
+              Creation date of the object.
+
+       Expiration -> (string)
+          If  the  object expiration is configured, the response includes this
+          header.
+
+       CopySourceVersionId -> (string)
+          Version of the copied object in the destination bucket.
+
+       VersionId -> (string)
+          Version ID of the newly created copy.
+
+       ServerSideEncryption -> (string)
+          The server-side encryption algorithm used when storing  this  object
+          in Amazon S3 (for example, AES256, aws:kms).
+
+       SSECustomerAlgorithm -> (string)
+          If  server-side  encryption  with a customer-provided encryption key
+          was requested, the response will include this header confirming  the
+          encryption algorithm used.
+
+       SSECustomerKeyMD5 -> (string)
+          If  server-side  encryption  with a customer-provided encryption key
+          was requested, the response will  include  this  header  to  provide
+          round-trip  message  integrity verification of the customer-provided
+          encryption key.
+
+       SSEKMSKeyId -> (string)
+          If present, specifies the ID of the Amazon Web Services Key  Manage-
+          ment  Service  (Amazon  Web Services KMS) symmetric customer managed
+          key that was used for the object.
+
+       SSEKMSEncryptionContext -> (string)
+          If present, specifies the Amazon Web Services KMS Encryption Context
+          to  use  for  object  encryption.  The  value  of  this  header is a
+          base64-encoded UTF-8 string holding JSON with the encryption context
+          key-value pairs.
+
+       BucketKeyEnabled -> (boolean)
+          Indicates  whether  the  copied  object  uses  an  S3 Bucket Key for
+          server-side encryption with Amazon Web Services KMS (SSE-KMS).
+
+       RequestCharged -> (string)
+          If present, indicates that the requester  was  successfully  charged
+          for the request.
+
+
+
+                                                                 COPY-OBJECT()

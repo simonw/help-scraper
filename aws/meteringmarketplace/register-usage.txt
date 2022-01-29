@@ -1,0 +1,97 @@
+REGISTER-USAGE()                                              REGISTER-USAGE()
+
+
+
+NAME
+       register-usage -
+
+DESCRIPTION
+       Paid  container software products sold through AWS Marketplace must in-
+       tegrate with the AWS Marketplace Metering Service and call  the  Regis-
+       terUsage operation for software entitlement and metering. Free and BYOL
+       products for Amazon ECS or Amazon EKS aren't required  to  call  Regis-
+       terUsage,  but you may choose to do so if you would like to receive us-
+       age data in your seller reports. The sections below explain the  behav-
+       ior of RegisterUsage. RegisterUsage performs two primary functions: me-
+       tering and entitlement.
+
+       o Entitlement : RegisterUsage allows you to verify  that  the  customer
+         running  your paid software is subscribed to your product on AWS Mar-
+         ketplace, enabling you to guard against unauthorized use.  Your  con-
+         tainer  image  that integrates with RegisterUsage is only required to
+         guard against unauthorized use at container startup, as such  a  Cus-
+         tomerNotSubscribedException/PlatformNotSupportedException  will  only
+         be thrown on the initial call to RegisterUsage. Subsequent calls from
+         the  same  Amazon  ECS task instance (e.g. task-id) or Amazon EKS pod
+         will not throw a CustomerNotSubscribedException, even if the customer
+         unsubscribes  while  the  Amazon  ECS task or Amazon EKS pod is still
+         running.
+
+       o Metering : RegisterUsage meters software use per ECS task, per  hour,
+         or  per pod for Amazon EKS with usage prorated to the second. A mini-
+         mum of 1 minute of usage applies to tasks that are short  lived.  For
+         example, if a customer has a 10 node Amazon ECS or Amazon EKS cluster
+         and a service configured as a Daemon Set, then Amazon ECS  or  Amazon
+         EKS  will launch a task on all 10 cluster nodes and the customer will
+         be charged: (10 * hourly_rate). Metering for software use is automat-
+         ically  handled by the AWS Marketplace Metering Control Plane -- your
+         software is not required to perform any  metering  specific  actions,
+         other  than  call  RegisterUsage once for metering of software use to
+         commence. The AWS Marketplace Metering Control Plane will  also  con-
+         tinue  to  bill  customers for running ECS tasks and Amazon EKS pods,
+         regardless of the customers subscription state, removing the need for
+         your software to perform entitlement checks at runtime.
+
+       See also: AWS API Documentation
+
+       See 'aws help' for descriptions of global parameters.
+
+SYNOPSIS
+            register-usage
+          --product-code <value>
+          --public-key-version <value>
+          [--nonce <value>]
+          [--cli-input-json | --cli-input-yaml]
+          [--generate-cli-skeleton <value>]
+
+OPTIONS
+       --product-code (string)
+          Product  code  is used to uniquely identify a product in AWS Market-
+          place. The product code should be the same as the  one  used  during
+          the publishing of a new product.
+
+       --public-key-version (integer)
+          Public Key Version provided by AWS Marketplace
+
+       --nonce (string)
+          (Optional)  To  scope  down  the  registration to a specific running
+          software instance and guard against replay attacks.
+
+       --cli-input-json | --cli-input-yaml (string) Reads arguments  from  the
+       JSON  string  provided.  The JSON string follows the format provided by
+       --generate-cli-skeleton. If other arguments are provided on the command
+       line,  those  values  will override the JSON-provided values. It is not
+       possible to pass arbitrary binary values using a JSON-provided value as
+       the  string  will  be  taken literally. This may not be specified along
+       with --cli-input-yaml.
+
+       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
+       output without sending an API request. If provided with no value or the
+       value input, prints a sample input JSON that can be used as an argument
+       for --cli-input-json. Similarly, if provided yaml-input it will print a
+       sample input YAML that can be used with --cli-input-yaml.  If  provided
+       with  the  value  output, it validates the command inputs and returns a
+       sample output JSON for that command.
+
+       See 'aws help' for descriptions of global parameters.
+
+OUTPUT
+       PublicKeyRotationTimestamp -> (timestamp)
+          (Optional) Only included when public key version has expired
+
+       Signature -> (string)
+          JWT Token
+
+
+
+                                                              REGISTER-USAGE()

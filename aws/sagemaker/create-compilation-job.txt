@@ -1,0 +1,656 @@
+CREATE-COMPILATION-JOB()                              CREATE-COMPILATION-JOB()
+
+
+
+NAME
+       create-compilation-job -
+
+DESCRIPTION
+       Starts a model compilation job. After the model has been compiled, Ama-
+       zon SageMaker saves the resulting model artifacts to an  Amazon  Simple
+       Storage Service (Amazon S3) bucket that you specify.
+
+       If  you  choose  to host your model using Amazon SageMaker hosting ser-
+       vices, you can use the resulting model artifacts as part of the  model.
+       You can also use the artifacts with Amazon Web Services IoT Greengrass.
+       In that case, deploy them as an ML resource.
+
+       In the request body, you provide the following:
+
+       o A name for the compilation job
+
+       o Information about the input model artifacts
+
+       o The output location for the compiled model and  the  device  (target)
+         that the model runs on
+
+       o The  Amazon Resource Name (ARN) of the IAM role that Amazon SageMaker
+         assumes to perform the model compilation job.
+
+       You can also provide a Tag to track the  model  compilation  job's  re-
+       source  use and costs. The response body contains the CompilationJobArn
+       for the compiled job.
+
+       To stop a model compilation job, use  StopCompilationJob . To  get  in-
+       formation about a particular model compilation job, use  DescribeCompi-
+       lationJob . To get information about multiple model  compilation  jobs,
+       use  ListCompilationJobs .
+
+       See also: AWS API Documentation
+
+       See 'aws help' for descriptions of global parameters.
+
+SYNOPSIS
+            create-compilation-job
+          --compilation-job-name <value>
+          --role-arn <value>
+          [--model-package-version-arn <value>]
+          [--input-config <value>]
+          --output-config <value>
+          [--vpc-config <value>]
+          --stopping-condition <value>
+          [--tags <value>]
+          [--cli-input-json | --cli-input-yaml]
+          [--generate-cli-skeleton <value>]
+
+OPTIONS
+       --compilation-job-name (string)
+          A name for the model compilation job. The name must be unique within
+          the Amazon Web Services Region and within your Amazon  Web  Services
+          account.
+
+       --role-arn (string)
+          The  Amazon  Resource  Name (ARN) of an IAM role that enables Amazon
+          SageMaker to perform tasks on your behalf.
+
+          During model compilation, Amazon SageMaker needs your permission to:
+
+          o Read input data from an S3 bucket
+
+          o Write model artifacts to an S3 bucket
+
+          o Write logs to Amazon CloudWatch Logs
+
+          o Publish metrics to Amazon CloudWatch
+
+          You grant permissions for all of these tasks to an IAM role. To pass
+          this  role to Amazon SageMaker, the caller of this API must have the
+          iam:PassRole permission. For more information, see Amazon  SageMaker
+          Roles.
+
+       --model-package-version-arn (string)
+          The Amazon Resource Name (ARN) of a versioned model package. Provide
+          either a ModelPackageVersionArn or an InputConfig object in the  re-
+          quest syntax. The presence of both objects in the CreateCompilation-
+          Job request will return an exception.
+
+       --input-config (structure)
+          Provides information about the location of  input  model  artifacts,
+          the name and shape of the expected data inputs, and the framework in
+          which the model was trained.
+
+          S3Uri -> (string)
+              The S3 path where the model artifacts, which result  from  model
+              training, are stored. This path must point to a single gzip com-
+              pressed tar archive (.tar.gz suffix).
+
+          DataInputConfig -> (string)
+              Specifies the name and shape of the  expected  data  inputs  for
+              your  trained model with a JSON dictionary form. The data inputs
+              are  InputConfig$Framework specific.
+
+              o TensorFlow : You must specify the name and shape (NHWC format)
+                of the expected data inputs using a dictionary format for your
+                trained model. The dictionary formats required for the console
+                and CLI are different.
+
+                o Examples for one input:
+
+                  o If using the console, {"input":[1,1024,1024,3]}
+
+                  o If using the CLI, {\"input\":[1,1024,1024,3]}
+
+                o Examples for two inputs:
+
+                  o If    using    the    console,    {"data1":   [1,28,28,1],
+                    "data2":[1,28,28,1]}
+
+                  o If    using    the    CLI,    {\"data1\":     [1,28,28,1],
+                    \"data2\":[1,28,28,1]}
+
+              o KERAS  :  You must specify the name and shape (NCHW format) of
+                expected data  inputs  using  a  dictionary  format  for  your
+                trained model. Note that while Keras model artifacts should be
+                uploaded in NHWC (channel-last) format, DataInputConfig should
+                be  specified  in  NCHW (channel-first) format. The dictionary
+                formats required for the console and CLI are different.
+
+                o Examples for one input:
+
+                  o If using the console, {"input_1":[1,3,224,224]}
+
+                  o If using the CLI, {\"input_1\":[1,3,224,224]}
+
+                o Examples for two inputs:
+
+                  o If using  the  console,  {"input_1":  [1,3,224,224],  "in-
+                    put_2":[1,3,224,224]}
+
+                  o If  using  the  CLI,  {\"input_1\":  [1,3,224,224],  \"in-
+                    put_2\":[1,3,224,224]}
+
+              o MXNET/ONNX/DARKNET : You must specify the name and shape (NCHW
+                format)  of  the expected data inputs in order using a dictio-
+                nary format for your trained model. The dictionary formats re-
+                quired for the console and CLI are different.
+
+                o Examples for one input:
+
+                  o If using the console, {"data":[1,3,1024,1024]}
+
+                  o If using the CLI, {\"data\":[1,3,1024,1024]}
+
+                o Examples for two inputs:
+
+                  o If    using    the    console,    {"var1":    [1,1,28,28],
+                    "var2":[1,1,28,28]}
+
+                  o If    using    the    CLI,     {\"var1\":     [1,1,28,28],
+                    \"var2\":[1,1,28,28]}
+
+              o PyTorch : You can either specify the name and shape (NCHW for-
+                mat) of expected data inputs in order using a dictionary  for-
+                mat  for  your trained model or you can specify the shape only
+                using a list format. The dictionary formats required  for  the
+                console  and  CLI are different. The list formats for the con-
+                sole and CLI are the same.
+
+                o Examples for one input in dictionary format:
+
+                  o If using the console, {"input0":[1,3,224,224]}
+
+                  o If using the CLI, {\"input0\":[1,3,224,224]}
+
+                o Example for one input in list format: [[1,3,224,224]]
+
+                o Examples for two inputs in dictionary format:
+
+                  o If  using  the  console,   {"input0":[1,3,224,224],   "in-
+                    put1":[1,3,224,224]}
+
+                  o If   using   the   CLI,  {\"input0\":[1,3,224,224],  \"in-
+                    put1\":[1,3,224,224]}
+
+                o Example for  two  inputs  in  list  format:  [[1,3,224,224],
+                  [1,3,224,224]]
+
+              o XGBOOST : input data name and shape are not needed.
+                 DataInputConfig  supports the following parameters for CoreML
+                 OutputConfig$TargetDevice (ML Model format):
+
+              o shape  :  Input  shape,  for  example  {"input_1":   {"shape":
+                [1,224,224,3]}}  .  In addition to static input shapes, CoreML
+                converter supports Flexible input shapes:
+
+                o Range Dimension. You can use the Range Dimension feature  if
+                  you know the input shape will be within some specific inter-
+                  val in that dimension, for  example:  {"input_1":  {"shape":
+                  ["1..10", 224, 224, 3]}}
+
+                o Enumerated shapes. Sometimes, the models are trained to work
+                  only on a select set of inputs. You can enumerate  all  sup-
+                  ported input shapes, for example: {"input_1": {"shape": [[1,
+                  224, 224, 3], [1, 160, 160, 3]]}}
+
+              o default_shape : Default input shape. You  can  set  a  default
+                shape  during  conversion for both Range Dimension and Enumer-
+                ated Shapes. For example {"input_1": {"shape": ["1..10",  224,
+                224, 3], "default_shape": [1, 224, 224, 3]}}
+
+              o type  :  Input type. Allowed values: Image and Tensor . By de-
+                fault, the converter generates an ML Model with inputs of type
+                Tensor  (MultiArray). User can set input type to be Image. Im-
+                age input type requires additional input  parameters  such  as
+                bias and scale .
+
+              o bias  : If the input type is an Image, you need to provide the
+                bias vector.
+
+              o scale : If the input type is an Image, you need to  provide  a
+                scale factor.
+
+              CoreML  ClassifierConfig parameters can be specified using  Out-
+              putConfig$CompilerOptions . CoreML converter supports Tensorflow
+              and PyTorch models. CoreML conversion examples:
+
+              o Tensor type input:
+
+                o "DataInputConfig":   {"input_1":  {"shape":  [[1,224,224,3],
+                  [1,160,160,3]], "default_shape": [1,224,224,3]}}
+
+              o Tensor type input without input name (PyTorch):
+
+                o "DataInputConfig":        [{"shape":         [[1,3,224,224],
+                  [1,3,160,160]], "default_shape": [1,3,224,224]}]
+
+              o Image type input:
+
+                o "DataInputConfig":   {"input_1":  {"shape":  [[1,224,224,3],
+                  [1,160,160,3]], "default_shape": [1,224,224,3], "type": "Im-
+                  age", "bias": [-1,-1,-1], "scale": 0.007843137255}}
+
+                o "CompilerOptions":       {"class_labels":      "imagenet_la-
+                  bels_1000.txt"}
+
+              o Image type input without input name (PyTorch):
+
+                o "DataInputConfig":        [{"shape":         [[1,3,224,224],
+                  [1,3,160,160]], "default_shape": [1,3,224,224], "type": "Im-
+                  age", "bias": [-1,-1,-1], "scale": 0.007843137255}]
+
+                o "CompilerOptions":      {"class_labels":       "imagenet_la-
+                  bels_1000.txt"}
+
+              Depending on the model format, DataInputConfig requires the fol-
+              lowing parameters for ml_eia2  OutputConfig:TargetDevice .
+
+              o For TensorFlow models saved in the SavedModel format,  specify
+                the  input  names  from  signature_def_key and the input model
+                shapes for DataInputConfig . Specify the signature_def_key  in
+                `                                 OutputConfig:CompilerOptions
+                https://docs.aws.amazon.com/sagemaker/latest/APIReference/API_OutputConfig.html#sagemaker-Type-OutputConfig-CompilerOptions`__
+                if  the  model does not use TensorFlow's default signature def
+                key. For example:
+
+                o "DataInputConfig": {"inputs": [1, 224, 224, 3]}
+
+                o "CompilerOptions": {"signature_def_key": "serving_custom"}
+
+              o For TensorFlow models saved as a frozen graph, specify the in-
+                put  tensor names and shapes in DataInputConfig and the output
+                tensor names for output_names  in  `  OutputConfig:CompilerOp-
+                tions
+                https://docs.aws.amazon.com/sagemaker/latest/APIReference/API_OutputConfig.html#sagemaker-Type-OutputConfig-CompilerOptions`__
+                . For example:
+
+                o "DataInputConfig": {"input_tensor:0": [1, 224, 224, 3]}
+
+                o "CompilerOptions": {"output_names": ["output_tensor:0"]}
+
+          Framework -> (string)
+              Identifies the framework in which the model was trained. For ex-
+              ample: TENSORFLOW.
+
+          FrameworkVersion -> (string)
+              Specifies the framework version to use. This API field  is  only
+              supported for the PyTorch and TensorFlow frameworks.
+
+              For  information  about  framework  versions supported for cloud
+              targets and edge devices, see Cloud Supported Instance Types and
+              Frameworks and Edge Supported Frameworks .
+
+       Shorthand Syntax:
+
+          S3Uri=string,DataInputConfig=string,Framework=string,FrameworkVersion=string
+
+       JSON Syntax:
+
+          {
+            "S3Uri": "string",
+            "DataInputConfig": "string",
+            "Framework": "TENSORFLOW"|"KERAS"|"MXNET"|"ONNX"|"PYTORCH"|"XGBOOST"|"TFLITE"|"DARKNET"|"SKLEARN",
+            "FrameworkVersion": "string"
+          }
+
+       --output-config (structure)
+          Provides  information  about  the  output  location for the compiled
+          model and the target device the model runs on.
+
+          S3OutputLocation -> (string)
+              Identifies the S3 bucket where  you  want  Amazon  SageMaker  to
+              store      the      model      artifacts.      For      example,
+              s3://bucket-name/key-name-prefix .
+
+          TargetDevice -> (string)
+              Identifies the target device or the  machine  learning  instance
+              that  you  want  to  run your model on after the compilation has
+              completed. Alternatively, you can specify OS, architecture,  and
+              accelerator using  TargetPlatform fields. It can be used instead
+              of TargetPlatform .
+
+          TargetPlatform -> (structure)
+              Contains information about a target platform that you want  your
+              model  to run on, such as OS, architecture, and accelerators. It
+              is an alternative of TargetDevice .
+
+              The following examples show how to configure the  TargetPlatform
+              and CompilerOptions JSON strings for popular target platforms:
+
+              o Raspberry  Pi  3  Model  B+  "TargetPlatform": {"Os": "LINUX",
+                "Arch":   "ARM_EABIHF"},       "CompilerOptions":    {'mattr':
+                ['+neon']}
+
+              o Jetson TX2  "TargetPlatform": {"Os": "LINUX", "Arch": "ARM64",
+                "Accelerator": "NVIDIA"},     "CompilerOptions":  {'gpu-code':
+                'sm_62', 'trt-ver': '6.0.1', 'cuda-ver': '10.0'}
+
+              o EC2  m5.2xlarge instance OS  "TargetPlatform": {"Os": "LINUX",
+                "Arch": "X86_64",  "Accelerator":  "NVIDIA"},     "CompilerOp-
+                tions": {'mcpu': 'skylake-avx512'}
+
+              o RK3399   "TargetPlatform":  {"Os":  "LINUX",  "Arch": "ARM64",
+                "Accelerator": "MALI"}
+
+              o ARMv7 phone (CPU)  "TargetPlatform": {"Os": "ANDROID", "Arch":
+                "ARM_EABI"},     "CompilerOptions":  {'ANDROID_PLATFORM':  25,
+                'mattr': ['+neon']}
+
+              o ARMv8 phone (CPU)  "TargetPlatform": {"Os": "ANDROID", "Arch":
+                "ARM64"},    "CompilerOptions": {'ANDROID_PLATFORM': 29}
+
+              Os -> (string)
+                 Specifies a target platform OS.
+
+                 o LINUX : Linux-based operating systems.
+
+                 o ANDROID  : Android operating systems. Android API level can
+                   be specified using the  ANDROID_PLATFORM  compiler  option.
+                   For example, "CompilerOptions": {'ANDROID_PLATFORM': 28}
+
+              Arch -> (string)
+                 Specifies a target platform architecture.
+
+                 o X86_64 : 64-bit version of the x86 instruction set.
+
+                 o X86 : 32-bit version of the x86 instruction set.
+
+                 o ARM64 : ARMv8 64-bit CPU.
+
+                 o ARM_EABIHF : ARMv7 32-bit, Hard Float.
+
+                 o ARM_EABI : ARMv7 32-bit, Soft Float. Used by Android 32-bit
+                   ARM platform.
+
+              Accelerator -> (string)
+                 Specifies a target platform accelerator (optional).
+
+                 o NVIDIA : Nvidia graphics processing unit. It also  requires
+                   gpu-code , trt-ver , cuda-ver compiler options
+
+                 o MALI : ARM Mali graphics processor
+
+                 o INTEL_GRAPHICS : Integrated Intel graphics
+
+          CompilerOptions -> (string)
+              Specifies  additional  parameters  for  compiler options in JSON
+              format. The compiler options are TargetPlatform specific. It  is
+              required  for NVIDIA accelerators and highly recommended for CPU
+              compilations. For any other cases, it  is  optional  to  specify
+              CompilerOptions.
+
+              o DTYPE  : Specifies the data type for the input. When compiling
+                for ml_* (except for ml_inf ) instances using  PyTorch  frame-
+                work,  provide  the  data  type  (dtype) of the model's input.
+                "float32" is used if "DTYPE" is  not  specified.  Options  for
+                data type are:
+
+                o float32: Use either "float" or "float32" .
+
+                o int64: Use either "int64" or "long" .
+
+              For example, {"dtype" : "float32"} .
+
+              o CPU  : Compilation for CPU supports the following compiler op-
+                tions.
+
+                o mcpu : CPU micro-architecture. For example,  {'mcpu':  'sky-
+                  lake-avx512'}
+
+                o mattr   :   CPU  flags.  For  example,  {'mattr':  ['+neon',
+                  '+vfpv4']}
+
+              o ARM : Details of ARM CPU compilations.
+
+                o NEON : NEON is an implementation of the Advanced SIMD exten-
+                  sion  used  in  ARMv7 processors. For example, add {'mattr':
+                  ['+neon']} to the compiler  options  if  compiling  for  ARM
+                  32-bit platform with the NEON support.
+
+              o NVIDIA  :  Compilation  for  NVIDIA GPU supports the following
+                compiler options.
+
+                o gpu_code : Specifies the targeted architecture.
+
+                o trt-ver : Specifies the TensorRT versions in x.y.z. format.
+
+                o cuda-ver : Specifies the CUDA version in x.y format.
+
+              For   example,   {'gpu-code':   'sm_72',   'trt-ver':   '6.0.1',
+              'cuda-ver': '10.1'}
+
+              o ANDROID  : Compilation for the Android OS supports the follow-
+                ing compiler options:
+
+                o ANDROID_PLATFORM : Specifies the Android API levels.  Avail-
+                  able  levels  range  from  21  to  29.  For  example,  {'AN-
+                  DROID_PLATFORM': 28} .
+
+                o mattr : Add {'mattr': ['+neon']} to compiler options if com-
+                  piling for ARM 32-bit platform with NEON support.
+
+              o INFERENTIA  : Compilation for target ml_inf1 uses compiler op-
+                tions passed in as a JSON string.  For  example,  "CompilerOp-
+                tions":  "\"--verbose  1 --num-neuroncores 2 -O2\"" .  For in-
+                formation about supported compiler options,  see  Neuron  Com-
+                piler CLI .
+
+              o CoreML : Compilation for the CoreML  OutputConfig$TargetDevice
+                supports the following compiler options:
+
+                o class_labels : Specifies the classification labels file name
+                  inside input tar.gz file. For example, {"class_labels": "im-
+                  agenet_labels_1000.txt"} . Labels inside the txt file should
+                  be separated by newlines.
+
+              o EIA  :  Compilation for the Elastic Inference Accelerator sup-
+                ports the following compiler options:
+
+                o precision_mode : Specifies the precision of  compiled  arti-
+                  facts.  Supported  values are "FP16" and "FP32" . Default is
+                  "FP32" .
+
+                o signature_def_key : Specifies the signature to use for  mod-
+                  els  in  SavedModel format. Defaults is TensorFlow's default
+                  signature def key.
+
+                o output_names : Specifies a list of output tensor  names  for
+                  models in FrozenGraph format. Set at most one API field, ei-
+                  ther: signature_def_key or output_names .
+
+              For example: {"precision_mode": "FP32",  "output_names":  ["out-
+              put:0"]}
+
+          KmsKeyId -> (string)
+              The  Amazon  Web Services Key Management Service key (Amazon Web
+              Services KMS) that Amazon SageMaker uses to encrypt your  output
+              models  with  Amazon S3 server-side encryption after compilation
+              job. If you don't provide a KMS key ID,  Amazon  SageMaker  uses
+              the  default  KMS key for Amazon S3 for your role's account. For
+              more information, see KMS-Managed Encryption Keys in the  Amazon
+              Simple Storage Service Developer Guide.
+
+              The KmsKeyId can be any of the following formats:
+
+              o Key ID: 1234abcd-12ab-34cd-56ef-1234567890ab
+
+              o Key                                                       ARN:
+                arn:aws:kms:us-west-2:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab
+
+              o Alias name: alias/ExampleAlias
+
+              o Alias name ARN: arn:aws:kms:us-west-2:111122223333:alias/Exam-
+                pleAlias
+
+       Shorthand Syntax:
+
+          S3OutputLocation=string,TargetDevice=string,TargetPlatform={Os=string,Arch=string,Accelerator=string},CompilerOptions=string,KmsKeyId=string
+
+       JSON Syntax:
+
+          {
+            "S3OutputLocation": "string",
+            "TargetDevice": "lambda"|"ml_m4"|"ml_m5"|"ml_c4"|"ml_c5"|"ml_p2"|"ml_p3"|"ml_g4dn"|"ml_inf1"|"ml_eia2"|"jetson_tx1"|"jetson_tx2"|"jetson_nano"|"jetson_xavier"|"rasp3b"|"imx8qm"|"deeplens"|"rk3399"|"rk3288"|"aisage"|"sbe_c"|"qcs605"|"qcs603"|"sitara_am57x"|"amba_cv2"|"amba_cv22"|"amba_cv25"|"x86_win32"|"x86_win64"|"coreml"|"jacinto_tda4vm"|"imx8mplus",
+            "TargetPlatform": {
+              "Os": "ANDROID"|"LINUX",
+              "Arch": "X86_64"|"X86"|"ARM64"|"ARM_EABI"|"ARM_EABIHF",
+              "Accelerator": "INTEL_GRAPHICS"|"MALI"|"NVIDIA"
+            },
+            "CompilerOptions": "string",
+            "KmsKeyId": "string"
+          }
+
+       --vpc-config (structure)
+          A  VpcConfig object that specifies the VPC that you want your compi-
+          lation job to connect to. Control access to your models by configur-
+          ing the VPC. For more information, see Protect Compilation  Jobs  by
+          Using an Amazon Virtual Private Cloud .
+
+          SecurityGroupIds -> (list)
+              The  VPC  security group IDs. IDs have the form of sg-xxxxxxxx .
+              Specify the security groups for the VPC that is specified in the
+              Subnets field.
+
+              (string)
+
+          Subnets -> (list)
+              The  ID  of  the subnets in the VPC that you want to connect the
+              compilation job to for accessing the model in Amazon S3.
+
+              (string)
+
+       Shorthand Syntax:
+
+          SecurityGroupIds=string,string,Subnets=string,string
+
+       JSON Syntax:
+
+          {
+            "SecurityGroupIds": ["string", ...],
+            "Subnets": ["string", ...]
+          }
+
+       --stopping-condition (structure)
+          Specifies a limit to how long a model compilation job can run.  When
+          the  job  reaches the time limit, Amazon SageMaker ends the compila-
+          tion job. Use this API to cap model training costs.
+
+          MaxRuntimeInSeconds -> (integer)
+              The maximum length of time, in seconds, that a training or  com-
+              pilation job can run.
+
+              For  compilation  jobs, if the job does not complete during this
+              time, you will receive a TimeOut error.  We  recommend  starting
+              with 900 seconds and increase as necessary based on your model.
+
+              For  all  other  jobs,  if the job does not complete during this
+              time, Amazon SageMaker ends the job. When RetryStrategy is spec-
+              ified in the job request, MaxRuntimeInSeconds specifies the max-
+              imum time for all of the attempts in total, not each  individual
+              attempt.  The  default  value  is 1 day. The maximum value is 28
+              days.
+
+          MaxWaitTimeInSeconds -> (integer)
+              The maximum length of time, in  seconds,  that  a  managed  Spot
+              training  job  has  to  complete. It is the amount of time spent
+              waiting for Spot capacity plus the amount of time  the  job  can
+              run.  It  must be equal to or greater than MaxRuntimeInSeconds .
+              If the job does not complete during this time, Amazon  SageMaker
+              ends the job.
+
+              When  RetryStrategy  is  specified  in the job request, MaxWait-
+              TimeInSeconds specifies the maximum time for all of the attempts
+              in total, not each individual attempt.
+
+       Shorthand Syntax:
+
+          MaxRuntimeInSeconds=integer,MaxWaitTimeInSeconds=integer
+
+       JSON Syntax:
+
+          {
+            "MaxRuntimeInSeconds": integer,
+            "MaxWaitTimeInSeconds": integer
+          }
+
+       --tags (list)
+          An  array  of  key-value  pairs. You can use tags to categorize your
+          Amazon Web Services resources in different  ways,  for  example,  by
+          purpose,  owner,  or  environment. For more information, see Tagging
+          Amazon Web Services Resources .
+
+          (structure)
+              A tag object that consists of a key and an optional value,  used
+              to manage metadata for SageMaker Amazon Web Services resources.
+
+              You  can add tags to notebook instances, training jobs, hyperpa-
+              rameter tuning jobs,  batch  transform  jobs,  models,  labeling
+              jobs,  work  teams,  endpoint configurations, and endpoints. For
+              more information on adding tags to SageMaker resources, see  Ad-
+              dTags .
+
+              For  more information on adding metadata to your Amazon Web Ser-
+              vices resources with tagging, see Tagging  Amazon  Web  Services
+              resources . For advice on best practices for managing Amazon Web
+              Services resources with tagging, see Tagging Best Practices: Im-
+              plement an Effective Amazon Web Services Resource Tagging Strat-
+              egy .
+
+              Key -> (string)
+                 The tag key. Tag keys must be unique per resource.
+
+              Value -> (string)
+                 The tag value.
+
+       Shorthand Syntax:
+
+          Key=string,Value=string ...
+
+       JSON Syntax:
+
+          [
+            {
+              "Key": "string",
+              "Value": "string"
+            }
+            ...
+          ]
+
+       --cli-input-json | --cli-input-yaml (string) Reads arguments  from  the
+       JSON  string  provided.  The JSON string follows the format provided by
+       --generate-cli-skeleton. If other arguments are provided on the command
+       line,  those  values  will override the JSON-provided values. It is not
+       possible to pass arbitrary binary values using a JSON-provided value as
+       the  string  will  be  taken literally. This may not be specified along
+       with --cli-input-yaml.
+
+       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
+       output without sending an API request. If provided with no value or the
+       value input, prints a sample input JSON that can be used as an argument
+       for --cli-input-json. Similarly, if provided yaml-input it will print a
+       sample input YAML that can be used with --cli-input-yaml.  If  provided
+       with  the  value  output, it validates the command inputs and returns a
+       sample output JSON for that command.
+
+       See 'aws help' for descriptions of global parameters.
+
+OUTPUT
+       CompilationJobArn -> (string)
+          If the action is successful, the service sends back an HTTP 200  re-
+          sponse. Amazon SageMaker returns the following data in JSON format:
+
+          o CompilationJobArn : The Amazon Resource Name (ARN) of the compiled
+            job.
+
+
+
+                                                      CREATE-COMPILATION-JOB()

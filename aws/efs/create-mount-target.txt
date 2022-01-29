@@ -1,0 +1,253 @@
+CREATE-MOUNT-TARGET()                                    CREATE-MOUNT-TARGET()
+
+
+
+NAME
+       create-mount-target -
+
+DESCRIPTION
+       Creates  a  mount target for a file system. You can then mount the file
+       system on EC2 instances by using the mount target.
+
+       You can create one mount target in each Availability Zone in your  VPC.
+       All  EC2  instances  in  a VPC within a given Availability Zone share a
+       single mount target for a given file system. If you have multiple  sub-
+       nets  in  an Availability Zone, you create a mount target in one of the
+       subnets. EC2 instances do not need to be in  the  same  subnet  as  the
+       mount target in order to access their file system.
+
+       You  can  create only one mount target for an EFS file system using One
+       Zone storage classes. You must create that mount  target  in  the  same
+       Availability  Zone  in which the file system is located. Use the Avail-
+       abilityZoneName  and   AvailabiltyZoneId   properties   in   the    De-
+       scribeFileSystems response object to get this information. Use the sub-
+       netId associated with the file system's Availability Zone when creating
+       the mount target.
+
+       For more information, see Amazon EFS: How it Works .
+
+       To create a mount target for a file system, the file system's lifecycle
+       state must be available . For more information,  see   DescribeFileSys-
+       tems .
+
+       In the request, provide the following:
+
+       o The file system ID for which you are creating the mount target.
+
+       o A subnet ID, which determines the following:
+
+         o The VPC in which Amazon EFS creates the mount target
+
+         o The Availability Zone in which Amazon EFS creates the mount target
+
+         o The  IP  address range from which Amazon EFS selects the IP address
+           of the mount target (if you don't specify an IP address in the  re-
+           quest)
+
+       After creating the mount target, Amazon EFS returns a response that in-
+       cludes, a MountTargetId and an IpAddress . You use this IP address when
+       mounting the file system in an EC2 instance. You can also use the mount
+       target's DNS name when mounting the file system. The  EC2  instance  on
+       which  you  mount the file system by using the mount target can resolve
+       the mount target's DNS name to its IP address.  For  more  information,
+       see How it Works: Implementation Overview .
+
+       Note  that  you  can create mount targets for a file system in only one
+       VPC, and there can be only one mount target per Availability Zone. That
+       is,  if  the  file system already has one or more mount targets created
+       for it, the subnet specified in the request to add another mount target
+       must meet the following requirements:
+
+       o Must belong to the same VPC as the subnets of the existing mount tar-
+         gets
+
+       o Must not be in the same Availability Zone as any of  the  subnets  of
+         the existing mount targets
+
+       If  the request satisfies the requirements, Amazon EFS does the follow-
+       ing:
+
+       o Creates a new mount target in the specified subnet.
+
+       o Also creates a new network interface in the subnet as follows:
+
+         o If the request provides an IpAddress , Amazon EFS assigns  that  IP
+           address  to  the network interface. Otherwise, Amazon EFS assigns a
+           free address in the subnet (in the same way  that  the  Amazon  EC2
+           CreateNetworkInterface  call does when a request does not specify a
+           primary private IP address).
+
+         o If the request provides SecurityGroups , this network interface  is
+           associated with those security groups. Otherwise, it belongs to the
+           default security group for the subnet's VPC.
+
+         o Assigns the description Mount  target  *fsmt-id*  for  file  system
+           *fs-id*  ``  where  ``  *fsmt-id* `` is the mount target ID, and ``
+           *fs-id* `` is the ``FileSystemId .
+
+         o Sets the requesterManaged property of the network interface to true
+           , and the requesterId value to EFS .
+
+       Each  Amazon  EFS  mount target has one corresponding requester-managed
+       EC2 network interface. After the network interface is  created,  Amazon
+       EFS sets the NetworkInterfaceId field in the mount target's description
+       to the network interface ID, and the IpAddress field to its address. If
+       network  interface  creation fails, the entire CreateMountTarget opera-
+       tion fails.
+
+       NOTE:
+          The CreateMountTarget call returns only after creating  the  network
+          interface,  but while the mount target state is still creating , you
+          can check the mount target creation status by calling the  Describe-
+          MountTargets  operation,  which among other things returns the mount
+          target state.
+
+       We recommend that you create a mount target in each of the Availability
+       Zones.  There  are  cost  considerations  for using a file system in an
+       Availability Zone through a mount target created in another  Availabil-
+       ity Zone. For more information, see Amazon EFS . In addition, by always
+       using a mount target local to the  instance's  Availability  Zone,  you
+       eliminate a partial failure scenario. If the Availability Zone in which
+       your mount target is created goes down, then you can't access your file
+       system through that mount target.
+
+       This  operation  requires  permissions  for the following action on the
+       file system:
+
+       o elasticfilesystem:CreateMountTarget
+
+       This operation also requires permissions for the following  Amazon  EC2
+       actions:
+
+       o ec2:DescribeSubnets
+
+       o ec2:DescribeNetworkInterfaces
+
+       o ec2:CreateNetworkInterface
+
+       See also: AWS API Documentation
+
+       See 'aws help' for descriptions of global parameters.
+
+SYNOPSIS
+            create-mount-target
+          --file-system-id <value>
+          --subnet-id <value>
+          [--ip-address <value>]
+          [--security-groups <value>]
+          [--cli-input-json | --cli-input-yaml]
+          [--generate-cli-skeleton <value>]
+
+OPTIONS
+       --file-system-id (string)
+          The ID of the file system for which to create the mount target.
+
+       --subnet-id (string)
+          The  ID  of  the subnet to add the mount target in. For file systems
+          that use One Zone storage classes, use the subnet that is associated
+          with the file system's Availability Zone.
+
+       --ip-address (string)
+          Valid IPv4 address within the address range of the specified subnet.
+
+       --security-groups (list)
+          Up  to  five VPC security group IDs, of the form sg-xxxxxxxx . These
+          must be for the same VPC as subnet specified.
+
+          (string)
+
+       Syntax:
+
+          "string" "string" ...
+
+       --cli-input-json | --cli-input-yaml (string) Reads arguments  from  the
+       JSON  string  provided.  The JSON string follows the format provided by
+       --generate-cli-skeleton. If other arguments are provided on the command
+       line,  those  values  will override the JSON-provided values. It is not
+       possible to pass arbitrary binary values using a JSON-provided value as
+       the  string  will  be  taken literally. This may not be specified along
+       with --cli-input-yaml.
+
+       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
+       output without sending an API request. If provided with no value or the
+       value input, prints a sample input JSON that can be used as an argument
+       for --cli-input-json. Similarly, if provided yaml-input it will print a
+       sample input YAML that can be used with --cli-input-yaml.  If  provided
+       with  the  value  output, it validates the command inputs and returns a
+       sample output JSON for that command.
+
+       See 'aws help' for descriptions of global parameters.
+
+EXAMPLES
+       To create a mount target
+
+       The following create-mount-target example creates a  mount  target  for
+       the specified file system.
+
+          aws efs create-mount-target \
+              --file-system-id fs-c7a0456e \
+              --subnet-id subnet-02bf4c428bexample \
+              --security-groups sg-068f739363example
+
+       Output:
+
+          {
+              "OwnerId": "123456789012",
+              "MountTargetId": "fsmt-f9a14450",
+              "FileSystemId": "fs-c7a0456e",
+              "SubnetId": "subnet-02bf4c428bexample",
+              "LifeCycleState": "creating",
+              "IpAddress": "10.0.1.24",
+              "NetworkInterfaceId": "eni-02d542216aexample",
+              "AvailabilityZoneId": "use2-az2",
+              "AvailabilityZoneName": "us-east-2b",
+              "VpcId": "vpc-0123456789abcdef0"
+          }
+
+       For  more information, see Creating mount targets in the Amazon Elastic
+       File System User Guide.
+
+OUTPUT
+       OwnerId -> (string)
+          Amazon Web Services account ID that owns the resource.
+
+       MountTargetId -> (string)
+          System-assigned mount target ID.
+
+       FileSystemId -> (string)
+          The ID of the file system for which the mount target is intended.
+
+       SubnetId -> (string)
+          The ID of the mount target's subnet.
+
+       LifeCycleState -> (string)
+          Lifecycle state of the mount target.
+
+       IpAddress -> (string)
+          Address at which the file system can be mounted by using  the  mount
+          target.
+
+       NetworkInterfaceId -> (string)
+          The ID of the network interface that Amazon EFS created when it cre-
+          ated the mount target.
+
+       AvailabilityZoneId -> (string)
+          The unique and consistent identifier of the Availability  Zone  that
+          the  mount  target resides in. For example, use1-az1 is an AZ ID for
+          the us-east-1 Region and it has the same location  in  every  Amazon
+          Web Services account.
+
+       AvailabilityZoneName -> (string)
+          The  name  of the Availability Zone in which the mount target is lo-
+          cated. Availability Zones are independently mapped to names for each
+          Amazon  Web  Services  account.  For  example, the Availability Zone
+          us-east-1a for your Amazon Web Services account  might  not  be  the
+          same location as us-east-1a for another Amazon Web Services account.
+
+       VpcId -> (string)
+          The  virtual private cloud (VPC) ID that the mount target is config-
+          ured in.
+
+
+
+                                                         CREATE-MOUNT-TARGET()

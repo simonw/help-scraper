@@ -1,0 +1,405 @@
+PUT-BUCKET-NOTIFICATION-CONFIGURATION()PUT-BUCKET-NOTIFICATION-CONFIGURATION()
+
+
+
+NAME
+       put-bucket-notification-configuration -
+
+DESCRIPTION
+       Enables notifications of specified events for a bucket. For more infor-
+       mation about event notifications, see Configuring Event Notifications .
+
+       Using this API, you can replace an existing notification configuration.
+       The  configuration is an XML file that defines the event types that you
+       want Amazon S3 to publish and the destination where you want Amazon  S3
+       to publish an event notification when it detects an event of the speci-
+       fied type.
+
+       By default, your bucket has no event notifications configured. That is,
+       the  notification configuration will be an empty NotificationConfigura-
+       tion .
+          <NotificationConfiguration>
+
+          </NotificationConfiguration>
+
+       This action replaces the existing notification configuration  with  the
+       configuration you include in the request body.
+
+       After  Amazon S3 receives this request, it first verifies that any Ama-
+       zon Simple Notification Service (Amazon SNS)  or  Amazon  Simple  Queue
+       Service  (Amazon SQS) destination exists, and that the bucket owner has
+       permission to publish to it by sending a test notification. In the case
+       of  Lambda  destinations,  Amazon  S3 verifies that the Lambda function
+       permissions grant Amazon S3 permission to invoke the function from  the
+       Amazon  S3  bucket. For more information, see Configuring Notifications
+       for Amazon S3 Events .
+
+       You can disable notifications by adding the empty  NotificationConfigu-
+       ration element.
+
+       By  default,  only  the  bucket  owner can configure notifications on a
+       bucket. However, bucket owners can use a bucket policy to grant permis-
+       sion  to other users to set this configuration with s3:PutBucketNotifi-
+       cation permission.
+
+       NOTE:
+              The PUT notification is an atomic operation. For  example,  sup-
+              pose  your  notification  configuration  includes SNS topic, SQS
+              queue, and Lambda function configurations. When you send  a  PUT
+              request  with  this configuration, Amazon S3 sends test messages
+              to your SNS topic. If the message fails, the entire  PUT  action
+              will  fail, and Amazon S3 will not add the configuration to your
+              bucket.
+
+          Responses
+
+       If the configuration in the request body includes only one TopicConfig-
+       uration  specifying only the s3:ReducedRedundancyLostObject event type,
+       the response will also  include  the  x-amz-sns-test-message-id  header
+       containing the message ID of the test notification sent to the topic.
+
+       The following action is related to PutBucketNotificationConfiguration :
+
+       o GetBucketNotificationConfiguration
+
+       See also: AWS API Documentation
+
+       See 'aws help' for descriptions of global parameters.
+
+SYNOPSIS
+            put-bucket-notification-configuration
+          --bucket <value>
+          --notification-configuration <value>
+          [--expected-bucket-owner <value>]
+          [--skip-destination-validation | --no-skip-destination-validation]
+          [--cli-input-json | --cli-input-yaml]
+          [--generate-cli-skeleton <value>]
+
+OPTIONS
+       --bucket (string)
+          The name of the bucket.
+
+       --notification-configuration (structure)
+          A  container  for  specifying  the notification configuration of the
+          bucket. If this element is empty, notifications are turned  off  for
+          the bucket.
+
+          TopicConfigurations -> (list)
+              The  topic  to  which  notifications are sent and the events for
+              which notifications are generated.
+
+              (structure)
+                 A container for specifying the configuration for  publication
+                 of  messages to an Amazon Simple Notification Service (Amazon
+                 SNS) topic when Amazon S3 detects specified events.
+
+                 Id -> (string)
+                     An optional unique identifier for configurations in a no-
+                     tification  configuration. If you don't provide one, Ama-
+                     zon S3 will assign an ID.
+
+                 TopicArn -> (string)
+                     The Amazon Resource Name (ARN) of the Amazon SNS topic to
+                     which  Amazon  S3  publishes  a  message  when it detects
+                     events of the specified type.
+
+                 Events -> (list)
+                     The Amazon S3 bucket event about which to send  notifica-
+                     tions. For more information, see Supported Event Types in
+                     the Amazon S3 User Guide .
+
+                     (string)
+                        The bucket event for which to send notifications.
+
+                 Filter -> (structure)
+                     Specifies object key name filtering rules.  For  informa-
+                     tion  about key name filtering, see Configuring Event No-
+                     tifications in the Amazon S3 User Guide .
+
+                     Key -> (structure)
+                        A container for object key name prefix and suffix fil-
+                        tering rules.
+
+                        FilterRules -> (list)
+                            A  list  of containers for the key-value pair that
+                            defines the criteria for the filter rule.
+
+                            (structure)
+                               Specifies the Amazon S3 object key name to fil-
+                               ter  on  and whether to filter on the suffix or
+                               prefix of the key name.
+
+                               Name -> (string)
+                                   The object key name prefix or suffix  iden-
+                                   tifying  one  or  more objects to which the
+                                   filtering rule applies. The maximum  length
+                                   is  1,024  characters. Overlapping prefixes
+                                   and suffixes are not  supported.  For  more
+                                   information,  see Configuring Event Notifi-
+                                   cations in the Amazon S3 User Guide .
+
+                               Value -> (string)
+                                   The value that the filter searches  for  in
+                                   object key names.
+
+          QueueConfigurations -> (list)
+              The  Amazon  Simple  Queue Service queues to publish messages to
+              and the events for which to publish messages.
+
+              (structure)
+                 Specifies the configuration for  publishing  messages  to  an
+                 Amazon Simple Queue Service (Amazon SQS) queue when Amazon S3
+                 detects specified events.
+
+                 Id -> (string)
+                     An optional unique identifier for configurations in a no-
+                     tification  configuration. If you don't provide one, Ama-
+                     zon S3 will assign an ID.
+
+                 QueueArn -> (string)
+                     The Amazon Resource Name (ARN) of the Amazon SQS queue to
+                     which  Amazon  S3  publishes  a  message  when it detects
+                     events of the specified type.
+
+                 Events -> (list)
+                     A collection of bucket events for which to send notifica-
+                     tions
+
+                     (string)
+                        The bucket event for which to send notifications.
+
+                 Filter -> (structure)
+                     Specifies  object  key name filtering rules. For informa-
+                     tion about key name filtering, see Configuring Event  No-
+                     tifications in the Amazon S3 User Guide .
+
+                     Key -> (structure)
+                        A container for object key name prefix and suffix fil-
+                        tering rules.
+
+                        FilterRules -> (list)
+                            A list of containers for the key-value  pair  that
+                            defines the criteria for the filter rule.
+
+                            (structure)
+                               Specifies the Amazon S3 object key name to fil-
+                               ter on and whether to filter on the  suffix  or
+                               prefix of the key name.
+
+                               Name -> (string)
+                                   The  object key name prefix or suffix iden-
+                                   tifying one or more objects  to  which  the
+                                   filtering  rule applies. The maximum length
+                                   is 1,024 characters.  Overlapping  prefixes
+                                   and  suffixes  are  not supported. For more
+                                   information, see Configuring Event  Notifi-
+                                   cations in the Amazon S3 User Guide .
+
+                               Value -> (string)
+                                   The  value  that the filter searches for in
+                                   object key names.
+
+          LambdaFunctionConfigurations -> (list)
+              Describes the Lambda functions to  invoke  and  the  events  for
+              which to invoke them.
+
+              (structure)
+                 A container for specifying the configuration for Lambda noti-
+                 fications.
+
+                 Id -> (string)
+                     An optional unique identifier for configurations in a no-
+                     tification  configuration. If you don't provide one, Ama-
+                     zon S3 will assign an ID.
+
+                 LambdaFunctionArn -> (string)
+                     The Amazon Resource Name (ARN)  of  the  Lambda  function
+                     that  Amazon S3 invokes when the specified event type oc-
+                     curs.
+
+                 Events -> (list)
+                     The Amazon S3 bucket event for which to invoke the Lambda
+                     function. For more information, see Supported Event Types
+                     in the Amazon S3 User Guide .
+
+                     (string)
+                        The bucket event for which to send notifications.
+
+                 Filter -> (structure)
+                     Specifies object key name filtering rules.  For  informa-
+                     tion  about key name filtering, see Configuring Event No-
+                     tifications in the Amazon S3 User Guide .
+
+                     Key -> (structure)
+                        A container for object key name prefix and suffix fil-
+                        tering rules.
+
+                        FilterRules -> (list)
+                            A  list  of containers for the key-value pair that
+                            defines the criteria for the filter rule.
+
+                            (structure)
+                               Specifies the Amazon S3 object key name to fil-
+                               ter  on  and whether to filter on the suffix or
+                               prefix of the key name.
+
+                               Name -> (string)
+                                   The object key name prefix or suffix  iden-
+                                   tifying  one  or  more objects to which the
+                                   filtering rule applies. The maximum  length
+                                   is  1,024  characters. Overlapping prefixes
+                                   and suffixes are not  supported.  For  more
+                                   information,  see Configuring Event Notifi-
+                                   cations in the Amazon S3 User Guide .
+
+                               Value -> (string)
+                                   The value that the filter searches  for  in
+                                   object key names.
+
+          EventBridgeConfiguration -> (structure)
+              Enables delivery of events to Amazon EventBridge.
+
+       JSON Syntax:
+
+          {
+            "TopicConfigurations": [
+              {
+                "Id": "string",
+                "TopicArn": "string",
+                "Events": ["s3:ReducedRedundancyLostObject"|"s3:ObjectCreated:*"|"s3:ObjectCreated:Put"|"s3:ObjectCreated:Post"|"s3:ObjectCreated:Copy"|"s3:ObjectCreated:CompleteMultipartUpload"|"s3:ObjectRemoved:*"|"s3:ObjectRemoved:Delete"|"s3:ObjectRemoved:DeleteMarkerCreated"|"s3:ObjectRestore:*"|"s3:ObjectRestore:Post"|"s3:ObjectRestore:Completed"|"s3:Replication:*"|"s3:Replication:OperationFailedReplication"|"s3:Replication:OperationNotTracked"|"s3:Replication:OperationMissedThreshold"|"s3:Replication:OperationReplicatedAfterThreshold"|"s3:ObjectRestore:Delete"|"s3:LifecycleTransition"|"s3:IntelligentTiering"|"s3:ObjectAcl:Put"|"s3:LifecycleExpiration:*"|"s3:LifecycleExpiration:Delete"|"s3:LifecycleExpiration:DeleteMarkerCreated"|"s3:ObjectTagging:*"|"s3:ObjectTagging:Put"|"s3:ObjectTagging:Delete", ...],
+                "Filter": {
+                  "Key": {
+                    "FilterRules": [
+                      {
+                        "Name": "prefix"|"suffix",
+                        "Value": "string"
+                      }
+                      ...
+                    ]
+                  }
+                }
+              }
+              ...
+            ],
+            "QueueConfigurations": [
+              {
+                "Id": "string",
+                "QueueArn": "string",
+                "Events": ["s3:ReducedRedundancyLostObject"|"s3:ObjectCreated:*"|"s3:ObjectCreated:Put"|"s3:ObjectCreated:Post"|"s3:ObjectCreated:Copy"|"s3:ObjectCreated:CompleteMultipartUpload"|"s3:ObjectRemoved:*"|"s3:ObjectRemoved:Delete"|"s3:ObjectRemoved:DeleteMarkerCreated"|"s3:ObjectRestore:*"|"s3:ObjectRestore:Post"|"s3:ObjectRestore:Completed"|"s3:Replication:*"|"s3:Replication:OperationFailedReplication"|"s3:Replication:OperationNotTracked"|"s3:Replication:OperationMissedThreshold"|"s3:Replication:OperationReplicatedAfterThreshold"|"s3:ObjectRestore:Delete"|"s3:LifecycleTransition"|"s3:IntelligentTiering"|"s3:ObjectAcl:Put"|"s3:LifecycleExpiration:*"|"s3:LifecycleExpiration:Delete"|"s3:LifecycleExpiration:DeleteMarkerCreated"|"s3:ObjectTagging:*"|"s3:ObjectTagging:Put"|"s3:ObjectTagging:Delete", ...],
+                "Filter": {
+                  "Key": {
+                    "FilterRules": [
+                      {
+                        "Name": "prefix"|"suffix",
+                        "Value": "string"
+                      }
+                      ...
+                    ]
+                  }
+                }
+              }
+              ...
+            ],
+            "LambdaFunctionConfigurations": [
+              {
+                "Id": "string",
+                "LambdaFunctionArn": "string",
+                "Events": ["s3:ReducedRedundancyLostObject"|"s3:ObjectCreated:*"|"s3:ObjectCreated:Put"|"s3:ObjectCreated:Post"|"s3:ObjectCreated:Copy"|"s3:ObjectCreated:CompleteMultipartUpload"|"s3:ObjectRemoved:*"|"s3:ObjectRemoved:Delete"|"s3:ObjectRemoved:DeleteMarkerCreated"|"s3:ObjectRestore:*"|"s3:ObjectRestore:Post"|"s3:ObjectRestore:Completed"|"s3:Replication:*"|"s3:Replication:OperationFailedReplication"|"s3:Replication:OperationNotTracked"|"s3:Replication:OperationMissedThreshold"|"s3:Replication:OperationReplicatedAfterThreshold"|"s3:ObjectRestore:Delete"|"s3:LifecycleTransition"|"s3:IntelligentTiering"|"s3:ObjectAcl:Put"|"s3:LifecycleExpiration:*"|"s3:LifecycleExpiration:Delete"|"s3:LifecycleExpiration:DeleteMarkerCreated"|"s3:ObjectTagging:*"|"s3:ObjectTagging:Put"|"s3:ObjectTagging:Delete", ...],
+                "Filter": {
+                  "Key": {
+                    "FilterRules": [
+                      {
+                        "Name": "prefix"|"suffix",
+                        "Value": "string"
+                      }
+                      ...
+                    ]
+                  }
+                }
+              }
+              ...
+            ],
+            "EventBridgeConfiguration": {
+
+            }
+          }
+
+       --expected-bucket-owner (string)
+          The  account ID of the expected bucket owner. If the bucket is owned
+          by a different account, the request will fail with an HTTP 403  (Ac-
+          cess Denied) error.
+
+       --skip-destination-validation | --no-skip-destination-validation (bool-
+       ean)
+          Skips validation of Amazon SQS, Amazon SNS, and Lambda destinations.
+          True or false value.
+
+       --cli-input-json  |  --cli-input-yaml (string) Reads arguments from the
+       JSON string provided. The JSON string follows the  format  provided  by
+       --generate-cli-skeleton. If other arguments are provided on the command
+       line, those values will override the JSON-provided values.  It  is  not
+       possible to pass arbitrary binary values using a JSON-provided value as
+       the string will be taken literally. This may  not  be  specified  along
+       with --cli-input-yaml.
+
+       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
+       output without sending an API request. If provided with no value or the
+       value input, prints a sample input JSON that can be used as an argument
+       for --cli-input-json. Similarly, if provided yaml-input it will print a
+       sample  input  YAML that can be used with --cli-input-yaml. If provided
+       with the value output, it validates the command inputs  and  returns  a
+       sample output JSON for that command.
+
+       See 'aws help' for descriptions of global parameters.
+
+EXAMPLES
+       The applies a notification configuration to a bucket named my-bucket:
+
+          aws s3api put-bucket-notification-configuration --bucket my-bucket --notification-configuration file://notification.json
+
+       The  file  notification.json  is  a JSON document in the current folder
+       that specifies an SNS topic and an event type to monitor:
+
+           {
+              "TopicConfigurations": [
+                  {
+                      "TopicArn": "arn:aws:sns:us-west-2:123456789012:s3-notification-topic",
+                      "Events": [
+                          "s3:ObjectCreated:*"
+                      ]
+                  }
+              ]
+          }
+
+       The SNS topic must have an IAM policy attached to it that allows Amazon
+       S3 to publish to it:
+
+          {
+           "Version": "2008-10-17",
+           "Id": "example-ID",
+           "Statement": [
+            {
+             "Sid": "example-statement-ID",
+             "Effect": "Allow",
+             "Principal": {
+               "Service": "s3.amazonaws.com"
+             },
+             "Action": [
+              "SNS:Publish"
+             ],
+             "Resource": "arn:aws:sns:us-west-2:123456789012:my-bucket",
+             "Condition": {
+                "ArnLike": {
+                "aws:SourceArn": "arn:aws:s3:*:*:my-bucket"
+              }
+             }
+            }
+           ]
+          }
+
+OUTPUT
+       None
+
+
+
+                                       PUT-BUCKET-NOTIFICATION-CONFIGURATION()

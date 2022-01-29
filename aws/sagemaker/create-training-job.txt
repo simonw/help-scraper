@@ -1,0 +1,1129 @@
+CREATE-TRAINING-JOB()                                    CREATE-TRAINING-JOB()
+
+
+
+NAME
+       create-training-job -
+
+DESCRIPTION
+       Starts a model training job. After training completes, Amazon SageMaker
+       saves the resulting model artifacts to an Amazon S3 location  that  you
+       specify.
+
+       If  you  choose  to host your model using Amazon SageMaker hosting ser-
+       vices, you can use the resulting model artifacts as part of the  model.
+       You can also use the artifacts in a machine learning service other than
+       Amazon SageMaker, provided that you know how to use them for inference.
+
+       In the request body, you provide the following:
+
+       o AlgorithmSpecification - Identifies the training algorithm to use.
+
+       o HyperParameters - Specify these algorithm-specific parameters to  en-
+         able the estimation of model parameters during training. Hyperparame-
+         ters can be tuned to optimize this learning process. For  a  list  of
+         hyperparameters  for each training algorithm provided by Amazon Sage-
+         Maker, see Algorithms .
+
+       o InputDataConfig - Describes the training dataset and the  Amazon  S3,
+         EFS, or FSx location where it is stored.
+
+       o OutputDataConfig  -  Identifies  the  Amazon S3 bucket where you want
+         Amazon SageMaker to save the results of model training.
+
+       o ResourceConfig - Identifies the resources, ML compute instances,  and
+         ML  storage  volumes  to  deploy  for  model training. In distributed
+         training, you specify more than one instance.
+
+       o EnableManagedSpotTraining - Optimize the  cost  of  training  machine
+         learning  models by up to 80% by using Amazon EC2 Spot instances. For
+         more information, see Managed Spot Training .
+
+       o RoleArn - The Amazon Resource Name (ARN) that  Amazon  SageMaker  as-
+         sumes to perform tasks on your behalf during model training. You must
+         grant this role the necessary permissions so  that  Amazon  SageMaker
+         can successfully complete model training.
+
+       o StoppingCondition  - To help cap training costs, use MaxRuntimeInSec-
+         onds to set a time limit for training.  Use  MaxWaitTimeInSeconds  to
+         specify how long a managed spot training job has to complete.
+
+       o Environment  -  The  environment  variables to set in the Docker con-
+         tainer.
+
+       o RetryStrategy - The number of times to retry the  job  when  the  job
+         fails due to an InternalServerError .
+
+       For more information about Amazon SageMaker, see How It Works .
+
+       See also: AWS API Documentation
+
+       See 'aws help' for descriptions of global parameters.
+
+SYNOPSIS
+            create-training-job
+          --training-job-name <value>
+          [--hyper-parameters <value>]
+          --algorithm-specification <value>
+          --role-arn <value>
+          [--input-data-config <value>]
+          --output-data-config <value>
+          --resource-config <value>
+          [--vpc-config <value>]
+          --stopping-condition <value>
+          [--tags <value>]
+          [--enable-network-isolation | --no-enable-network-isolation]
+          [--enable-inter-container-traffic-encryption | --no-enable-inter-container-traffic-encryption]
+          [--enable-managed-spot-training | --no-enable-managed-spot-training]
+          [--checkpoint-config <value>]
+          [--debug-hook-config <value>]
+          [--debug-rule-configurations <value>]
+          [--tensor-board-output-config <value>]
+          [--experiment-config <value>]
+          [--profiler-config <value>]
+          [--profiler-rule-configurations <value>]
+          [--environment <value>]
+          [--retry-strategy <value>]
+          [--cli-input-json | --cli-input-yaml]
+          [--generate-cli-skeleton <value>]
+
+OPTIONS
+       --training-job-name (string)
+          The name of the training job. The name must be unique within an Ama-
+          zon Web Services Region in an Amazon Web Services account.
+
+       --hyper-parameters (map)
+          Algorithm-specific parameters that  influence  the  quality  of  the
+          model.  You  set  hyperparameters  before  you  start  the  learning
+          process. For a list of hyperparameters for each  training  algorithm
+          provided by Amazon SageMaker, see Algorithms .
+
+          You  can specify a maximum of 100 hyperparameters. Each hyperparame-
+          ter is a key-value pair. Each key and value is limited to 256  char-
+          acters, as specified by the Length Constraint .
+
+          key -> (string)
+
+          value -> (string)
+
+       Shorthand Syntax:
+
+          KeyName1=string,KeyName2=string
+
+       JSON Syntax:
+
+          {"string": "string"
+            ...}
+
+       --algorithm-specification (structure)
+          The registry path of the Docker image that contains the training al-
+          gorithm and algorithm-specific metadata, including the  input  mode.
+          For  more information about algorithms provided by Amazon SageMaker,
+          see Algorithms . For information  about  providing  your  own  algo-
+          rithms, see Using Your Own Algorithms with Amazon SageMaker .
+
+          TrainingImage -> (string)
+              The registry path of the Docker image that contains the training
+              algorithm. For  information  about  docker  registry  paths  for
+              built-in  algorithms,  see  Algorithms  Provided by Amazon Sage-
+              Maker: Common Parameters . Amazon SageMaker supports  both  reg-
+              istry/repository[:tag]  and  registry/repository[@digest]  image
+              path formats. For more information, see  Using  Your  Own  Algo-
+              rithms with Amazon SageMaker .
+
+          AlgorithmName -> (string)
+              The  name of the algorithm resource to use for the training job.
+              This must be an algorithm resource that you created or subscribe
+              to  on  Amazon  Web Services Marketplace. If you specify a value
+              for this parameter, you can't specify a value for  TrainingImage
+              .
+
+          TrainingInputMode -> (string)
+              The  training  input  mode that the algorithm supports. For more
+              information about input modes, see Algorithms .
+                 Pipe mode
+
+              If an algorithm supports Pipe  mode,  Amazon  SageMaker  streams
+              data directly from Amazon S3 to the container.
+                 File mode
+
+              If  an  algorithm  supports  File  mode, SageMaker downloads the
+              training data from S3 to the provisioned ML storage volume,  and
+              mounts  the directory to the Docker volume for the training con-
+              tainer.
+
+              You must provision the ML storage volume with sufficient  capac-
+              ity  to  accommodate the data downloaded from S3. In addition to
+              the training data, the ML storage volume also stores the  output
+              model.  The  algorithm  container  uses the ML storage volume to
+              also store intermediate information, if any.
+
+              For distributed algorithms, training data  is  distributed  uni-
+              formly.  Your training duration is predictable if the input data
+              objects sizes are approximately the  same.  SageMaker  does  not
+              split  the  files  any further for model training. If the object
+              sizes are skewed, training won't be optimal as the data  distri-
+              bution  is  also  skewed  when one host in a training cluster is
+              overloaded, thus becoming a bottleneck in training.
+                 FastFile mode
+
+              If an algorithm supports FastFile mode, SageMaker  streams  data
+              directly from S3 to the container with no code changes, and pro-
+              vides file system access to the data.  Users  can  author  their
+              training  script  to  interact  with these files as if they were
+              stored on disk.
+                 FastFile mode works best when the data is read  sequentially.
+                 Augmented  manifest  files aren't supported. The startup time
+                 is lower when there are fewer files in  the  S3  bucket  pro-
+                 vided.
+
+          MetricDefinitions -> (list)
+              A  list  of metric definition objects. Each object specifies the
+              metric name and regular  expressions  used  to  parse  algorithm
+              logs.  Amazon  SageMaker  publishes each metric to Amazon Cloud-
+              Watch.
+
+              (structure)
+                 Specifies a metric that  the  training  algorithm  writes  to
+                 stderr or stdout . Amazon SageMakerhyperparameter tuning cap-
+                 tures all defined metrics. You specify one metric that a  hy-
+                 perparameter  tuning  job  uses  as  its  objective metric to
+                 choose the best training job.
+
+                 Name -> (string)
+                     The name of the metric.
+
+                 Regex -> (string)
+                     A regular expression that searches the output of a train-
+                     ing job and gets the value of the metric. For more infor-
+                     mation about using regular expressions to define metrics,
+                     see Defining Objective Metrics .
+
+          EnableSageMakerMetricsTimeSeries -> (boolean)
+              To generate and save time-series metrics during training, set to
+              true . The default is false and time-series metrics aren't  gen-
+              erated except in the following cases:
+
+              o You use one of the Amazon SageMaker built-in algorithms
+
+              o You  use one of the following Prebuilt Amazon SageMaker Docker
+                Images :
+
+                o Tensorflow (version >= 1.15)
+
+                o MXNet (version >= 1.6)
+
+                o PyTorch (version >= 1.3)
+
+              o You specify at least one  MetricDefinition
+
+       Shorthand Syntax:
+
+          TrainingImage=string,AlgorithmName=string,TrainingInputMode=string,MetricDefinitions=[{Name=string,Regex=string},{Name=string,Regex=string}],EnableSageMakerMetricsTimeSeries=boolean
+
+       JSON Syntax:
+
+          {
+            "TrainingImage": "string",
+            "AlgorithmName": "string",
+            "TrainingInputMode": "Pipe"|"File"|"FastFile",
+            "MetricDefinitions": [
+              {
+                "Name": "string",
+                "Regex": "string"
+              }
+              ...
+            ],
+            "EnableSageMakerMetricsTimeSeries": true|false
+          }
+
+       --role-arn (string)
+          The Amazon Resource Name (ARN) of an IAM role that Amazon  SageMaker
+          can assume to perform tasks on your behalf.
+
+          During  model  training,  Amazon  SageMaker needs your permission to
+          read input data from an S3 bucket, download a Docker image that con-
+          tains  training  code,  write model artifacts to an S3 bucket, write
+          logs to Amazon CloudWatch Logs, and publish metrics to Amazon Cloud-
+          Watch.  You grant permissions for all of these tasks to an IAM role.
+          For more information, see Amazon SageMaker Roles .
+
+          NOTE:
+              To be able to pass this role to Amazon SageMaker, the caller  of
+              this API must have the iam:PassRole permission.
+
+       --input-data-config (list)
+          An  array  of Channel objects. Each channel is a named input source.
+          InputDataConfig describes the input data and its location.
+
+          Algorithms can accept input data from one or more channels. For  ex-
+          ample,  an  algorithm  might have two channels of input data, train-
+          ing_data and validation_data . The configuration  for  each  channel
+          provides  the  S3,  EFS,  or  FSx  location  where the input data is
+          stored. It also provides information about the stored data: the MIME
+          type,  compression method, and whether the data is wrapped in Recor-
+          dIO format.
+
+          Depending on the input mode  that  the  algorithm  supports,  Amazon
+          SageMaker  either copies input data files from an S3 bucket to a lo-
+          cal directory in the Docker container, or makes it available as  in-
+          put streams. For example, if you specify an EFS location, input data
+          files will be made available as input streams. They do not  need  to
+          be downloaded.
+
+          (structure)
+              A  channel  is a named input source that training algorithms can
+              consume.
+
+              ChannelName -> (string)
+                 The name of the channel.
+
+              DataSource -> (structure)
+                 The location of the channel data.
+
+                 S3DataSource -> (structure)
+                     The S3 location of the data  source  that  is  associated
+                     with a channel.
+
+                     S3DataType -> (string)
+                        If  you  choose S3Prefix , S3Uri identifies a key name
+                        prefix. Amazon SageMaker uses all objects  that  match
+                        the specified key name prefix for model training.
+
+                        If  you  choose ManifestFile , S3Uri identifies an ob-
+                        ject that is a manifest file containing a list of  ob-
+                        ject  keys  that  you want Amazon SageMaker to use for
+                        model training.
+
+                        If you choose AugmentedManifestFile , S3Uri identifies
+                        an  object  that is an augmented manifest file in JSON
+                        lines format. This file contains the data you want  to
+                        use for model training. AugmentedManifestFile can only
+                        be used if the Channel's input mode is Pipe .
+
+                     S3Uri -> (string)
+                        Depending on the value specified for the S3DataType  ,
+                        identifies either a key name prefix or a manifest. For
+                        example:
+
+                        o A key name prefix might look like this: s3://bucket-
+                          name/exampleprefix
+
+                        o A manifest might look like this: s3://bucketname/ex-
+                          ample.manifest   A manifest is an S3 object which is
+                          a  JSON file consisting of an array of elements. The
+                          first element is a prefix which is followed  by  one
+                          or  more suffixes. SageMaker appends the suffix ele-
+                          ments to the prefix to get a full  set  of  S3Uri  .
+                          Note that the prefix must be a valid non-empty S3Uri
+                          that precludes  users  from  specifying  a  manifest
+                          whose  individual S3Uri is sourced from different S3
+                          buckets. The following code example  shows  a  valid
+                          manifest    format:      [   {"prefix":   "s3://cus-
+                          tomer_bucket/some/prefix/"},                  "rela-
+                          tive/path/to/custdata-1",       "relative/path/cust-
+                          data-2",    ...     "relative/path/custdata-N"     ]
+                          This JSON is equivalent to the following S3Uri list:
+                          s3://customer_bucket/some/prefix/rela-
+                          tive/path/to/custdata-1                    s3://cus-
+                          tomer_bucket/some/prefix/relative/path/custdata-2
+                          ...           s3://customer_bucket/some/prefix/rela-
+                          tive/path/custdata-N   The complete set of S3Uri  in
+                          this  manifest is the input data for the channel for
+                          this data source. The object that each S3Uri  points
+                          to  must  be  readable  by  the IAM role that Amazon
+                          SageMaker uses to perform tasks on your behalf.
+
+                     S3DataDistributionType -> (string)
+                        If you want Amazon SageMaker to replicate  the  entire
+                        dataset  on  each ML compute instance that is launched
+                        for model training, specify FullyReplicated .
+
+                        If you want Amazon SageMaker to replicate a subset  of
+                        data  on each ML compute instance that is launched for
+                        model training, specify ShardedByS3Key . If there  are
+                        n  ML  compute  instances launched for a training job,
+                        each instance gets approximately 1/n of the number  of
+                        S3  objects.  In this case, model training on each ma-
+                        chine uses only the subset of training data.
+
+                        Don't choose more ML compute  instances  for  training
+                        than available S3 objects. If you do, some nodes won't
+                        get any data and you will pay for  nodes  that  aren't
+                        getting  any  training data. This applies in both File
+                        and Pipe modes. Keep this in mind when developing  al-
+                        gorithms.
+
+                        In  distributed  training,  where  you use multiple ML
+                        compute EC2 instances, you might choose ShardedByS3Key
+                        .  If  the algorithm requires copying training data to
+                        the ML storage volume (when TrainingInputMode  is  set
+                        to File ), this copies 1/n of the number of objects.
+
+                     AttributeNames -> (list)
+                        A  list of one or more attribute names to use that are
+                        found in a specified augmented manifest file.
+
+                        (string)
+
+                 FileSystemDataSource -> (structure)
+                     The file system that is associated with a channel.
+
+                     FileSystemId -> (string)
+                        The file system id.
+
+                     FileSystemAccessMode -> (string)
+                        The access mode of the mount of the directory  associ-
+                        ated  with the channel. A directory can be mounted ei-
+                        ther in ro (read-only) or rw (read-write) mode.
+
+                     FileSystemType -> (string)
+                        The file system type.
+
+                     DirectoryPath -> (string)
+                        The full path to the directory to associate  with  the
+                        channel.
+
+              ContentType -> (string)
+                 The MIME type of the data.
+
+              CompressionType -> (string)
+                 If training data is compressed, the compression type. The de-
+                 fault value is None . CompressionType is used  only  in  Pipe
+                 input mode. In File mode, leave this field unset or set it to
+                 None.
+
+              RecordWrapperType -> (string)
+                 Specify RecordIO as the value when input data is in raw  for-
+                 mat  but the training algorithm requires the RecordIO format.
+                 In this case, Amazon SageMaker wraps each individual  S3  ob-
+                 ject  in  a  RecordIO record. If the input data is already in
+                 RecordIO format, you don't need to set  this  attribute.  For
+                 more information, see Create a Dataset Using RecordIO .
+
+                 In File mode, leave this field unset or set it to None.
+
+              InputMode -> (string)
+                 (Optional)  The  input  mode to use for the data channel in a
+                 training job. If you don't set a value for InputMode , Amazon
+                 SageMaker uses the value set for TrainingInputMode . Use this
+                 parameter to override the TrainingInputMode setting in a  Al-
+                 gorithmSpecification  request  when  you  have a channel that
+                 needs a different input mode from the training job's  general
+                 setting. To download the data from Amazon Simple Storage Ser-
+                 vice (Amazon S3) to the provisioned ML  storage  volume,  and
+                 mount  the directory to a Docker volume, use File input mode.
+                 To stream data directly from  Amazon  S3  to  the  container,
+                 choose Pipe input mode.
+
+                 To  use  a  model for incremental training, choose File input
+                 model.
+
+              ShuffleConfig -> (structure)
+                 A configuration for a shuffle option  for  input  data  in  a
+                 channel.  If  you use S3Prefix for S3DataType , this shuffles
+                 the results of the S3 key prefix matches. If  you  use  Mani-
+                 festFile , the order of the S3 object references in the Mani-
+                 festFile is shuffled. If you use AugmentedManifestFile ,  the
+                 order of the JSON lines in the AugmentedManifestFile is shuf-
+                 fled. The shuffling order is determined using the Seed value.
+
+                 For Pipe input mode, shuffling is done at the start of  every
+                 epoch. With large datasets this ensures that the order of the
+                 training data is different for each epoch,  it  helps  reduce
+                 bias  and  possible overfitting. In a multi-node training job
+                 when ShuffleConfig is combined with S3DataDistributionType of
+                 ShardedByS3Key  ,  the  data is shuffled across nodes so that
+                 the content sent to a particular  node  on  the  first  epoch
+                 might be sent to a different node on the second epoch.
+
+                 Seed -> (long)
+                     Determines the shuffling order in ShuffleConfig value.
+
+       JSON Syntax:
+
+          [
+            {
+              "ChannelName": "string",
+              "DataSource": {
+                "S3DataSource": {
+                  "S3DataType": "ManifestFile"|"S3Prefix"|"AugmentedManifestFile",
+                  "S3Uri": "string",
+                  "S3DataDistributionType": "FullyReplicated"|"ShardedByS3Key",
+                  "AttributeNames": ["string", ...]
+                },
+                "FileSystemDataSource": {
+                  "FileSystemId": "string",
+                  "FileSystemAccessMode": "rw"|"ro",
+                  "FileSystemType": "EFS"|"FSxLustre",
+                  "DirectoryPath": "string"
+                }
+              },
+              "ContentType": "string",
+              "CompressionType": "None"|"Gzip",
+              "RecordWrapperType": "None"|"RecordIO",
+              "InputMode": "Pipe"|"File"|"FastFile",
+              "ShuffleConfig": {
+                "Seed": long
+              }
+            }
+            ...
+          ]
+
+       --output-data-config (structure)
+          Specifies  the path to the S3 location where you want to store model
+          artifacts. Amazon SageMaker creates subfolders for the artifacts.
+
+          KmsKeyId -> (string)
+              The Amazon Web Services Key Management Service (Amazon Web  Ser-
+              vices  KMS)  key that Amazon SageMaker uses to encrypt the model
+              artifacts at rest using Amazon S3  server-side  encryption.  The
+              KmsKeyId can be any of the following formats:
+
+              o // KMS Key ID  "1234abcd-12ab-34cd-56ef-1234567890ab"
+
+              o //    Amazon    Resource    Name    (ARN)   of   a   KMS   Key
+                "arn:aws:kms:us-west-2:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab"
+
+              o // KMS Key Alias  "alias/ExampleAlias"
+
+              o //   Amazon   Resource   Name   (ARN)   of  a  KMS  Key  Alias
+                "arn:aws:kms:us-west-2:111122223333:alias/ExampleAlias"
+
+              If you use a KMS key ID or an alias of your KMS key, the  Amazon
+              SageMaker  execution  role  must  include  permissions  to  call
+              kms:Encrypt . If you don't provide a KMS key  ID,  Amazon  Sage-
+              Maker uses the default KMS key for Amazon S3 for your role's ac-
+              count.  Amazon  SageMaker  uses  server-side   encryption   with
+              KMS-managed keys for OutputDataConfig . If you use a bucket pol-
+              icy with an s3:PutObject permission  that  only  allows  objects
+              with   server-side   encryption,   set   the  condition  key  of
+              s3:x-amz-server-side-encryption to "aws:kms" . For more informa-
+              tion, see KMS-Managed Encryption Keys in the Amazon Simple Stor-
+              age Service Developer Guide.
+
+              The KMS key policy must grant permission to the  IAM  role  that
+              you  specify in your CreateTrainingJob , CreateTransformJob , or
+              CreateHyperParameterTuningJob requests.  For  more  information,
+              see  Using Key Policies in Amazon Web Services KMS in the Amazon
+              Web Services Key Management Service Developer Guide .
+
+          S3OutputPath -> (string)
+              Identifies the S3 path where you want Amazon SageMaker to  store
+              the model artifacts. For example, s3://bucket-name/key-name-pre-
+              fix .
+
+       Shorthand Syntax:
+
+          KmsKeyId=string,S3OutputPath=string
+
+       JSON Syntax:
+
+          {
+            "KmsKeyId": "string",
+            "S3OutputPath": "string"
+          }
+
+       --resource-config (structure)
+          The resources, including the ML compute  instances  and  ML  storage
+          volumes, to use for model training.
+
+          ML  storage  volumes  store  model artifacts and incremental states.
+          Training algorithms might also use ML storage  volumes  for  scratch
+          space.  If you want Amazon SageMaker to use the ML storage volume to
+          store the training data, choose File as the TrainingInputMode in the
+          algorithm  specification. For distributed training algorithms, spec-
+          ify an instance count greater than 1.
+
+          InstanceType -> (string)
+              The ML compute instance type.
+
+          InstanceCount -> (integer)
+              The number of ML  compute  instances  to  use.  For  distributed
+              training, provide a value greater than 1.
+
+          VolumeSizeInGB -> (integer)
+              The size of the ML storage volume that you want to provision.
+
+              ML storage volumes store model artifacts and incremental states.
+              Training algorithms might also use the  ML  storage  volume  for
+              scratch  space. If you want to store the training data in the ML
+              storage volume, choose File as the TrainingInputMode in the  al-
+              gorithm specification.
+
+              You must specify sufficient ML storage for your scenario.
+
+              NOTE:
+                 Amazon  SageMaker supports only the General Purpose SSD (gp2)
+                 ML storage volume type.
+
+              NOTE:
+                 Certain Nitro-based instances include local  storage  with  a
+                 fixed  total size, dependent on the instance type. When using
+                 these instances for training, Amazon SageMaker mounts the lo-
+                 cal  instance  storage instead of Amazon EBS gp2 storage. You
+                 can't request a VolumeSizeInGB greater than the total size of
+                 the local instance storage.
+
+                 For  a  list  of  instance  types that support local instance
+                 storage, including the total  size  per  instance  type,  see
+                 Instance Store Volumes .
+
+          VolumeKmsKeyId -> (string)
+              The  Amazon  Web  Services KMS key that Amazon SageMaker uses to
+              encrypt data on the storage volume attached to  the  ML  compute
+              instance(s) that run the training job.
+
+              NOTE:
+                 Certain  Nitro-based  instances include local storage, depen-
+                 dent on the instance type.  Local  storage  volumes  are  en-
+                 crypted  using  a  hardware module on the instance. You can't
+                 request a VolumeKmsKeyId when using an instance type with lo-
+                 cal storage.
+
+                 For  a  list  of  instance  types that support local instance
+                 storage, see Instance Store Volumes .
+
+                 For more information about local instance storage encryption,
+                 see SSD Instance Store Volumes .
+
+              The VolumeKmsKeyId can be in any of the following formats:
+
+              o // KMS Key ID  "1234abcd-12ab-34cd-56ef-1234567890ab"
+
+              o //    Amazon    Resource    Name    (ARN)   of   a   KMS   Key
+                "arn:aws:kms:us-west-2:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab"
+
+       Shorthand Syntax:
+
+          InstanceType=string,InstanceCount=integer,VolumeSizeInGB=integer,VolumeKmsKeyId=string
+
+       JSON Syntax:
+
+          {
+            "InstanceType": "ml.m4.xlarge"|"ml.m4.2xlarge"|"ml.m4.4xlarge"|"ml.m4.10xlarge"|"ml.m4.16xlarge"|"ml.g4dn.xlarge"|"ml.g4dn.2xlarge"|"ml.g4dn.4xlarge"|"ml.g4dn.8xlarge"|"ml.g4dn.12xlarge"|"ml.g4dn.16xlarge"|"ml.m5.large"|"ml.m5.xlarge"|"ml.m5.2xlarge"|"ml.m5.4xlarge"|"ml.m5.12xlarge"|"ml.m5.24xlarge"|"ml.c4.xlarge"|"ml.c4.2xlarge"|"ml.c4.4xlarge"|"ml.c4.8xlarge"|"ml.p2.xlarge"|"ml.p2.8xlarge"|"ml.p2.16xlarge"|"ml.p3.2xlarge"|"ml.p3.8xlarge"|"ml.p3.16xlarge"|"ml.p3dn.24xlarge"|"ml.p4d.24xlarge"|"ml.c5.xlarge"|"ml.c5.2xlarge"|"ml.c5.4xlarge"|"ml.c5.9xlarge"|"ml.c5.18xlarge"|"ml.c5n.xlarge"|"ml.c5n.2xlarge"|"ml.c5n.4xlarge"|"ml.c5n.9xlarge"|"ml.c5n.18xlarge"|"ml.g5.xlarge"|"ml.g5.2xlarge"|"ml.g5.4xlarge"|"ml.g5.8xlarge"|"ml.g5.16xlarge"|"ml.g5.12xlarge"|"ml.g5.24xlarge"|"ml.g5.48xlarge",
+            "InstanceCount": integer,
+            "VolumeSizeInGB": integer,
+            "VolumeKmsKeyId": "string"
+          }
+
+       --vpc-config (structure)
+          A  VpcConfig object that specifies the VPC that you want your train-
+          ing job to connect to. Control access to and from your training con-
+          tainer  by  configuring  the  VPC. For more information, see Protect
+          Training Jobs by Using an Amazon Virtual Private Cloud .
+
+          SecurityGroupIds -> (list)
+              The VPC security group IDs, in the form sg-xxxxxxxx. Specify the
+              security  groups  for  the  VPC that is specified in the Subnets
+              field.
+
+              (string)
+
+          Subnets -> (list)
+              The ID of the subnets in the VPC to which you  want  to  connect
+              your training job or model. For information about the availabil-
+              ity of specific instance types, see Supported Instance Types and
+              Availability Zones .
+
+              (string)
+
+       Shorthand Syntax:
+
+          SecurityGroupIds=string,string,Subnets=string,string
+
+       JSON Syntax:
+
+          {
+            "SecurityGroupIds": ["string", ...],
+            "Subnets": ["string", ...]
+          }
+
+       --stopping-condition (structure)
+          Specifies  a limit to how long a model training job can run. It also
+          specifies how long a managed Spot training job has to complete. When
+          the  job  reaches the time limit, Amazon SageMaker ends the training
+          job. Use this API to cap model training costs.
+
+          To stop a job, Amazon SageMaker sends the algorithm the SIGTERM sig-
+          nal,  which  delays  job termination for 120 seconds. Algorithms can
+          use this 120-second window to save the model artifacts, so  the  re-
+          sults of training are not lost.
+
+          MaxRuntimeInSeconds -> (integer)
+              The  maximum length of time, in seconds, that a training or com-
+              pilation job can run.
+
+              For compilation jobs, if the job does not complete  during  this
+              time,  you  will  receive a TimeOut error. We recommend starting
+              with 900 seconds and increase as necessary based on your model.
+
+              For all other jobs, if the job does  not  complete  during  this
+              time, Amazon SageMaker ends the job. When RetryStrategy is spec-
+              ified in the job request, MaxRuntimeInSeconds specifies the max-
+              imum  time for all of the attempts in total, not each individual
+              attempt. The default value is 1 day. The  maximum  value  is  28
+              days.
+
+          MaxWaitTimeInSeconds -> (integer)
+              The  maximum  length  of  time,  in seconds, that a managed Spot
+              training job has to complete. It is the  amount  of  time  spent
+              waiting  for  Spot  capacity plus the amount of time the job can
+              run. It must be equal to or greater than  MaxRuntimeInSeconds  .
+              If  the job does not complete during this time, Amazon SageMaker
+              ends the job.
+
+              When RetryStrategy is specified in  the  job  request,  MaxWait-
+              TimeInSeconds specifies the maximum time for all of the attempts
+              in total, not each individual attempt.
+
+       Shorthand Syntax:
+
+          MaxRuntimeInSeconds=integer,MaxWaitTimeInSeconds=integer
+
+       JSON Syntax:
+
+          {
+            "MaxRuntimeInSeconds": integer,
+            "MaxWaitTimeInSeconds": integer
+          }
+
+       --tags (list)
+          An array of key-value pairs. You can use  tags  to  categorize  your
+          Amazon  Web  Services  resources  in different ways, for example, by
+          purpose, owner, or environment. For more  information,  see  Tagging
+          Amazon Web Services Resources .
+
+          (structure)
+              A  tag object that consists of a key and an optional value, used
+              to manage metadata for SageMaker Amazon Web Services resources.
+
+              You can add tags to notebook instances, training jobs,  hyperpa-
+              rameter  tuning  jobs,  batch  transform  jobs, models, labeling
+              jobs, work teams, endpoint configurations,  and  endpoints.  For
+              more information on adding tags to SageMaker resources, see  Ad-
+              dTags .
+
+              For more information on adding metadata to your Amazon Web  Ser-
+              vices  resources  with  tagging, see Tagging Amazon Web Services
+              resources . For advice on best practices for managing Amazon Web
+              Services resources with tagging, see Tagging Best Practices: Im-
+              plement an Effective Amazon Web Services Resource Tagging Strat-
+              egy .
+
+              Key -> (string)
+                 The tag key. Tag keys must be unique per resource.
+
+              Value -> (string)
+                 The tag value.
+
+       Shorthand Syntax:
+
+          Key=string,Value=string ...
+
+       JSON Syntax:
+
+          [
+            {
+              "Key": "string",
+              "Value": "string"
+            }
+            ...
+          ]
+
+       --enable-network-isolation | --no-enable-network-isolation (boolean)
+          Isolates  the  training  container.  No  inbound or outbound network
+          calls can be made, except for calls between peers within a  training
+          cluster  for  distributed  training. If you enable network isolation
+          for training jobs that are configured to use a VPC, Amazon SageMaker
+          downloads  and uploads customer data and model artifacts through the
+          specified VPC, but the training container does not have network  ac-
+          cess.
+
+       --enable-inter-container-traffic-encryption   |  --no-enable-inter-con-
+       tainer-traffic-encryption (boolean)
+          To encrypt all communications between ML compute instances  in  dis-
+          tributed  training,  choose True . Encryption provides greater secu-
+          rity for distributed training, but training might take  longer.  How
+          long it takes depends on the amount of communication between compute
+          instances, especially if you use a deep learning algorithm  in  dis-
+          tributed  training. For more information, see Protect Communications
+          Between ML Compute Instances in a Distributed Training Job .
+
+       --enable-managed-spot-training   |    --no-enable-managed-spot-training
+       (boolean)
+          To  train  models using managed spot training, choose True . Managed
+          spot training provides a fully managed and  scalable  infrastructure
+          for  training  machine  learning  models. this option is useful when
+          training jobs can be interrupted and when there is flexibility  when
+          the training job is run.
+
+          The  complete and intermediate results of jobs are stored in an Ama-
+          zon S3 bucket, and can be used as a starting point to  train  models
+          incrementally.  Amazon SageMaker provides metrics and logs in Cloud-
+          Watch. They can be used to see when managed spot training  jobs  are
+          running, interrupted, resumed, or completed.
+
+       --checkpoint-config (structure)
+          Contains  information  about  the  output  location for managed spot
+          training checkpoint data.
+
+          S3Uri -> (string)
+              Identifies the S3 path where you want Amazon SageMaker to  store
+              checkpoints. For example, s3://bucket-name/key-name-prefix .
+
+          LocalPath -> (string)
+              (Optional)  The  local  directory where checkpoints are written.
+              The default directory is /opt/ml/checkpoints/ .
+
+       Shorthand Syntax:
+
+          S3Uri=string,LocalPath=string
+
+       JSON Syntax:
+
+          {
+            "S3Uri": "string",
+            "LocalPath": "string"
+          }
+
+       --debug-hook-config (structure)
+          Configuration information for the Debugger hook  parameters,  metric
+          and  tensor  collections, and storage paths. To learn more about how
+          to configure the DebugHookConfig parameter, see  Use  the  SageMaker
+          and Debugger Configuration API Operations to Create, Update, and De-
+          bug Your Training Job .
+
+          LocalPath -> (string)
+              Path to local storage location for metrics and tensors. Defaults
+              to /opt/ml/output/tensors/ .
+
+          S3OutputPath -> (string)
+              Path to Amazon S3 storage location for metrics and tensors.
+
+          HookParameters -> (map)
+              Configuration information for the Debugger hook parameters.
+
+              key -> (string)
+
+              value -> (string)
+
+          CollectionConfigurations -> (list)
+              Configuration  information  for  Debugger tensor collections. To
+              learn more about how to  configure  the  CollectionConfiguration
+              parameter,  see Use the SageMaker and Debugger Configuration API
+              Operations to Create, Update, and Debug Your Training Job .
+
+              (structure)
+                 Configuration information for the Debugger output tensor col-
+                 lections.
+
+                 CollectionName -> (string)
+                     The  name  of  the  tensor  collection.  The name must be
+                     unique relative to other rule configuration names.
+
+                 CollectionParameters -> (map)
+                     Parameter values for the tensor collection.  The  allowed
+                     parameters are "name" , "include_regex" , "reduction_con-
+                     fig" , "save_config" , "tensor_names"  ,  and  "save_his-
+                     togram" .
+
+                     key -> (string)
+
+                     value -> (string)
+
+       Shorthand Syntax:
+
+          LocalPath=string,S3OutputPath=string,HookParameters={KeyName1=string,KeyName2=string},CollectionConfigurations=[{CollectionName=string,CollectionParameters={KeyName1=string,KeyName2=string}},{CollectionName=string,CollectionParameters={KeyName1=string,KeyName2=string}}]
+
+       JSON Syntax:
+
+          {
+            "LocalPath": "string",
+            "S3OutputPath": "string",
+            "HookParameters": {"string": "string"
+              ...},
+            "CollectionConfigurations": [
+              {
+                "CollectionName": "string",
+                "CollectionParameters": {"string": "string"
+                  ...}
+              }
+              ...
+            ]
+          }
+
+       --debug-rule-configurations (list)
+          Configuration  information  for  Debugger rules for debugging output
+          tensors.
+
+          (structure)
+              Configuration information for SageMaker Debugger rules  for  de-
+              bugging.  To learn more about how to configure the DebugRuleCon-
+              figuration parameter, see Use the SageMaker and Debugger Config-
+              uration  API Operations to Create, Update, and Debug Your Train-
+              ing Job .
+
+              RuleConfigurationName -> (string)
+                 The name of the rule configuration. It must be  unique  rela-
+                 tive to other rule configuration names.
+
+              LocalPath -> (string)
+                 Path  to local storage location for output of rules. Defaults
+                 to /opt/ml/processing/output/rule/ .
+
+              S3OutputPath -> (string)
+                 Path to Amazon S3 storage location for rules.
+
+              RuleEvaluatorImage -> (string)
+                 The Amazon Elastic Container (ECR) Image for the managed rule
+                 evaluation.
+
+              InstanceType -> (string)
+                 The instance type to deploy a Debugger custom rule for debug-
+                 ging a training job.
+
+              VolumeSizeInGB -> (integer)
+                 The size, in GB, of the ML storage  volume  attached  to  the
+                 processing instance.
+
+              RuleParameters -> (map)
+                 Runtime configuration for rule container.
+
+                 key -> (string)
+
+                 value -> (string)
+
+       Shorthand Syntax:
+
+          RuleConfigurationName=string,LocalPath=string,S3OutputPath=string,RuleEvaluatorImage=string,InstanceType=string,VolumeSizeInGB=integer,RuleParameters={KeyName1=string,KeyName2=string} ...
+
+       JSON Syntax:
+
+          [
+            {
+              "RuleConfigurationName": "string",
+              "LocalPath": "string",
+              "S3OutputPath": "string",
+              "RuleEvaluatorImage": "string",
+              "InstanceType": "ml.t3.medium"|"ml.t3.large"|"ml.t3.xlarge"|"ml.t3.2xlarge"|"ml.m4.xlarge"|"ml.m4.2xlarge"|"ml.m4.4xlarge"|"ml.m4.10xlarge"|"ml.m4.16xlarge"|"ml.c4.xlarge"|"ml.c4.2xlarge"|"ml.c4.4xlarge"|"ml.c4.8xlarge"|"ml.p2.xlarge"|"ml.p2.8xlarge"|"ml.p2.16xlarge"|"ml.p3.2xlarge"|"ml.p3.8xlarge"|"ml.p3.16xlarge"|"ml.c5.xlarge"|"ml.c5.2xlarge"|"ml.c5.4xlarge"|"ml.c5.9xlarge"|"ml.c5.18xlarge"|"ml.m5.large"|"ml.m5.xlarge"|"ml.m5.2xlarge"|"ml.m5.4xlarge"|"ml.m5.12xlarge"|"ml.m5.24xlarge"|"ml.r5.large"|"ml.r5.xlarge"|"ml.r5.2xlarge"|"ml.r5.4xlarge"|"ml.r5.8xlarge"|"ml.r5.12xlarge"|"ml.r5.16xlarge"|"ml.r5.24xlarge"|"ml.g4dn.xlarge"|"ml.g4dn.2xlarge"|"ml.g4dn.4xlarge"|"ml.g4dn.8xlarge"|"ml.g4dn.12xlarge"|"ml.g4dn.16xlarge",
+              "VolumeSizeInGB": integer,
+              "RuleParameters": {"string": "string"
+                ...}
+            }
+            ...
+          ]
+
+       --tensor-board-output-config (structure)
+          Configuration of storage locations for the Debugger TensorBoard out-
+          put data.
+
+          LocalPath -> (string)
+              Path to local storage location for tensorBoard output.  Defaults
+              to /opt/ml/output/tensorboard .
+
+          S3OutputPath -> (string)
+              Path to Amazon S3 storage location for TensorBoard output.
+
+       Shorthand Syntax:
+
+          LocalPath=string,S3OutputPath=string
+
+       JSON Syntax:
+
+          {
+            "LocalPath": "string",
+            "S3OutputPath": "string"
+          }
+
+       --experiment-config (structure)
+          Associates  a  SageMaker job as a trial component with an experiment
+          and trial. Specified when you call the following APIs:
+
+          o CreateProcessingJob
+
+          o CreateTrainingJob
+
+          o CreateTransformJob
+
+          ExperimentName -> (string)
+              The name of an existing experiment to associate the trial compo-
+              nent with.
+
+          TrialName -> (string)
+              The  name  of an existing trial to associate the trial component
+              with. If not specified, a new trial is created.
+
+          TrialComponentDisplayName -> (string)
+              The display name for the trial  component.  If  this  key  isn't
+              specified, the display name is the trial component name.
+
+       Shorthand Syntax:
+
+          ExperimentName=string,TrialName=string,TrialComponentDisplayName=string
+
+       JSON Syntax:
+
+          {
+            "ExperimentName": "string",
+            "TrialName": "string",
+            "TrialComponentDisplayName": "string"
+          }
+
+       --profiler-config (structure)
+          Configuration  information for Debugger system monitoring, framework
+          profiling, and storage paths.
+
+          S3OutputPath -> (string)
+              Path to Amazon S3 storage location for system and framework met-
+              rics.
+
+          ProfilingIntervalInMilliseconds -> (long)
+              A  time  interval  for capturing system metrics in milliseconds.
+              Available values are 100, 200, 500, 1000  (1  second),  5000  (5
+              seconds),  and  60000 (1 minute) milliseconds. The default value
+              is 500 milliseconds.
+
+          ProfilingParameters -> (map)
+              Configuration  information  for  capturing  framework   metrics.
+              Available  key  strings  for different profiling options are De-
+              tailedProfilingConfig , PythonProfilingConfig , and  DataLoader-
+              ProfilingConfig  .  The following codes are configuration struc-
+              tures for the ProfilingParameters parameter. To learn more about
+              how  to configure the ProfilingParameters parameter, see Use the
+              SageMaker and Debugger Configuration API Operations  to  Create,
+              Update, and Debug Your Training Job .
+
+              key -> (string)
+
+              value -> (string)
+
+       Shorthand Syntax:
+
+          S3OutputPath=string,ProfilingIntervalInMilliseconds=long,ProfilingParameters={KeyName1=string,KeyName2=string}
+
+       JSON Syntax:
+
+          {
+            "S3OutputPath": "string",
+            "ProfilingIntervalInMilliseconds": long,
+            "ProfilingParameters": {"string": "string"
+              ...}
+          }
+
+       --profiler-rule-configurations (list)
+          Configuration  information  for  Debugger rules for profiling system
+          and framework metrics.
+
+          (structure)
+              Configuration information for profiling rules.
+
+              RuleConfigurationName -> (string)
+                 The name of the rule configuration. It must be  unique  rela-
+                 tive to other rule configuration names.
+
+              LocalPath -> (string)
+                 Path  to local storage location for output of rules. Defaults
+                 to /opt/ml/processing/output/rule/ .
+
+              S3OutputPath -> (string)
+                 Path to Amazon S3 storage location for rules.
+
+              RuleEvaluatorImage -> (string)
+                 The Amazon Elastic Container (ECR) Image for the managed rule
+                 evaluation.
+
+              InstanceType -> (string)
+                 The  instance  type to deploy a Debugger custom rule for pro-
+                 filing a training job.
+
+              VolumeSizeInGB -> (integer)
+                 The size, in GB, of the ML storage  volume  attached  to  the
+                 processing instance.
+
+              RuleParameters -> (map)
+                 Runtime configuration for rule container.
+
+                 key -> (string)
+
+                 value -> (string)
+
+       Shorthand Syntax:
+
+          RuleConfigurationName=string,LocalPath=string,S3OutputPath=string,RuleEvaluatorImage=string,InstanceType=string,VolumeSizeInGB=integer,RuleParameters={KeyName1=string,KeyName2=string} ...
+
+       JSON Syntax:
+
+          [
+            {
+              "RuleConfigurationName": "string",
+              "LocalPath": "string",
+              "S3OutputPath": "string",
+              "RuleEvaluatorImage": "string",
+              "InstanceType": "ml.t3.medium"|"ml.t3.large"|"ml.t3.xlarge"|"ml.t3.2xlarge"|"ml.m4.xlarge"|"ml.m4.2xlarge"|"ml.m4.4xlarge"|"ml.m4.10xlarge"|"ml.m4.16xlarge"|"ml.c4.xlarge"|"ml.c4.2xlarge"|"ml.c4.4xlarge"|"ml.c4.8xlarge"|"ml.p2.xlarge"|"ml.p2.8xlarge"|"ml.p2.16xlarge"|"ml.p3.2xlarge"|"ml.p3.8xlarge"|"ml.p3.16xlarge"|"ml.c5.xlarge"|"ml.c5.2xlarge"|"ml.c5.4xlarge"|"ml.c5.9xlarge"|"ml.c5.18xlarge"|"ml.m5.large"|"ml.m5.xlarge"|"ml.m5.2xlarge"|"ml.m5.4xlarge"|"ml.m5.12xlarge"|"ml.m5.24xlarge"|"ml.r5.large"|"ml.r5.xlarge"|"ml.r5.2xlarge"|"ml.r5.4xlarge"|"ml.r5.8xlarge"|"ml.r5.12xlarge"|"ml.r5.16xlarge"|"ml.r5.24xlarge"|"ml.g4dn.xlarge"|"ml.g4dn.2xlarge"|"ml.g4dn.4xlarge"|"ml.g4dn.8xlarge"|"ml.g4dn.12xlarge"|"ml.g4dn.16xlarge",
+              "VolumeSizeInGB": integer,
+              "RuleParameters": {"string": "string"
+                ...}
+            }
+            ...
+          ]
+
+       --environment (map)
+          The environment variables to set in the Docker container.
+
+          key -> (string)
+
+          value -> (string)
+
+       Shorthand Syntax:
+
+          KeyName1=string,KeyName2=string
+
+       JSON Syntax:
+
+          {"string": "string"
+            ...}
+
+       --retry-strategy (structure)
+          The  number  of  times to retry the job when the job fails due to an
+          InternalServerError .
+
+          MaximumRetryAttempts -> (integer)
+              The number of times to retry the job. When the job  is  retried,
+              it's SecondaryStatus is changed to STARTING .
+
+       Shorthand Syntax:
+
+          MaximumRetryAttempts=integer
+
+       JSON Syntax:
+
+          {
+            "MaximumRetryAttempts": integer
+          }
+
+       --cli-input-json  |  --cli-input-yaml (string) Reads arguments from the
+       JSON string provided. The JSON string follows the  format  provided  by
+       --generate-cli-skeleton. If other arguments are provided on the command
+       line, those values will override the JSON-provided values.  It  is  not
+       possible to pass arbitrary binary values using a JSON-provided value as
+       the string will be taken literally. This may  not  be  specified  along
+       with --cli-input-yaml.
+
+       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
+       output without sending an API request. If provided with no value or the
+       value input, prints a sample input JSON that can be used as an argument
+       for --cli-input-json. Similarly, if provided yaml-input it will print a
+       sample  input  YAML that can be used with --cli-input-yaml. If provided
+       with the value output, it validates the command inputs  and  returns  a
+       sample output JSON for that command.
+
+       See 'aws help' for descriptions of global parameters.
+
+OUTPUT
+       TrainingJobArn -> (string)
+          The Amazon Resource Name (ARN) of the training job.
+
+
+
+                                                         CREATE-TRAINING-JOB()

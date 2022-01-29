@@ -1,0 +1,207 @@
+PUT-RECORD-BATCH()                                          PUT-RECORD-BATCH()
+
+
+
+NAME
+       put-record-batch -
+
+DESCRIPTION
+       Writes  multiple  data records into a delivery stream in a single call,
+       which can achieve higher throughput per producer than when writing sin-
+       gle  records.  To write single data records into a delivery stream, use
+       PutRecord . Applications using these operations are referred to as pro-
+       ducers.
+
+       For  information  about service quota, see Amazon Kinesis Data Firehose
+       Quota .
+
+       Each  PutRecordBatch request supports up to 500 records. Each record in
+       the request can be as large as 1,000 KB (before base64 encoding), up to
+       a limit of 4 MB for the entire request. These limits cannot be changed.
+
+       You must specify the name of the delivery stream and  the  data  record
+       when  using   PutRecord  . The data record consists of a data blob that
+       can be up to 1,000 KB in size, and any kind of data.  For  example,  it
+       could  be  a segment from a log file, geographic location data, website
+       clickstream data, and so on.
+
+       Kinesis Data Firehose buffers records before  delivering  them  to  the
+       destination.  To disambiguate the data blobs at the destination, a com-
+       mon solution is to use delimiters in the data, such as a newline (\n  )
+       or  some  other  character unique within the data. This allows the con-
+       sumer application to parse individual data items when reading the  data
+       from the destination.
+
+       The   PutRecordBatch  response  includes  a  count  of  failed records,
+       FailedPutCount , and an array of responses, RequestResponses . Even  if
+       the   PutRecordBatch  call succeeds, the value of FailedPutCount may be
+       greater than 0, indicating that there are records for which the  opera-
+       tion  didn't succeed. Each entry in the RequestResponses array provides
+       additional information about the processed record. It  directly  corre-
+       lates  with a record in the request array using the same ordering, from
+       the top to the bottom. The response array always includes the same num-
+       ber  of  records  as  the request array. RequestResponses includes both
+       successfully and unsuccessfully processed records. Kinesis  Data  Fire-
+       hose  tries  to  process all records in each  PutRecordBatch request. A
+       single record failure  does  not  stop  the  processing  of  subsequent
+       records.
+
+       A  successfully  processed  record  includes a RecordId value, which is
+       unique for the record. An unsuccessfully processed record includes  Er-
+       rorCode  and ErrorMessage values. ErrorCode reflects the type of error,
+       and is one of the following values: ServiceUnavailableException or  In-
+       ternalFailure  .  ErrorMessage provides more detailed information about
+       the error.
+
+       If there is an internal server error or a timeout, the write might have
+       completed or it might have failed. If FailedPutCount is greater than 0,
+       retry the request, resending only those records that might have  failed
+       processing.  This minimizes the possible duplicate records and also re-
+       duces the total bytes sent (and corresponding  charges).  We  recommend
+       that you handle any duplicates at the destination.
+
+       If   PutRecordBatch  throws  ServiceUnavailableException , back off and
+       retry. If the exception persists, it is possible  that  the  throughput
+       limits have been exceeded for the delivery stream.
+
+       Data records sent to Kinesis Data Firehose are stored for 24 hours from
+       the time they are added to a delivery stream as it attempts to send the
+       records  to the destination. If the destination is unreachable for more
+       than 24 hours, the data is no longer available.
+
+       WARNING:
+          Don't concatenate two or more base64 strings to form the data fields
+          of  your  records.  Instead,  concatenate the raw data, then perform
+          base64 encoding.
+
+       See also: AWS API Documentation
+
+       See 'aws help' for descriptions of global parameters.
+
+SYNOPSIS
+            put-record-batch
+          --delivery-stream-name <value>
+          --records <value>
+          [--cli-input-json | --cli-input-yaml]
+          [--generate-cli-skeleton <value>]
+
+OPTIONS
+       --delivery-stream-name (string)
+          The name of the delivery stream.
+
+       --records (list)
+          One or more records.
+
+          (structure)
+              The unit of data in a delivery stream.
+
+              Data -> (blob)
+                 The data blob, which is base64-encoded when the blob is seri-
+                 alized.  The maximum size of the data blob, before base64-en-
+                 coding, is 1,000 KiB.
+
+       Shorthand Syntax:
+
+          --records Data1 Data2 Data3
+
+       JSON Syntax:
+
+          [
+            {
+              "Data": blob
+            }
+            ...
+          ]
+
+       --cli-input-json | --cli-input-yaml (string) Reads arguments  from  the
+       JSON  string  provided.  The JSON string follows the format provided by
+       --generate-cli-skeleton. If other arguments are provided on the command
+       line,  those  values  will override the JSON-provided values. It is not
+       possible to pass arbitrary binary values using a JSON-provided value as
+       the  string  will  be  taken literally. This may not be specified along
+       with --cli-input-yaml.
+
+       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
+       output without sending an API request. If provided with no value or the
+       value input, prints a sample input JSON that can be used as an argument
+       for --cli-input-json. Similarly, if provided yaml-input it will print a
+       sample input YAML that can be used with --cli-input-yaml.  If  provided
+       with  the  value  output, it validates the command inputs and returns a
+       sample output JSON for that command.
+
+       See 'aws help' for descriptions of global parameters.
+
+EXAMPLES
+       To write multiple records to a stream
+
+       The following  put-record-batch  example  writes  three  records  to  a
+       stream. The data is encoded in Base64 format.
+
+          aws firehose put-record-batch \
+              --delivery-stream-name my-stream \
+              --records file://records.json
+
+       Contents of myfile.json:
+
+          [
+              {"Data": "Rmlyc3QgdGhpbmc="},
+              {"Data": "U2Vjb25kIHRoaW5n"},
+              {"Data": "VGhpcmQgdGhpbmc="}
+          ]
+
+       Output:
+
+          {
+              "FailedPutCount": 0,
+              "Encrypted": false,
+              "RequestResponses": [
+                  {
+                      "RecordId": "9D2OJ6t2EqCTZTXwGzeSv/EVHxRoRCw89xd+o3+sXg8DhYOaWKPSmZy/CGlRVEys1u1xbeKh6VofEYKkoeiDrcjrxhQp9iF7sUW7pujiMEQ5LzlrzCkGosxQn+3boDnURDEaD42V7GiixpOyLJkYZcae1i7HzlCEoy9LJhMr8EjDSi4Om/9Vc2uhwwuAtGE0XKpxJ2WD7ZRWtAnYlKAnvgSPRgg7zOWL"
+                  },
+                  {
+                      "RecordId": "jFirejqxCLlK5xjH/UNmlMVcjktEN76I7916X9PaZ+PVaOSXDfU1WGOqEZhxq2js7xcZ552eoeDxsuTU1MSq9nZTbVfb6cQTIXnm/GsuF37Uhg67GKmR5z90l6XKJ+/+pDloFv7Hh9a3oUS6wYm3DcNRLTHHAimANp1PhkQvWpvLRfzbuCUkBphR2QVzhP9OiHLbzGwy8/DfH8sqWEUYASNJKS8GXP5s"
+                  },
+                  {
+                      "RecordId": "oy0amQ40o5Y2YV4vxzufdcMOOw6n3EPr3tpPJGoYVNKH4APPVqNcbUgefo1stEFRg4hTLrf2k6eliHu/9+YJ5R3iiedHkdsfkIqX0XTySSutvgFYTjNY1TSrK0pM2sWxpjqqnk3+2UX1MV5z88xGro3cQm/DTBt3qBlmTj7Xq8SKVbO1S7YvMTpWkMKA86f8JfmT8BMKoMb4XZS/sOkQLe+qh0sYKXWl"
+                  }
+              ]
+          }
+
+       For  more information, see Sending Data to an Amazon Kinesis Data Fire-
+       hose Delivery Stream in the  Amazon  Kinesis  Data  Firehose  Developer
+       Guide.
+
+OUTPUT
+       FailedPutCount -> (integer)
+          The number of records that might have failed processing. This number
+          might be greater than 0 even if the  PutRecordBatch  call  succeeds.
+          Check FailedPutCount to determine whether there are records that you
+          need to resend.
+
+       Encrypted -> (boolean)
+          Indicates whether server-side encryption (SSE)  was  enabled  during
+          this operation.
+
+       RequestResponses -> (list)
+          The  results  array. For each record, the index of the response ele-
+          ment is the same as the index used in the request array.
+
+          (structure)
+              Contains the result for an individual record from a   PutRecord-
+              Batch  request.  If the record is successfully added to your de-
+              livery stream, it receives a record ID. If the record  fails  to
+              be  added  to your delivery stream, the result includes an error
+              code and an error message.
+
+              RecordId -> (string)
+                 The ID of the record.
+
+              ErrorCode -> (string)
+                 The error code for an individual record result.
+
+              ErrorMessage -> (string)
+                 The error message for an individual record result.
+
+
+
+                                                            PUT-RECORD-BATCH()

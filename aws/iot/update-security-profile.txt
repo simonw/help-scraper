@@ -1,0 +1,604 @@
+UPDATE-SECURITY-PROFILE()                            UPDATE-SECURITY-PROFILE()
+
+
+
+NAME
+       update-security-profile -
+
+DESCRIPTION
+       Updates a Device Defender security profile.
+
+       Requires permission to access the UpdateSecurityProfile action.
+
+       See also: AWS API Documentation
+
+       See 'aws help' for descriptions of global parameters.
+
+SYNOPSIS
+            update-security-profile
+          --security-profile-name <value>
+          [--security-profile-description <value>]
+          [--behaviors <value>]
+          [--alert-targets <value>]
+          [--additional-metrics-to-retain <value>]
+          [--additional-metrics-to-retain-v2 <value>]
+          [--delete-behaviors | --no-delete-behaviors]
+          [--delete-alert-targets | --no-delete-alert-targets]
+          [--delete-additional-metrics-to-retain | --no-delete-additional-metrics-to-retain]
+          [--expected-version <value>]
+          [--cli-input-json | --cli-input-yaml]
+          [--generate-cli-skeleton <value>]
+
+OPTIONS
+       --security-profile-name (string)
+          The name of the security profile you want to update.
+
+       --security-profile-description (string)
+          A description of the security profile.
+
+       --behaviors (list)
+          Specifies  the  behaviors  that,  when violated by a device (thing),
+          cause an alert.
+
+          (structure)
+              A Device Defender security profile behavior.
+
+              name -> (string)
+                 The name you've given to the behavior.
+
+              metric -> (string)
+                 What is measured by the behavior.
+
+              metricDimension -> (structure)
+                 The dimension for a metric in your behavior. For example, us-
+                 ing  a  TOPIC_FILTER dimension, you can narrow down the scope
+                 of the metric to only MQTT topics where the name matches  the
+                 pattern  specified  in the dimension. This can't be used with
+                 custom metrics.
+
+                 dimensionName -> (string)
+                     A unique identifier for the dimension.
+
+                 operator -> (string)
+                     Defines how the dimensionValues of a dimension are inter-
+                     preted. For example, for dimension type TOPIC_FILTER, the
+                     IN operator, a message will be counted only if its  topic
+                     matches one of the topic filters. With NOT_IN operator, a
+                     message will be counted only if it doesn't match  any  of
+                     the  topic filters. The operator is optional: if it's not
+                     provided (is null ), it will be interpreted as IN .
+
+              criteria -> (structure)
+                 The criteria that determine if a device is behaving  normally
+                 in regard to the metric .
+
+                 comparisonOperator -> (string)
+                     The operator that relates the thing measured (metric ) to
+                     the criteria (containing a value or  statisticalThreshold
+                     ). Valid operators include:
+
+                     o string-list : in-set and not-in-set
+
+                     o number-list : in-set and not-in-set
+
+                     o ip-address-list : in-cidr-set and not-in-cidr-set
+
+                     o number  : less-than , less-than-equals , greater-than ,
+                       and greater-than-equals
+
+                 value -> (structure)
+                     The value to be compared with the metric .
+
+                     count -> (long)
+                        If the comparisonOperator calls for a  numeric  value,
+                        use  this to specify that numeric value to be compared
+                        with the metric .
+
+                     cidrs -> (list)
+                        If the comparisonOperator calls for a  set  of  CIDRs,
+                        use  this  to specify that set to be compared with the
+                        metric .
+
+                        (string)
+
+                     ports -> (list)
+                        If the comparisonOperator calls for a  set  of  ports,
+                        use  this  to specify that set to be compared with the
+                        metric .
+
+                        (integer)
+
+                     number -> (double)
+                        The numeral value of a metric.
+
+                     numbers -> (list)
+                        The numeral values of a metric.
+
+                        (double)
+
+                     strings -> (list)
+                        The string values of a metric.
+
+                        (string)
+
+                 durationSeconds -> (integer)
+                     Use this to specify the time duration over which the  be-
+                     havior  is evaluated, for those criteria that have a time
+                     dimension (for example, NUM_MESSAGES_SENT ). For  a  sta-
+                     tisticalThreshhold  metric  comparison, measurements from
+                     all devices are accumulated over this time  duration  be-
+                     fore being used to calculate percentiles, and later, mea-
+                     surements from an individual device are also  accumulated
+                     over  this  time duration before being given a percentile
+                     rank. Cannot be used with list-based metric datatypes.
+
+                 consecutiveDatapointsToAlarm -> (integer)
+                     If a device is in violation of the behavior for the spec-
+                     ified  number of consecutive datapoints, an alarm occurs.
+                     If not specified, the default is 1.
+
+                 consecutiveDatapointsToClear -> (integer)
+                     If an alarm has occurred and the offending device  is  no
+                     longer  in  violation  of  the behavior for the specified
+                     number of consecutive datapoints, the alarm  is  cleared.
+                     If not specified, the default is 1.
+
+                 statisticalThreshold -> (structure)
+                     A   statistical   ranking  (percentile)that  indicates  a
+                     threshold value by which a behavior is determined  to  be
+                     in compliance or in violation of the behavior.
+
+                     statistic -> (string)
+                        The  percentile  that resolves to a threshold value by
+                        which compliance with a behavior is  determined.  Met-
+                        rics  are  collected  over the specified period (dura-
+                        tionSeconds ) from all reporting devices in  your  ac-
+                        count  and statistical ranks are calculated. Then, the
+                        measurements from a device are collected over the same
+                        period.  If  the accumulated measurements from the de-
+                        vice fall above or  below  (comparisonOperator  )  the
+                        value  associated  with the percentile specified, then
+                        the device is considered to be in compliance with  the
+                        behavior, otherwise a violation occurs.
+
+                 mlDetectionConfig -> (structure)
+                     The configuration of an ML Detect
+
+                     confidenceLevel -> (string)
+                        The  sensitivity of anomalous behavior evaluation. Can
+                        be Low , Medium , or High .
+
+              suppressAlerts -> (boolean)
+                 Suppresses alerts.
+
+       JSON Syntax:
+
+          [
+            {
+              "name": "string",
+              "metric": "string",
+              "metricDimension": {
+                "dimensionName": "string",
+                "operator": "IN"|"NOT_IN"
+              },
+              "criteria": {
+                "comparisonOperator": "less-than"|"less-than-equals"|"greater-than"|"greater-than-equals"|"in-cidr-set"|"not-in-cidr-set"|"in-port-set"|"not-in-port-set"|"in-set"|"not-in-set",
+                "value": {
+                  "count": long,
+                  "cidrs": ["string", ...],
+                  "ports": [integer, ...],
+                  "number": double,
+                  "numbers": [double, ...],
+                  "strings": ["string", ...]
+                },
+                "durationSeconds": integer,
+                "consecutiveDatapointsToAlarm": integer,
+                "consecutiveDatapointsToClear": integer,
+                "statisticalThreshold": {
+                  "statistic": "string"
+                },
+                "mlDetectionConfig": {
+                  "confidenceLevel": "LOW"|"MEDIUM"|"HIGH"
+                }
+              },
+              "suppressAlerts": true|false
+            }
+            ...
+          ]
+
+       --alert-targets (map)
+          Where the alerts are sent. (Alerts are always sent to the console.)
+
+          key -> (string)
+              The type of alert target: one of "SNS".
+
+          value -> (structure)
+              A structure containing the alert target ARN and the role ARN.
+
+              alertTargetArn -> (string)
+                 The Amazon Resource Name (ARN) of the notification target  to
+                 which alerts are sent.
+
+              roleArn -> (string)
+                 The  ARN of the role that grants permission to send alerts to
+                 the notification target.
+
+       Shorthand Syntax:
+
+            KeyName1=alertTargetArn=string,roleArn=string,KeyName2=alertTargetArn=string,roleArn=string
+
+          Where valid key names are:
+            SNS
+
+       JSON Syntax:
+
+          {"SNS": {
+                "alertTargetArn": "string",
+                "roleArn": "string"
+              }
+            ...}
+
+       --additional-metrics-to-retain (list)
+              Please use   UpdateSecurityProfileRequest$additionalMetricsToRe-
+              tainV2 instead.
+
+          A  list of metrics whose data is retained (stored). By default, data
+          is retained for any metric used in the profile's behaviors , but  it
+          is  also  retained  for  any metric specified here. Can be used with
+          custom metrics; cannot be used with dimensions.
+
+          (string)
+
+       Syntax:
+
+          "string" "string" ...
+
+       --additional-metrics-to-retain-v2 (list)
+          A list of metrics whose data is retained (stored). By default,  data
+          is  retained  for any metric used in the profile's behaviors, but it
+          is also retained for any metric specified here.  Can  be  used  with
+          custom metrics; cannot be used with dimensions.
+
+          (structure)
+              The metric you want to retain. Dimensions are optional.
+
+              metric -> (string)
+                 What is measured by the behavior.
+
+              metricDimension -> (structure)
+                 The  dimension  of  a  metric. This can't be used with custom
+                 metrics.
+
+                 dimensionName -> (string)
+                     A unique identifier for the dimension.
+
+                 operator -> (string)
+                     Defines how the dimensionValues of a dimension are inter-
+                     preted. For example, for dimension type TOPIC_FILTER, the
+                     IN operator, a message will be counted only if its  topic
+                     matches one of the topic filters. With NOT_IN operator, a
+                     message will be counted only if it doesn't match  any  of
+                     the  topic filters. The operator is optional: if it's not
+                     provided (is null ), it will be interpreted as IN .
+
+       Shorthand Syntax:
+
+          metric=string,metricDimension={dimensionName=string,operator=string} ...
+
+       JSON Syntax:
+
+          [
+            {
+              "metric": "string",
+              "metricDimension": {
+                "dimensionName": "string",
+                "operator": "IN"|"NOT_IN"
+              }
+            }
+            ...
+          ]
+
+       --delete-behaviors | --no-delete-behaviors (boolean)
+          If true, delete all behaviors defined for this security profile.  If
+          any  behaviors  are  defined in the current invocation, an exception
+          occurs.
+
+       --delete-alert-targets | --no-delete-alert-targets (boolean)
+          If true, delete all alertTargets defined for this security  profile.
+          If any alertTargets are defined in the current invocation, an excep-
+          tion occurs.
+
+       --delete-additional-metrics-to-retain   |   --no-delete-additional-met-
+       rics-to-retain (boolean)
+          If true, delete all additionalMetricsToRetain defined for this secu-
+          rity profile. If any additionalMetricsToRetain are  defined  in  the
+          current invocation, an exception occurs.
+
+       --expected-version (long)
+          The  expected version of the security profile. A new version is gen-
+          erated whenever the security profile is updated. If  you  specify  a
+          value  that  is  different  from  the  actual version, a VersionCon-
+          flictException is thrown.
+
+       --cli-input-json | --cli-input-yaml (string) Reads arguments  from  the
+       JSON  string  provided.  The JSON string follows the format provided by
+       --generate-cli-skeleton. If other arguments are provided on the command
+       line,  those  values  will override the JSON-provided values. It is not
+       possible to pass arbitrary binary values using a JSON-provided value as
+       the  string  will  be  taken literally. This may not be specified along
+       with --cli-input-yaml.
+
+       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
+       output without sending an API request. If provided with no value or the
+       value input, prints a sample input JSON that can be used as an argument
+       for --cli-input-json. Similarly, if provided yaml-input it will print a
+       sample input YAML that can be used with --cli-input-yaml.  If  provided
+       with  the  value  output, it validates the command inputs and returns a
+       sample output JSON for that command.
+
+       See 'aws help' for descriptions of global parameters.
+
+EXAMPLES
+       To change a security profile
+
+       The following update-security-profile example updates both the descrip-
+       tion and the behaviors for an AWS IoT Device Defender security profile.
+
+          aws iot update-security-profile \
+              --security-profile-name PossibleIssue \
+              --security-profile-description "Check to see if authorization fails 12 times in 5 minutes or if cellular bandwidth exceeds 128"  \
+              --behaviors "[{\"name\":\"CellularBandwidth\",\"metric\":\"aws:message-byte-size\",\"criteria\":{\"comparisonOperator\":\"greater-than\",\"value\":{\"count\":128},\"consecutiveDatapointsToAlarm\":1,\"consecutiveDatapointsToClear\":1}},{\"name\":\"Authorization\",\"metric\":\"aws:num-authorization-failures\",\"criteria\":{\"comparisonOperator\":\"less-than\",\"value\":{\"count\":12},\"durationSeconds\":300,\"consecutiveDatapointsToAlarm\":1,\"consecutiveDatapointsToClear\":1}}]"
+
+       Output:
+
+          {
+              "securityProfileName": "PossibleIssue",
+              "securityProfileArn": "arn:aws:iot:us-west-2:123456789012:securityprofile/PossibleIssue",
+              "securityProfileDescription": "check to see if authorization fails 12 times in 5 minutes or if cellular bandwidth exceeds 128",
+              "behaviors": [
+                  {
+                      "name": "CellularBandwidth",
+                      "metric": "aws:message-byte-size",
+                      "criteria": {
+                          "comparisonOperator": "greater-than",
+                          "value": {
+                              "count": 128
+                          },
+                          "consecutiveDatapointsToAlarm": 1,
+                          "consecutiveDatapointsToClear": 1
+                      }
+                  },
+                  {
+                      "name": "Authorization",
+                      "metric": "aws:num-authorization-failures",
+                      "criteria": {
+                          "comparisonOperator": "less-than",
+                          "value": {
+                              "count": 12
+                          },
+                          "durationSeconds": 300,
+                          "consecutiveDatapointsToAlarm": 1,
+                          "consecutiveDatapointsToClear": 1
+                      }
+                  }
+              ],
+              "version": 2,
+              "creationDate": 1560278102.528,
+              "lastModifiedDate": 1560352711.207
+          }
+
+       For  more  information,  see  Detect  Commands in the AWS IoT Developer
+       Guide.
+
+OUTPUT
+       securityProfileName -> (string)
+          The name of the security profile that was updated.
+
+       securityProfileArn -> (string)
+          The ARN of the security profile that was updated.
+
+       securityProfileDescription -> (string)
+          The description of the security profile.
+
+       behaviors -> (list)
+          Specifies the behaviors that, when violated  by  a  device  (thing),
+          cause an alert.
+
+          (structure)
+              A Device Defender security profile behavior.
+
+              name -> (string)
+                 The name you've given to the behavior.
+
+              metric -> (string)
+                 What is measured by the behavior.
+
+              metricDimension -> (structure)
+                 The dimension for a metric in your behavior. For example, us-
+                 ing a TOPIC_FILTER dimension, you can narrow down  the  scope
+                 of  the metric to only MQTT topics where the name matches the
+                 pattern specified in the dimension. This can't be  used  with
+                 custom metrics.
+
+                 dimensionName -> (string)
+                     A unique identifier for the dimension.
+
+                 operator -> (string)
+                     Defines how the dimensionValues of a dimension are inter-
+                     preted. For example, for dimension type TOPIC_FILTER, the
+                     IN  operator, a message will be counted only if its topic
+                     matches one of the topic filters. With NOT_IN operator, a
+                     message  will  be counted only if it doesn't match any of
+                     the topic filters. The operator is optional: if it's  not
+                     provided (is null ), it will be interpreted as IN .
+
+              criteria -> (structure)
+                 The  criteria that determine if a device is behaving normally
+                 in regard to the metric .
+
+                 comparisonOperator -> (string)
+                     The operator that relates the thing measured (metric ) to
+                     the  criteria (containing a value or statisticalThreshold
+                     ). Valid operators include:
+
+                     o string-list : in-set and not-in-set
+
+                     o number-list : in-set and not-in-set
+
+                     o ip-address-list : in-cidr-set and not-in-cidr-set
+
+                     o number : less-than , less-than-equals , greater-than  ,
+                       and greater-than-equals
+
+                 value -> (structure)
+                     The value to be compared with the metric .
+
+                     count -> (long)
+                        If  the  comparisonOperator calls for a numeric value,
+                        use this to specify that numeric value to be  compared
+                        with the metric .
+
+                     cidrs -> (list)
+                        If  the  comparisonOperator  calls for a set of CIDRs,
+                        use this to specify that set to be compared  with  the
+                        metric .
+
+                        (string)
+
+                     ports -> (list)
+                        If  the  comparisonOperator  calls for a set of ports,
+                        use this to specify that set to be compared  with  the
+                        metric .
+
+                        (integer)
+
+                     number -> (double)
+                        The numeral value of a metric.
+
+                     numbers -> (list)
+                        The numeral values of a metric.
+
+                        (double)
+
+                     strings -> (list)
+                        The string values of a metric.
+
+                        (string)
+
+                 durationSeconds -> (integer)
+                     Use  this to specify the time duration over which the be-
+                     havior is evaluated, for those criteria that have a  time
+                     dimension  (for  example, NUM_MESSAGES_SENT ). For a sta-
+                     tisticalThreshhold metric comparison,  measurements  from
+                     all  devices  are accumulated over this time duration be-
+                     fore being used to calculate percentiles, and later, mea-
+                     surements  from an individual device are also accumulated
+                     over this time duration before being given  a  percentile
+                     rank. Cannot be used with list-based metric datatypes.
+
+                 consecutiveDatapointsToAlarm -> (integer)
+                     If a device is in violation of the behavior for the spec-
+                     ified number of consecutive datapoints, an alarm  occurs.
+                     If not specified, the default is 1.
+
+                 consecutiveDatapointsToClear -> (integer)
+                     If  an  alarm has occurred and the offending device is no
+                     longer in violation of the  behavior  for  the  specified
+                     number  of  consecutive datapoints, the alarm is cleared.
+                     If not specified, the default is 1.
+
+                 statisticalThreshold -> (structure)
+                     A  statistical  ranking  (percentile)that   indicates   a
+                     threshold  value  by which a behavior is determined to be
+                     in compliance or in violation of the behavior.
+
+                     statistic -> (string)
+                        The percentile that resolves to a threshold  value  by
+                        which  compliance  with a behavior is determined. Met-
+                        rics are collected over the  specified  period  (dura-
+                        tionSeconds  )  from all reporting devices in your ac-
+                        count and statistical ranks are calculated. Then,  the
+                        measurements from a device are collected over the same
+                        period. If the accumulated measurements from  the  de-
+                        vice  fall  above  or  below (comparisonOperator ) the
+                        value associated with the percentile  specified,  then
+                        the  device is considered to be in compliance with the
+                        behavior, otherwise a violation occurs.
+
+                 mlDetectionConfig -> (structure)
+                     The configuration of an ML Detect
+
+                     confidenceLevel -> (string)
+                        The sensitivity of anomalous behavior evaluation.  Can
+                        be Low , Medium , or High .
+
+              suppressAlerts -> (boolean)
+                 Suppresses alerts.
+
+       alertTargets -> (map)
+          Where the alerts are sent. (Alerts are always sent to the console.)
+
+          key -> (string)
+              The type of alert target: one of "SNS".
+
+          value -> (structure)
+              A structure containing the alert target ARN and the role ARN.
+
+              alertTargetArn -> (string)
+                 The  Amazon Resource Name (ARN) of the notification target to
+                 which alerts are sent.
+
+              roleArn -> (string)
+                 The ARN of the role that grants permission to send alerts  to
+                 the notification target.
+
+       additionalMetricsToRetain -> (list)
+              Please use  UpdateSecurityProfileResponse$additionalMetricsToRe-
+              tainV2 instead.
+
+          A list of metrics whose data is retained (stored). By default,  data
+          is  retained for any metric used in the security profile's behaviors
+          , but it is also retained for any metric specified here.
+
+          (string)
+
+       additionalMetricsToRetainV2 -> (list)
+          A list of metrics whose data is retained (stored). By default,  data
+          is  retained  for any metric used in the profile's behaviors, but it
+          is also retained for any metric specified here.  Can  be  used  with
+          custom metrics; cannot be used with dimensions.
+
+          (structure)
+              The metric you want to retain. Dimensions are optional.
+
+              metric -> (string)
+                 What is measured by the behavior.
+
+              metricDimension -> (structure)
+                 The  dimension  of  a  metric. This can't be used with custom
+                 metrics.
+
+                 dimensionName -> (string)
+                     A unique identifier for the dimension.
+
+                 operator -> (string)
+                     Defines how the dimensionValues of a dimension are inter-
+                     preted. For example, for dimension type TOPIC_FILTER, the
+                     IN operator, a message will be counted only if its  topic
+                     matches one of the topic filters. With NOT_IN operator, a
+                     message will be counted only if it doesn't match  any  of
+                     the  topic filters. The operator is optional: if it's not
+                     provided (is null ), it will be interpreted as IN .
+
+       version -> (long)
+          The updated version of the security profile.
+
+       creationDate -> (timestamp)
+          The time the security profile was created.
+
+       lastModifiedDate -> (timestamp)
+          The time the security profile was last modified.
+
+
+
+                                                     UPDATE-SECURITY-PROFILE()

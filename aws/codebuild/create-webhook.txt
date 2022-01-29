@@ -1,0 +1,390 @@
+CREATE-WEBHOOK()                                              CREATE-WEBHOOK()
+
+
+
+NAME
+       create-webhook -
+
+DESCRIPTION
+       For an existing CodeBuild build project that has its source code stored
+       in a GitHub or Bitbucket repository, enables  CodeBuild  to  start  re-
+       building  the  source  code  every  time a code change is pushed to the
+       repository.
+
+       WARNING:
+          If you enable webhooks for an CodeBuild project, and the project  is
+          used  as a build step in CodePipeline, then two identical builds are
+          created for each commit. One build is  triggered  through  webhooks,
+          and  one through CodePipeline. Because billing is on a per-build ba-
+          sis, you are billed for both builds. Therefore,  if  you  are  using
+          CodePipeline,  we  recommend that you disable webhooks in CodeBuild.
+          In the CodeBuild console, clear the Webhook box. For  more  informa-
+          tion, see step 5 in Change a Build Project's Settings .
+
+       See also: AWS API Documentation
+
+       See 'aws help' for descriptions of global parameters.
+
+SYNOPSIS
+            create-webhook
+          --project-name <value>
+          [--branch-filter <value>]
+          [--filter-groups <value>]
+          [--build-type <value>]
+          [--cli-input-json | --cli-input-yaml]
+          [--generate-cli-skeleton <value>]
+
+OPTIONS
+       --project-name (string)
+          The name of the CodeBuild project.
+
+       --branch-filter (string)
+          A regular expression used to determine which repository branches are
+          built when a webhook is triggered. If the name of a  branch  matches
+          the  regular expression, then it is built. If branchFilter is empty,
+          then all branches are built.
+
+          NOTE:
+              It is recommended that you use filterGroups instead  of  branch-
+              Filter .
+
+       --filter-groups (list)
+          An  array of arrays of WebhookFilter objects used to determine which
+          webhooks are triggered. At least one WebhookFilter in the array must
+          specify EVENT as its type .
+
+          For  a  build to be triggered, at least one filter group in the fil-
+          terGroups array must pass. For a filter group to pass, each  of  its
+          filters must pass.
+
+          (list)
+              (structure)
+                 A filter used to determine which webhooks trigger a build.
+
+                 type -> (string)
+                     The  type of webhook filter. There are six webhook filter
+                     types: EVENT , ACTOR_ACCOUNT_ID , HEAD_REF ,  BASE_REF  ,
+                     FILE_PATH , and COMMIT_MESSAGE .
+                        EVENT
+
+                     A  webhook  event triggers a build when the provided pat-
+                     tern matches one of five event  types:  PUSH  ,  PULL_RE-
+                     QUEST_CREATED  ,  PULL_REQUEST_UPDATED , PULL_REQUEST_RE-
+                     OPENED , and PULL_REQUEST_MERGED . The EVENT patterns are
+                     specified as a comma-separated string. For example, PUSH,
+                     PULL_REQUEST_CREATED,  PULL_REQUEST_UPDATED  filters  all
+                     push,  pull  request  created,  and  pull request updated
+                     events.
+
+                     NOTE:
+                        The PULL_REQUEST_REOPENED works with GitHub and GitHub
+                        Enterprise only.
+
+                        ACTOR_ACCOUNT_ID
+
+                     A  webhook  event  triggers a build when a GitHub, GitHub
+                     Enterprise, or Bitbucket account ID matches  the  regular
+                     expression pattern .
+                        HEAD_REF
+
+                     A  webhook event triggers a build when the head reference
+                     matches the regular expression  pattern  .  For  example,
+                     refs/heads/branch-name and refs/tags/tag-name .
+
+                     Works  with GitHub and GitHub Enterprise push, GitHub and
+                     GitHub Enterprise pull request, Bitbucket push, and  Bit-
+                     bucket pull request events.
+                        BASE_REF
+
+                     A  webhook event triggers a build when the base reference
+                     matches the regular expression  pattern  .  For  example,
+                     refs/heads/branch-name .
+
+                     NOTE:
+                        Works with pull request events only.
+
+                        FILE_PATH
+
+                     A  webhook  triggers  a  build when the path of a changed
+                     file matches the regular expression pattern .
+
+                     NOTE:
+                        Works with GitHub and Bitbucket events push  and  pull
+                        requests  events.  Also  works  with GitHub Enterprise
+                        push events, but does not work with GitHub  Enterprise
+                        pull request events.
+
+                        COMMIT_MESSAGE
+
+                     A  webhook  triggers a build when the head commit message
+                     matches the regular expression pattern .
+
+                     NOTE:
+                        Works with GitHub and Bitbucket events push  and  pull
+                        requests  events.  Also  works  with GitHub Enterprise
+                        push events, but does not work with GitHub  Enterprise
+                        pull request events.
+
+                 pattern -> (string)
+                     For  a  WebHookFilter that uses EVENT type, a comma-sepa-
+                     rated string that specifies one or more events. For exam-
+                     ple,   the  webhook  filter  PUSH,  PULL_REQUEST_CREATED,
+                     PULL_REQUEST_UPDATED allows all push, pull  request  cre-
+                     ated, and pull request updated events to trigger a build.
+
+                     For  a  WebHookFilter  that  uses any of the other filter
+                     types, a regular expression pattern. For example, a  Web-
+                     HookFilter  that  uses HEAD_REF for its type and the pat-
+                     tern ^refs/heads/ triggers a build when the  head  refer-
+                     ence    is    a    branch    with    a   reference   name
+                     refs/heads/branch-name .
+
+                 excludeMatchedPattern -> (boolean)
+                     Used to indicate that the pattern determines  which  web-
+                     hook  events do not trigger a build. If true, then a web-
+                     hook event that does not match  the  pattern  triggers  a
+                     build.  If  false,  then a webhook event that matches the
+                     pattern triggers a build.
+
+       Shorthand Syntax:
+
+          [{type=string,pattern=string,excludeMatchedPattern=boolean},{type=string,pattern=string,excludeMatchedPattern=boolean}] ...
+
+       JSON Syntax:
+
+          [
+            [
+              {
+                "type": "EVENT"|"BASE_REF"|"HEAD_REF"|"ACTOR_ACCOUNT_ID"|"FILE_PATH"|"COMMIT_MESSAGE",
+                "pattern": "string",
+                "excludeMatchedPattern": true|false
+              }
+              ...
+            ]
+            ...
+          ]
+
+       --build-type (string)
+          Specifies the type of build this webhook will trigger.
+
+          Possible values:
+
+          o BUILD
+
+          o BUILD_BATCH
+
+       --cli-input-json | --cli-input-yaml (string) Reads arguments  from  the
+       JSON  string  provided.  The JSON string follows the format provided by
+       --generate-cli-skeleton. If other arguments are provided on the command
+       line,  those  values  will override the JSON-provided values. It is not
+       possible to pass arbitrary binary values using a JSON-provided value as
+       the  string  will  be  taken literally. This may not be specified along
+       with --cli-input-yaml.
+
+       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
+       output without sending an API request. If provided with no value or the
+       value input, prints a sample input JSON that can be used as an argument
+       for --cli-input-json. Similarly, if provided yaml-input it will print a
+       sample input YAML that can be used with --cli-input-yaml.  If  provided
+       with  the  value  output, it validates the command inputs and returns a
+       sample output JSON for that command.
+
+       See 'aws help' for descriptions of global parameters.
+
+EXAMPLES
+       To create webhook filters for an AWS CodeBuild project
+
+       The following create-webhook example creates a webhook for a  CodeBuild
+       project  named  my-project that has two filter groups. The first filter
+       group specifies pull requests that are created, updated, or reopened on
+       branches  with  Git  reference  names that match the regular expression
+       ^refs/heads/master$ and  head  references  that  match  ^refs/heads/my-
+       Branch$.   The  second filter group specifies push requests on branches
+       with Git reference names that  do  not  match  the  regular  expression
+       ^refs/heads/myBranch$.
+
+          aws codebuild create-webhook \
+              --project-name my-project \
+              --filter-groups "[[{\"type\":\"EVENT\",\"pattern\":\"PULL_REQUEST_CREATED, PULL_REQUEST_UPDATED, PULL_REQUEST_REOPENED\"},{\"type\":\"HEAD_REF\",\"pattern\":\"^refs/heads/myBranch$\",\"excludeMatchedPattern\":true},{\"type\":\"BASE_REF\",\"pattern\":\"^refs/heads/master$\",\"excludeMatchedPattern\":true}],[{\"type\":\"EVENT\",\"pattern\":\"PUSH\"},{\"type\":\"HEAD_REF\",\"pattern\":\"^refs/heads/myBranch$\",\"excludeMatchedPattern\":true}]]"
+
+       Output:
+
+          {
+              "webhook": {
+                  "payloadUrl": "https://codebuild.us-west-2.amazonaws.com/webhooks?t=eyJlbmNyeXB0ZWREYXRhIjoiVVl5MGtoeGRwSzZFRXl2Wnh4bld1Z0tKZ291TVpQNEtFamQ3RDlDYWpRaGIreVFrdm9EQktIVk1NeHJEWEpmUDUrVUNOMUIyRHJRc1VxcHJ6QlNDSnljPSIsIml2UGFyYW1ldGVyU3BlYyI6InN4Tm1SeUt5MUhaUVRWbGciLCJtYXRlcmlhbFNldFNlcmlhbCI6MX0%3D&v=1",
+                  "url": "https://api.github.com/repos/iversonic/codedeploy-sample/hooks/105190656",
+                  "lastModifiedSecret": 1556311319.069,
+                  "filterGroups": [
+                      [
+                          {
+                              "type": "EVENT",
+                              "pattern": "PULL_REQUEST_CREATED, PULL_REQUEST_UPDATED, PULL_REQUEST_REOPENED",
+                              "excludeMatchedPattern": false
+                          },
+                          {
+                              "type": "HEAD_REF",
+                              "pattern": "refs/heads/myBranch$",
+                              "excludeMatchedPattern": true
+                          },
+                          {
+                              "type": "BASE_REF",
+                              "pattern": "refs/heads/master$",
+                              "excludeMatchedPattern": true
+                          }
+                      ],
+                      [
+                          {
+                              "type": "EVENT",
+                              "pattern": "PUSH",
+                              "excludeMatchedPattern": false
+                          },
+                          {
+                              "type": "HEAD_REF",
+                              "pattern": "refs/heads/myBranch$",
+                              "excludeMatchedPattern": true
+                          }
+                      ]
+                  ]
+              }
+          }
+
+       For more information, see Filter GitHub Webhook Events (SDK) in the AWS
+       CodeBuild User Guide.
+
+OUTPUT
+       webhook -> (structure)
+          Information about a webhook that connects  repository  events  to  a
+          build project in CodeBuild.
+
+          url -> (string)
+              The URL to the webhook.
+
+          payloadUrl -> (string)
+              The CodeBuild endpoint where webhook events are sent.
+
+          secret -> (string)
+              The secret token of the associated repository.
+
+              NOTE:
+                 A Bitbucket webhook does not support secret .
+
+          branchFilter -> (string)
+              A regular expression used to determine which repository branches
+              are built when a webhook is triggered. If the name of  a  branch
+              matches  the regular expression, then it is built. If branchFil-
+              ter is empty, then all branches are built.
+
+              NOTE:
+                 It is  recommended  that  you  use  filterGroups  instead  of
+                 branchFilter .
+
+          filterGroups -> (list)
+              An  array  of  arrays of WebhookFilter objects used to determine
+              which webhooks are triggered. At least one WebhookFilter in  the
+              array must specify EVENT as its type .
+
+              For  a  build  to be triggered, at least one filter group in the
+              filterGroups array must pass. For a filter group to  pass,  each
+              of its filters must pass.
+
+              (list)
+                 (structure)
+                     A  filter  used  to  determine  which  webhooks trigger a
+                     build.
+
+                     type -> (string)
+                        The type of webhook filter. There are six webhook fil-
+                        ter  types:  EVENT  ,  ACTOR_ACCOUNT_ID  ,  HEAD_REF ,
+                        BASE_REF , FILE_PATH , and COMMIT_MESSAGE .
+                            EVENT
+
+                        A webhook event triggers a  build  when  the  provided
+                        pattern  matches  one  of  five  event  types:  PUSH ,
+                        PULL_REQUEST_CREATED , PULL_REQUEST_UPDATED , PULL_RE-
+                        QUEST_REOPENED  ,  and PULL_REQUEST_MERGED . The EVENT
+                        patterns are specified as  a  comma-separated  string.
+                        For   example,  PUSH,  PULL_REQUEST_CREATED,  PULL_RE-
+                        QUEST_UPDATED filters all push, pull request  created,
+                        and pull request updated events.
+
+                        NOTE:
+                            The  PULL_REQUEST_REOPENED  works  with GitHub and
+                            GitHub Enterprise only.
+
+                            ACTOR_ACCOUNT_ID
+
+                        A webhook event triggers a build when a GitHub, GitHub
+                        Enterprise,  or Bitbucket account ID matches the regu-
+                        lar expression pattern .
+                            HEAD_REF
+
+                        A webhook event triggers a build when the head  refer-
+                        ence  matches the regular expression pattern . For ex-
+                        ample, refs/heads/branch-name and refs/tags/tag-name .
+
+                        Works with GitHub and GitHub Enterprise  push,  GitHub
+                        and  GitHub  Enterprise  pull request, Bitbucket push,
+                        and Bitbucket pull request events.
+                            BASE_REF
+
+                        A webhook event triggers a build when the base  refer-
+                        ence  matches the regular expression pattern . For ex-
+                        ample, refs/heads/branch-name .
+
+                        NOTE:
+                            Works with pull request events only.
+
+                            FILE_PATH
+
+                        A webhook triggers a build when the path of a  changed
+                        file matches the regular expression pattern .
+
+                        NOTE:
+                            Works  with  GitHub  and Bitbucket events push and
+                            pull requests events. Also works with  GitHub  En-
+                            terprise  push  events,  but  does  not  work with
+                            GitHub Enterprise pull request events.
+
+                            COMMIT_MESSAGE
+
+                        A webhook triggers a build when the head  commit  mes-
+                        sage matches the regular expression pattern .
+
+                        NOTE:
+                            Works  with  GitHub  and Bitbucket events push and
+                            pull requests events. Also works with  GitHub  En-
+                            terprise  push  events,  but  does  not  work with
+                            GitHub Enterprise pull request events.
+
+                     pattern -> (string)
+                        For a WebHookFilter that uses EVENT type, a comma-sep-
+                        arated  string  that specifies one or more events. For
+                        example, the webhook  filter  PUSH,  PULL_REQUEST_CRE-
+                        ATED,  PULL_REQUEST_UPDATED  allows all push, pull re-
+                        quest created, and  pull  request  updated  events  to
+                        trigger a build.
+
+                        For  a WebHookFilter that uses any of the other filter
+                        types, a regular expression pattern.  For  example,  a
+                        WebHookFilter  that uses HEAD_REF for its type and the
+                        pattern ^refs/heads/ triggers a build  when  the  head
+                        reference   is   a   branch   with  a  reference  name
+                        refs/heads/branch-name .
+
+                     excludeMatchedPattern -> (boolean)
+                        Used to indicate that  the  pattern  determines  which
+                        webhook events do not trigger a build. If true, then a
+                        webhook event that does not match the pattern triggers
+                        a  build.  If false, then a webhook event that matches
+                        the pattern triggers a build.
+
+          buildType -> (string)
+              Specifies the type of build this webhook will trigger.
+
+          lastModifiedSecret -> (timestamp)
+              A timestamp that indicates the last time a  repository's  secret
+              token was modified.
+
+
+
+                                                              CREATE-WEBHOOK()

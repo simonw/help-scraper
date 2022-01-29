@@ -1,0 +1,184 @@
+CREATE-QUERY-LOGGING-CONFIG()                    CREATE-QUERY-LOGGING-CONFIG()
+
+
+
+NAME
+       create-query-logging-config -
+
+DESCRIPTION
+       Creates a configuration for DNS query logging. After you create a query
+       logging configuration, Amazon Route 53 begins to publish log data to an
+       Amazon CloudWatch Logs log group.
+
+       DNS  query logs contain information about the queries that Route 53 re-
+       ceives for a specified public hosted zone, such as the following:
+
+       o Route 53 edge location that responded to the DNS query
+
+       o Domain or subdomain that was requested
+
+       o DNS record type, such as A or AAAA
+
+       o DNS response code, such as NoError or ServFail
+
+         Log Group and Resource Policy
+
+       Before you create a query logging configuration, perform the  following
+       operations.
+
+       NOTE:
+          If  you create a query logging configuration using the Route 53 con-
+          sole, Route 53 performs these operations automatically.
+
+       o Create a CloudWatch Logs log group, and make note of the  ARN,  which
+         you  specify  when you create a query logging configuration. Note the
+         following:
+
+         o You must create the log group in the us-east-1 region.
+
+         o You must use the same Amazon Web Services account to create the log
+           group  and the hosted zone that you want to configure query logging
+           for.
+
+         o When you create log groups for query logging, we recommend that you
+           use a consistent prefix, for example:
+           ``
+           /aws/route53/hosted  zone name ``   In the next step, you'll create
+           a resource policy, which controls access to one or more log  groups
+           and  the associated Amazon Web Services resources, such as Route 53
+           hosted zones. There's a limit on the number  of  resource  policies
+           that you can create, so we recommend that you use a consistent pre-
+           fix so you can use the same resource policy for all the log  groups
+           that you create for query logging.
+
+       o Create a CloudWatch Logs resource policy, and give it the permissions
+         that Route 53 needs to create log streams and to send query  logs  to
+         log  streams. For the value of Resource , specify the ARN for the log
+         group that you created in the previous step. To use the same resource
+         policy  for  all  the CloudWatch Logs log groups that you created for
+         query logging configurations, replace the hosted zone name with  *  ,
+         for                                                          example:
+         arn:aws:logs:us-east-1:123412341234:log-group:/aws/route53/*
+
+       NOTE:
+              You can't use the CloudWatch console to create  or  edit  a  re-
+              source  policy. You must use the CloudWatch API, one of the Ama-
+              zon Web Services SDKs, or the CLI.
+
+          Log Streams and Edge Locations
+
+       When Route 53 finishes creating the configuration for  DNS  query  log-
+       ging, it does the following:
+
+       o Creates  a  log  stream  for an edge location the first time that the
+         edge location responds to DNS queries for the specified hosted  zone.
+         That  log stream is used to log all queries that Route 53 responds to
+         for that edge location.
+
+       o Begins to send query logs to the applicable log stream.
+
+       The name of each log stream is in the following format:
+          `` hosted zone ID /edge location code ``
+
+       The edge location code is a three-letter code and  an  arbitrarily  as-
+       signed  number, for example, DFW3. The three-letter code typically cor-
+       responds with the International Air Transport Association airport  code
+       for  an  airport  near  the  edge  location. (These abbreviations might
+       change in the future.) For a list of edge locations, see "The Route  53
+       Global Network" on the Route 53 Product Details page.
+          Queries That Are Logged
+
+       Query logs contain only the queries that DNS resolvers forward to Route
+       53. If a DNS resolver has already cached the response to a query  (such
+       as  the  IP  address for a load balancer for example.com), the resolver
+       will continue to return the cached response. It doesn't forward another
+       query  to  Route 53 until the TTL for the corresponding resource record
+       set expires. Depending on how many DNS queries are submitted for a  re-
+       source  record  set,  and depending on the TTL for that resource record
+       set, query logs might contain information about only one query  out  of
+       every  several thousand queries that are submitted to DNS. For more in-
+       formation about how DNS works, see Routing  Internet  Traffic  to  Your
+       Website or Web Application in the Amazon Route 53 Developer Guide .
+          Log File Format
+
+       For  a  list  of  the  values  in each query log and the format of each
+       value, see Logging DNS Queries in the Amazon Route 53 Developer Guide .
+          Pricing
+
+       For information about charges for query  logs,  see  Amazon  CloudWatch
+       Pricing .
+          How to Stop Logging
+
+       If  you  want  Route  53 to stop sending query logs to CloudWatch Logs,
+       delete the query  logging  configuration.  For  more  information,  see
+       DeleteQueryLoggingConfig .
+
+       See also: AWS API Documentation
+
+       See 'aws help' for descriptions of global parameters.
+
+SYNOPSIS
+            create-query-logging-config
+          --hosted-zone-id <value>
+          --cloud-watch-logs-log-group-arn <value>
+          [--cli-input-json | --cli-input-yaml]
+          [--generate-cli-skeleton <value>]
+
+OPTIONS
+       --hosted-zone-id (string)
+          The  ID of the hosted zone that you want to log queries for. You can
+          log queries only for public hosted zones.
+
+       --cloud-watch-logs-log-group-arn (string)
+          The Amazon Resource Name (ARN) for the log group that  you  want  to
+          Amazon  Route  53  to  send query logs to. This is the format of the
+          ARN:
+
+          arn:aws:logs:region :account-id :log-group:log_group_name
+
+          To get the ARN for a log group, you can use the CloudWatch  console,
+          the  DescribeLogGroups  API action, the describe-log-groups command,
+          or the applicable command in one of the Amazon Web Services SDKs.
+
+       --cli-input-json | --cli-input-yaml (string) Reads arguments  from  the
+       JSON  string  provided.  The JSON string follows the format provided by
+       --generate-cli-skeleton. If other arguments are provided on the command
+       line,  those  values  will override the JSON-provided values. It is not
+       possible to pass arbitrary binary values using a JSON-provided value as
+       the  string  will  be  taken literally. This may not be specified along
+       with --cli-input-yaml.
+
+       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
+       output without sending an API request. If provided with no value or the
+       value input, prints a sample input JSON that can be used as an argument
+       for --cli-input-json. Similarly, if provided yaml-input it will print a
+       sample input YAML that can be used with --cli-input-yaml.  If  provided
+       with  the  value  output, it validates the command inputs and returns a
+       sample output JSON for that command.
+
+       See 'aws help' for descriptions of global parameters.
+
+OUTPUT
+       QueryLoggingConfig -> (structure)
+          A complex type that contains the ID for a query  logging  configura-
+          tion,  the  ID  of the hosted zone that you want to log queries for,
+          and the ARN for the log group that you want Amazon Route 53 to  send
+          query logs to.
+
+          Id -> (string)
+              The ID for a configuration for DNS query logging.
+
+          HostedZoneId -> (string)
+              The  ID  of  the  hosted  zone  that  CloudWatch Logs is logging
+              queries for.
+
+          CloudWatchLogsLogGroupArn -> (string)
+              The Amazon Resource Name (ARN) of the CloudWatch Logs log  group
+              that Amazon Route 53 is publishing logs to.
+
+       Location -> (string)
+          The unique URL representing the new query logging configuration.
+
+
+
+                                                 CREATE-QUERY-LOGGING-CONFIG()

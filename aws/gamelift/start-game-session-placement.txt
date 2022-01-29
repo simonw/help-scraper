@@ -1,0 +1,412 @@
+START-GAME-SESSION-PLACEMENT()                  START-GAME-SESSION-PLACEMENT()
+
+
+
+NAME
+       start-game-session-placement -
+
+DESCRIPTION
+       Places a request for a new game session in a queue (see  CreateGameSes-
+       sionQueue ). When  processing  a  placement  request,  Amazon  GameLift
+       searches  for available resources on the queue's destinations, scanning
+       each until it finds resources or the placement request times out.
+
+       A game session placement request can also request player sessions. When
+       a  new  game session is successfully created, Amazon GameLift creates a
+       player session for each player included in the request.
+
+       When placing a game session, by  default  Amazon  GameLift  tries  each
+       fleet in the order they are listed in the queue configuration. Ideally,
+       a queue's destinations are listed in preference order.
+
+       Alternatively, when requesting a game session  with  players,  you  can
+       also  provide latency data for each player in relevant Regions. Latency
+       data indicates the performance lag a player experiences when  connected
+       to  a fleet in the Region. Amazon GameLift uses latency data to reorder
+       the list of destinations to place the game session  in  a  Region  with
+       minimal  lag.  If latency data is provided for multiple players, Amazon
+       GameLift calculates each Region's average lag for all players  and  re-
+       orders to get the best game play across all players.
+
+       To place a new game session request, specify the following:
+
+       o The queue name and a set of game session properties and settings
+
+       o A  unique  ID  (such as a UUID) for the placement. You use this ID to
+         track the status of the placement request
+
+       o (Optional) A set of player data and  a  unique  player  ID  for  each
+         player  that  you are joining to the new game session (player data is
+         optional, but if you include it, you must also provide  a  unique  ID
+         for each player)
+
+       o Latency  data  for all players (if you want to optimize game play for
+         the players)
+
+       If successful, a new game session placement is created.
+
+       To track the status of a placement request, call   DescribeGameSession-
+       Placement  and check the request's status. If the status is FULFILLED ,
+       a new game session has been created and a game session ARN  and  Region
+       are  referenced.  If  the placement request times out, you can resubmit
+       the request or retry it with a different queue.
+          Related actions
+              CreateGameSession |   DescribeGameSessions  |   DescribeGameSes-
+              sionDetails   |    SearchGameSessions   |   UpdateGameSession  |
+              GetGameSessionLogUrl   |    StartGameSessionPlacement   |    De-
+              scribeGameSessionPlacement  |   StopGameSessionPlacement  |  All
+              APIs by task
+
+       See also: AWS API Documentation
+
+       See 'aws help' for descriptions of global parameters.
+
+SYNOPSIS
+            start-game-session-placement
+          --placement-id <value>
+          --game-session-queue-name <value>
+          [--game-properties <value>]
+          --maximum-player-session-count <value>
+          [--game-session-name <value>]
+          [--player-latencies <value>]
+          [--desired-player-sessions <value>]
+          [--game-session-data <value>]
+          [--cli-input-json | --cli-input-yaml]
+          [--generate-cli-skeleton <value>]
+
+OPTIONS
+       --placement-id (string)
+          A unique identifier to assign to the  new  game  session  placement.
+          This value is developer-defined. The value must be unique across all
+          Regions and cannot be reused unless you are resubmitting a  canceled
+          or timed-out placement request.
+
+       --game-session-queue-name (string)
+          Name  of the queue to use to place the new game session. You can use
+          either the queue name or ARN value.
+
+       --game-properties (list)
+          A set  of  custom  properties  for  a  game  session,  formatted  as
+          key:value  pairs.  These  properties  are  passed  to  a game server
+          process in the  GameSession object with a request  to  start  a  new
+          game session (see Start a Game Session ).
+
+          (structure)
+              Set  of  key-value  pairs  that contain information about a game
+              session. When included in a game session request, these  proper-
+              ties communicate details to be used when setting up the new game
+              session. For example, a game property might specify a game mode,
+              level,  or  map.  Game  properties are passed to the game server
+              process when initiating a new game session.  For  more  informa-
+              tion, see the GameLift Developer Guide .
+
+              Key -> (string)
+                 The game property identifier.
+
+              Value -> (string)
+                 The game property value.
+
+       Shorthand Syntax:
+
+          Key=string,Value=string ...
+
+       JSON Syntax:
+
+          [
+            {
+              "Key": "string",
+              "Value": "string"
+            }
+            ...
+          ]
+
+       --maximum-player-session-count (integer)
+          The  maximum  number of players that can be connected simultaneously
+          to the game session.
+
+       --game-session-name (string)
+          A descriptive label that is associated with a game session.  Session
+          names do not need to be unique.
+
+       --player-latencies (list)
+          A  set  of  values,  expressed  in  milliseconds, that indicates the
+          amount of latency that a player experiences when  connected  to  AWS
+          Regions.  This information is used to try to place the new game ses-
+          sion where it can offer the best possible  gameplay  experience  for
+          the players.
+
+          (structure)
+              Regional  latency information for a player, used when requesting
+              a new game session with  StartGameSessionPlacement . This  value
+              indicates  the amount of time lag that exists when the player is
+              connected to a fleet in the specified Region. The relative  dif-
+              ference  between  a player's latency values for multiple Regions
+              are used to determine which fleets are best suited  to  place  a
+              new game session for the player.
+
+              PlayerId -> (string)
+                 A  unique identifier for a player associated with the latency
+                 data.
+
+              RegionIdentifier -> (string)
+                 Name of the Region that is associated with the latency value.
+
+              LatencyInMilliseconds -> (float)
+                 Amount of time that represents the time  lag  experienced  by
+                 the player when connected to the specified Region.
+
+       Shorthand Syntax:
+
+          PlayerId=string,RegionIdentifier=string,LatencyInMilliseconds=float ...
+
+       JSON Syntax:
+
+          [
+            {
+              "PlayerId": "string",
+              "RegionIdentifier": "string",
+              "LatencyInMilliseconds": float
+            }
+            ...
+          ]
+
+       --desired-player-sessions (list)
+          Set of information on each player to create a player session for.
+
+          (structure)
+              Player information for use when creating player sessions using a
+              game session placement request with  StartGameSessionPlacement .
+
+              PlayerId -> (string)
+                 A unique identifier for a player to associate with the player
+                 session.
+
+              PlayerData -> (string)
+                 Developer-defined  information  related to a player. GameLift
+                 does not use this data, so it can be formatted as needed  for
+                 use in the game.
+
+       Shorthand Syntax:
+
+          PlayerId=string,PlayerData=string ...
+
+       JSON Syntax:
+
+          [
+            {
+              "PlayerId": "string",
+              "PlayerData": "string"
+            }
+            ...
+          ]
+
+       --game-session-data (string)
+          A  set  of  custom  game  session  properties, formatted as a single
+          string value. This data is passed to a game server  process  in  the
+          GameSession  object  with a request to start a new game session (see
+          Start a Game Session ).
+
+       --cli-input-json | --cli-input-yaml (string) Reads arguments  from  the
+       JSON  string  provided.  The JSON string follows the format provided by
+       --generate-cli-skeleton. If other arguments are provided on the command
+       line,  those  values  will override the JSON-provided values. It is not
+       possible to pass arbitrary binary values using a JSON-provided value as
+       the  string  will  be  taken literally. This may not be specified along
+       with --cli-input-yaml.
+
+       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
+       output without sending an API request. If provided with no value or the
+       value input, prints a sample input JSON that can be used as an argument
+       for --cli-input-json. Similarly, if provided yaml-input it will print a
+       sample input YAML that can be used with --cli-input-yaml.  If  provided
+       with  the  value  output, it validates the command inputs and returns a
+       sample output JSON for that command.
+
+       See 'aws help' for descriptions of global parameters.
+
+OUTPUT
+       GameSessionPlacement -> (structure)
+          Object that describes the newly created game session placement. This
+          object includes all the information provided in the request, as well
+          as start/end time stamps and placement status.
+
+          PlacementId -> (string)
+              A unique identifier for a game session placement.
+
+          GameSessionQueueName -> (string)
+              A descriptive label that is associated with game session  queue.
+              Queue names must be unique within each Region.
+
+          Status -> (string)
+              Current status of the game session placement request.
+
+              o PENDING  --  The  placement  request is currently in the queue
+                waiting to be processed.
+
+              o FULFILLED -- A new game session and player  sessions  (if  re-
+                quested)  have  been successfully created. Values for GameSes-
+                sionArn and GameSessionRegion are available.
+
+              o CANCELLED -- The placement request was canceled with a call to
+                StopGameSessionPlacement .
+
+              o TIMED_OUT  --  A new game session was not successfully created
+                before the time limit expired. You can resubmit the  placement
+                request as needed.
+
+              o FAILED  --  GameLift  is  not  able to complete the process of
+                placing the game session. Common reasons are the game  session
+                terminated  before  the placement process was completed, or an
+                unexpected internal error.
+
+          GameProperties -> (list)
+              A set of custom properties for  a  game  session,  formatted  as
+              key:value  pairs.  These  properties are passed to a game server
+              process in the  GameSession object with a request to start a new
+              game session (see Start a Game Session ).
+
+              (structure)
+                 Set  of key-value pairs that contain information about a game
+                 session. When included in a game session request, these prop-
+                 erties communicate details to be used when setting up the new
+                 game session. For example, a game property  might  specify  a
+                 game  mode,  level, or map. Game properties are passed to the
+                 game server process when initiating a new game  session.  For
+                 more information, see the GameLift Developer Guide .
+
+                 Key -> (string)
+                     The game property identifier.
+
+                 Value -> (string)
+                     The game property value.
+
+          MaximumPlayerSessionCount -> (integer)
+              The  maximum  number of players that can be connected simultane-
+              ously to the game session.
+
+          GameSessionName -> (string)
+              A descriptive label that is associated with a game session. Ses-
+              sion names do not need to be unique.
+
+          GameSessionId -> (string)
+              A unique identifier for the game session. This value is set once
+              the new game session is placed (placement status is FULFILLED ).
+
+          GameSessionArn -> (string)
+              Identifier for the game session created by  this  placement  re-
+              quest.  This  value  is  set once the new game session is placed
+              (placement status is FULFILLED  ).  This  identifier  is  unique
+              across  all  Regions.  You can use this value as a GameSessionId
+              value as needed.
+
+          GameSessionRegion -> (string)
+              Name of the Region where the game session created by this place-
+              ment  request  is  running.  This value is set once the new game
+              session is placed (placement status is FULFILLED ).
+
+          PlayerLatencies -> (list)
+              A set of values, expressed in milliseconds, that  indicates  the
+              amount  of  latency  that a player experiences when connected to
+              AWS Regions.
+
+              (structure)
+                 Regional latency information for a player, used when request-
+                 ing a new game session with  StartGameSessionPlacement . This
+                 value indicates the amount of time lag that exists  when  the
+                 player  is  connected to a fleet in the specified Region. The
+                 relative difference between a  player's  latency  values  for
+                 multiple  Regions are used to determine which fleets are best
+                 suited to place a new game session for the player.
+
+                 PlayerId -> (string)
+                     A unique identifier for a player associated with the  la-
+                     tency data.
+
+                 RegionIdentifier -> (string)
+                     Name  of  the  Region that is associated with the latency
+                     value.
+
+                 LatencyInMilliseconds -> (float)
+                     Amount of time that represents the time  lag  experienced
+                     by the player when connected to the specified Region.
+
+          StartTime -> (timestamp)
+              Time stamp indicating when this request was placed in the queue.
+              Format is a number expressed in Unix time as  milliseconds  (for
+              example "1469498468.057" ).
+
+          EndTime -> (timestamp)
+              Time stamp indicating when this request was completed, canceled,
+              or timed out.
+
+          IpAddress -> (string)
+              The IP address of the game session. To  connect  to  a  GameLift
+              game  server,  an app needs both the IP address and port number.
+              This value is set once the new game session is placed (placement
+              status is FULFILLED ).
+
+          DnsName -> (string)
+              The  DNS identifier assigned to the instance that is running the
+              game session. Values have the following format:
+
+              o TLS-enabled  fleets:   <unique   identifier>.<region   identi-
+                fier>.amazongamelift.com .
+
+              o Non-TLS-enabled  fleets:  ec2-<unique identifier>.compute.ama-
+                zonaws.com . (See Amazon EC2 Instance IP Addressing .)
+
+              When connecting to a game session that is running on  a  TLS-en-
+              abled fleet, you must use the DNS name, not the IP address.
+
+          Port -> (integer)
+              The  port  number for the game session. To connect to a GameLift
+              game server, an app needs both the IP address and  port  number.
+              This value is set once the new game session is placed (placement
+              status is FULFILLED ).
+
+          PlacedPlayerSessions -> (list)
+              A collection of information on player sessions  created  in  re-
+              sponse  to the game session placement request. These player ses-
+              sions are created only once a new game session  is  successfully
+              placed  (placement  status  is FULFILLED ). This information in-
+              cludes the player ID (as provided in the placement request)  and
+              the  corresponding  player session ID. Retrieve full player ses-
+              sions by calling  DescribePlayerSessions with the player session
+              ID.
+
+              (structure)
+                 Information  about  a player session that was created as part
+                 of a  StartGameSessionPlacement request. This object contains
+                 only  the  player  ID and player session ID. To retrieve full
+                 details on a  player  session,  call   DescribePlayerSessions
+                 with the player session ID.
+                     Related actions
+                        CreatePlayerSession  |   CreatePlayerSessions  |   De-
+                        scribePlayerSessions  |   StartGameSessionPlacement  |
+                        DescribeGameSessionPlacement  |  StopGameSessionPlace-
+                        ment | All APIs by task
+
+                 PlayerId -> (string)
+                     A unique identifier for a player that is associated  with
+                     this player session.
+
+                 PlayerSessionId -> (string)
+                     A unique identifier for a player session.
+
+          GameSessionData -> (string)
+              A  set  of custom game session properties, formatted as a single
+              string value. This data is passed to a game  server  process  in
+              the   GameSession object with a request to start a new game ses-
+              sion (see Start a Game Session ).
+
+          MatchmakerData -> (string)
+              Information on the matchmaking process for this game. Data is in
+              JSON  syntax, formatted as a string. It identifies the matchmak-
+              ing configuration used to create the match, and contains data on
+              all  players  assigned to the match, including player attributes
+              and team assignments. For more details on matchmaker  data,  see
+              Match Data .
+
+
+
+                                                START-GAME-SESSION-PLACEMENT()

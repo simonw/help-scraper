@@ -1,0 +1,156 @@
+CREATE-PROVISIONING-TEMPLATE-VERSION()  CREATE-PROVISIONING-TEMPLATE-VERSION()
+
+
+
+NAME
+       create-provisioning-template-version -
+
+DESCRIPTION
+       Creates a new version of a fleet provisioning template.
+
+       Requires permission to access the CreateProvisioningTemplateVersion ac-
+       tion.
+
+       See also: AWS API Documentation
+
+       See 'aws help' for descriptions of global parameters.
+
+SYNOPSIS
+            create-provisioning-template-version
+          --template-name <value>
+          --template-body <value>
+          [--set-as-default | --no-set-as-default]
+          [--cli-input-json | --cli-input-yaml]
+          [--generate-cli-skeleton <value>]
+
+OPTIONS
+       --template-name (string)
+          The name of the fleet provisioning template.
+
+       --template-body (string)
+          The JSON formatted contents of the fleet provisioning template.
+
+       --set-as-default | --no-set-as-default (boolean)
+          Sets a fleet provision template version as the default version.
+
+       --cli-input-json | --cli-input-yaml (string) Reads arguments  from  the
+       JSON  string  provided.  The JSON string follows the format provided by
+       --generate-cli-skeleton. If other arguments are provided on the command
+       line,  those  values  will override the JSON-provided values. It is not
+       possible to pass arbitrary binary values using a JSON-provided value as
+       the  string  will  be  taken literally. This may not be specified along
+       with --cli-input-yaml.
+
+       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
+       output without sending an API request. If provided with no value or the
+       value input, prints a sample input JSON that can be used as an argument
+       for --cli-input-json. Similarly, if provided yaml-input it will print a
+       sample input YAML that can be used with --cli-input-yaml.  If  provided
+       with  the  value  output, it validates the command inputs and returns a
+       sample output JSON for that command.
+
+       See 'aws help' for descriptions of global parameters.
+
+EXAMPLES
+       To create a provisioning template version
+
+       The following example creates a version for the specified  provisioning
+       template.  The  body  of  the  new version is supplied in the file tem-
+       plate.json.
+
+          aws iot create-provisioning-template-version \
+              --template-name widget-template \
+              --template-body file://template.json
+
+       Contents of template.json:
+
+          {
+              "Parameters" : {
+                  "DeviceLocation": {
+                      "Type": "String"
+                  }
+              },
+              "Mappings": {
+                  "LocationTable": {
+                      "Seattle": {
+                          "LocationUrl": "https://example.aws"
+                      }
+                  }
+              },
+              "Resources" : {
+                  "thing" : {
+                      "Type" : "AWS::IoT::Thing",
+                      "Properties" : {
+                          "AttributePayload" : {
+                              "version" : "v1",
+                              "serialNumber" : "serialNumber"
+                          },
+                          "ThingName" : {"Fn::Join":["",["ThingPrefix_",{"Ref":"SerialNumber"}]]},
+                          "ThingTypeName" : {"Fn::Join":["",["ThingTypePrefix_",{"Ref":"SerialNumber"}]]},
+                          "ThingGroups" : ["widgets", "WA"],
+                          "BillingGroup": "BillingGroup"
+                      },
+                      "OverrideSettings" : {
+                          "AttributePayload" : "MERGE",
+                          "ThingTypeName" : "REPLACE",
+                          "ThingGroups" : "DO_NOTHING"
+                      }
+                  },
+                  "certificate" : {
+                      "Type" : "AWS::IoT::Certificate",
+                      "Properties" : {
+                          "CertificateId": {"Ref": "AWS::IoT::Certificate::Id"},
+                          "Status" : "Active"
+                      }
+                  },
+                  "policy" : {
+                      "Type" : "AWS::IoT::Policy",
+                      "Properties" : {
+                          "PolicyDocument" : {
+                              "Version": "2012-10-17",
+                              "Statement": [{
+                                  "Effect": "Allow",
+                                  "Action":["iot:Publish"],
+                                  "Resource": ["arn:aws:iot:us-east-1:123456789012:topic/foo/bar"]
+                              }]
+                          }
+                      }
+                  }
+              },
+              "DeviceConfiguration": {
+                  "FallbackUrl": "https://www.example.com/test-site",
+                  "LocationUrl": {
+                      "Fn::FindInMap": ["LocationTable",{"Ref": "DeviceLocation"}, "LocationUrl"]}
+                  }
+              }
+          }
+
+       Output:
+
+          {
+              "templateArn": "arn:aws:iot:us-east-1:123456789012:provisioningtemplate/widget-template",
+              "templateName": "widget-template",
+              "versionId": 2,
+              "isDefaultVersion": false
+          }
+
+       For more information, see AWS IoT Secure Tunneling in the AWS IoT  Core
+       Developer Guide.
+
+OUTPUT
+       templateArn -> (string)
+          The ARN that identifies the provisioning template.
+
+       templateName -> (string)
+          The name of the fleet provisioning template.
+
+       versionId -> (integer)
+          The version of the fleet provisioning template.
+
+       isDefaultVersion -> (boolean)
+          True  if the fleet provisioning template version is the default ver-
+          sion, otherwise false.
+
+
+
+                                        CREATE-PROVISIONING-TEMPLATE-VERSION()

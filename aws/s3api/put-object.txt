@@ -1,0 +1,507 @@
+PUT-OBJECT()                                                      PUT-OBJECT()
+
+
+
+NAME
+       put-object -
+
+DESCRIPTION
+       Adds an object to a bucket. You must have WRITE permissions on a bucket
+       to add an object to it.
+
+       Amazon S3 never adds partial objects; if  you  receive  a  success  re-
+       sponse, Amazon S3 added the entire object to the bucket.
+
+       Amazon  S3  is  a distributed system. If it receives multiple write re-
+       quests for the same object simultaneously, it overwrites  all  but  the
+       last  object written. Amazon S3 does not provide object locking; if you
+       need this, make sure to build it into your  application  layer  or  use
+       versioning instead.
+
+       To  ensure  that  data is not corrupted traversing the network, use the
+       Content-MD5 header. When you use this header, Amazon S3 checks the  ob-
+       ject  against the provided MD5 value and, if they do not match, returns
+       an error. Additionally, you can calculate the MD5 while putting an  ob-
+       ject  to  Amazon S3 and compare the returned ETag to the calculated MD5
+       value.
+
+       NOTE:
+
+              o To successfully complete the PutObject request, you must  have
+                the s3:PutObject in your IAM permissions.
+
+              o To  successfully  change the objects acl of your PutObject re-
+                quest, you must have the s3:PutObjectAcl in your  IAM  permis-
+                sions.
+
+              o The  Content-MD5  header is required for any request to upload
+                an object with a retention period configured using  Amazon  S3
+                Object Lock. For more information about Amazon S3 Object Lock,
+                see Amazon S3 Object Lock Overview in the Amazon S3 User Guide
+                .
+
+          Server-side Encryption
+
+       You can optionally request server-side encryption. With server-side en-
+       cryption, Amazon S3 encrypts your data as it writes it to disks in  its
+       data centers and decrypts the data when you access it. You have the op-
+       tion to provide your own encryption key or use Amazon Web Services man-
+       aged  encryption  keys  (SSE-S3  or SSE-KMS). For more information, see
+       Using Server-Side Encryption .
+
+       If you request server-side encryption using  Amazon  Web  Services  Key
+       Management  Service  (SSE-KMS),  you can enable an S3 Bucket Key at the
+       object-level. For more information, see Amazon S3 Bucket  Keys  in  the
+       Amazon S3 User Guide .
+          Access Control List (ACL)-Specific Request Headers
+
+       You  can  use  headers to grant ACL- based permissions. By default, all
+       objects are private. Only the  owner  has  full  access  control.  When
+       adding a new object, you can grant permissions to individual Amazon Web
+       Services accounts or to predefined groups defined by Amazon  S3.  These
+       permissions  are then added to the ACL on the object. For more informa-
+       tion, see Access Control List (ACL) Overview and  Managing  ACLs  Using
+       the REST API .
+
+       If  the  bucket  that you're uploading objects to uses the bucket owner
+       enforced setting for S3 Object Ownership,  ACLs  are  disabled  and  no
+       longer  affect  permissions.  Buckets that use this setting only accept
+       PUT requests that don't specify an ACL or  PUT  requests  that  specify
+       bucket  owner  full control ACLs, such as the bucket-owner-full-control
+       canned ACL or an equivalent form of this ACL expressed in the XML  for-
+       mat.  PUT  requests that contain other ACLs (for example, custom grants
+       to certain Amazon Web Services accounts) fail and return  a  400  error
+       with the error code AccessControlListNotSupported .
+
+       For  more  information,  see  Controlling ownership of objects and dis-
+       abling ACLs in the Amazon S3 User Guide .
+
+       NOTE:
+              If your bucket uses the bucket owner enforced setting for Object
+              Ownership, all objects written to the bucket by any account will
+              be owned by the bucket owner.
+
+          Storage Class Options
+
+       By default, Amazon S3 uses the STANDARD Storage Class  to  store  newly
+       created  objects.  The  STANDARD storage class provides high durability
+       and high availability. Depending on performance needs, you can  specify
+       a different Storage Class. Amazon S3 on Outposts only uses the OUTPOSTS
+       Storage Class. For more information, see Storage Classes in the  Amazon
+       S3 User Guide .
+          Versioning
+
+       If  you  enable versioning for a bucket, Amazon S3 automatically gener-
+       ates a unique version ID for the object being stored. Amazon S3 returns
+       this  ID  in  the response. When you enable versioning for a bucket, if
+       Amazon S3 receives multiple write requests for the same object simulta-
+       neously, it stores all of the objects.
+
+       For more information about versioning, see Adding Objects to Versioning
+       Enabled Buckets . For information about returning the versioning  state
+       of a bucket, see GetBucketVersioning .
+          Related Resources
+
+       o CopyObject
+
+       o DeleteObject
+
+       See also: AWS API Documentation
+
+       See 'aws help' for descriptions of global parameters.
+
+SYNOPSIS
+            put-object
+          [--acl <value>]
+          [--body <value>]
+          --bucket <value>
+          [--cache-control <value>]
+          [--content-disposition <value>]
+          [--content-encoding <value>]
+          [--content-language <value>]
+          [--content-length <value>]
+          [--content-md5 <value>]
+          [--content-type <value>]
+          [--expires <value>]
+          [--grant-full-control <value>]
+          [--grant-read <value>]
+          [--grant-read-acp <value>]
+          [--grant-write-acp <value>]
+          --key <value>
+          [--metadata <value>]
+          [--server-side-encryption <value>]
+          [--storage-class <value>]
+          [--website-redirect-location <value>]
+          [--sse-customer-algorithm <value>]
+          [--sse-customer-key <value>]
+          [--sse-customer-key-md5 <value>]
+          [--ssekms-key-id <value>]
+          [--ssekms-encryption-context <value>]
+          [--bucket-key-enabled | --no-bucket-key-enabled]
+          [--request-payer <value>]
+          [--tagging <value>]
+          [--object-lock-mode <value>]
+          [--object-lock-retain-until-date <value>]
+          [--object-lock-legal-hold-status <value>]
+          [--expected-bucket-owner <value>]
+          [--cli-input-json | --cli-input-yaml]
+          [--generate-cli-skeleton <value>]
+
+OPTIONS
+       --acl (string)
+          The  canned  ACL  to  apply to the object. For more information, see
+          Canned ACL .
+
+          This action is not supported by Amazon S3 on Outposts.
+
+          Possible values:
+
+          o private
+
+          o public-read
+
+          o public-read-write
+
+          o authenticated-read
+
+          o aws-exec-read
+
+          o bucket-owner-read
+
+          o bucket-owner-full-control
+
+       --body (blob)
+          Object data.
+
+       --bucket (string)
+          The bucket name to which the PUT action was initiated.
+
+          When using this action with an access point,  you  must  direct  re-
+          quests to the access point hostname. The access point hostname takes
+          the form AccessPointName -AccountId  .s3-accesspoint.*Region*  .ama-
+          zonaws.com.  When using this action with an access point through the
+          Amazon Web Services SDKs, you provide the access point ARN in  place
+          of  the  bucket  name. For more information about access point ARNs,
+          see Using access points in the Amazon S3 User Guide .
+
+          When using this action with Amazon S3 on Outposts, you  must  direct
+          requests to the S3 on Outposts hostname. The S3 on Outposts hostname
+          takes the  form  AccessPointName  -AccountId  .*outpostID*  .s3-out-
+          posts.*Region*  .amazonaws.com.  When  using this action using S3 on
+          Outposts through the Amazon Web Services SDKs, you provide the  Out-
+          posts  bucket  ARN in place of the bucket name. For more information
+          about S3 on Outposts ARNs, see Using S3 on Outposts in the Amazon S3
+          User Guide .
+
+       --cache-control (string)
+          Can  be  used  to  specify  caching behavior along the request/reply
+          chain.          For          more          information,          see
+          http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.9 .
+
+       --content-disposition (string)
+          Specifies presentational information for the object. For more infor-
+          mation,                                                          see
+          http://www.w3.org/Protocols/rfc2616/rfc2616-sec19.html#sec19.5.1 .
+
+       --content-encoding (string)
+          Specifies what content encodings have been applied to the object and
+          thus what decoding mechanisms must be  applied  to  obtain  the  me-
+          dia-type  referenced  by the Content-Type header field. For more in-
+          formation,                                                       see
+          http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.11 .
+
+       --content-language (string)
+          The language the content is in.
+
+       --content-length (long)
+          Size of the body in bytes. This parameter is useful when the size of
+          the body cannot be determined automatically. For  more  information,
+          see  http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.13
+          .
+
+       --content-md5 (string)
+          The base64-encoded 128-bit MD5 digest of the  message  (without  the
+          headers) according to RFC 1864. This header can be used as a message
+          integrity check to verify that the data is the same  data  that  was
+          originally  sent.  Although  it  is optional, we recommend using the
+          Content-MD5 mechanism as an end-to-end integrity check. For more in-
+          formation about REST request authentication, see REST Authentication
+          .
+
+       --content-type (string)
+          A standard MIME type describing the format of the contents. For more
+          information,                                                     see
+          http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.17 .
+
+       --expires (timestamp)
+          The date and time at which the object is no  longer  cacheable.  For
+          more                         information,                        see
+          http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.21 .
+
+       --grant-full-control (string)
+          Gives the grantee READ, READ_ACP, and WRITE_ACP permissions  on  the
+          object.
+
+          This action is not supported by Amazon S3 on Outposts.
+
+       --grant-read (string)
+          Allows grantee to read the object data and its metadata.
+
+          This action is not supported by Amazon S3 on Outposts.
+
+       --grant-read-acp (string)
+          Allows grantee to read the object ACL.
+
+          This action is not supported by Amazon S3 on Outposts.
+
+       --grant-write-acp (string)
+          Allows grantee to write the ACL for the applicable object.
+
+          This action is not supported by Amazon S3 on Outposts.
+
+       --key (string)
+          Object key for which the PUT action was initiated.
+
+       --metadata (map)
+          A map of metadata to store with the object in S3.
+
+          key -> (string)
+
+          value -> (string)
+
+       Shorthand Syntax:
+
+          KeyName1=string,KeyName2=string
+
+       JSON Syntax:
+
+          {"string": "string"
+            ...}
+
+       --server-side-encryption (string)
+          The  server-side  encryption algorithm used when storing this object
+          in Amazon S3 (for example, AES256, aws:kms).
+
+          Possible values:
+
+          o AES256
+
+          o aws:kms
+
+       --storage-class (string)
+          By default, Amazon S3 uses the STANDARD Storage Class to store newly
+          created objects. The STANDARD storage class provides high durability
+          and high availability. Depending on performance needs, you can spec-
+          ify  a  different Storage Class. Amazon S3 on Outposts only uses the
+          OUTPOSTS Storage Class. For more information, see Storage Classes in
+          the Amazon S3 User Guide .
+
+          Possible values:
+
+          o STANDARD
+
+          o REDUCED_REDUNDANCY
+
+          o STANDARD_IA
+
+          o ONEZONE_IA
+
+          o INTELLIGENT_TIERING
+
+          o GLACIER
+
+          o DEEP_ARCHIVE
+
+          o OUTPOSTS
+
+          o GLACIER_IR
+
+       --website-redirect-location (string)
+          If  the  bucket  is  configured as a website, redirects requests for
+          this object to another object in the same bucket or to  an  external
+          URL.  Amazon  S3 stores the value of this header in the object meta-
+          data. For information about object  metadata,  see  Object  Key  and
+          Metadata .
+
+          In the following example, the request header sets the redirect to an
+          object (anotherPage.html) in the same bucket:
+              x-amz-website-redirect-location: /anotherPage.html
+
+          In the following example, the request header sets the  object  redi-
+          rect to another website:
+              x-amz-website-redirect-location: http://www.example.com/
+
+          For more information about website hosting in Amazon S3, see Hosting
+          Websites on Amazon S3 and How to Configure Website Page Redirects .
+
+       --sse-customer-algorithm (string)
+          Specifies the algorithm to use to when encrypting  the  object  (for
+          example, AES256).
+
+       --sse-customer-key (string)
+          Specifies  the customer-provided encryption key for Amazon S3 to use
+          in encrypting data. This value is used to store the object and  then
+          it  is  discarded;  Amazon S3 does not store the encryption key. The
+          key must be appropriate for use with the algorithm specified in  the
+          x-amz-server-side-encryption-customer-algorithm header.
+
+       --sse-customer-key-md5 (string)
+          Specifies  the 128-bit MD5 digest of the encryption key according to
+          RFC 1321. Amazon S3 uses this header for a message  integrity  check
+          to ensure that the encryption key was transmitted without error.
+
+       --ssekms-key-id (string)
+          If  x-amz-server-side-encryption  is  present  and  has the value of
+          aws:kms , this header specifies the ID of the  Amazon  Web  Services
+          Key  Management  Service  (Amazon Web Services KMS) symmetrical cus-
+          tomer managed key that was used  for  the  object.  If  you  specify
+          x-amz-server-side-encryption:aws:kms    ,    but    do    not   pro-
+          vide``x-amz-server-side-encryption-aws-kms-key-id`` , Amazon S3 uses
+          the  Amazon Web Services managed key to protect the data. If the KMS
+          key does not exist in the same account issuing the command, you must
+          use the full ARN and not just the ID.
+
+       --ssekms-encryption-context (string)
+          Specifies  the Amazon Web Services KMS Encryption Context to use for
+          object encryption. The value of  this  header  is  a  base64-encoded
+          UTF-8  string  holding  JSON  with  the encryption context key-value
+          pairs.
+
+       --bucket-key-enabled | --no-bucket-key-enabled (boolean)
+          Specifies whether Amazon S3 should use an S3 Bucket Key  for  object
+          encryption with server-side encryption using AWS KMS (SSE-KMS). Set-
+          ting this header to true causes Amazon S3 to use an  S3  Bucket  Key
+          for object encryption with SSE-KMS.
+
+          Specifying  this header with a PUT action doesnt affect bucket-level
+          settings for S3 Bucket Key.
+
+       --request-payer (string)
+          Confirms that the requester knows that they will be charged for  the
+          request.  Bucket owners need not specify this parameter in their re-
+          quests. For information about  downloading  objects  from  requester
+          pays  buckets,  see Downloading Objects in Requestor Pays Buckets in
+          the Amazon S3 User Guide .
+
+          Possible values:
+
+          o requester
+
+       --tagging (string)
+          The tag-set for the object. The tag-set must be encoded as URL Query
+          parameters. (For example, "Key1=Value1")
+
+       --object-lock-mode (string)
+          The Object Lock mode that you want to apply to this object.
+
+          Possible values:
+
+          o GOVERNANCE
+
+          o COMPLIANCE
+
+       --object-lock-retain-until-date (timestamp)
+          The date and time when you want this object's Object Lock to expire.
+          Must be formatted as a timestamp parameter.
+
+       --object-lock-legal-hold-status (string)
+          Specifies whether a legal hold will be applied to this  object.  For
+          more information about S3 Object Lock, see Object Lock .
+
+          Possible values:
+
+          o ON
+
+          o OFF
+
+       --expected-bucket-owner (string)
+          The  account ID of the expected bucket owner. If the bucket is owned
+          by a different account, the request will fail with an HTTP 403  (Ac-
+          cess Denied) error.
+
+       --cli-input-json  |  --cli-input-yaml (string) Reads arguments from the
+       JSON string provided. The JSON string follows the  format  provided  by
+       --generate-cli-skeleton. If other arguments are provided on the command
+       line, those values will override the JSON-provided values.  It  is  not
+       possible to pass arbitrary binary values using a JSON-provided value as
+       the string will be taken literally. This may  not  be  specified  along
+       with --cli-input-yaml.
+
+       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
+       output without sending an API request. If provided with no value or the
+       value input, prints a sample input JSON that can be used as an argument
+       for --cli-input-json. Similarly, if provided yaml-input it will print a
+       sample  input  YAML that can be used with --cli-input-yaml. If provided
+       with the value output, it validates the command inputs  and  returns  a
+       sample output JSON for that command.
+
+       See 'aws help' for descriptions of global parameters.
+
+EXAMPLES
+       The  following  example uses the put-object command to upload an object
+       to Amazon S3:
+
+          aws s3api put-object --bucket text-content --key dir-1/my_images.tar.bz2 --body my_images.tar.bz2
+
+       The following example shows an upload of a video file (The  video  file
+       is specified using Windows file system syntax.):
+
+          aws s3api put-object --bucket text-content --key dir-1/big-video-file.mp4 --body e:\media\videos\f-sharp-3-data-services.mp4
+
+       For  more information about uploading objects, see Uploading Objects in
+       the Amazon S3 Developer Guide.
+
+OUTPUT
+       Expiration -> (string)
+          If   the   expiration   is   configured   for   the   object    (see
+          PutBucketLifecycleConfiguration   ),   the  response  includes  this
+          header. It includes the expiry-date and rule-id key-value pairs that
+          provide  information  about  object  expiration.  The  value  of the
+          rule-id is URL encoded.
+
+       ETag -> (string)
+          Entity tag for the uploaded object.
+
+       ServerSideEncryption -> (string)
+          If you specified server-side encryption either with  an  Amazon  Web
+          Services KMS key or Amazon S3-managed encryption key in your PUT re-
+          quest, the response includes this header. It confirms the encryption
+          algorithm that Amazon S3 used to encrypt the object.
+
+       VersionId -> (string)
+          Version of the object.
+
+       SSECustomerAlgorithm -> (string)
+          If  server-side  encryption  with a customer-provided encryption key
+          was requested, the response will include this header confirming  the
+          encryption algorithm used.
+
+       SSECustomerKeyMD5 -> (string)
+          If  server-side  encryption  with a customer-provided encryption key
+          was requested, the response will  include  this  header  to  provide
+          round-trip  message  integrity verification of the customer-provided
+          encryption key.
+
+       SSEKMSKeyId -> (string)
+          If x-amz-server-side-encryption is present  and  has  the  value  of
+          aws:kms  ,  this  header specifies the ID of the Amazon Web Services
+          Key Management Service (Amazon Web Services KMS) symmetric  customer
+          managed key that was used for the object.
+
+       SSEKMSEncryptionContext -> (string)
+          If present, specifies the Amazon Web Services KMS Encryption Context
+          to use for  object  encryption.  The  value  of  this  header  is  a
+          base64-encoded UTF-8 string holding JSON with the encryption context
+          key-value pairs.
+
+       BucketKeyEnabled -> (boolean)
+          Indicates whether the uploaded object uses  an  S3  Bucket  Key  for
+          server-side encryption with Amazon Web Services KMS (SSE-KMS).
+
+       RequestCharged -> (string)
+          If  present,  indicates  that the requester was successfully charged
+          for the request.
+
+
+
+                                                                  PUT-OBJECT()

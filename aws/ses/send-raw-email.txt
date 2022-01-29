@@ -1,0 +1,379 @@
+SEND-RAW-EMAIL()                                              SEND-RAW-EMAIL()
+
+
+
+NAME
+       send-raw-email -
+
+DESCRIPTION
+       Composes an email message and immediately queues it for sending.
+
+       This  operation is more flexible than the SendEmail API operation. When
+       you use the SendRawEmail operation, you can specify the headers of  the
+       message  as  well as its content. This flexibility is useful, for exam-
+       ple, when you want to send a multipart MIME email (such a message  that
+       contains both a text and an HTML version). You can also use this opera-
+       tion to send messages that include attachments.
+
+       The SendRawEmail operation has the following requirements:
+
+       o You can only send email from verified email addresses or domains . If
+         you try to send email from an address that isn't verified, the opera-
+         tion results in an "Email address not verified" error.
+
+       o If your account is still in the Amazon SES sandbox  ,  you  can  only
+         send  email  to  other  verified addresses in your account, or to ad-
+         dresses that are associated with the Amazon SES mailbox simulator .
+
+       o The maximum message size, including attachments, is 10 MB.
+
+       o Each message has to include at least one recipient address. A recipi-
+         ent address includes any address on the To:, CC:, or BCC: lines.
+
+       o If  you send a single message to more than one recipient address, and
+         one of the recipient addresses isn't in a valid format (that is, it's
+         not  in the format UserName@[SubDomain.]Domain.TopLevelDomain ), Ama-
+         zon SES rejects the entire message, even if the other  addresses  are
+         valid.
+
+       o Each message can include up to 50 recipient addresses across the To:,
+         CC:, or BCC: lines. If you need to send a single message to more than
+         50 recipients, you have to split the list of recipient addresses into
+         groups of less than 50 recipients, and send separate messages to each
+         group.
+
+       o Amazon  SES allows you to specify 8-bit Content-Transfer-Encoding for
+         MIME message parts. However, if Amazon SES has to modify the contents
+         of  your  message  (for example, if you use open and click tracking),
+         8-bit content isn't preserved. For this reason, we  highly  recommend
+         that you encode all content that isn't 7-bit ASCII. For more informa-
+         tion, see MIME Encoding in the Amazon SES Developer Guide .
+
+       Additionally, keep the following considerations in mind when using  the
+       SendRawEmail operation:
+
+       o Although  you  can  customize  the  message  headers  when  using the
+         SendRawEmail operation, Amazon SES will automatically apply  its  own
+         Message-ID  and Date headers; if you passed these headers when creat-
+         ing the message, they will be overwritten by the values  that  Amazon
+         SES provides.
+
+       o If  you  are using sending authorization to send on behalf of another
+         user, SendRawEmail enables you to specify the cross-account  identity
+         for  the  email's  Source, From, and Return-Path parameters in one of
+         two ways: you can pass optional  parameters  SourceArn  ,  FromArn  ,
+         and/or  ReturnPathArn  to  the  API, or you can include the following
+         X-headers in the header of your raw email:
+
+         o X-SES-SOURCE-ARN
+
+         o X-SES-FROM-ARN
+
+         o X-SES-RETURN-PATH-ARN
+
+       WARNING:
+          Don't include these X-headers in the DKIM signature. Amazon SES  re-
+          moves these before it sends the email.
+
+       If  you  only  specify the SourceIdentityArn parameter, Amazon SES sets
+       the From and Return-Path addresses to the same identity that you speci-
+       fied.
+
+       For more information about sending authorization, see the Using Sending
+       Authorization with Amazon SES in the Amazon SES Developer Guide.
+
+       o For every message that you send, the total number of recipients  (in-
+         cluding  each  recipient  in the To:, CC: and BCC: fields) is counted
+         against the maximum number of emails you can send in a 24-hour period
+         (your  sending  quota ). For more information about sending quotas in
+         Amazon SES, see Managing Your Amazon SES Sending Limits in the Amazon
+         SES Developer Guide.
+
+       See also: AWS API Documentation
+
+       See 'aws help' for descriptions of global parameters.
+
+SYNOPSIS
+            send-raw-email
+          [--source <value>]
+          [--destinations <value>]
+          --raw-message <value>
+          [--from-arn <value>]
+          [--source-arn <value>]
+          [--return-path-arn <value>]
+          [--tags <value>]
+          [--configuration-set-name <value>]
+          [--cli-input-json | --cli-input-yaml]
+          [--generate-cli-skeleton <value>]
+
+OPTIONS
+       --source (string)
+          The identity's email address. If you do not provide a value for this
+          parameter, you must specify a "From" address in the raw text of  the
+          message. (You can also specify both.)
+
+          NOTE:
+              Amazon SES does not support the SMTPUTF8 extension, as described
+              in`RFC6531 <https://tools.ietf.org/html/rfc6531>`__ .  For  this
+              reason,  the  local  part of a source email address (the part of
+              the email address that precedes the @  sign)  may  only  contain
+              7-bit  ASCII  characters . If the domain part of an address (the
+              part after the @ sign) contains non-ASCII characters, they  must
+              be  encoded using Punycode, as described in RFC3492 . The sender
+              name (also known as the friendly name )  may  contain  non-ASCII
+              characters.  These  characters  must  be  encoded using MIME en-
+              coded-word syntax, as described in RFC 2047 . MIME  encoded-word
+              syntax   uses   the   following   form:   =?charset?encoding?en-
+              coded-text?= .
+
+          If you specify the Source parameter and have feedback forwarding en-
+          abled,  then  bounces  and complaints will be sent to this email ad-
+          dress. This takes precedence over any Return-Path  header  that  you
+          might include in the raw text of the message.
+
+       --destinations (list)
+          A  list of destinations for the message, consisting of To:, CC:, and
+          BCC: addresses.
+
+          (string)
+
+       Syntax:
+
+          "string" "string" ...
+
+       --raw-message (structure)
+          The raw email message itself. The message has to meet the  following
+          criteria:
+
+          o The  message  has  to  contain a header and a body, separated by a
+            blank line.
+
+          o All of the required header fields must be present in the message.
+
+          o Each part of a multipart MIME message must be formatted properly.
+
+          o Attachments must be of a content type that  Amazon  SES  supports.
+            For  a  list on unsupported content types, see Unsupported Attach-
+            ment Types in the Amazon SES Developer Guide .
+
+          o The entire message must be base64-encoded.
+
+          o If any of the MIME parts in your message contain content  that  is
+            outside  of  the  7-bit ASCII character range, we highly recommend
+            that you encode that content. For more  information,  see  Sending
+            Raw Email in the Amazon SES Developer Guide .
+
+          o Per  RFC 5321 , the maximum length of each line of text, including
+            the <CRLF>, must not exceed 1,000 characters.
+
+          Data -> (blob)
+              The raw data of the message. This data needs  to  base64-encoded
+              if  you  are accessing Amazon SES directly through the HTTPS in-
+              terface. If you are accessing Amazon SES using an AWS  SDK,  the
+              SDK  takes  care  of the base 64-encoding for you. In all cases,
+              the client must ensure that the message format complies with In-
+              ternet  email  standards  regarding  email  header  fields, MIME
+              types, and MIME encoding.
+
+              The To:, CC:, and BCC: headers in the raw message can contain  a
+              group list.
+
+              If  you  are  using SendRawEmail with sending authorization, you
+              can  include  X-headers  in  the  raw  message  to  specify  the
+              "Source," "From," and "Return-Path" addresses. For more informa-
+              tion, see the documentation for SendRawEmail .
+
+              WARNING:
+                 Do not include these X-headers in the DKIM signature, because
+                 they are removed by Amazon SES before sending the email.
+
+              For more information, go to the Amazon SES Developer Guide .
+
+       Shorthand Syntax:
+
+          Data=blob
+
+       JSON Syntax:
+
+          {
+            "Data": blob
+          }
+
+       --from-arn (string)
+          This parameter is used only for sending authorization. It is the ARN
+          of the identity that is associated with  the  sending  authorization
+          policy  that  permits  you to specify a particular "From" address in
+          the header of the raw email.
+
+          Instead  of  using  this  parameter,  you  can  use   the   X-header
+          X-SES-FROM-ARN  in the raw message of the email. If you use both the
+          FromArn parameter and the corresponding X-header,  Amazon  SES  uses
+          the value of the FromArn parameter.
+
+          NOTE:
+              For  information  about  when to use this parameter, see the de-
+              scription of SendRawEmail in this guide, or see the  Amazon  SES
+              Developer Guide .
+
+       --source-arn (string)
+          This parameter is used only for sending authorization. It is the ARN
+          of the identity that is associated with  the  sending  authorization
+          policy  that  permits you to send for the email address specified in
+          the Source parameter.
+
+          For  example,  if  the  owner  of   example.com   (which   has   ARN
+          arn:aws:ses:us-east-1:123456789012:identity/example.com ) attaches a
+          policy to it that authorizes you to  send  from  user@example.com  ,
+          then     you     would     specify     the     SourceArn    to    be
+          arn:aws:ses:us-east-1:123456789012:identity/example.com  ,  and  the
+          Source to be user@example.com .
+
+          Instead   of   using  this  parameter,  you  can  use  the  X-header
+          X-SES-SOURCE-ARN in the raw message of the email. If  you  use  both
+          the  SourceArn  parameter and the corresponding X-header, Amazon SES
+          uses the value of the SourceArn parameter.
+
+          NOTE:
+              For information about when to use this parameter,  see  the  de-
+              scription  of  SendRawEmail in this guide, or see the Amazon SES
+              Developer Guide .
+
+       --return-path-arn (string)
+          This parameter is used only for sending authorization. It is the ARN
+          of  the  identity  that is associated with the sending authorization
+          policy that permits you to use the email address  specified  in  the
+          ReturnPath parameter.
+
+          For   example,   if   the   owner  of  example.com  (which  has  ARN
+          arn:aws:ses:us-east-1:123456789012:identity/example.com ) attaches a
+          policy  to it that authorizes you to use feedback@example.com , then
+          you     would     specify     the      ReturnPathArn      to      be
+          arn:aws:ses:us-east-1:123456789012:identity/example.com  ,  and  the
+          ReturnPath to be feedback@example.com .
+
+          Instead of using this parameter, you can use the X-header  X-SES-RE-
+          TURN-PATH-ARN  in  the raw message of the email. If you use both the
+          ReturnPathArn parameter and the corresponding X-header,  Amazon  SES
+          uses the value of the ReturnPathArn parameter.
+
+          NOTE:
+              For  information  about  when to use this parameter, see the de-
+              scription of SendRawEmail in this guide, or see the  Amazon  SES
+              Developer Guide .
+
+       --tags (list)
+          A  list  of  tags,  in  the form of name/value pairs, to apply to an
+          email that you send using SendRawEmail . Tags correspond to  charac-
+          teristics  of  the  email  that  you define, so that you can publish
+          email sending events.
+
+          (structure)
+              Contains the name and value of a tag that  you  can  provide  to
+              SendEmail or SendRawEmail to apply to an email.
+
+              Message  tags, which you use with configuration sets, enable you
+              to publish email sending events.  For  information  about  using
+              configuration sets, see the Amazon SES Developer Guide .
+
+              Name -> (string)
+                 The name of the tag. The name must:
+
+                 o This  value can only contain ASCII letters (a-z, A-Z), num-
+                   bers (0-9), underscores (_), or dashes (-).
+
+                 o Contain less than 256 characters.
+
+              Value -> (string)
+                 The value of the tag. The value must:
+
+                 o This value can only contain ASCII letters (a-z, A-Z),  num-
+                   bers (0-9), underscores (_), or dashes (-).
+
+                 o Contain less than 256 characters.
+
+       Shorthand Syntax:
+
+          Name=string,Value=string ...
+
+       JSON Syntax:
+
+          [
+            {
+              "Name": "string",
+              "Value": "string"
+            }
+            ...
+          ]
+
+       --configuration-set-name (string)
+          The  name of the configuration set to use when you send an email us-
+          ing SendRawEmail .
+
+       --cli-input-json | --cli-input-yaml (string) Reads arguments  from  the
+       JSON  string  provided.  The JSON string follows the format provided by
+       --generate-cli-skeleton. If other arguments are provided on the command
+       line,  those  values  will override the JSON-provided values. It is not
+       possible to pass arbitrary binary values using a JSON-provided value as
+       the  string  will  be  taken literally. This may not be specified along
+       with --cli-input-yaml.
+
+       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
+       output without sending an API request. If provided with no value or the
+       value input, prints a sample input JSON that can be used as an argument
+       for --cli-input-json. Similarly, if provided yaml-input it will print a
+       sample input YAML that can be used with --cli-input-yaml.  If  provided
+       with  the  value  output, it validates the command inputs and returns a
+       sample output JSON for that command.
+
+       See 'aws help' for descriptions of global parameters.
+
+EXAMPLES
+       To send a raw email using Amazon SES
+
+       The following example uses the send-raw-email command to send an  email
+       with a TXT attachment:
+
+          aws ses send-raw-email \
+          --cli-binary-format raw-in-base64-out \
+          --raw-message file://message.json
+
+       Output:
+
+          {
+             "MessageId": "EXAMPLEf3f73d99b-c63fb06f-d263-41f8-a0fb-d0dc67d56c07-000000"
+          }
+
+       The  raw  message  is  a JSON data structure saved in a file named mes-
+       sage.json in the current directory. It contains the following:
+
+          {
+             "Data": "From: sender@example.com\nTo: recipient@example.com\nSubject: Test email sent using the AWS CLI (contains an attachment)\nMIME-Version: 1.0\nContent-type: Multipart/Mixed; boundary=\"NextPart\"\n\n--NextPart\nContent-Type: text/plain\n\nThis is the message body.\n\n--NextPart\nContent-Type: text/plain;\nContent-Disposition: attachment; filename=\"attachment.txt\"\n\nThis is the text in the attachment.\n\n--NextPart--"
+          }
+
+       As you can see, "Data" is one long string that contains the entire  raw
+       email  content  in  MIME format, including an attachment called attach-
+       ment.txt.
+
+       Replace sender@example.com and recipient@example.com with the addresses
+       you  want to use. Note that the sender's email address must be verified
+       with Amazon SES. Until you are granted production access to Amazon SES,
+       you  must also verify the email address of the recipient unless the re-
+       cipient is the Amazon SES mailbox simulator. For  more  information  on
+       verification,  see  Verifying Email Addresses and Domains in Amazon SES
+       in the Amazon Simple Email Service Developer Guide.
+
+       The Message ID in the output indicates that the call to  send-raw-email
+       was successful.
+
+       If you don't receive the email, check your Junk box.
+
+       For  more information on sending raw email, see Sending Raw Email Using
+       the Amazon SES API in the Amazon Simple Email Service Developer Guide.
+
+OUTPUT
+       MessageId -> (string)
+          The unique message identifier returned from the SendRawEmail action.
+
+
+
+                                                              SEND-RAW-EMAIL()

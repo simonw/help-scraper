@@ -1,0 +1,410 @@
+CREATE-JOB()                                                      CREATE-JOB()
+
+
+
+NAME
+       create-job -
+
+DESCRIPTION
+       Creates a job.
+
+       Requires permission to access the CreateJob action.
+
+       See also: AWS API Documentation
+
+       See 'aws help' for descriptions of global parameters.
+
+SYNOPSIS
+            create-job
+          --job-id <value>
+          --targets <value>
+          [--document-source <value>]
+          [--document <value>]
+          [--description <value>]
+          [--presigned-url-config <value>]
+          [--target-selection <value>]
+          [--job-executions-rollout-config <value>]
+          [--abort-config <value>]
+          [--timeout-config <value>]
+          [--tags <value>]
+          [--namespace-id <value>]
+          [--job-template-arn <value>]
+          [--job-executions-retry-config <value>]
+          [--document-parameters <value>]
+          [--cli-input-json | --cli-input-yaml]
+          [--generate-cli-skeleton <value>]
+
+OPTIONS
+       --job-id (string)
+          A  job  identifier which must be unique for your Amazon Web Services
+          account. We recommend using a UUID.  Alpha-numeric  characters,  "-"
+          and "_" are valid for use here.
+
+       --targets (list)
+          A list of things and thing groups to which the job should be sent.
+
+          (string)
+
+       Syntax:
+
+          "string" "string" ...
+
+       --document-source (string)
+          An  S3  link  to  the  job document. Required if you don't specify a
+          value for document .
+
+          NOTE:
+              If the job document resides in an S3  bucket,  you  must  use  a
+              placeholder link when specifying the document.
+
+              The placeholder link is of the following form:
+                 ${aws:iot:s3-presigned-url:https://s3.amazonaws.com/*bucket*
+                 /*key* }
+
+              where bucket is your bucket name and key is the  object  in  the
+              bucket to which you are linking.
+
+       --document (string)
+          The  job  document.  Required if you don't specify a value for docu-
+          mentSource .
+
+       --description (string)
+          A short text description of the job.
+
+       --presigned-url-config (structure)
+          Configuration information for pre-signed S3 URLs.
+
+          roleArn -> (string)
+              The ARN of an IAM role that grants grants permission to download
+              files  from the S3 bucket where the job data/updates are stored.
+              The role must also grant permission  for  IoT  to  download  the
+              files.
+
+          expiresInSec -> (long)
+              How  long  (in  seconds) pre-signed URLs are valid. Valid values
+              are 60 - 3600, the default value  is  3600  seconds.  Pre-signed
+              URLs  are  generated  when Jobs receives an MQTT request for the
+              job document.
+
+       Shorthand Syntax:
+
+          roleArn=string,expiresInSec=long
+
+       JSON Syntax:
+
+          {
+            "roleArn": "string",
+            "expiresInSec": long
+          }
+
+       --target-selection (string)
+          Specifies whether the job will continue to run (CONTINUOUS), or will
+          be  complete  after  all those things specified as targets have com-
+          pleted the job (SNAPSHOT). If continuous, the job may also be run on
+          a  thing  when  a change is detected in a target. For example, a job
+          will run on a thing when the thing is added to a target group,  even
+          after the job was completed by all things originally in the group.
+
+          Possible values:
+
+          o CONTINUOUS
+
+          o SNAPSHOT
+
+       --job-executions-rollout-config (structure)
+          Allows you to create a staged rollout of the job.
+
+          maximumPerMinute -> (integer)
+              The  maximum number of things that will be notified of a pending
+              job, per minute. This parameter allows you to  create  a  staged
+              rollout.
+
+          exponentialRate -> (structure)
+              The  rate  of  increase for a job rollout. This parameter allows
+              you to define an exponential rate for a job rollout.
+
+              baseRatePerMinute -> (integer)
+                 The minimum number of things that will be notified of a pend-
+                 ing job, per minute at the start of job rollout. This parame-
+                 ter allows you to define the initial rate of rollout.
+
+              incrementFactor -> (double)
+                 The exponential factor to increase the rate of rollout for  a
+                 job.
+
+                 Amazon  Web  Services IoT Core supports up to one digit after
+                 the decimal (for example, 1.5, but not 1.55).
+
+              rateIncreaseCriteria -> (structure)
+                 The criteria to initiate the increase in rate of rollout  for
+                 a job.
+
+                 numberOfNotifiedThings -> (integer)
+                     The  threshold  for  number  of notified things that will
+                     initiate the increase in rate of rollout.
+
+                 numberOfSucceededThings -> (integer)
+                     The threshold for number of succeeded  things  that  will
+                     initiate the increase in rate of rollout.
+
+       Shorthand Syntax:
+
+          maximumPerMinute=integer,exponentialRate={baseRatePerMinute=integer,incrementFactor=double,rateIncreaseCriteria={numberOfNotifiedThings=integer,numberOfSucceededThings=integer}}
+
+       JSON Syntax:
+
+          {
+            "maximumPerMinute": integer,
+            "exponentialRate": {
+              "baseRatePerMinute": integer,
+              "incrementFactor": double,
+              "rateIncreaseCriteria": {
+                "numberOfNotifiedThings": integer,
+                "numberOfSucceededThings": integer
+              }
+            }
+          }
+
+       --abort-config (structure)
+          Allows you to create the criteria to abort a job.
+
+          criteriaList -> (list)
+              The  list  of  criteria that determine when and how to abort the
+              job.
+
+              (structure)
+                 The criteria that determine when and how a  job  abort  takes
+                 place.
+
+                 failureType -> (string)
+                     The  type  of  job execution failures that can initiate a
+                     job abort.
+
+                 action -> (string)
+                     The type of job action to take to initiate the job abort.
+
+                 thresholdPercentage -> (double)
+                     The minimum percentage of  job  execution  failures  that
+                     must occur to initiate the job abort.
+
+                     Amazon  Web  Services  IoT Core supports up to two digits
+                     after the decimal (for example, 10.9 and 10.99,  but  not
+                     10.999).
+
+                 minNumberOfExecutedThings -> (integer)
+                     The  minimum number of things which must receive job exe-
+                     cution notifications before the job can be aborted.
+
+       Shorthand Syntax:
+
+          criteriaList=[{failureType=string,action=string,thresholdPercentage=double,minNumberOfExecutedThings=integer},{failureType=string,action=string,thresholdPercentage=double,minNumberOfExecutedThings=integer}]
+
+       JSON Syntax:
+
+          {
+            "criteriaList": [
+              {
+                "failureType": "FAILED"|"REJECTED"|"TIMED_OUT"|"ALL",
+                "action": "CANCEL",
+                "thresholdPercentage": double,
+                "minNumberOfExecutedThings": integer
+              }
+              ...
+            ]
+          }
+
+       --timeout-config (structure)
+          Specifies the amount of time each device has to finish its execution
+          of  the  job.  The timer is started when the job execution status is
+          set to IN_PROGRESS . If the job execution status is not set  to  an-
+          other  terminal  state before the time expires, it will be automati-
+          cally set to TIMED_OUT .
+
+          inProgressTimeoutInMinutes -> (long)
+              Specifies the amount of time, in minutes,  this  device  has  to
+              finish  execution  of this job. The timeout interval can be any-
+              where between 1 minute and 7 days (1 to 10080 minutes).  The  in
+              progress timer can't be updated and will apply to all job execu-
+              tions for the job. Whenever  a  job  execution  remains  in  the
+              IN_PROGRESS status for longer than this interval, the job execu-
+              tion will fail and switch to the terminal TIMED_OUT status.
+
+       Shorthand Syntax:
+
+          inProgressTimeoutInMinutes=long
+
+       JSON Syntax:
+
+          {
+            "inProgressTimeoutInMinutes": long
+          }
+
+       --tags (list)
+          Metadata which can be used to manage the job.
+
+          (structure)
+              A set of key/value pairs that are used to manage the resource.
+
+              Key -> (string)
+                 The tag's key.
+
+              Value -> (string)
+                 The tag's value.
+
+       Shorthand Syntax:
+
+          Key=string,Value=string ...
+
+       JSON Syntax:
+
+          [
+            {
+              "Key": "string",
+              "Value": "string"
+            }
+            ...
+          ]
+
+       --namespace-id (string)
+          The namespace used to indicate that a job is a customer-managed job.
+
+          When you specify a value for this parameter, Amazon Web Services IoT
+          Core  sends jobs notifications to MQTT topics that contain the value
+          in the following format.
+              $aws/things/*THING_NAME* /jobs/*JOB_ID* /notify-namespace-*NAME-
+              SPACE_ID* /
+
+          NOTE:
+              The namespaceId feature is in public preview.
+
+       --job-template-arn (string)
+          The ARN of the job template used to create the job.
+
+       --job-executions-retry-config (structure)
+          Allows you to create the criteria to retry a job.
+
+          criteriaList -> (list)
+              The  list  of  criteria that determines how many retries are al-
+              lowed for each failure type for a job.
+
+              (structure)
+                 The criteria that determines how many retries are allowed for
+                 each failure type for a job.
+
+                 failureType -> (string)
+                     The  type  of  job execution failures that can initiate a
+                     job retry.
+
+                 numberOfRetries -> (integer)
+                     The number of retries allowed for a failure type for  the
+                     job.
+
+       Shorthand Syntax:
+
+          criteriaList=[{failureType=string,numberOfRetries=integer},{failureType=string,numberOfRetries=integer}]
+
+       JSON Syntax:
+
+          {
+            "criteriaList": [
+              {
+                "failureType": "FAILED"|"TIMED_OUT"|"ALL",
+                "numberOfRetries": integer
+              }
+              ...
+            ]
+          }
+
+       --document-parameters (map)
+          Parameters  of a managed template that you can specify to create the
+          job document.
+
+          key -> (string)
+
+          value -> (string)
+
+       Shorthand Syntax:
+
+          KeyName1=string,KeyName2=string
+
+       JSON Syntax:
+
+          {"string": "string"
+            ...}
+
+       --cli-input-json | --cli-input-yaml (string) Reads arguments  from  the
+       JSON  string  provided.  The JSON string follows the format provided by
+       --generate-cli-skeleton. If other arguments are provided on the command
+       line,  those  values  will override the JSON-provided values. It is not
+       possible to pass arbitrary binary values using a JSON-provided value as
+       the  string  will  be  taken literally. This may not be specified along
+       with --cli-input-yaml.
+
+       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
+       output without sending an API request. If provided with no value or the
+       value input, prints a sample input JSON that can be used as an argument
+       for --cli-input-json. Similarly, if provided yaml-input it will print a
+       sample input YAML that can be used with --cli-input-yaml.  If  provided
+       with  the  value  output, it validates the command inputs and returns a
+       sample output JSON for that command.
+
+       See 'aws help' for descriptions of global parameters.
+
+EXAMPLES
+       Example 1: To create a job
+
+       The following create-job example creates a  simple  AWS  IoT  job  that
+       sends a JSON document to the MyRaspberryPi device.
+
+          aws iot create-job \
+              --job-id "example-job-01" \
+              --targets "arn:aws:iot:us-west-2:123456789012:thing/MyRaspberryPi" \
+              --document file://example-job.json \
+              --description "example job test" \
+              --target-selection SNAPSHOT
+
+       Output:
+
+          {
+              "jobArn": "arn:aws:iot:us-west-2:123456789012:job/example-job-01",
+              "jobId": "example-job-01",
+              "description": "example job test"
+          }
+
+       Example 2: To create a continuous job
+
+       The  following  create-job  example creates a job that continues to run
+       after the things specified as targets have completed the job.  In  this
+       example,  the target is a thing group, so when new devices are added to
+       the group, the continuous job runs on those new things.
+
+          aws iot create-job
+                 --job-id              "example-job-04"              --targets
+                 "arn:aws:iot:us-west-2:123456789012:thinggroup/DeadBulbs"
+                 --document  file://example-job.json  --description   "example
+                 continuous job" --target-selection CONTINUOUS
+
+       Output:
+
+          {
+              "jobArn": "arn:aws:iot:us-west-2:123456789012:job/example-job-04",
+              "jobId": "example-job-04",
+              "description": "example continuous job"
+          }
+
+       For  more  information, see Creating and Managing Jobs (CLI) in the AWS
+       IoT Developer Guide.
+
+OUTPUT
+       jobArn -> (string)
+          The job ARN.
+
+       jobId -> (string)
+          The unique identifier you assigned to this job.
+
+       description -> (string)
+          The job description.
+
+
+
+                                                                  CREATE-JOB()

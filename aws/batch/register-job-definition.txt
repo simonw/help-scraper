@@ -1,0 +1,2202 @@
+REGISTER-JOB-DEFINITION()                            REGISTER-JOB-DEFINITION()
+
+
+
+NAME
+       register-job-definition -
+
+DESCRIPTION
+       Registers an Batch job definition.
+
+       See also: AWS API Documentation
+
+       See 'aws help' for descriptions of global parameters.
+
+SYNOPSIS
+            register-job-definition
+          --job-definition-name <value>
+          --type <value>
+          [--parameters <value>]
+          [--scheduling-priority <value>]
+          [--container-properties <value>]
+          [--node-properties <value>]
+          [--retry-strategy <value>]
+          [--propagate-tags | --no-propagate-tags]
+          [--timeout <value>]
+          [--tags <value>]
+          [--platform-capabilities <value>]
+          [--cli-input-json | --cli-input-yaml]
+          [--generate-cli-skeleton <value>]
+
+OPTIONS
+       --job-definition-name (string)
+          The name of the job definition to register. It can be up to 128 let-
+          ters long. It can contain uppercase and lowercase letters,  numbers,
+          hyphens (-), and underscores (_).
+
+       --type (string)
+          The  type  of  job definition. For more information about multi-node
+          parallel jobs, see Creating a multi-node parallel job definition  in
+          the Batch User Guide .
+
+          NOTE:
+              If  the  job  is  run on Fargate resources, then multinode isn't
+              supported.
+
+          Possible values:
+
+          o container
+
+          o multinode
+
+       --parameters (map)
+          Default parameter substitution placeholders to set in the job  defi-
+          nition. Parameters are specified as a key-value pair mapping. Param-
+          eters in a SubmitJob request override  any  corresponding  parameter
+          defaults from the job definition.
+
+          key -> (string)
+
+          value -> (string)
+
+       Shorthand Syntax:
+
+          KeyName1=string,KeyName2=string
+
+       JSON Syntax:
+
+          {"string": "string"
+            ...}
+
+       --scheduling-priority (integer)
+          The  scheduling  priority  for jobs that are submitted with this job
+          definition. This will only affect jobs in job  queues  with  a  fair
+          share  policy. Jobs with a higher scheduling priority will be sched-
+          uled before jobs with a lower scheduling priority.
+
+          The minimum supported value is 0 and the maximum supported value  is
+          9999.
+
+       --container-properties (structure)
+          An  object  with  various  properties  specific  to single-node con-
+          tainer-based jobs. If the job definition's type  parameter  is  con-
+          tainer  ,  then you must specify either containerProperties or node-
+          Properties .
+
+          NOTE:
+              If the job runs on Fargate resources, then you must not  specify
+              nodeProperties ; use only containerProperties .
+
+          image -> (string)
+              The  image  used to start a container. This string is passed di-
+              rectly to the Docker daemon. Images in the Docker  Hub  registry
+              are  available by default. Other repositories are specified with
+              `` repository-url /image :tag `` . Up to 255 letters  (uppercase
+              and  lowercase), numbers, hyphens, underscores, colons, periods,
+              forward slashes, and number signs are  allowed.  This  parameter
+              maps  to  Image  in the Create a container section of the Docker
+              Remote API and the IMAGE parameter of docker run .
+
+              NOTE:
+                 Docker image architecture must match the processor  architec-
+                 ture  of the compute resources that they're scheduled on. For
+                 example, ARM-based Docker images can only  run  on  ARM-based
+                 compute resources.
+
+              o Images  in  Amazon  ECR repositories use the full registry and
+                repository   URI   (for   example,   012345678910.dkr.ecr.<re-
+                gion-name>.amazonaws.com/<repository-name> ).
+
+              o Images  in  official  repositories  on Docker Hub use a single
+                name (for example, ubuntu or mongo ).
+
+              o Images in other repositories on Docker Hub are qualified  with
+                an organization name (for example, amazon/amazon-ecs-agent ).
+
+              o Images in other online repositories are qualified further by a
+                domain name (for example, quay.io/assemblyline/ubuntu ).
+
+          vcpus -> (integer)
+              This parameter is deprecated, use resourceRequirements to  spec-
+              ify  the vCPU requirements for the job definition. It's not sup-
+              ported for jobs that run on Fargate resources. For jobs  run  on
+              EC2 resources, it specifies the number of vCPUs reserved for the
+              job.
+
+              Each vCPU is equivalent to 1,024 CPU shares. This parameter maps
+              to CpuShares in the Create a container section of the Docker Re-
+              mote API and the --cpu-shares option to docker run . The  number
+              of  vCPUs  must  be  specified  but  can be specified in several
+              places. You must specify it at least once for each node.
+
+          memory -> (integer)
+              This parameter is deprecated, use resourceRequirements to  spec-
+              ify  the  memory  requirements  for the job definition. It's not
+              supported for jobs that run on Fargate resources. For  jobs  run
+              on  EC2  resources,  it specifies the memory hard limit (in MiB)
+              for a container. If your container attempts to exceed the speci-
+              fied number, it's terminated. You must specify at least 4 MiB of
+              memory for a job using this parameter. The memory hard limit can
+              be  specified  in  several places. It must be specified for each
+              node at least once.
+
+          command -> (list)
+              The command that's passed to the container. This parameter  maps
+              to  Cmd  in  the Create a container section of the Docker Remote
+              API and the COMMAND parameter to docker run . For more  informa-
+              tion,  see https://docs.docker.com/engine/reference/builder/#cmd
+              .
+
+              (string)
+
+          jobRoleArn -> (string)
+              The Amazon Resource Name (ARN) of the IAM  role  that  the  con-
+              tainer  can assume for Amazon Web Services permissions. For more
+              information, see IAM Roles for Tasks in the Amazon Elastic  Con-
+              tainer Service Developer Guide .
+
+          executionRoleArn -> (string)
+              The  Amazon Resource Name (ARN) of the execution role that Batch
+              can assume. For jobs that run on  Fargate  resources,  you  must
+              provide  an execution role. For more information, see Batch exe-
+              cution IAM role in the Batch User Guide .
+
+          volumes -> (list)
+              A list of data volumes used in a job.
+
+              (structure)
+                 A data volume used in a job's container properties.
+
+                 host -> (structure)
+                     The contents of the host parameter determine whether your
+                     data  volume  persists on the host container instance and
+                     where it is stored. If the host parameter is empty,  then
+                     the  Docker daemon assigns a host path for your data vol-
+                     ume. However, the data isn't guaranteed to persist  after
+                     the containers associated with it stop running.
+
+                     NOTE:
+                        This  parameter isn't applicable to jobs that are run-
+                        ning on Fargate resources and shouldn't be provided.
+
+                     sourcePath -> (string)
+                        The path on the host container  instance  that's  pre-
+                        sented  to  the container. If this parameter is empty,
+                        then the Docker daemon has assigned a  host  path  for
+                        you.  If this parameter contains a file location, then
+                        the data volume persists at the specified location  on
+                        the  host container instance until you delete it manu-
+                        ally. If the source path location doesn't exist on the
+                        host container instance, the Docker daemon creates it.
+                        If the location does exist, the contents of the source
+                        path folder are exported.
+
+                        NOTE:
+                            This  parameter  isn't applicable to jobs that run
+                            on Fargate resources and shouldn't be provided.
+
+                 name -> (string)
+                     The name of the volume. It can be up to 255 letters long.
+                     It  can contain uppercase and lowercase letters, numbers,
+                     hyphens (-), and underscores (_). This name is referenced
+                     in  the  sourceVolume  parameter  of container definition
+                     mountPoints .
+
+                 efsVolumeConfiguration -> (structure)
+                     This parameter is specified when you are using an  Amazon
+                     Elastic  File  System  file  system for job storage. Jobs
+                     that are running on  Fargate  resources  must  specify  a
+                     platformVersion of at least 1.4.0 .
+
+                     fileSystemId -> (string)
+                        The Amazon EFS file system ID to use.
+
+                     rootDirectory -> (string)
+                        The  directory  within  the  Amazon EFS file system to
+                        mount as the root directory inside the host.  If  this
+                        parameter  is omitted, the root of the Amazon EFS vol-
+                        ume is used instead. Specifying / has the same  effect
+                        as  omitting  this  parameter.  The  maximum length is
+                        4,096 characters.
+
+                        WARNING:
+                            If an EFS access point is specified in the  autho-
+                            rizationConfig , the root directory parameter must
+                            either be omitted or set to / , which enforces the
+                            path set on the Amazon EFS access point.
+
+                     transitEncryption -> (string)
+                        Determines whether to enable encryption for Amazon EFS
+                        data in transit between the Amazon ECS  host  and  the
+                        Amazon  EFS server. Transit encryption must be enabled
+                        if Amazon EFS IAM authorization is used. If  this  pa-
+                        rameter  is  omitted, the default value of DISABLED is
+                        used. For more information,  see  Encrypting  data  in
+                        transit in the Amazon Elastic File System User Guide .
+
+                     transitEncryptionPort -> (integer)
+                        The  port  to  use when sending encrypted data between
+                        the Amazon ECS host and the Amazon EFS server. If  you
+                        don't  specify  a transit encryption port, it uses the
+                        port selection strategy  that  the  Amazon  EFS  mount
+                        helper  uses.  The value must be between 0 and 65,535.
+                        For more information, see EFS Mount Helper in the Ama-
+                        zon Elastic File System User Guide .
+
+                     authorizationConfig -> (structure)
+                        The authorization configuration details for the Amazon
+                        EFS file system.
+
+                        accessPointId -> (string)
+                            The Amazon EFS access point ID to use. If  an  ac-
+                            cess  point is specified, the root directory value
+                            specified in the EFSVolumeConfiguration  must  ei-
+                            ther be omitted or set to / which will enforce the
+                            path set on the EFS access  point.  If  an  access
+                            point  is used, transit encryption must be enabled
+                            in the EFSVolumeConfiguration . For more  informa-
+                            tion, see Working with Amazon EFS Access Points in
+                            the Amazon Elastic File System User Guide .
+
+                        iam -> (string)
+                            Whether or not to use the Batch job IAM  role  de-
+                            fined in a job definition when mounting the Amazon
+                            EFS file system. If  enabled,  transit  encryption
+                            must be enabled in the EFSVolumeConfiguration . If
+                            this parameter is omitted, the  default  value  of
+                            DISABLED  is used. For more information, see Using
+                            Amazon EFS Access Points in the Batch User Guide .
+                            EFS IAM authorization requires that TransitEncryp-
+                            tion be ENABLED and that a  JobRoleArn  is  speci-
+                            fied.
+
+          environment -> (list)
+              The environment variables to pass to a container. This parameter
+              maps to Env in the Create a container section of the Docker  Re-
+              mote API and the --env option to docker run .
+
+              WARNING:
+                 We  don't recommend using plaintext environment variables for
+                 sensitive information, such as credential data.
+
+              NOTE:
+                 Environment variables must not start with  AWS_BATCH  ;  this
+                 naming  convention  is reserved for variables that are set by
+                 the Batch service.
+
+              (structure)
+                 A key-value pair object.
+
+                 name -> (string)
+                     The name of the key-value  pair.  For  environment  vari-
+                     ables, this is the name of the environment variable.
+
+                 value -> (string)
+                     The  value  of  the key-value pair. For environment vari-
+                     ables, this is the value of the environment variable.
+
+          mountPoints -> (list)
+              The mount points for data volumes in your container. This param-
+              eter  maps  to  Volumes in the Create a container section of the
+              Docker Remote API and the --volume option to docker run .
+
+              (structure)
+                 Details on a Docker volume mount point that's used in a job's
+                 container  properties.  This parameter maps to Volumes in the
+                 Create a container section of the Docker Remote API  and  the
+                 --volume option to docker run.
+
+                 containerPath -> (string)
+                     The  path  on  the  container  where  the  host volume is
+                     mounted.
+
+                 readOnly -> (boolean)
+                     If this value is true , the container has  read-only  ac-
+                     cess to the volume. Otherwise, the container can write to
+                     the volume. The default value is false .
+
+                 sourceVolume -> (string)
+                     The name of the volume to mount.
+
+          readonlyRootFilesystem -> (boolean)
+              When this parameter is true, the container  is  given  read-only
+              access to its root file system. This parameter maps to Readonly-
+              Rootfs in the Create a container section of  the  Docker  Remote
+              API and the --read-only option to docker run .
+
+          privileged -> (boolean)
+              When  this  parameter  is  true, the container is given elevated
+              permissions on the host container instance (similar to the  root
+              user).  This  parameter  maps to Privileged in the Create a con-
+              tainer section of the Docker Remote API and the --privileged op-
+              tion to docker run . The default value is false.
+
+              NOTE:
+                 This  parameter  isn't applicable to jobs that are running on
+                 Fargate resources and shouldn't be provided, or specified  as
+                 false.
+
+          ulimits -> (list)
+              A  list  of ulimits to set in the container. This parameter maps
+              to Ulimits in the Create a container section of the  Docker  Re-
+              mote API and the --ulimit option to docker run .
+
+              NOTE:
+                 This  parameter  isn't applicable to jobs that are running on
+                 Fargate resources and shouldn't be provided.
+
+              (structure)
+                 The ulimit settings to pass to the container.
+
+                 NOTE:
+                     This object isn't applicable to jobs that are running  on
+                     Fargate resources.
+
+                 hardLimit -> (integer)
+                     The hard limit for the ulimit type.
+
+                 name -> (string)
+                     The type of the ulimit .
+
+                 softLimit -> (integer)
+                     The soft limit for the ulimit type.
+
+          user -> (string)
+              The  user  name to use inside the container. This parameter maps
+              to User in the Create a container section of the  Docker  Remote
+              API and the --user option to docker run .
+
+          instanceType -> (string)
+              The instance type to use for a multi-node parallel job. All node
+              groups in a multi-node parallel job must use the  same  instance
+              type.
+
+              NOTE:
+                 This parameter isn't applicable to single-node container jobs
+                 or jobs that run on Fargate resources, and shouldn't be  pro-
+                 vided.
+
+          resourceRequirements -> (list)
+              The  type  and amount of resources to assign to a container. The
+              supported resources include GPU , MEMORY , and VCPU .
+
+              (structure)
+                 The type and amount of a resource to assign to  a  container.
+                 The supported resources include GPU , MEMORY , and VCPU .
+
+                 value -> (string)
+                     The quantity of the specified resource to reserve for the
+                     container. The values vary based on the type specified.
+                        type="GPU"
+
+                     The number of physical GPUs to reserve for the container.
+                     The  number  of GPUs reserved for all containers in a job
+                     shouldn't exceed the number of available GPUs on the com-
+                     pute resource that the job is launched on.
+
+                     NOTE:
+                        GPUs  are  not  available for jobs that are running on
+                        Fargate resources.
+
+                        type="MEMORY"
+
+                     The memory hard limit (in MiB) present to the  container.
+                     This  parameter is supported for jobs that are running on
+                     EC2 resources. If your container attempts to  exceed  the
+                     memory  specified,  the container is terminated. This pa-
+                     rameter maps to Memory in the Create a container  section
+                     of  the  Docker  Remote  API  and  the --memory option to
+                     docker run . You must specify at least 4  MiB  of  memory
+                     for  a job. This is required but can be specified in sev-
+                     eral places for multi-node parallel (MNP) jobs.  It  must
+                     be  specified for each node at least once. This parameter
+                     maps to Memory in the Create a container section  of  the
+                     Docker Remote API and the --memory option to docker run .
+
+                     NOTE:
+                        If you're trying to maximize your resource utilization
+                        by providing your jobs as much memory as possible  for
+                        a  particular  instance type, see Memory Management in
+                        the Batch User Guide .
+
+                     For jobs that are  running  on  Fargate  resources,  then
+                     value  is  the hard limit (in MiB), and must match one of
+                     the supported values and the VCPU values must be  one  of
+                     the values supported for that memory value.
+                            value = 512
+
+                        VCPU = 0.25
+                            value = 1024
+
+                        VCPU = 0.25 or 0.5
+                            value = 2048
+
+                        VCPU = 0.25, 0.5, or 1
+                            value = 3072
+
+                        VCPU = 0.5, or 1
+                            value = 4096
+
+                        VCPU = 0.5, 1, or 2
+                            value = 5120, 6144, or 7168
+
+                        VCPU = 1 or 2
+                            value = 8192
+
+                        VCPU = 1, 2, or 4
+                            value  =  9216, 10240, 11264, 12288, 13312, 14336,
+                            15360, or 16384
+
+                        VCPU = 2 or 4
+                            value = 17408, 18432, 19456, 20480, 21504,  22528,
+                            23552,  24576,  25600, 26624, 27648, 28672, 29696,
+                            or 30720
+
+                        VCPU = 4
+                            type="VCPU"
+
+                     The number of vCPUs reserved for the container. This  pa-
+                     rameter  maps to CpuShares in the Create a container sec-
+                     tion of the Docker Remote API and the --cpu-shares option
+                     to  docker  run  .  Each  vCPU is equivalent to 1,024 CPU
+                     shares. For EC2 resources, you must specify at least  one
+                     vCPU.  This  is  required but can be specified in several
+                     places; it must be specified for each node at least once.
+
+                     For jobs that are  running  on  Fargate  resources,  then
+                     value must match one of the supported values and the MEM-
+                     ORY values must be one of the values supported  for  that
+                     VCPU value. The supported values are 0.25, 0.5, 1, 2, and
+                     4
+                            value = 0.25
+
+                        MEMORY = 512, 1024, or 2048
+                            value = 0.5
+
+                        MEMORY = 1024, 2048, 3072, or 4096
+                            value = 1
+
+                        MEMORY = 2048, 3072, 4096, 5120, 6144, 7168, or 8192
+                            value = 2
+
+                        MEMORY = 4096, 5120, 6144, 7168,  8192,  9216,  10240,
+                        11264, 12288, 13312, 14336, 15360, or 16384
+                            value = 4
+
+                        MEMORY  =  8192,  9216,  10240,  11264,  12288, 13312,
+                        14336,  15360,  16384,  17408,  18432,  19456,  20480,
+                        21504,  22528,  23552,  24576,  25600,  26624,  27648,
+                        28672, 29696, or 30720
+
+                 type -> (string)
+                     The type of resource to assign to a container.  The  sup-
+                     ported resources include GPU , MEMORY , and VCPU .
+
+          linuxParameters -> (structure)
+              Linux-specific  modifications that are applied to the container,
+              such as details for device mappings.
+
+              devices -> (list)
+                 Any host devices to expose to the container.  This  parameter
+                 maps  to  Devices  in  the  Create a container section of the
+                 Docker Remote API and the --device option to docker run .
+
+                 NOTE:
+                     This parameter isn't applicable to jobs that are  running
+                     on Fargate resources and shouldn't be provided.
+
+                 (structure)
+                     An object representing a container instance host device.
+
+                     NOTE:
+                        This  object isn't applicable to jobs that are running
+                        on Fargate resources and shouldn't be provided.
+
+                     hostPath -> (string)
+                        The path for the device  on  the  host  container  in-
+                        stance.
+
+                     containerPath -> (string)
+                        The  path  inside  the container that's used to expose
+                        the host device. By default,  the  hostPath  value  is
+                        used.
+
+                     permissions -> (list)
+                        The  explicit  permissions to provide to the container
+                        for the device. By default, the container has  permis-
+                        sions for read , write , and mknod for the device.
+
+                        (string)
+
+              initProcessEnabled -> (boolean)
+                 If  true,  run an init process inside the container that for-
+                 wards signals and reaps processes. This parameter maps to the
+                 --init option to docker run . This parameter requires version
+                 1.25 of the Docker Remote API or greater  on  your  container
+                 instance. To check the Docker Remote API version on your con-
+                 tainer instance, log into your container instance and run the
+                 following  command:  sudo  docker  version | grep "Server API
+                 version"
+
+              sharedMemorySize -> (integer)
+                 The value for the size (in MiB) of the /dev/shm volume.  This
+                 parameter maps to the --shm-size option to docker run .
+
+                 NOTE:
+                     This  parameter isn't applicable to jobs that are running
+                     on Fargate resources and shouldn't be provided.
+
+              tmpfs -> (list)
+                 The container path, mount options, and size (in MiB)  of  the
+                 tmpfs  mount.  This  parameter  maps to the --tmpfs option to
+                 docker run .
+
+                 NOTE:
+                     This parameter isn't applicable to jobs that are  running
+                     on Fargate resources and shouldn't be provided.
+
+                 (structure)
+                     The  container path, mount options, and size of the tmpfs
+                     mount.
+
+                     NOTE:
+                        This object isn't applicable to jobs that are  running
+                        on Fargate resources.
+
+                     containerPath -> (string)
+                        The  absolute  file  path  in  the container where the
+                        tmpfs volume is mounted.
+
+                     size -> (integer)
+                        The size (in MiB) of the tmpfs volume.
+
+                     mountOptions -> (list)
+                        The list of tmpfs volume mount options.
+
+                        Valid values: "defaults " | "ro " | "rw " | "suid "  |
+                        "nosuid  " | "dev " | "nodev " | "exec " | "noexec " |
+                        "sync " | "async " | "dirsync " | "remount " | "mand "
+                        |  "nomand  "  | "atime " | "noatime " | "diratime " |
+                        "nodiratime " | "bind " |  "rbind"  |  "unbindable"  |
+                        "runbindable"  |  "private"  | "rprivate" | "shared" |
+                        "rshared" | "slave" | "rslave" | "relatime " |  "nore-
+                        latime " | "strictatime " | "nostrictatime " | "mode "
+                        | "uid " | "gid " | "nr_inodes  "  |  "nr_blocks  "  |
+                        "mpol "
+
+                        (string)
+
+              maxSwap -> (integer)
+                 The total amount of swap memory (in MiB) a container can use.
+                 This parameter is translated to the --memory-swap  option  to
+                 docker run where the value is the sum of the container memory
+                 plus the maxSwap value. For more information,  see  `  --mem-
+                 ory-swap                      details                      <-
+                 https://docs.docker.com/config/containers/resource_con-
+                 straints/#--memory-swap-details>`__  in the Docker documenta-
+                 tion.
+
+                 If a maxSwap value of 0 is specified, the  container  doesn't
+                 use  swap.  Accepted values are 0 or any positive integer. If
+                 the maxSwap parameter is omitted, the container  doesn't  use
+                 the  swap configuration for the container instance it is run-
+                 ning on. A maxSwap value must be set for the  swappiness  pa-
+                 rameter to be used.
+
+                 NOTE:
+                     This  parameter isn't applicable to jobs that are running
+                     on Fargate resources and shouldn't be provided.
+
+              swappiness -> (integer)
+                 This allows you to tune a container's memory  swappiness  be-
+                 havior. A swappiness value of 0 causes swapping not to happen
+                 unless absolutely necessary. A swappiness value of 100 causes
+                 pages  to  be  swapped very aggressively. Accepted values are
+                 whole numbers between 0 and 100 . If the swappiness parameter
+                 isn't  specified,  a  default value of 60 is used. If a value
+                 isn't specified for maxSwap , then this parameter is ignored.
+                 If  maxSwap is set to 0, the container doesn't use swap. This
+                 parameter maps to the --memory-swappiness  option  to  docker
+                 run .
+
+                 Consider the following when you use a per-container swap con-
+                 figuration.
+
+                 o Swap space must be enabled and allocated on  the  container
+                   instance for the containers to use.
+
+                 NOTE:
+                     The  Amazon ECS optimized AMIs don't have swap enabled by
+                     default. You must enable swap on the instance to use this
+                     feature.  For  more  information, see Instance Store Swap
+                     Volumes in the Amazon EC2 User Guide for Linux  Instances
+                     or  How  do I allocate memory to work as swap space in an
+                     Amazon EC2 instance by using a swap file?
+
+                 o The swap space parameters are only supported for job  defi-
+                   nitions using EC2 resources.
+
+                 o If the maxSwap and swappiness parameters are omitted from a
+                   job definition, each container will have a default  swappi-
+                   ness  value of 60, and the total swap usage will be limited
+                   to two times the memory reservation of the container.
+
+                 NOTE:
+                     This parameter isn't applicable to jobs that are  running
+                     on Fargate resources and shouldn't be provided.
+
+          logConfiguration -> (structure)
+              The log configuration specification for the container.
+
+              This  parameter maps to LogConfig in the Create a container sec-
+              tion of the Docker Remote API and  the  --log-driver  option  to
+              docker  run . By default, containers use the same logging driver
+              that the Docker daemon uses. However the container might  use  a
+              different  logging driver than the Docker daemon by specifying a
+              log driver with this parameter in the container  definition.  To
+              use  a  different logging driver for a container, the log system
+              must be configured properly on the container instance (or  on  a
+              different  log  server for remote logging options). For more in-
+              formation on the options for different  supported  log  drivers,
+              see Configure logging drivers in the Docker documentation.
+
+              NOTE:
+                 Batch  currently  supports  a  subset  of the logging drivers
+                 available to the Docker daemon (shown in  the   LogConfigura-
+                 tion data type).
+
+              This parameter requires version 1.18 of the Docker Remote API or
+              greater on your container instance. To check the  Docker  Remote
+              API  version on your container instance, log into your container
+              instance and run the following command: sudo  docker  version  |
+              grep "Server API version"
+
+              NOTE:
+                 The  Amazon  ECS  container  agent running on a container in-
+                 stance must register the logging drivers  available  on  that
+                 instance  with  the ECS_AVAILABLE_LOGGING_DRIVERS environment
+                 variable before containers placed on that  instance  can  use
+                 these  log  configuration  options. For more information, see
+                 Amazon ECS Container Agent Configuration in the Amazon  Elas-
+                 tic Container Service Developer Guide .
+
+              logDriver -> (string)
+                 The  log  driver  to  use for the container. The valid values
+                 listed for this parameter are log drivers that the Amazon ECS
+                 container agent can communicate with by default.
+
+                 The  supported  log  drivers  are  awslogs , fluentd , gelf ,
+                 json-file , journald , logentries , syslog , and splunk .
+
+                 NOTE:
+                     Jobs that are running on Fargate resources are restricted
+                     to the awslogs and splunk log drivers.
+
+                     awslogs
+
+                 Specifies the Amazon CloudWatch Logs logging driver. For more
+                 information, see Using the awslogs Log Driver  in  the  Batch
+                 User  Guide  and Amazon CloudWatch Logs logging driver in the
+                 Docker documentation.
+                     fluentd
+
+                 Specifies the Fluentd logging driver. For  more  information,
+                 including  usage  and  options, see Fluentd logging driver in
+                 the Docker documentation.
+                     gelf
+
+                 Specifies the Graylog Extended Format (GELF) logging  driver.
+                 For  more  information,  including  usage  and  options,  see
+                 Graylog Extended Format logging driver in the Docker documen-
+                 tation.
+                     journald
+
+                 Specifies  the journald logging driver. For more information,
+                 including usage and options, see Journald logging  driver  in
+                 the Docker documentation.
+                     json-file
+
+                 Specifies the JSON file logging driver. For more information,
+                 including usage and options, see JSON File logging driver  in
+                 the Docker documentation.
+                     splunk
+
+                 Specifies  the  Splunk  logging driver. For more information,
+                 including usage and options, see Splunk logging driver in the
+                 Docker documentation.
+                     syslog
+
+                 Specifies  the  syslog  logging driver. For more information,
+                 including usage and options, see Syslog logging driver in the
+                 Docker documentation.
+
+                 NOTE:
+                     If  you  have  a  custom driver that's not listed earlier
+                     that you want to  work  with  the  Amazon  ECS  container
+                     agent,  you  can  fork  the  Amazon  ECS  container agent
+                     project that's available on GitHub and  customize  it  to
+                     work  with  that  driver. We encourage you to submit pull
+                     requests for changes that you want to have included. How-
+                     ever,  Amazon Web Services doesn't currently support run-
+                     ning modified copies of this software.
+
+                 This parameter requires version 1.18 of the Docker Remote API
+                 or  greater  on  your container instance. To check the Docker
+                 Remote API version on your container instance, log into  your
+                 container instance and run the following command: sudo docker
+                 version | grep "Server API version"
+
+              options -> (map)
+                 The configuration options to send to the log driver. This pa-
+                 rameter  requires  version  1.19  of the Docker Remote API or
+                 greater on your container instance. To check the  Docker  Re-
+                 mote  API  version  on your container instance, log into your
+                 container instance and run the following command: sudo docker
+                 version | grep "Server API version"
+
+                 key -> (string)
+
+                 value -> (string)
+
+              secretOptions -> (list)
+                 The secrets to pass to the log configuration. For more infor-
+                 mation, see Specifying Sensitive Data in the Batch User Guide
+                 .
+
+                 (structure)
+                     An  object representing the secret to expose to your con-
+                     tainer. Secrets can be exposed to a container in the fol-
+                     lowing ways:
+
+                     o To  inject sensitive data into your containers as envi-
+                       ronment variables, use the secrets container definition
+                       parameter.
+
+                     o To  reference sensitive information in the log configu-
+                       ration of a container, use the secretOptions  container
+                       definition parameter.
+
+                     For  more  information,  see Specifying sensitive data in
+                     the Batch User Guide .
+
+                     name -> (string)
+                        The name of the secret.
+
+                     valueFrom -> (string)
+                        The secret to expose to the container.  The  supported
+                        values  are either the full ARN of the Secrets Manager
+                        secret or the full ARN of the parameter in the  Amazon
+                        Web Services Systems Manager Parameter Store.
+
+                        NOTE:
+                            If the Amazon Web Services Systems Manager Parame-
+                            ter Store parameter exists in the same  Region  as
+                            the  job you're launching, then you can use either
+                            the full ARN or name of the parameter. If the  pa-
+                            rameter  exists  in  a  different Region, then the
+                            full ARN must be specified.
+
+          secrets -> (list)
+              The  secrets  for  the  container.  For  more  information,  see
+              Specifying sensitive data in the Batch User Guide .
+
+              (structure)
+                 An  object  representing  the  secret  to expose to your con-
+                 tainer. Secrets can be exposed to a container in the  follow-
+                 ing ways:
+
+                 o To  inject  sensitive data into your containers as environ-
+                   ment variables, use the secrets container definition param-
+                   eter.
+
+                 o To reference sensitive information in the log configuration
+                   of a container, use the secretOptions container  definition
+                   parameter.
+
+                 For  more  information,  see Specifying sensitive data in the
+                 Batch User Guide .
+
+                 name -> (string)
+                     The name of the secret.
+
+                 valueFrom -> (string)
+                     The secret to expose to the container. The supported val-
+                     ues are either the full ARN of the Secrets Manager secret
+                     or the full ARN of the parameter in the Amazon  Web  Ser-
+                     vices Systems Manager Parameter Store.
+
+                     NOTE:
+                        If  the  Amazon Web Services Systems Manager Parameter
+                        Store parameter exists in the same Region as  the  job
+                        you're launching, then you can use either the full ARN
+                        or name of the parameter. If the parameter exists in a
+                        different Region, then the full ARN must be specified.
+
+          networkConfiguration -> (structure)
+              The  network  configuration for jobs that are running on Fargate
+              resources. Jobs that are running on EC2 resources must not spec-
+              ify this parameter.
+
+              assignPublicIp -> (string)
+                 Indicates  whether  the  job should have a public IP address.
+                 For a job that is running on Fargate resources in  a  private
+                 subnet to send outbound traffic to the internet (for example,
+                 to pull container images), the private subnet requires a  NAT
+                 gateway  be  attached  to route requests to the internet. For
+                 more information, see Amazon ECS task networking  .  The  de-
+                 fault value is "DISABLED".
+
+          fargatePlatformConfiguration -> (structure)
+              The  platform configuration for jobs that are running on Fargate
+              resources. Jobs that are running on EC2 resources must not spec-
+              ify this parameter.
+
+              platformVersion -> (string)
+                 The  Fargate  platform  version where the jobs are running. A
+                 platform version is specified only for jobs that are  running
+                 on  Fargate  resources.  If  one  isn't specified, the LATEST
+                 platform version is used by default. This uses a recent,  ap-
+                 proved version of the Fargate platform for compute resources.
+                 For more information, see Fargate platform  versions  in  the
+                 Amazon Elastic Container Service Developer Guide .
+
+       JSON Syntax:
+
+          {
+            "image": "string",
+            "vcpus": integer,
+            "memory": integer,
+            "command": ["string", ...],
+            "jobRoleArn": "string",
+            "executionRoleArn": "string",
+            "volumes": [
+              {
+                "host": {
+                  "sourcePath": "string"
+                },
+                "name": "string",
+                "efsVolumeConfiguration": {
+                  "fileSystemId": "string",
+                  "rootDirectory": "string",
+                  "transitEncryption": "ENABLED"|"DISABLED",
+                  "transitEncryptionPort": integer,
+                  "authorizationConfig": {
+                    "accessPointId": "string",
+                    "iam": "ENABLED"|"DISABLED"
+                  }
+                }
+              }
+              ...
+            ],
+            "environment": [
+              {
+                "name": "string",
+                "value": "string"
+              }
+              ...
+            ],
+            "mountPoints": [
+              {
+                "containerPath": "string",
+                "readOnly": true|false,
+                "sourceVolume": "string"
+              }
+              ...
+            ],
+            "readonlyRootFilesystem": true|false,
+            "privileged": true|false,
+            "ulimits": [
+              {
+                "hardLimit": integer,
+                "name": "string",
+                "softLimit": integer
+              }
+              ...
+            ],
+            "user": "string",
+            "instanceType": "string",
+            "resourceRequirements": [
+              {
+                "value": "string",
+                "type": "GPU"|"VCPU"|"MEMORY"
+              }
+              ...
+            ],
+            "linuxParameters": {
+              "devices": [
+                {
+                  "hostPath": "string",
+                  "containerPath": "string",
+                  "permissions": ["READ"|"WRITE"|"MKNOD", ...]
+                }
+                ...
+              ],
+              "initProcessEnabled": true|false,
+              "sharedMemorySize": integer,
+              "tmpfs": [
+                {
+                  "containerPath": "string",
+                  "size": integer,
+                  "mountOptions": ["string", ...]
+                }
+                ...
+              ],
+              "maxSwap": integer,
+              "swappiness": integer
+            },
+            "logConfiguration": {
+              "logDriver": "json-file"|"syslog"|"journald"|"gelf"|"fluentd"|"awslogs"|"splunk",
+              "options": {"string": "string"
+                ...},
+              "secretOptions": [
+                {
+                  "name": "string",
+                  "valueFrom": "string"
+                }
+                ...
+              ]
+            },
+            "secrets": [
+              {
+                "name": "string",
+                "valueFrom": "string"
+              }
+              ...
+            ],
+            "networkConfiguration": {
+              "assignPublicIp": "ENABLED"|"DISABLED"
+            },
+            "fargatePlatformConfiguration": {
+              "platformVersion": "string"
+            }
+          }
+
+       --node-properties (structure)
+          An  object  with  various properties specific to multi-node parallel
+          jobs. If you specify  node  properties  for  a  job,  it  becomes  a
+          multi-node parallel job. For more information, see Multi-node Paral-
+          lel Jobs in the Batch User Guide . If the job definition's type  pa-
+          rameter is container , then you must specify either containerProper-
+          ties or nodeProperties .
+
+          NOTE:
+              If the job runs on Fargate resources, then you must not  specify
+              nodeProperties ; use containerProperties instead.
+
+          numNodes -> (integer)
+              The number of nodes associated with a multi-node parallel job.
+
+          mainNode -> (integer)
+              Specifies  the node index for the main node of a multi-node par-
+              allel job. This node index value must be fewer than  the  number
+              of nodes.
+
+          nodeRangeProperties -> (list)
+              A  list  of  node  ranges and their properties associated with a
+              multi-node parallel job.
+
+              (structure)
+                 An object representing the properties of the node range for a
+                 multi-node parallel job.
+
+                 targetNodes -> (string)
+                     The  range  of nodes, using node index values. A range of
+                     0:3 indicates nodes with index values of 0 through 3 . If
+                     the starting range value is omitted (:n ), then 0 is used
+                     to start the range. If the ending range value is  omitted
+                     (n:  ),  then  the highest possible node index is used to
+                     end the range. Your accumulative node ranges must account
+                     for all nodes (0:n ). You can nest node ranges, for exam-
+                     ple 0:10 and 4:5 , in which case the 4:5 range properties
+                     override the 0:10 properties.
+
+                 container -> (structure)
+                     The container details for the node range.
+
+                     image -> (string)
+                        The  image  used  to start a container. This string is
+                        passed directly to the Docker daemon.  Images  in  the
+                        Docker  Hub  registry  are available by default. Other
+                        repositories are specified with `` repository-url /im-
+                        age  :tag `` . Up to 255 letters (uppercase and lower-
+                        case), numbers, hyphens, underscores, colons, periods,
+                        forward  slashes,  and  number signs are allowed. This
+                        parameter maps to Image in the Create a container sec-
+                        tion  of the Docker Remote API and the IMAGE parameter
+                        of docker run .
+
+                        NOTE:
+                            Docker image architecture must match the processor
+                            architecture of the compute resources that they're
+                            scheduled on. For example, ARM-based Docker images
+                            can only run on ARM-based compute resources.
+
+                        o Images  in Amazon ECR repositories use the full reg-
+                          istry   and    repository    URI    (for    example,
+                          012345678910.dkr.ecr.<region-name>.amazon-
+                          aws.com/<repository-name> ).
+
+                        o Images in official repositories on Docker Hub use  a
+                          single name (for example, ubuntu or mongo ).
+
+                        o Images in other repositories on Docker Hub are qual-
+                          ified with an organization name (for  example,  ama-
+                          zon/amazon-ecs-agent ).
+
+                        o Images  in  other  online repositories are qualified
+                          further by a domain name (for  example,  quay.io/as-
+                          semblyline/ubuntu ).
+
+                     vcpus -> (integer)
+                        This parameter is deprecated, use resourceRequirements
+                        to specify the vCPU requirements for the  job  defini-
+                        tion.  It's not supported for jobs that run on Fargate
+                        resources. For jobs run on EC2 resources, it specifies
+                        the number of vCPUs reserved for the job.
+
+                        Each  vCPU is equivalent to 1,024 CPU shares. This pa-
+                        rameter maps to CpuShares in the  Create  a  container
+                        section  of the Docker Remote API and the --cpu-shares
+                        option to docker run . The number  of  vCPUs  must  be
+                        specified  but can be specified in several places. You
+                        must specify it at least once for each node.
+
+                     memory -> (integer)
+                        This parameter is deprecated, use resourceRequirements
+                        to specify the memory requirements for the job defini-
+                        tion. It's not supported for jobs that run on  Fargate
+                        resources. For jobs run on EC2 resources, it specifies
+                        the memory hard limit (in MiB)  for  a  container.  If
+                        your  container  attempts to exceed the specified num-
+                        ber, it's terminated. You must specify at least 4  MiB
+                        of  memory  for a job using this parameter. The memory
+                        hard limit can be specified in several places. It must
+                        be specified for each node at least once.
+
+                     command -> (list)
+                        The  command  that's passed to the container. This pa-
+                        rameter maps to Cmd in the Create a container  section
+                        of  the Docker Remote API and the COMMAND parameter to
+                        docker   run   .    For    more    information,    see
+                        https://docs.docker.com/engine/reference/builder/#cmd
+                        .
+
+                        (string)
+
+                     jobRoleArn -> (string)
+                        The Amazon Resource Name (ARN) of the  IAM  role  that
+                        the  container can assume for Amazon Web Services per-
+                        missions. For more  information,  see  IAM  Roles  for
+                        Tasks  in  the Amazon Elastic Container Service Devel-
+                        oper Guide .
+
+                     executionRoleArn -> (string)
+                        The Amazon Resource Name (ARN) of the  execution  role
+                        that  Batch  can  assume. For jobs that run on Fargate
+                        resources, you must provide  an  execution  role.  For
+                        more  information, see Batch execution IAM role in the
+                        Batch User Guide .
+
+                     volumes -> (list)
+                        A list of data volumes used in a job.
+
+                        (structure)
+                            A data volume used in a  job's  container  proper-
+                            ties.
+
+                            host -> (structure)
+                               The  contents  of  the host parameter determine
+                               whether your data volume persists on  the  host
+                               container  instance  and where it is stored. If
+                               the host parameter is empty,  then  the  Docker
+                               daemon  assigns  a host path for your data vol-
+                               ume. However, the data isn't guaranteed to per-
+                               sist  after  the  containers associated with it
+                               stop running.
+
+                               NOTE:
+                                   This parameter  isn't  applicable  to  jobs
+                                   that  are  running on Fargate resources and
+                                   shouldn't be provided.
+
+                               sourcePath -> (string)
+                                   The path on  the  host  container  instance
+                                   that's  presented to the container. If this
+                                   parameter is empty, then the Docker  daemon
+                                   has  assigned  a host path for you. If this
+                                   parameter contains a  file  location,  then
+                                   the  data  volume persists at the specified
+                                   location on the host container instance un-
+                                   til  you  delete it manually. If the source
+                                   path location doesn't  exist  on  the  host
+                                   container  instance, the Docker daemon cre-
+                                   ates it. If the location  does  exist,  the
+                                   contents  of the source path folder are ex-
+                                   ported.
+
+                                   NOTE:
+                                      This parameter isn't applicable to  jobs
+                                      that   run   on  Fargate  resources  and
+                                      shouldn't be provided.
+
+                            name -> (string)
+                               The name of the volume. It can  be  up  to  255
+                               letters long. It can contain uppercase and low-
+                               ercase letters, numbers, hyphens (-),  and  un-
+                               derscores  (_).  This name is referenced in the
+                               sourceVolume parameter of container  definition
+                               mountPoints .
+
+                            efsVolumeConfiguration -> (structure)
+                               This  parameter is specified when you are using
+                               an Amazon Elastic File System file  system  for
+                               job  storage.  Jobs that are running on Fargate
+                               resources must specify a platformVersion of  at
+                               least 1.4.0 .
+
+                               fileSystemId -> (string)
+                                   The Amazon EFS file system ID to use.
+
+                               rootDirectory -> (string)
+                                   The  directory  within  the Amazon EFS file
+                                   system to mount as the root  directory  in-
+                                   side  the  host. If this parameter is omit-
+                                   ted, the root of the Amazon EFS  volume  is
+                                   used instead. Specifying / has the same ef-
+                                   fect as omitting this parameter. The  maxi-
+                                   mum length is 4,096 characters.
+
+                                   WARNING:
+                                      If  an  EFS access point is specified in
+                                      the authorizationConfig , the  root  di-
+                                      rectory parameter must either be omitted
+                                      or set to / , which  enforces  the  path
+                                      set on the Amazon EFS access point.
+
+                               transitEncryption -> (string)
+                                   Determines whether to enable encryption for
+                                   Amazon EFS data in transit between the Ama-
+                                   zon  ECS  host  and  the Amazon EFS server.
+                                   Transit encryption must be enabled if  Ama-
+                                   zon  EFS IAM authorization is used. If this
+                                   parameter is omitted, the default value  of
+                                   DISABLED is used. For more information, see
+                                   Encrypting data in transit  in  the  Amazon
+                                   Elastic File System User Guide .
+
+                               transitEncryptionPort -> (integer)
+                                   The port to use when sending encrypted data
+                                   between the Amazon ECS host and the  Amazon
+                                   EFS  server. If you don't specify a transit
+                                   encryption port, it uses the port selection
+                                   strategy  that  the Amazon EFS mount helper
+                                   uses. The  value  must  be  between  0  and
+                                   65,535. For more information, see EFS Mount
+                                   Helper in the Amazon  Elastic  File  System
+                                   User Guide .
+
+                               authorizationConfig -> (structure)
+                                   The authorization configuration details for
+                                   the Amazon EFS file system.
+
+                                   accessPointId -> (string)
+                                      The Amazon EFS access point ID  to  use.
+                                      If  an  access  point  is specified, the
+                                      root directory value  specified  in  the
+                                      EFSVolumeConfiguration  must  either  be
+                                      omitted or set to / which  will  enforce
+                                      the path set on the EFS access point. If
+                                      an access point is used, transit encryp-
+                                      tion  must  be enabled in the EFSVolume-
+                                      Configuration .  For  more  information,
+                                      see   Working  with  Amazon  EFS  Access
+                                      Points in the Amazon Elastic File System
+                                      User Guide .
+
+                                   iam -> (string)
+                                      Whether  or not to use the Batch job IAM
+                                      role defined in a  job  definition  when
+                                      mounting  the Amazon EFS file system. If
+                                      enabled, transit encryption must be  en-
+                                      abled in the EFSVolumeConfiguration . If
+                                      this parameter is omitted,  the  default
+                                      value  of DISABLED is used. For more in-
+                                      formation, see Using Amazon  EFS  Access
+                                      Points in the Batch User Guide . EFS IAM
+                                      authorization requires  that  TransitEn-
+                                      cryption  be  ENABLED  and  that  a  Jo-
+                                      bRoleArn is specified.
+
+                     environment -> (list)
+                        The environment variables to pass to a container. This
+                        parameter  maps  to Env in the Create a container sec-
+                        tion of the Docker Remote API and the --env option  to
+                        docker run .
+
+                        WARNING:
+                            We  don't  recommend  using  plaintext environment
+                            variables for sensitive information, such as  cre-
+                            dential data.
+
+                        NOTE:
+                            Environment   variables   must   not   start  with
+                            AWS_BATCH ; this naming convention is reserved for
+                            variables that are set by the Batch service.
+
+                        (structure)
+                            A key-value pair object.
+
+                            name -> (string)
+                               The name of the key-value pair. For environment
+                               variables, this is the name of the  environment
+                               variable.
+
+                            value -> (string)
+                               The  value  of the key-value pair. For environ-
+                               ment variables, this is the value of the  envi-
+                               ronment variable.
+
+                     mountPoints -> (list)
+                        The  mount  points for data volumes in your container.
+                        This parameter maps to Volumes in the  Create  a  con-
+                        tainer section of the Docker Remote API and the --vol-
+                        ume option to docker run .
+
+                        (structure)
+                            Details on a Docker volume mount point that's used
+                            in  a  job's  container properties. This parameter
+                            maps to Volumes in the Create a container  section
+                            of  the  Docker Remote API and the --volume option
+                            to docker run.
+
+                            containerPath -> (string)
+                               The path on the container where the host volume
+                               is mounted.
+
+                            readOnly -> (boolean)
+                               If  this  value  is  true  ,  the container has
+                               read-only access to the volume. Otherwise,  the
+                               container  can write to the volume. The default
+                               value is false .
+
+                            sourceVolume -> (string)
+                               The name of the volume to mount.
+
+                     readonlyRootFilesystem -> (boolean)
+                        When this parameter is true, the  container  is  given
+                        read-only access to its root file system. This parame-
+                        ter maps to ReadonlyRootfs in the Create  a  container
+                        section  of  the Docker Remote API and the --read-only
+                        option to docker run .
+
+                     privileged -> (boolean)
+                        When this parameter is true, the  container  is  given
+                        elevated  permissions  on  the host container instance
+                        (similar to the root user).  This  parameter  maps  to
+                        Privileged  in  the  Create a container section of the
+                        Docker Remote  API  and  the  --privileged  option  to
+                        docker run . The default value is false.
+
+                        NOTE:
+                            This  parameter  isn't applicable to jobs that are
+                            running on Fargate resources and shouldn't be pro-
+                            vided, or specified as false.
+
+                     ulimits -> (list)
+                        A list of ulimits to set in the container. This param-
+                        eter maps to Ulimits in the Create a container section
+                        of  the  Docker  Remote API and the --ulimit option to
+                        docker run .
+
+                        NOTE:
+                            This parameter isn't applicable to jobs  that  are
+                            running on Fargate resources and shouldn't be pro-
+                            vided.
+
+                        (structure)
+                            The ulimit settings to pass to the container.
+
+                            NOTE:
+                               This object isn't applicable to jobs  that  are
+                               running on Fargate resources.
+
+                            hardLimit -> (integer)
+                               The hard limit for the ulimit type.
+
+                            name -> (string)
+                               The type of the ulimit .
+
+                            softLimit -> (integer)
+                               The soft limit for the ulimit type.
+
+                     user -> (string)
+                        The user name to use inside the container. This param-
+                        eter maps to User in the Create a container section of
+                        the  Docker Remote API and the --user option to docker
+                        run .
+
+                     instanceType -> (string)
+                        The instance type to use  for  a  multi-node  parallel
+                        job. All node groups in a multi-node parallel job must
+                        use the same instance type.
+
+                        NOTE:
+                            This parameter  isn't  applicable  to  single-node
+                            container  jobs  or  jobs  that run on Fargate re-
+                            sources, and shouldn't be provided.
+
+                     resourceRequirements -> (list)
+                        The type and amount of resources to assign to  a  con-
+                        tainer. The supported resources include GPU , MEMORY ,
+                        and VCPU .
+
+                        (structure)
+                            The type and amount of a resource to assign  to  a
+                            container.  The  supported resources include GPU ,
+                            MEMORY , and VCPU .
+
+                            value -> (string)
+                               The quantity of the specified resource  to  re-
+                               serve  for the container. The values vary based
+                               on the type specified.
+                                   type="GPU"
+
+                               The number of physical GPUs to reserve for  the
+                               container.  The number of GPUs reserved for all
+                               containers in a job shouldn't exceed the number
+                               of  available GPUs on the compute resource that
+                               the job is launched on.
+
+                               NOTE:
+                                   GPUs are not available for  jobs  that  are
+                                   running on Fargate resources.
+
+                                   type="MEMORY"
+
+                               The  memory  hard limit (in MiB) present to the
+                               container. This parameter is supported for jobs
+                               that are running on EC2 resources. If your con-
+                               tainer attempts to exceed the memory specified,
+                               the  container  is  terminated.  This parameter
+                               maps to Memory in the Create a  container  sec-
+                               tion  of the Docker Remote API and the --memory
+                               option to docker run  .  You  must  specify  at
+                               least  4  MiB  of memory for a job. This is re-
+                               quired but can be specified in  several  places
+                               for  multi-node parallel (MNP) jobs. It must be
+                               specified for each node at least once. This pa-
+                               rameter  maps  to  Memory  in the Create a con-
+                               tainer section of the Docker Remote API and the
+                               --memory option to docker run .
+
+                               NOTE:
+                                   If  you're trying to maximize your resource
+                                   utilization by providing your jobs as  much
+                                   memory  as  possible  for  a particular in-
+                                   stance type, see Memory Management  in  the
+                                   Batch User Guide .
+
+                               For jobs that are running on Fargate resources,
+                               then value is the hard limit (in MiB), and must
+                               match  one of the supported values and the VCPU
+                               values must be one of the values supported  for
+                               that memory value.
+                                      value = 512
+
+                                   VCPU = 0.25
+                                      value = 1024
+
+                                   VCPU = 0.25 or 0.5
+                                      value = 2048
+
+                                   VCPU = 0.25, 0.5, or 1
+                                      value = 3072
+
+                                   VCPU = 0.5, or 1
+                                      value = 4096
+
+                                   VCPU = 0.5, 1, or 2
+                                      value = 5120, 6144, or 7168
+
+                                   VCPU = 1 or 2
+                                      value = 8192
+
+                                   VCPU = 1, 2, or 4
+                                      value   =  9216,  10240,  11264,  12288,
+                                      13312, 14336, 15360, or 16384
+
+                                   VCPU = 2 or 4
+                                      value  =  17408,  18432,  19456,  20480,
+                                      21504,   22528,   23552,  24576,  25600,
+                                      26624, 27648, 28672, 29696, or 30720
+
+                                   VCPU = 4
+                                      type="VCPU"
+
+                               The number of vCPUs reserved for the container.
+                               This  parameter maps to CpuShares in the Create
+                               a container section of the  Docker  Remote  API
+                               and  the  --cpu-shares  option  to docker run .
+                               Each vCPU is equivalent to  1,024  CPU  shares.
+                               For  EC2  resources,  you must specify at least
+                               one vCPU. This is required but can be specified
+                               in  several  places;  it  must be specified for
+                               each node at least once.
+
+                               For jobs that are running on Fargate resources,
+                               then value must match one of the supported val-
+                               ues and the MEMORY values must be  one  of  the
+                               values  supported for that VCPU value. The sup-
+                               ported values are 0.25, 0.5, 1, 2, and 4
+                                      value = 0.25
+
+                                   MEMORY = 512, 1024, or 2048
+                                      value = 0.5
+
+                                   MEMORY = 1024, 2048, 3072, or 4096
+                                      value = 1
+
+                                   MEMORY =  2048,  3072,  4096,  5120,  6144,
+                                   7168, or 8192
+                                      value = 2
+
+                                   MEMORY  =  4096,  5120,  6144,  7168, 8192,
+                                   9216, 10240, 11264,  12288,  13312,  14336,
+                                   15360, or 16384
+                                      value = 4
+
+                                   MEMORY  =  8192, 9216, 10240, 11264, 12288,
+                                   13312, 14336, 15360, 16384,  17408,  18432,
+                                   19456,  20480,  21504, 22528, 23552, 24576,
+                                   25600, 26624, 27648, 28672, 29696, or 30720
+
+                            type -> (string)
+                               The type of resource to assign to a  container.
+                               The  supported resources include GPU , MEMORY ,
+                               and VCPU .
+
+                     linuxParameters -> (structure)
+                        Linux-specific modifications that are applied  to  the
+                        container, such as details for device mappings.
+
+                        devices -> (list)
+                            Any  host devices to expose to the container. This
+                            parameter maps to Devices in  the  Create  a  con-
+                            tainer  section  of  the Docker Remote API and the
+                            --device option to docker run .
+
+                            NOTE:
+                               This parameter isn't applicable  to  jobs  that
+                               are  running on Fargate resources and shouldn't
+                               be provided.
+
+                            (structure)
+                               An object  representing  a  container  instance
+                               host device.
+
+                               NOTE:
+                                   This  object  isn't applicable to jobs that
+                                   are  running  on  Fargate   resources   and
+                                   shouldn't be provided.
+
+                               hostPath -> (string)
+                                   The  path  for  the device on the host con-
+                                   tainer instance.
+
+                               containerPath -> (string)
+                                   The path inside the container  that's  used
+                                   to  expose the host device. By default, the
+                                   hostPath value is used.
+
+                               permissions -> (list)
+                                   The explicit permissions to provide to  the
+                                   container  for  the device. By default, the
+                                   container has permissions for read ,  write
+                                   , and mknod for the device.
+
+                                   (string)
+
+                        initProcessEnabled -> (boolean)
+                            If  true, run an init process inside the container
+                            that forwards signals and  reaps  processes.  This
+                            parameter  maps to the --init option to docker run
+                            . This parameter  requires  version  1.25  of  the
+                            Docker Remote API or greater on your container in-
+                            stance. To check the Docker Remote API version  on
+                            your  container  instance, log into your container
+                            instance  and  run  the  following  command:  sudo
+                            docker version | grep "Server API version"
+
+                        sharedMemorySize -> (integer)
+                            The  value  for  the size (in MiB) of the /dev/shm
+                            volume. This parameter maps to the --shm-size  op-
+                            tion to docker run .
+
+                            NOTE:
+                               This  parameter  isn't  applicable to jobs that
+                               are running on Fargate resources and  shouldn't
+                               be provided.
+
+                        tmpfs -> (list)
+                            The  container  path,  mount options, and size (in
+                            MiB) of the tmpfs mount. This  parameter  maps  to
+                            the --tmpfs option to docker run .
+
+                            NOTE:
+                               This  parameter  isn't  applicable to jobs that
+                               are running on Fargate resources and  shouldn't
+                               be provided.
+
+                            (structure)
+                               The  container path, mount options, and size of
+                               the tmpfs mount.
+
+                               NOTE:
+                                   This object isn't applicable to  jobs  that
+                                   are running on Fargate resources.
+
+                               containerPath -> (string)
+                                   The  absolute  file  path  in the container
+                                   where the tmpfs volume is mounted.
+
+                               size -> (integer)
+                                   The size (in MiB) of the tmpfs volume.
+
+                               mountOptions -> (list)
+                                   The list of tmpfs volume mount options.
+
+                                   Valid values: "defaults " | "ro " | "rw " |
+                                   "suid  "  | "nosuid " | "dev " | "nodev " |
+                                   "exec " | "noexec " | "sync " | "async "  |
+                                   "dirsync " | "remount " | "mand " | "nomand
+                                   " | "atime " | "noatime " | "diratime  "  |
+                                   "nodiratime  "  |  "bind " | "rbind" | "un-
+                                   bindable" |  "runbindable"  |  "private"  |
+                                   "rprivate" | "shared" | "rshared" | "slave"
+                                   | "rslave" | "relatime " | "norelatime "  |
+                                   "strictatime " | "nostrictatime " | "mode "
+                                   |  "uid  "  |  "gid  "  |  "nr_inodes  "  |
+                                   "nr_blocks " | "mpol "
+
+                                   (string)
+
+                        maxSwap -> (integer)
+                            The  total  amount  of swap memory (in MiB) a con-
+                            tainer can use. This parameter  is  translated  to
+                            the  --memory-swap  option to docker run where the
+                            value is the sum of the container memory plus  the
+                            maxSwap  value. For more information, see ` --mem-
+                            ory-swap                details                 <-
+                            https://docs.docker.com/config/containers/re-
+                            source_constraints/#--memory-swap-details>`__   in
+                            the Docker documentation.
+
+                            If  a  maxSwap  value  of 0 is specified, the con-
+                            tainer doesn't use swap. Accepted values are 0  or
+                            any  positive integer. If the maxSwap parameter is
+                            omitted, the container doesn't use the  swap  con-
+                            figuration  for  the container instance it is run-
+                            ning on. A maxSwap value must be set for the swap-
+                            piness parameter to be used.
+
+                            NOTE:
+                               This  parameter  isn't  applicable to jobs that
+                               are running on Fargate resources and  shouldn't
+                               be provided.
+
+                        swappiness -> (integer)
+                            This allows you to tune a container's memory swap-
+                            piness behavior. A swappiness value  of  0  causes
+                            swapping  not  to  happen unless absolutely neces-
+                            sary. A swappiness value of 100 causes pages to be
+                            swapped  very  aggressively.  Accepted  values are
+                            whole numbers between 0 and 100 . If  the  swappi-
+                            ness parameter isn't specified, a default value of
+                            60 is used. If a value isn't specified for maxSwap
+                            ,  then  this  parameter is ignored. If maxSwap is
+                            set to 0, the container doesn't use swap. This pa-
+                            rameter  maps to the --memory-swappiness option to
+                            docker run .
+
+                            Consider the following when  you  use  a  per-con-
+                            tainer swap configuration.
+
+                            o Swap  space must be enabled and allocated on the
+                              container instance for the containers to use.
+
+                            NOTE:
+                               The Amazon ECS optimized AMIs don't  have  swap
+                               enabled by default. You must enable swap on the
+                               instance to use this feature. For more informa-
+                               tion,  see  Instance  Store Swap Volumes in the
+                               Amazon EC2 User Guide for  Linux  Instances  or
+                               How  do I allocate memory to work as swap space
+                               in an Amazon EC2 instance by using a swap file?
+
+                            o The swap space parameters are only supported for
+                              job definitions using EC2 resources.
+
+                            o If  the  maxSwap  and  swappiness parameters are
+                              omitted from a job  definition,  each  container
+                              will  have a default swappiness value of 60, and
+                              the total swap usage  will  be  limited  to  two
+                              times the memory reservation of the container.
+
+                            NOTE:
+                               This  parameter  isn't  applicable to jobs that
+                               are running on Fargate resources and  shouldn't
+                               be provided.
+
+                     logConfiguration -> (structure)
+                        The log configuration specification for the container.
+
+                        This  parameter maps to LogConfig in the Create a con-
+                        tainer section  of  the  Docker  Remote  API  and  the
+                        --log-driver  option  to docker run . By default, con-
+                        tainers use the same logging driver  that  the  Docker
+                        daemon uses. However the container might use a differ-
+                        ent logging driver than the Docker daemon by  specify-
+                        ing  a log driver with this parameter in the container
+                        definition. To use a different logging  driver  for  a
+                        container,  the log system must be configured properly
+                        on the container  instance  (or  on  a  different  log
+                        server  for remote logging options). For more informa-
+                        tion on the options for different supported log  driv-
+                        ers, see Configure logging drivers in the Docker docu-
+                        mentation.
+
+                        NOTE:
+                            Batch currently supports a subset of  the  logging
+                            drivers  available  to the Docker daemon (shown in
+                            the  LogConfiguration data type).
+
+                        This parameter requires version 1.18 of the Docker Re-
+                        mote  API  or  greater  on your container instance. To
+                        check the Docker Remote API version on your  container
+                        instance, log into your container instance and run the
+                        following command: sudo docker version | grep  "Server
+                        API version"
+
+                        NOTE:
+                            The  Amazon  ECS container agent running on a con-
+                            tainer instance must register the logging  drivers
+                            available  on  that  instance  with the ECS_AVAIL-
+                            ABLE_LOGGING_DRIVERS environment  variable  before
+                            containers  placed  on that instance can use these
+                            log configuration options. For  more  information,
+                            see  Amazon  ECS  Container Agent Configuration in
+                            the Amazon  Elastic  Container  Service  Developer
+                            Guide .
+
+                        logDriver -> (string)
+                            The log driver to use for the container. The valid
+                            values listed for this parameter are  log  drivers
+                            that  the  Amazon ECS container agent can communi-
+                            cate with by default.
+
+                            The supported log drivers are awslogs , fluentd  ,
+                            gelf  , json-file , journald , logentries , syslog
+                            , and splunk .
+
+                            NOTE:
+                               Jobs that are running on Fargate resources  are
+                               restricted  to the awslogs and splunk log driv-
+                               ers.
+
+                               awslogs
+
+                            Specifies  the  Amazon  CloudWatch  Logs   logging
+                            driver.   For  more  information,  see  Using  the
+                            awslogs Log Driver in the  Batch  User  Guide  and
+                            Amazon  CloudWatch  Logs  logging  driver  in  the
+                            Docker documentation.
+                               fluentd
+
+                            Specifies the Fluentd logging driver. For more in-
+                            formation,   including   usage  and  options,  see
+                            Fluentd logging driver in  the  Docker  documenta-
+                            tion.
+                               gelf
+
+                            Specifies  the Graylog Extended Format (GELF) log-
+                            ging driver. For more information, including usage
+                            and  options,  see Graylog Extended Format logging
+                            driver in the Docker documentation.
+                               journald
+
+                            Specifies the journald logging  driver.  For  more
+                            information,  including  usage  and  options,  see
+                            Journald logging driver in the  Docker  documenta-
+                            tion.
+                               json-file
+
+                            Specifies  the  JSON file logging driver. For more
+                            information, including usage and options, see JSON
+                            File logging driver in the Docker documentation.
+                               splunk
+
+                            Specifies  the Splunk logging driver. For more in-
+                            formation, including usage and options, see Splunk
+                            logging driver in the Docker documentation.
+                               syslog
+
+                            Specifies  the syslog logging driver. For more in-
+                            formation, including usage and options, see Syslog
+                            logging driver in the Docker documentation.
+
+                            NOTE:
+                               If  you  have a custom driver that's not listed
+                               earlier that you want to work with  the  Amazon
+                               ECS  container  agent,  you can fork the Amazon
+                               ECS container agent project that's available on
+                               GitHub  and  customize  it  to  work  with that
+                               driver. We encourage you  to  submit  pull  re-
+                               quests  for  changes  that you want to have in-
+                               cluded. However, Amazon  Web  Services  doesn't
+                               currently  support  running  modified copies of
+                               this software.
+
+                            This parameter requires version 1.18 of the Docker
+                            Remote  API or greater on your container instance.
+                            To check the Docker Remote  API  version  on  your
+                            container  instance,  log  into your container in-
+                            stance and run the following command: sudo  docker
+                            version | grep "Server API version"
+
+                        options -> (map)
+                            The  configuration  options  to  send  to  the log
+                            driver. This parameter requires  version  1.19  of
+                            the Docker Remote API or greater on your container
+                            instance. To check the Docker Remote  API  version
+                            on  your  container  instance,  log into your con-
+                            tainer instance and  run  the  following  command:
+                            sudo docker version | grep "Server API version"
+
+                            key -> (string)
+
+                            value -> (string)
+
+                        secretOptions -> (list)
+                            The  secrets to pass to the log configuration. For
+                            more information, see Specifying Sensitive Data in
+                            the Batch User Guide .
+
+                            (structure)
+                               An  object representing the secret to expose to
+                               your container. Secrets can  be  exposed  to  a
+                               container in the following ways:
+
+                               o To inject sensitive data into your containers
+                                 as environment  variables,  use  the  secrets
+                                 container definition parameter.
+
+                               o To reference sensitive information in the log
+                                 configuration of a container, use the  secre-
+                                 tOptions container definition parameter.
+
+                               For  more information, see Specifying sensitive
+                               data in the Batch User Guide .
+
+                               name -> (string)
+                                   The name of the secret.
+
+                               valueFrom -> (string)
+                                   The secret to expose to the container.  The
+                                   supported values are either the full ARN of
+                                   the Secrets Manager secret or the full  ARN
+                                   of the parameter in the Amazon Web Services
+                                   Systems Manager Parameter Store.
+
+                                   NOTE:
+                                      If the Amazon Web Services Systems  Man-
+                                      ager Parameter Store parameter exists in
+                                      the  same  Region  as  the  job   you're
+                                      launching,  then  you can use either the
+                                      full ARN or name of  the  parameter.  If
+                                      the  parameter exists in a different Re-
+                                      gion, then the full ARN must  be  speci-
+                                      fied.
+
+                     secrets -> (list)
+                        The  secrets  for the container. For more information,
+                        see Specifying sensitive data in the Batch User  Guide
+                        .
+
+                        (structure)
+                            An  object  representing  the  secret to expose to
+                            your container. Secrets can be exposed to  a  con-
+                            tainer in the following ways:
+
+                            o To inject sensitive data into your containers as
+                              environment variables, use the secrets container
+                              definition parameter.
+
+                            o To  reference  sensitive  information in the log
+                              configuration of a container, use the  secretOp-
+                              tions container definition parameter.
+
+                            For  more  information,  see  Specifying sensitive
+                            data in the Batch User Guide .
+
+                            name -> (string)
+                               The name of the secret.
+
+                            valueFrom -> (string)
+                               The secret to expose to the container. The sup-
+                               ported  values  are  either the full ARN of the
+                               Secrets Manager secret or the full ARN  of  the
+                               parameter  in  the  Amazon Web Services Systems
+                               Manager Parameter Store.
+
+                               NOTE:
+                                   If the Amazon Web Services Systems  Manager
+                                   Parameter  Store  parameter  exists  in the
+                                   same Region as the  job  you're  launching,
+                                   then  you  can  use  either the full ARN or
+                                   name of the parameter. If the parameter ex-
+                                   ists  in  a different Region, then the full
+                                   ARN must be specified.
+
+                     networkConfiguration -> (structure)
+                        The network configuration for jobs that are running on
+                        Fargate  resources.  Jobs  that are running on EC2 re-
+                        sources must not specify this parameter.
+
+                        assignPublicIp -> (string)
+                            Indicates whether the job should have a public  IP
+                            address.  For a job that is running on Fargate re-
+                            sources in a private subnet to send outbound traf-
+                            fic  to  the  internet  (for example, to pull con-
+                            tainer images), the private subnet requires a  NAT
+                            gateway  be  attached to route requests to the in-
+                            ternet. For more information, see Amazon ECS  task
+                            networking . The default value is "DISABLED".
+
+                     fargatePlatformConfiguration -> (structure)
+                        The  platform  configuration for jobs that are running
+                        on Fargate resources. Jobs that are running on EC2 re-
+                        sources must not specify this parameter.
+
+                        platformVersion -> (string)
+                            The  Fargate  platform  version where the jobs are
+                            running. A platform version is specified only  for
+                            jobs that are running on Fargate resources. If one
+                            isn't specified, the LATEST  platform  version  is
+                            used by default. This uses a recent, approved ver-
+                            sion of  the  Fargate  platform  for  compute  re-
+                            sources.  For  more information, see Fargate plat-
+                            form versions in the Amazon Elastic Container Ser-
+                            vice Developer Guide .
+
+       JSON Syntax:
+
+          {
+            "numNodes": integer,
+            "mainNode": integer,
+            "nodeRangeProperties": [
+              {
+                "targetNodes": "string",
+                "container": {
+                  "image": "string",
+                  "vcpus": integer,
+                  "memory": integer,
+                  "command": ["string", ...],
+                  "jobRoleArn": "string",
+                  "executionRoleArn": "string",
+                  "volumes": [
+                    {
+                      "host": {
+                        "sourcePath": "string"
+                      },
+                      "name": "string",
+                      "efsVolumeConfiguration": {
+                        "fileSystemId": "string",
+                        "rootDirectory": "string",
+                        "transitEncryption": "ENABLED"|"DISABLED",
+                        "transitEncryptionPort": integer,
+                        "authorizationConfig": {
+                          "accessPointId": "string",
+                          "iam": "ENABLED"|"DISABLED"
+                        }
+                      }
+                    }
+                    ...
+                  ],
+                  "environment": [
+                    {
+                      "name": "string",
+                      "value": "string"
+                    }
+                    ...
+                  ],
+                  "mountPoints": [
+                    {
+                      "containerPath": "string",
+                      "readOnly": true|false,
+                      "sourceVolume": "string"
+                    }
+                    ...
+                  ],
+                  "readonlyRootFilesystem": true|false,
+                  "privileged": true|false,
+                  "ulimits": [
+                    {
+                      "hardLimit": integer,
+                      "name": "string",
+                      "softLimit": integer
+                    }
+                    ...
+                  ],
+                  "user": "string",
+                  "instanceType": "string",
+                  "resourceRequirements": [
+                    {
+                      "value": "string",
+                      "type": "GPU"|"VCPU"|"MEMORY"
+                    }
+                    ...
+                  ],
+                  "linuxParameters": {
+                    "devices": [
+                      {
+                        "hostPath": "string",
+                        "containerPath": "string",
+                        "permissions": ["READ"|"WRITE"|"MKNOD", ...]
+                      }
+                      ...
+                    ],
+                    "initProcessEnabled": true|false,
+                    "sharedMemorySize": integer,
+                    "tmpfs": [
+                      {
+                        "containerPath": "string",
+                        "size": integer,
+                        "mountOptions": ["string", ...]
+                      }
+                      ...
+                    ],
+                    "maxSwap": integer,
+                    "swappiness": integer
+                  },
+                  "logConfiguration": {
+                    "logDriver": "json-file"|"syslog"|"journald"|"gelf"|"fluentd"|"awslogs"|"splunk",
+                    "options": {"string": "string"
+                      ...},
+                    "secretOptions": [
+                      {
+                        "name": "string",
+                        "valueFrom": "string"
+                      }
+                      ...
+                    ]
+                  },
+                  "secrets": [
+                    {
+                      "name": "string",
+                      "valueFrom": "string"
+                    }
+                    ...
+                  ],
+                  "networkConfiguration": {
+                    "assignPublicIp": "ENABLED"|"DISABLED"
+                  },
+                  "fargatePlatformConfiguration": {
+                    "platformVersion": "string"
+                  }
+                }
+              }
+              ...
+            ]
+          }
+
+       --retry-strategy (structure)
+          The  retry  strategy  to use for failed jobs that are submitted with
+          this job definition. Any retry strategy that's  specified  during  a
+          SubmitJob  operation overrides the retry strategy defined here. If a
+          job is terminated due to a timeout, it isn't retried.
+
+          attempts -> (integer)
+              The number of times to move a job to the  RUNNABLE  status.  You
+              can  specify between 1 and 10 attempts. If the value of attempts
+              is greater than one, the job is retried on failure the same num-
+              ber of attempts as the value.
+
+          evaluateOnExit -> (list)
+              Array of up to 5 objects that specify conditions under which the
+              job should be retried or failed. If this parameter is specified,
+              then the attempts parameter must also be specified.
+
+              (structure)
+                 Specifies  a  set  of  conditions to be met, and an action to
+                 take (RETRY or EXIT ) if all conditions are met.
+
+                 onStatusReason -> (string)
+                     Contains a glob pattern to match against the StatusReason
+                     returned  for a job. The pattern can be up to 512 charac-
+                     ters in length. It can contain letters, numbers,  periods
+                     (.),  colons  (:),  and  white space (including spaces or
+                     tabs). It can optionally end with an asterisk (*) so that
+                     only the start of the string needs to be an exact match.
+
+                     The string can be between 1 and 512 characters in length.
+
+                 onReason -> (string)
+                     Contains  a  glob pattern to match against the Reason re-
+                     turned for a job. The pattern can be up to 512 characters
+                     in  length. It can contain letters, numbers, periods (.),
+                     colons (:), and white space (including spaces and  tabs).
+                     It  can  optionally end with an asterisk (*) so that only
+                     the start of the string needs to be an exact match.
+
+                     The string can be between 1 and 512 characters in length.
+
+                 onExitCode -> (string)
+                     Contains a glob pattern to match against the decimal rep-
+                     resentation  of the ExitCode returned for a job. The pat-
+                     tern can be up to 512 characters in length. It  can  con-
+                     tain  only numbers, and can optionally end with an aster-
+                     isk (*) so that only the start of the string needs to  be
+                     an exact match.
+
+                     The string can be between 1 and 512 characters in length.
+
+                 action -> (string)
+                     Specifies the action to take if all of the specified con-
+                     ditions (onStatusReason , onReason , and onExitCode ) are
+                     met. The values aren't case sensitive.
+
+       Shorthand Syntax:
+
+          attempts=integer,evaluateOnExit=[{onStatusReason=string,onReason=string,onExitCode=string,action=string},{onStatusReason=string,onReason=string,onExitCode=string,action=string}]
+
+       JSON Syntax:
+
+          {
+            "attempts": integer,
+            "evaluateOnExit": [
+              {
+                "onStatusReason": "string",
+                "onReason": "string",
+                "onExitCode": "string",
+                "action": "RETRY"|"EXIT"
+              }
+              ...
+            ]
+          }
+
+       --propagate-tags | --no-propagate-tags (boolean)
+          Specifies  whether to propagate the tags from the job or job defini-
+          tion to the corresponding Amazon ECS task. If no value is specified,
+          the  tags  are  not  propagated.  Tags can only be propagated to the
+          tasks during task creation. For tags with the same  name,  job  tags
+          are given priority over job definitions tags. If the total number of
+          combined tags from the job and job definition is over 50, the job is
+          moved to the FAILED state.
+
+       --timeout (structure)
+          The  timeout configuration for jobs that are submitted with this job
+          definition, after which Batch terminates your jobs if they have  not
+          finished. If a job is terminated due to a timeout, it isn't retried.
+          The minimum value for the timeout is 60 seconds. Any timeout config-
+          uration that's specified during a  SubmitJob operation overrides the
+          timeout configuration defined here. For more  information,  see  Job
+          Timeouts in the Batch User Guide .
+
+          attemptDurationSeconds -> (integer)
+              The  time  duration  in seconds (measured from the job attempt's
+              startedAt timestamp) after which Batch terminates your  jobs  if
+              they  have not finished. The minimum value for the timeout is 60
+              seconds.
+
+       Shorthand Syntax:
+
+          attemptDurationSeconds=integer
+
+       JSON Syntax:
+
+          {
+            "attemptDurationSeconds": integer
+          }
+
+       --tags (map)
+          The tags that you apply to the job definition to help you categorize
+          and  organize  your resources. Each tag consists of a key and an op-
+          tional value. For more information, see Tagging Amazon Web  Services
+          Resources in Batch User Guide .
+
+          key -> (string)
+
+          value -> (string)
+
+       Shorthand Syntax:
+
+          KeyName1=string,KeyName2=string
+
+       JSON Syntax:
+
+          {"string": "string"
+            ...}
+
+       --platform-capabilities (list)
+          The  platform  capabilities  required  by  the job definition. If no
+          value is specified, it defaults to EC2 . To run the job  on  Fargate
+          resources, specify FARGATE .
+
+          (string)
+
+       Syntax:
+
+          "string" "string" ...
+
+          Where valid values are:
+            EC2
+            FARGATE
+
+       --cli-input-json  |  --cli-input-yaml (string) Reads arguments from the
+       JSON string provided. The JSON string follows the  format  provided  by
+       --generate-cli-skeleton. If other arguments are provided on the command
+       line, those values will override the JSON-provided values.  It  is  not
+       possible to pass arbitrary binary values using a JSON-provided value as
+       the string will be taken literally. This may  not  be  specified  along
+       with --cli-input-yaml.
+
+       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
+       output without sending an API request. If provided with no value or the
+       value input, prints a sample input JSON that can be used as an argument
+       for --cli-input-json. Similarly, if provided yaml-input it will print a
+       sample  input  YAML that can be used with --cli-input-yaml. If provided
+       with the value output, it validates the command inputs  and  returns  a
+       sample output JSON for that command.
+
+       See 'aws help' for descriptions of global parameters.
+
+EXAMPLES
+       To register a job definition
+
+       This example registers a job definition for a simple container job.
+
+       Command:
+
+          aws batch register-job-definition --job-definition-name sleep30 --type container --container-properties '{ "image": "busybox", "vcpus": 1, "memory": 128, "command": [ "sleep", "30"]}'
+
+       Output:
+
+          {
+              "jobDefinitionArn": "arn:aws:batch:us-east-1:012345678910:job-definition/sleep30:1",
+              "jobDefinitionName": "sleep30",
+              "revision": 1
+          }
+
+OUTPUT
+       jobDefinitionName -> (string)
+          The name of the job definition.
+
+       jobDefinitionArn -> (string)
+          The Amazon Resource Name (ARN) of the job definition.
+
+       revision -> (integer)
+          The revision of the job definition.
+
+
+
+                                                     REGISTER-JOB-DEFINITION()

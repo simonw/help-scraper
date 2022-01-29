@@ -1,0 +1,216 @@
+START-QUERY-EXECUTION()                                START-QUERY-EXECUTION()
+
+
+
+NAME
+       start-query-execution -
+
+DESCRIPTION
+       Runs  the SQL query statements contained in the Query . Requires you to
+       have access to the workgroup in which the query  ran.  Running  queries
+       against  an external catalog requires  GetDataCatalog permission to the
+       catalog. For code samples using the Amazon Web Services SDK  for  Java,
+       see Examples and Code Samples in the Amazon Athena User Guide .
+
+       See also: AWS API Documentation
+
+       See 'aws help' for descriptions of global parameters.
+
+SYNOPSIS
+            start-query-execution
+          --query-string <value>
+          [--client-request-token <value>]
+          [--query-execution-context <value>]
+          [--result-configuration <value>]
+          [--work-group <value>]
+          [--cli-input-json | --cli-input-yaml]
+          [--generate-cli-skeleton <value>]
+
+OPTIONS
+       --query-string (string)
+          The SQL query statements to be executed.
+
+       --client-request-token (string)
+          A  unique case-sensitive string used to ensure the request to create
+          the query is idempotent (executes  only  once).  If  another  Start-
+          QueryExecution  request  is  received, the same response is returned
+          and another query is not created. If a parameter  has  changed,  for
+          example, the QueryString , an error is returned.
+
+          WARNING:
+              This token is listed as not required because Amazon Web Services
+              SDKs  (for  example  the  Amazon  Web  Services  SDK  for  Java)
+              auto-generate the token for users. If you are not using the Ama-
+              zon Web Services SDK or the Amazon Web Services  CLI,  you  must
+              provide this token or the action will fail.
+
+       --query-execution-context (structure)
+          The database within which the query executes.
+
+          Database -> (string)
+              The  name of the database used in the query execution. The data-
+              base must exist in the catalog.
+
+          Catalog -> (string)
+              The name of the data catalog used in the query execution.
+
+       Shorthand Syntax:
+
+          Database=string,Catalog=string
+
+       JSON Syntax:
+
+          {
+            "Database": "string",
+            "Catalog": "string"
+          }
+
+       --result-configuration (structure)
+          Specifies information about where and how to save the results of the
+          query  execution. If the query runs in a workgroup, then workgroup's
+          settings may override query settings. This affects the query results
+          location.  The  workgroup settings override is specified in Enforce-
+          WorkGroupConfiguration (true/false) in  the  WorkGroupConfiguration.
+          See  WorkGroupConfiguration$EnforceWorkGroupConfiguration .
+
+          OutputLocation -> (string)
+              The  location  in Amazon S3 where your query results are stored,
+              such as s3://path/to/query/bucket/ . To run the query, you  must
+              specify the query results location using one of the ways: either
+              for individual queries using either this setting  (client-side),
+              or  in the workgroup, using  WorkGroupConfiguration . If none of
+              them is set, Athena issues an error that no output  location  is
+              provided. For more information, see Query Results . If workgroup
+              settings override client-side settings, then the query uses  the
+              settings  specified  for the workgroup. See  WorkGroupConfigura-
+              tion$EnforceWorkGroupConfiguration .
+
+          EncryptionConfiguration -> (structure)
+              If query results are encrypted in Amazon S3, indicates  the  en-
+              cryption  option used (for example, SSE-KMS or CSE-KMS ) and key
+              information. This is a client-side setting.  If  workgroup  set-
+              tings override client-side settings, then the query uses the en-
+              cryption configuration that is specified for the workgroup,  and
+              also  uses  the  location for storing query results specified in
+              the workgroup. See   WorkGroupConfiguration$EnforceWorkGroupCon-
+              figuration  and Workgroup Settings Override Client-Side Settings
+              .
+
+              EncryptionOption -> (string)
+                 Indicates whether Amazon S3 server-side encryption with  Ama-
+                 zon  S3-managed  keys  (SSE-S3 ), server-side encryption with
+                 KMS-managed keys (SSE-KMS ), or client-side  encryption  with
+                 KMS-managed keys (CSE-KMS) is used.
+
+                 If  a  query  runs in a workgroup and the workgroup overrides
+                 client-side settings, then the workgroup's  setting  for  en-
+                 cryption  is used. It specifies whether query results must be
+                 encrypted, for all queries that run in this workgroup.
+
+              KmsKey -> (string)
+                 For SSE-KMS and CSE-KMS , this is the KMS key ARN or ID.
+
+       Shorthand Syntax:
+
+          OutputLocation=string,EncryptionConfiguration={EncryptionOption=string,KmsKey=string}
+
+       JSON Syntax:
+
+          {
+            "OutputLocation": "string",
+            "EncryptionConfiguration": {
+              "EncryptionOption": "SSE_S3"|"SSE_KMS"|"CSE_KMS",
+              "KmsKey": "string"
+            }
+          }
+
+       --work-group (string)
+          The name of the workgroup in which the query is being started.
+
+       --cli-input-json | --cli-input-yaml (string) Reads arguments  from  the
+       JSON  string  provided.  The JSON string follows the format provided by
+       --generate-cli-skeleton. If other arguments are provided on the command
+       line,  those  values  will override the JSON-provided values. It is not
+       possible to pass arbitrary binary values using a JSON-provided value as
+       the  string  will  be  taken literally. This may not be specified along
+       with --cli-input-yaml.
+
+       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
+       output without sending an API request. If provided with no value or the
+       value input, prints a sample input JSON that can be used as an argument
+       for --cli-input-json. Similarly, if provided yaml-input it will print a
+       sample input YAML that can be used with --cli-input-yaml.  If  provided
+       with  the  value  output, it validates the command inputs and returns a
+       sample output JSON for that command.
+
+       See 'aws help' for descriptions of global parameters.
+
+EXAMPLES
+       Example 1: To run a query in a workgroup on the specified table in  the
+       specified database and data catalog
+
+       The  following start-query-execution example uses the AthenaAdmin work-
+       group to run a query on the cloudfront_logs table in the cflogsdatabase
+       in the AwsDataCatalog data catalog.
+
+          aws athena start-query-execution \
+              --query-string "select date, location, browser, uri, status from cloudfront_logs where method = 'GET' and status = 200 and location like 'SFO%' limit 10" \
+              --work-group "AthenaAdmin" \
+              --query-execution-context Database=cflogsdatabase,Catalog=AwsDataCatalog
+
+       Output:
+
+          {
+          "QueryExecutionId": "a1b2c3d4-5678-90ab-cdef-EXAMPLE11111"
+          }
+
+       For  more  information,  see Running SQL Queries Using Amazon Athena in
+       the Amazon Athena User Guide.
+
+       Example 2: To run a query that uses a specified workgroup to  create  a
+       database in the specified data catalog
+
+       The  following start-query-execution example uses the AthenaAdmin work-
+       group to create the database newdb in the default data catalog AwsData-
+       Catalog.
+
+          aws athena start-query-execution \
+              --query-string "create database if not exists newdb" \
+              --work-group "AthenaAdmin"
+
+       Output:
+
+          {
+          "QueryExecutionId": "a1b2c3d4-5678-90ab-cdef-EXAMPLE11112"
+          }
+
+       For  more  information,  see Running SQL Queries Using Amazon Athena in
+       the Amazon Athena User Guide.
+
+       Example 3: To run a query that creates a view on a table in the  speci-
+       fied database and data catalog
+
+       The following start-query-execution example uses  a SELECT statement on
+       the cloudfront_logs table in the  cflogsdatabase  to  create  the  view
+       cf10.
+
+          aws athena start-query-execution \
+              --query-string  "CREATE OR REPLACE VIEW cf10 AS SELECT * FROM cloudfront_logs limit 10" \
+              --query-execution-context Database=cflogsdatabase
+
+       Output:
+
+          {
+          "QueryExecutionId": "a1b2c3d4-5678-90ab-cdef-EXAMPLE11113"
+          }
+
+       For  more  information,  see Running SQL Queries Using Amazon Athena in
+       the Amazon Athena User Guide.
+
+OUTPUT
+       QueryExecutionId -> (string)
+          The unique ID of the query that ran as a result of this request.
+
+
+
+                                                       START-QUERY-EXECUTION()

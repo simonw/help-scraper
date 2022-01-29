@@ -1,0 +1,106 @@
+UPDATE-ROLE-TRUST-POLICY()                          UPDATE-ROLE-TRUST-POLICY()
+
+
+
+NAME
+       update-role-trust-policy -
+
+DESCRIPTION
+       Updates  the  trust  policy  of given IAM role such that it can be used
+       with Amazon EMR on EKS with the given  namespace  from  the  given  EKS
+       cluster.
+
+       Note:  To  use  the  IAM  Role  with  Amazon  EMR on EKS, OIDC identity
+              provider also needs to be created for the EKS cluster.  This can
+              be done using eksctl utils associate-iam-oidc-provider --cluster
+              <cluster_name> --approve command.   For  information  about  in-
+              stalling or upgrading eksctl, see Installing or upgrading eksctl
+              in the Amazon EKS User Guide.
+
+       The command would merge the existing trust policy of the role with  the
+       below trust policy:
+
+          {
+              "Version": "2012-10-17",
+              "Statement": [
+                  {
+                      "Effect": "Allow",
+                      "Principal": {
+                          "Federated": "arn:aws:iam::<AWS_ACCOUNT_ID>:oidc-provider/<OIDC_PROVIDER>"
+                      },
+                      "Action": "sts:AssumeRoleWithWebIdentity",
+                      "Condition": {
+                          "StringLike": {
+                              "<OIDC_PROVIDER>:sub": "system:serviceaccount:<NAMESPACE>:emr-containers-sa-*-*-<AWS_ACCOUNT_ID>-<BASE36_ENCODED_ROLE_NAME>"
+                          }
+                      }
+                  }
+              ]
+          }
+
+       Here:
+
+          <AWS_ACCOUNT_ID> = AWS Account ID of the EKS cluster
+          <OIDC_PROVIDER> = OIDC Identity Provider for the EKS cluster
+          <NAMESPACE> = Namespace of the EKS cluster
+          <BASE36_ENCODED_ROLE_NAME> = Base36 encoded form of the IAM Role name
+
+       You can use the --dry-run option to print the merged trust policy docu-
+       ment to stdout instead of updating the role trust policy directly.
+
+       See 'aws help' for descriptions of global parameters.
+
+SYNOPSIS
+            update-role-trust-policy
+          --cluster-name <value>
+          --namespace <value>
+          --role-name <value>
+          [--iam-endpoint <value>]
+          [--dry-run]
+
+OPTIONS
+       --cluster-name (string) Specify the name of the Amazon EKS cluster with
+       which the IAM Role would be used.
+
+       --namespace  (string) Specify the namespace from the Amazon EKS cluster
+       with which the IAM Role would be used.
+
+       --role-name (string) Specify the IAM Role name that you want to usewith
+       Amazon EMR on EKS.
+
+       --iam-endpoint  (string) The IAM endpoint to call for updating the role
+       trust policy. This is optional and should only bespecified when a  cus-
+       tom endpoint should be calledfor IAM operations.
+
+       --dry-run (boolean) Print the merged trust policy document tostdout in-
+       stead of updating the role trustpolicy directly.
+
+       See 'aws help' for descriptions of global parameters.
+
+EXAMPLES
+       To update the trust policy of an IAM Role to be used with Amazon EMR on
+       EKS
+
+       This  example  command  updates  the trust policy of a role named exam-
+       ple_iam_role such that it can be used with Amazon EMR on EKS with exam-
+       ple_namespace namespace from an EKS cluster named example_cluster.
+
+       o Command:
+
+            aws emr-containers update-role-trust-policy \
+                --cluster example_cluster \
+                --namespace example_namespace \
+                --role-name example_iam_role
+
+       o Output:
+
+            If the trust policy has already been updated, then the output will be:
+            Trust policy statement already exists for role example_iam_role. No
+            changes were made!
+
+            If the trust policy has not been updated yet, then the output will be:
+            Successfully updated trust policy of role example_iam_role.
+
+
+
+                                                    UPDATE-ROLE-TRUST-POLICY()

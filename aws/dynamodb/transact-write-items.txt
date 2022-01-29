@@ -1,0 +1,3092 @@
+TRANSACT-WRITE-ITEMS()                                  TRANSACT-WRITE-ITEMS()
+
+
+
+NAME
+       transact-write-items -
+
+DESCRIPTION
+          TransactWriteItems  is  a synchronous write operation that groups up
+          to 25 action requests. These actions can target items  in  different
+          tables,  but  not  in  different Amazon Web Services accounts or Re-
+          gions, and no two actions can target the same item. For example, you
+          cannot  both  ConditionCheck and Update the same item. The aggregate
+          size of the items in the transaction cannot exceed 4 MB.
+
+       The actions are completed atomically so that either all  of  them  suc-
+       ceed, or all of them fail. They are defined by the following objects:
+
+       o Put   Initiates  a PutItem operation to write a new item. This struc-
+         ture specifies the primary key of the item to be written, the name of
+         the  table to write it in, an optional condition expression that must
+         be satisfied for the write to succeed,  a  list  of  the  item's  at-
+         tributes,  and  a field indicating whether to retrieve the item's at-
+         tributes if the condition is not met.
+
+       o Update  Initiates an UpdateItem operation to update an existing item.
+         This  structure  specifies the primary key of the item to be updated,
+         the name of the table where it resides, an optional condition expres-
+         sion  that must be satisfied for the update to succeed, an expression
+         that defines one or more attributes to be updated, and a field  indi-
+         cating  whether to retrieve the item's attributes if the condition is
+         not met.
+
+       o Delete  Initiates a DeleteItem operation to delete an existing  item.
+         This  structure  specifies the primary key of the item to be deleted,
+         the name of the table where it resides, an optional condition expres-
+         sion  that must be satisfied for the deletion to succeed, and a field
+         indicating whether to retrieve the item's attributes if the condition
+         is not met.
+
+       o ConditionCheck  Applies a condition to an item that is not being mod-
+         ified by the transaction. This structure specifies the primary key of
+         the  item  to  be  checked, the name of the table where it resides, a
+         condition expression that must be satisfied for  the  transaction  to
+         succeed,  and  a  field indicating whether to retrieve the item's at-
+         tributes if the condition is not met.
+
+       DynamoDB rejects the entire TransactWriteItems request if  any  of  the
+       following is true:
+
+       o A condition in one of the condition expressions is not met.
+
+       o An ongoing operation is in the process of updating the same item.
+
+       o There  is insufficient provisioned capacity for the transaction to be
+         completed.
+
+       o An item size becomes too large (bigger than 400  KB),  a  local  sec-
+         ondary  index  (LSI) becomes too large, or a similar validation error
+         occurs because of changes made by the transaction.
+
+       o The aggregate size of the items in the transaction exceeds 4 MB.
+
+       o There is a user error, such as an invalid data format.
+
+       See also: AWS API Documentation
+
+       See 'aws help' for descriptions of global parameters.
+
+SYNOPSIS
+            transact-write-items
+          --transact-items <value>
+          [--return-consumed-capacity <value>]
+          [--return-item-collection-metrics <value>]
+          [--client-request-token <value>]
+          [--cli-input-json | --cli-input-yaml]
+          [--generate-cli-skeleton <value>]
+
+OPTIONS
+       --transact-items (list)
+          An ordered array of up to  25  TransactWriteItem  objects,  each  of
+          which  contains  a ConditionCheck , Put , Update , or Delete object.
+          These can operate on items in different tables, but the tables  must
+          reside  in  the  same Amazon Web Services account and Region, and no
+          two of them can operate on the same item.
+
+          (structure)
+              A list of requests that can  perform  update,  put,  delete,  or
+              check  operations on multiple items in one or more tables atomi-
+              cally.
+
+              ConditionCheck -> (structure)
+                 A request to perform a check item operation.
+
+                 Key -> (map)
+                     The primary key of the item to be checked.  Each  element
+                     consists of an attribute name and a value for that attri-
+                     bute.
+
+                     key -> (string)
+
+                     value -> (structure)
+                        Represents the data for an attribute.
+
+                        Each attribute value  is  described  as  a  name-value
+                        pair.  The name is the data type, and the value is the
+                        data itself.
+
+                        For more information, see Data Types in the Amazon Dy-
+                        namoDB Developer Guide .
+
+                        S -> (string)
+                            An attribute of type String. For example:
+                               "S": "Hello"
+
+                        N -> (string)
+                            An attribute of type Number. For example:
+                               "N": "123.45"
+
+                            Numbers are sent across the network to DynamoDB as
+                            strings, to  maximize  compatibility  across  lan-
+                            guages  and  libraries.  However,  DynamoDB treats
+                            them as number type  attributes  for  mathematical
+                            operations.
+
+                        B -> (blob)
+                            An attribute of type Binary. For example:
+                               "B": "dGhpcyB0ZXh0IGlzIGJhc2U2NC1lbmNvZGVk"
+
+                        SS -> (list)
+                            An attribute of type String Set. For example:
+                               "SS": ["Giraffe", "Hippo" ,"Zebra"]
+
+                            (string)
+
+                        NS -> (list)
+                            An attribute of type Number Set. For example:
+                               "NS": ["42.2", "-19", "7.5", "3.14"]
+
+                            Numbers are sent across the network to DynamoDB as
+                            strings, to  maximize  compatibility  across  lan-
+                            guages  and  libraries.  However,  DynamoDB treats
+                            them as number type  attributes  for  mathematical
+                            operations.
+
+                            (string)
+
+                        BS -> (list)
+                            An attribute of type Binary Set. For example:
+                               "BS": ["U3Vubnk=", "UmFpbnk=", "U25vd3k="]
+
+                            (blob)
+
+                        M -> (map)
+                            An attribute of type Map. For example:
+                               "M": {"Name": {"S": "Joe"}, "Age": {"N": "35"}}
+
+                            key -> (string)
+
+                            value -> (structure)
+                               Represents the data for an attribute.
+
+                               Each   attribute   value   is  described  as  a
+                               name-value pair. The name is the data type, and
+                               the value is the data itself.
+
+                               For  more  information,  see  Data Types in the
+                               Amazon DynamoDB Developer Guide .
+
+                               S -> (string)
+                                   An attribute of type String. For example:
+                                      "S": "Hello"
+
+                               N -> (string)
+                                   An attribute of type Number. For example:
+                                      "N": "123.45"
+
+                                   Numbers are sent across the network to  Dy-
+                                   namoDB  as strings, to maximize compatibil-
+                                   ity across languages  and  libraries.  How-
+                                   ever,  DynamoDB  treats them as number type
+                                   attributes for mathematical operations.
+
+                               B -> (blob)
+                                   An attribute of type Binary. For example:
+                                      "B":   "dGhpcyB0ZXh0IGlzIGJhc2U2NC1lbmN-
+                                      vZGVk"
+
+                               SS -> (list)
+                                   An  attribute of type String Set. For exam-
+                                   ple:
+                                      "SS": ["Giraffe", "Hippo" ,"Zebra"]
+
+                                   (string)
+
+                               NS -> (list)
+                                   An attribute of type Number Set. For  exam-
+                                   ple:
+                                      "NS": ["42.2", "-19", "7.5", "3.14"]
+
+                                   Numbers  are sent across the network to Dy-
+                                   namoDB as strings, to maximize  compatibil-
+                                   ity  across  languages  and libraries. How-
+                                   ever, DynamoDB treats them as  number  type
+                                   attributes for mathematical operations.
+
+                                   (string)
+
+                               BS -> (list)
+                                   An  attribute of type Binary Set. For exam-
+                                   ple:
+                                      "BS":      ["U3Vubnk=",      "UmFpbnk=",
+                                      "U25vd3k="]
+
+                                   (blob)
+
+                               M -> (map)
+                                   An attribute of type Map. For example:
+                                      "M": {"Name": {"S": "Joe"}, "Age": {"N":
+                                      "35"}}
+
+                                   key -> (string)
+
+                                   ( ... recursive ... )
+
+                               L -> (list)
+                                   An attribute of type List. For example:
+                                      "L": [ {"S": "Cookies"}  ,  {"S":  "Cof-
+                                      fee"}, {"N", "3.14159"}]
+
+                                   ( ... recursive ... )
+
+                               NULL -> (boolean)
+                                   An attribute of type Null. For example:
+                                      "NULL": true
+
+                               BOOL -> (boolean)
+                                   An attribute of type Boolean. For example:
+                                      "BOOL": true
+
+                        L -> (list)
+                            An attribute of type List. For example:
+                               "L":  [  {"S":  "Cookies"}  ,  {"S": "Coffee"},
+                               {"N", "3.14159"}]
+
+                            (structure)
+                               Represents the data for an attribute.
+
+                               Each  attribute  value  is   described   as   a
+                               name-value pair. The name is the data type, and
+                               the value is the data itself.
+
+                               For more information, see  Data  Types  in  the
+                               Amazon DynamoDB Developer Guide .
+
+                               S -> (string)
+                                   An attribute of type String. For example:
+                                      "S": "Hello"
+
+                               N -> (string)
+                                   An attribute of type Number. For example:
+                                      "N": "123.45"
+
+                                   Numbers  are sent across the network to Dy-
+                                   namoDB as strings, to maximize  compatibil-
+                                   ity  across  languages  and libraries. How-
+                                   ever, DynamoDB treats them as  number  type
+                                   attributes for mathematical operations.
+
+                               B -> (blob)
+                                   An attribute of type Binary. For example:
+                                      "B":   "dGhpcyB0ZXh0IGlzIGJhc2U2NC1lbmN-
+                                      vZGVk"
+
+                               SS -> (list)
+                                   An attribute of type String Set. For  exam-
+                                   ple:
+                                      "SS": ["Giraffe", "Hippo" ,"Zebra"]
+
+                                   (string)
+
+                               NS -> (list)
+                                   An  attribute of type Number Set. For exam-
+                                   ple:
+                                      "NS": ["42.2", "-19", "7.5", "3.14"]
+
+                                   Numbers are sent across the network to  Dy-
+                                   namoDB  as strings, to maximize compatibil-
+                                   ity across languages  and  libraries.  How-
+                                   ever,  DynamoDB  treats them as number type
+                                   attributes for mathematical operations.
+
+                                   (string)
+
+                               BS -> (list)
+                                   An attribute of type Binary Set. For  exam-
+                                   ple:
+                                      "BS":      ["U3Vubnk=",      "UmFpbnk=",
+                                      "U25vd3k="]
+
+                                   (blob)
+
+                               M -> (map)
+                                   An attribute of type Map. For example:
+                                      "M": {"Name": {"S": "Joe"}, "Age": {"N":
+                                      "35"}}
+
+                                   key -> (string)
+
+                                   ( ... recursive ... )
+
+                               L -> (list)
+                                   An attribute of type List. For example:
+                                      "L":  [  {"S":  "Cookies"} , {"S": "Cof-
+                                      fee"}, {"N", "3.14159"}]
+
+                                   ( ... recursive ... )
+
+                               NULL -> (boolean)
+                                   An attribute of type Null. For example:
+                                      "NULL": true
+
+                               BOOL -> (boolean)
+                                   An attribute of type Boolean. For example:
+                                      "BOOL": true
+
+                        NULL -> (boolean)
+                            An attribute of type Null. For example:
+                               "NULL": true
+
+                        BOOL -> (boolean)
+                            An attribute of type Boolean. For example:
+                               "BOOL": true
+
+                 TableName -> (string)
+                     Name of the table for the check item request.
+
+                 ConditionExpression -> (string)
+                     A condition that must be satisfied in order for a  condi-
+                     tional update to succeed.
+
+                 ExpressionAttributeNames -> (map)
+                     One or more substitution tokens for attribute names in an
+                     expression.
+
+                     key -> (string)
+
+                     value -> (string)
+
+                 ExpressionAttributeValues -> (map)
+                     One or more values that can be substituted in an  expres-
+                     sion.
+
+                     key -> (string)
+
+                     value -> (structure)
+                        Represents the data for an attribute.
+
+                        Each  attribute  value  is  described  as a name-value
+                        pair. The name is the data type, and the value is  the
+                        data itself.
+
+                        For more information, see Data Types in the Amazon Dy-
+                        namoDB Developer Guide .
+
+                        S -> (string)
+                            An attribute of type String. For example:
+                               "S": "Hello"
+
+                        N -> (string)
+                            An attribute of type Number. For example:
+                               "N": "123.45"
+
+                            Numbers are sent across the network to DynamoDB as
+                            strings,  to  maximize  compatibility  across lan-
+                            guages and  libraries.  However,  DynamoDB  treats
+                            them  as  number  type attributes for mathematical
+                            operations.
+
+                        B -> (blob)
+                            An attribute of type Binary. For example:
+                               "B": "dGhpcyB0ZXh0IGlzIGJhc2U2NC1lbmNvZGVk"
+
+                        SS -> (list)
+                            An attribute of type String Set. For example:
+                               "SS": ["Giraffe", "Hippo" ,"Zebra"]
+
+                            (string)
+
+                        NS -> (list)
+                            An attribute of type Number Set. For example:
+                               "NS": ["42.2", "-19", "7.5", "3.14"]
+
+                            Numbers are sent across the network to DynamoDB as
+                            strings,  to  maximize  compatibility  across lan-
+                            guages and  libraries.  However,  DynamoDB  treats
+                            them  as  number  type attributes for mathematical
+                            operations.
+
+                            (string)
+
+                        BS -> (list)
+                            An attribute of type Binary Set. For example:
+                               "BS": ["U3Vubnk=", "UmFpbnk=", "U25vd3k="]
+
+                            (blob)
+
+                        M -> (map)
+                            An attribute of type Map. For example:
+                               "M": {"Name": {"S": "Joe"}, "Age": {"N": "35"}}
+
+                            key -> (string)
+
+                            value -> (structure)
+                               Represents the data for an attribute.
+
+                               Each  attribute  value  is   described   as   a
+                               name-value pair. The name is the data type, and
+                               the value is the data itself.
+
+                               For more information, see  Data  Types  in  the
+                               Amazon DynamoDB Developer Guide .
+
+                               S -> (string)
+                                   An attribute of type String. For example:
+                                      "S": "Hello"
+
+                               N -> (string)
+                                   An attribute of type Number. For example:
+                                      "N": "123.45"
+
+                                   Numbers  are sent across the network to Dy-
+                                   namoDB as strings, to maximize  compatibil-
+                                   ity  across  languages  and libraries. How-
+                                   ever, DynamoDB treats them as  number  type
+                                   attributes for mathematical operations.
+
+                               B -> (blob)
+                                   An attribute of type Binary. For example:
+                                      "B":   "dGhpcyB0ZXh0IGlzIGJhc2U2NC1lbmN-
+                                      vZGVk"
+
+                               SS -> (list)
+                                   An attribute of type String Set. For  exam-
+                                   ple:
+                                      "SS": ["Giraffe", "Hippo" ,"Zebra"]
+
+                                   (string)
+
+                               NS -> (list)
+                                   An  attribute of type Number Set. For exam-
+                                   ple:
+                                      "NS": ["42.2", "-19", "7.5", "3.14"]
+
+                                   Numbers are sent across the network to  Dy-
+                                   namoDB  as strings, to maximize compatibil-
+                                   ity across languages  and  libraries.  How-
+                                   ever,  DynamoDB  treats them as number type
+                                   attributes for mathematical operations.
+
+                                   (string)
+
+                               BS -> (list)
+                                   An attribute of type Binary Set. For  exam-
+                                   ple:
+                                      "BS":      ["U3Vubnk=",      "UmFpbnk=",
+                                      "U25vd3k="]
+
+                                   (blob)
+
+                               M -> (map)
+                                   An attribute of type Map. For example:
+                                      "M": {"Name": {"S": "Joe"}, "Age": {"N":
+                                      "35"}}
+
+                                   key -> (string)
+
+                                   ( ... recursive ... )
+
+                               L -> (list)
+                                   An attribute of type List. For example:
+                                      "L":  [  {"S":  "Cookies"} , {"S": "Cof-
+                                      fee"}, {"N", "3.14159"}]
+
+                                   ( ... recursive ... )
+
+                               NULL -> (boolean)
+                                   An attribute of type Null. For example:
+                                      "NULL": true
+
+                               BOOL -> (boolean)
+                                   An attribute of type Boolean. For example:
+                                      "BOOL": true
+
+                        L -> (list)
+                            An attribute of type List. For example:
+                               "L": [  {"S":  "Cookies"}  ,  {"S":  "Coffee"},
+                               {"N", "3.14159"}]
+
+                            (structure)
+                               Represents the data for an attribute.
+
+                               Each   attribute   value   is  described  as  a
+                               name-value pair. The name is the data type, and
+                               the value is the data itself.
+
+                               For  more  information,  see  Data Types in the
+                               Amazon DynamoDB Developer Guide .
+
+                               S -> (string)
+                                   An attribute of type String. For example:
+                                      "S": "Hello"
+
+                               N -> (string)
+                                   An attribute of type Number. For example:
+                                      "N": "123.45"
+
+                                   Numbers are sent across the network to  Dy-
+                                   namoDB  as strings, to maximize compatibil-
+                                   ity across languages  and  libraries.  How-
+                                   ever,  DynamoDB  treats them as number type
+                                   attributes for mathematical operations.
+
+                               B -> (blob)
+                                   An attribute of type Binary. For example:
+                                      "B":   "dGhpcyB0ZXh0IGlzIGJhc2U2NC1lbmN-
+                                      vZGVk"
+
+                               SS -> (list)
+                                   An  attribute of type String Set. For exam-
+                                   ple:
+                                      "SS": ["Giraffe", "Hippo" ,"Zebra"]
+
+                                   (string)
+
+                               NS -> (list)
+                                   An attribute of type Number Set. For  exam-
+                                   ple:
+                                      "NS": ["42.2", "-19", "7.5", "3.14"]
+
+                                   Numbers  are sent across the network to Dy-
+                                   namoDB as strings, to maximize  compatibil-
+                                   ity  across  languages  and libraries. How-
+                                   ever, DynamoDB treats them as  number  type
+                                   attributes for mathematical operations.
+
+                                   (string)
+
+                               BS -> (list)
+                                   An  attribute of type Binary Set. For exam-
+                                   ple:
+                                      "BS":      ["U3Vubnk=",      "UmFpbnk=",
+                                      "U25vd3k="]
+
+                                   (blob)
+
+                               M -> (map)
+                                   An attribute of type Map. For example:
+                                      "M": {"Name": {"S": "Joe"}, "Age": {"N":
+                                      "35"}}
+
+                                   key -> (string)
+
+                                   ( ... recursive ... )
+
+                               L -> (list)
+                                   An attribute of type List. For example:
+                                      "L": [ {"S": "Cookies"}  ,  {"S":  "Cof-
+                                      fee"}, {"N", "3.14159"}]
+
+                                   ( ... recursive ... )
+
+                               NULL -> (boolean)
+                                   An attribute of type Null. For example:
+                                      "NULL": true
+
+                               BOOL -> (boolean)
+                                   An attribute of type Boolean. For example:
+                                      "BOOL": true
+
+                        NULL -> (boolean)
+                            An attribute of type Null. For example:
+                               "NULL": true
+
+                        BOOL -> (boolean)
+                            An attribute of type Boolean. For example:
+                               "BOOL": true
+
+                 ReturnValuesOnConditionCheckFailure -> (string)
+                     Use  ReturnValuesOnConditionCheckFailure  to get the item
+                     attributes if the ConditionCheck condition fails. For Re-
+                     turnValuesOnConditionCheckFailure , the valid values are:
+                     NONE and ALL_OLD.
+
+              Put -> (structure)
+                 A request to perform a PutItem operation.
+
+                 Item -> (map)
+                     A map of attribute name to attribute values, representing
+                     the  primary  key  of the item to be written by PutItem .
+                     All of the table's primary key attributes must be  speci-
+                     fied,  and  their  data types must match those of the ta-
+                     ble's key schema. If any attributes are  present  in  the
+                     item  that are part of an index key schema for the table,
+                     their types must match the index key schema.
+
+                     key -> (string)
+
+                     value -> (structure)
+                        Represents the data for an attribute.
+
+                        Each attribute value  is  described  as  a  name-value
+                        pair.  The name is the data type, and the value is the
+                        data itself.
+
+                        For more information, see Data Types in the Amazon Dy-
+                        namoDB Developer Guide .
+
+                        S -> (string)
+                            An attribute of type String. For example:
+                               "S": "Hello"
+
+                        N -> (string)
+                            An attribute of type Number. For example:
+                               "N": "123.45"
+
+                            Numbers are sent across the network to DynamoDB as
+                            strings, to  maximize  compatibility  across  lan-
+                            guages  and  libraries.  However,  DynamoDB treats
+                            them as number type  attributes  for  mathematical
+                            operations.
+
+                        B -> (blob)
+                            An attribute of type Binary. For example:
+                               "B": "dGhpcyB0ZXh0IGlzIGJhc2U2NC1lbmNvZGVk"
+
+                        SS -> (list)
+                            An attribute of type String Set. For example:
+                               "SS": ["Giraffe", "Hippo" ,"Zebra"]
+
+                            (string)
+
+                        NS -> (list)
+                            An attribute of type Number Set. For example:
+                               "NS": ["42.2", "-19", "7.5", "3.14"]
+
+                            Numbers are sent across the network to DynamoDB as
+                            strings, to  maximize  compatibility  across  lan-
+                            guages  and  libraries.  However,  DynamoDB treats
+                            them as number type  attributes  for  mathematical
+                            operations.
+
+                            (string)
+
+                        BS -> (list)
+                            An attribute of type Binary Set. For example:
+                               "BS": ["U3Vubnk=", "UmFpbnk=", "U25vd3k="]
+
+                            (blob)
+
+                        M -> (map)
+                            An attribute of type Map. For example:
+                               "M": {"Name": {"S": "Joe"}, "Age": {"N": "35"}}
+
+                            key -> (string)
+
+                            value -> (structure)
+                               Represents the data for an attribute.
+
+                               Each   attribute   value   is  described  as  a
+                               name-value pair. The name is the data type, and
+                               the value is the data itself.
+
+                               For  more  information,  see  Data Types in the
+                               Amazon DynamoDB Developer Guide .
+
+                               S -> (string)
+                                   An attribute of type String. For example:
+                                      "S": "Hello"
+
+                               N -> (string)
+                                   An attribute of type Number. For example:
+                                      "N": "123.45"
+
+                                   Numbers are sent across the network to  Dy-
+                                   namoDB  as strings, to maximize compatibil-
+                                   ity across languages  and  libraries.  How-
+                                   ever,  DynamoDB  treats them as number type
+                                   attributes for mathematical operations.
+
+                               B -> (blob)
+                                   An attribute of type Binary. For example:
+                                      "B":   "dGhpcyB0ZXh0IGlzIGJhc2U2NC1lbmN-
+                                      vZGVk"
+
+                               SS -> (list)
+                                   An  attribute of type String Set. For exam-
+                                   ple:
+                                      "SS": ["Giraffe", "Hippo" ,"Zebra"]
+
+                                   (string)
+
+                               NS -> (list)
+                                   An attribute of type Number Set. For  exam-
+                                   ple:
+                                      "NS": ["42.2", "-19", "7.5", "3.14"]
+
+                                   Numbers  are sent across the network to Dy-
+                                   namoDB as strings, to maximize  compatibil-
+                                   ity  across  languages  and libraries. How-
+                                   ever, DynamoDB treats them as  number  type
+                                   attributes for mathematical operations.
+
+                                   (string)
+
+                               BS -> (list)
+                                   An  attribute of type Binary Set. For exam-
+                                   ple:
+                                      "BS":      ["U3Vubnk=",      "UmFpbnk=",
+                                      "U25vd3k="]
+
+                                   (blob)
+
+                               M -> (map)
+                                   An attribute of type Map. For example:
+                                      "M": {"Name": {"S": "Joe"}, "Age": {"N":
+                                      "35"}}
+
+                                   key -> (string)
+
+                                   ( ... recursive ... )
+
+                               L -> (list)
+                                   An attribute of type List. For example:
+                                      "L": [ {"S": "Cookies"}  ,  {"S":  "Cof-
+                                      fee"}, {"N", "3.14159"}]
+
+                                   ( ... recursive ... )
+
+                               NULL -> (boolean)
+                                   An attribute of type Null. For example:
+                                      "NULL": true
+
+                               BOOL -> (boolean)
+                                   An attribute of type Boolean. For example:
+                                      "BOOL": true
+
+                        L -> (list)
+                            An attribute of type List. For example:
+                               "L":  [  {"S":  "Cookies"}  ,  {"S": "Coffee"},
+                               {"N", "3.14159"}]
+
+                            (structure)
+                               Represents the data for an attribute.
+
+                               Each  attribute  value  is   described   as   a
+                               name-value pair. The name is the data type, and
+                               the value is the data itself.
+
+                               For more information, see  Data  Types  in  the
+                               Amazon DynamoDB Developer Guide .
+
+                               S -> (string)
+                                   An attribute of type String. For example:
+                                      "S": "Hello"
+
+                               N -> (string)
+                                   An attribute of type Number. For example:
+                                      "N": "123.45"
+
+                                   Numbers  are sent across the network to Dy-
+                                   namoDB as strings, to maximize  compatibil-
+                                   ity  across  languages  and libraries. How-
+                                   ever, DynamoDB treats them as  number  type
+                                   attributes for mathematical operations.
+
+                               B -> (blob)
+                                   An attribute of type Binary. For example:
+                                      "B":   "dGhpcyB0ZXh0IGlzIGJhc2U2NC1lbmN-
+                                      vZGVk"
+
+                               SS -> (list)
+                                   An attribute of type String Set. For  exam-
+                                   ple:
+                                      "SS": ["Giraffe", "Hippo" ,"Zebra"]
+
+                                   (string)
+
+                               NS -> (list)
+                                   An  attribute of type Number Set. For exam-
+                                   ple:
+                                      "NS": ["42.2", "-19", "7.5", "3.14"]
+
+                                   Numbers are sent across the network to  Dy-
+                                   namoDB  as strings, to maximize compatibil-
+                                   ity across languages  and  libraries.  How-
+                                   ever,  DynamoDB  treats them as number type
+                                   attributes for mathematical operations.
+
+                                   (string)
+
+                               BS -> (list)
+                                   An attribute of type Binary Set. For  exam-
+                                   ple:
+                                      "BS":      ["U3Vubnk=",      "UmFpbnk=",
+                                      "U25vd3k="]
+
+                                   (blob)
+
+                               M -> (map)
+                                   An attribute of type Map. For example:
+                                      "M": {"Name": {"S": "Joe"}, "Age": {"N":
+                                      "35"}}
+
+                                   key -> (string)
+
+                                   ( ... recursive ... )
+
+                               L -> (list)
+                                   An attribute of type List. For example:
+                                      "L":  [  {"S":  "Cookies"} , {"S": "Cof-
+                                      fee"}, {"N", "3.14159"}]
+
+                                   ( ... recursive ... )
+
+                               NULL -> (boolean)
+                                   An attribute of type Null. For example:
+                                      "NULL": true
+
+                               BOOL -> (boolean)
+                                   An attribute of type Boolean. For example:
+                                      "BOOL": true
+
+                        NULL -> (boolean)
+                            An attribute of type Null. For example:
+                               "NULL": true
+
+                        BOOL -> (boolean)
+                            An attribute of type Boolean. For example:
+                               "BOOL": true
+
+                 TableName -> (string)
+                     Name of the table in which to write the item.
+
+                 ConditionExpression -> (string)
+                     A condition that must be satisfied in order for a  condi-
+                     tional update to succeed.
+
+                 ExpressionAttributeNames -> (map)
+                     One or more substitution tokens for attribute names in an
+                     expression.
+
+                     key -> (string)
+
+                     value -> (string)
+
+                 ExpressionAttributeValues -> (map)
+                     One or more values that can be substituted in an  expres-
+                     sion.
+
+                     key -> (string)
+
+                     value -> (structure)
+                        Represents the data for an attribute.
+
+                        Each  attribute  value  is  described  as a name-value
+                        pair. The name is the data type, and the value is  the
+                        data itself.
+
+                        For more information, see Data Types in the Amazon Dy-
+                        namoDB Developer Guide .
+
+                        S -> (string)
+                            An attribute of type String. For example:
+                               "S": "Hello"
+
+                        N -> (string)
+                            An attribute of type Number. For example:
+                               "N": "123.45"
+
+                            Numbers are sent across the network to DynamoDB as
+                            strings,  to  maximize  compatibility  across lan-
+                            guages and  libraries.  However,  DynamoDB  treats
+                            them  as  number  type attributes for mathematical
+                            operations.
+
+                        B -> (blob)
+                            An attribute of type Binary. For example:
+                               "B": "dGhpcyB0ZXh0IGlzIGJhc2U2NC1lbmNvZGVk"
+
+                        SS -> (list)
+                            An attribute of type String Set. For example:
+                               "SS": ["Giraffe", "Hippo" ,"Zebra"]
+
+                            (string)
+
+                        NS -> (list)
+                            An attribute of type Number Set. For example:
+                               "NS": ["42.2", "-19", "7.5", "3.14"]
+
+                            Numbers are sent across the network to DynamoDB as
+                            strings,  to  maximize  compatibility  across lan-
+                            guages and  libraries.  However,  DynamoDB  treats
+                            them  as  number  type attributes for mathematical
+                            operations.
+
+                            (string)
+
+                        BS -> (list)
+                            An attribute of type Binary Set. For example:
+                               "BS": ["U3Vubnk=", "UmFpbnk=", "U25vd3k="]
+
+                            (blob)
+
+                        M -> (map)
+                            An attribute of type Map. For example:
+                               "M": {"Name": {"S": "Joe"}, "Age": {"N": "35"}}
+
+                            key -> (string)
+
+                            value -> (structure)
+                               Represents the data for an attribute.
+
+                               Each  attribute  value  is   described   as   a
+                               name-value pair. The name is the data type, and
+                               the value is the data itself.
+
+                               For more information, see  Data  Types  in  the
+                               Amazon DynamoDB Developer Guide .
+
+                               S -> (string)
+                                   An attribute of type String. For example:
+                                      "S": "Hello"
+
+                               N -> (string)
+                                   An attribute of type Number. For example:
+                                      "N": "123.45"
+
+                                   Numbers  are sent across the network to Dy-
+                                   namoDB as strings, to maximize  compatibil-
+                                   ity  across  languages  and libraries. How-
+                                   ever, DynamoDB treats them as  number  type
+                                   attributes for mathematical operations.
+
+                               B -> (blob)
+                                   An attribute of type Binary. For example:
+                                      "B":   "dGhpcyB0ZXh0IGlzIGJhc2U2NC1lbmN-
+                                      vZGVk"
+
+                               SS -> (list)
+                                   An attribute of type String Set. For  exam-
+                                   ple:
+                                      "SS": ["Giraffe", "Hippo" ,"Zebra"]
+
+                                   (string)
+
+                               NS -> (list)
+                                   An  attribute of type Number Set. For exam-
+                                   ple:
+                                      "NS": ["42.2", "-19", "7.5", "3.14"]
+
+                                   Numbers are sent across the network to  Dy-
+                                   namoDB  as strings, to maximize compatibil-
+                                   ity across languages  and  libraries.  How-
+                                   ever,  DynamoDB  treats them as number type
+                                   attributes for mathematical operations.
+
+                                   (string)
+
+                               BS -> (list)
+                                   An attribute of type Binary Set. For  exam-
+                                   ple:
+                                      "BS":      ["U3Vubnk=",      "UmFpbnk=",
+                                      "U25vd3k="]
+
+                                   (blob)
+
+                               M -> (map)
+                                   An attribute of type Map. For example:
+                                      "M": {"Name": {"S": "Joe"}, "Age": {"N":
+                                      "35"}}
+
+                                   key -> (string)
+
+                                   ( ... recursive ... )
+
+                               L -> (list)
+                                   An attribute of type List. For example:
+                                      "L":  [  {"S":  "Cookies"} , {"S": "Cof-
+                                      fee"}, {"N", "3.14159"}]
+
+                                   ( ... recursive ... )
+
+                               NULL -> (boolean)
+                                   An attribute of type Null. For example:
+                                      "NULL": true
+
+                               BOOL -> (boolean)
+                                   An attribute of type Boolean. For example:
+                                      "BOOL": true
+
+                        L -> (list)
+                            An attribute of type List. For example:
+                               "L": [  {"S":  "Cookies"}  ,  {"S":  "Coffee"},
+                               {"N", "3.14159"}]
+
+                            (structure)
+                               Represents the data for an attribute.
+
+                               Each   attribute   value   is  described  as  a
+                               name-value pair. The name is the data type, and
+                               the value is the data itself.
+
+                               For  more  information,  see  Data Types in the
+                               Amazon DynamoDB Developer Guide .
+
+                               S -> (string)
+                                   An attribute of type String. For example:
+                                      "S": "Hello"
+
+                               N -> (string)
+                                   An attribute of type Number. For example:
+                                      "N": "123.45"
+
+                                   Numbers are sent across the network to  Dy-
+                                   namoDB  as strings, to maximize compatibil-
+                                   ity across languages  and  libraries.  How-
+                                   ever,  DynamoDB  treats them as number type
+                                   attributes for mathematical operations.
+
+                               B -> (blob)
+                                   An attribute of type Binary. For example:
+                                      "B":   "dGhpcyB0ZXh0IGlzIGJhc2U2NC1lbmN-
+                                      vZGVk"
+
+                               SS -> (list)
+                                   An  attribute of type String Set. For exam-
+                                   ple:
+                                      "SS": ["Giraffe", "Hippo" ,"Zebra"]
+
+                                   (string)
+
+                               NS -> (list)
+                                   An attribute of type Number Set. For  exam-
+                                   ple:
+                                      "NS": ["42.2", "-19", "7.5", "3.14"]
+
+                                   Numbers  are sent across the network to Dy-
+                                   namoDB as strings, to maximize  compatibil-
+                                   ity  across  languages  and libraries. How-
+                                   ever, DynamoDB treats them as  number  type
+                                   attributes for mathematical operations.
+
+                                   (string)
+
+                               BS -> (list)
+                                   An  attribute of type Binary Set. For exam-
+                                   ple:
+                                      "BS":      ["U3Vubnk=",      "UmFpbnk=",
+                                      "U25vd3k="]
+
+                                   (blob)
+
+                               M -> (map)
+                                   An attribute of type Map. For example:
+                                      "M": {"Name": {"S": "Joe"}, "Age": {"N":
+                                      "35"}}
+
+                                   key -> (string)
+
+                                   ( ... recursive ... )
+
+                               L -> (list)
+                                   An attribute of type List. For example:
+                                      "L": [ {"S": "Cookies"}  ,  {"S":  "Cof-
+                                      fee"}, {"N", "3.14159"}]
+
+                                   ( ... recursive ... )
+
+                               NULL -> (boolean)
+                                   An attribute of type Null. For example:
+                                      "NULL": true
+
+                               BOOL -> (boolean)
+                                   An attribute of type Boolean. For example:
+                                      "BOOL": true
+
+                        NULL -> (boolean)
+                            An attribute of type Null. For example:
+                               "NULL": true
+
+                        BOOL -> (boolean)
+                            An attribute of type Boolean. For example:
+                               "BOOL": true
+
+                 ReturnValuesOnConditionCheckFailure -> (string)
+                     Use  ReturnValuesOnConditionCheckFailure  to get the item
+                     attributes if the Put  condition  fails.  For  ReturnVal-
+                     uesOnConditionCheckFailure  ,  the valid values are: NONE
+                     and ALL_OLD.
+
+              Delete -> (structure)
+                 A request to perform a DeleteItem operation.
+
+                 Key -> (map)
+                     The primary key of the item to be deleted.  Each  element
+                     consists of an attribute name and a value for that attri-
+                     bute.
+
+                     key -> (string)
+
+                     value -> (structure)
+                        Represents the data for an attribute.
+
+                        Each attribute value  is  described  as  a  name-value
+                        pair.  The name is the data type, and the value is the
+                        data itself.
+
+                        For more information, see Data Types in the Amazon Dy-
+                        namoDB Developer Guide .
+
+                        S -> (string)
+                            An attribute of type String. For example:
+                               "S": "Hello"
+
+                        N -> (string)
+                            An attribute of type Number. For example:
+                               "N": "123.45"
+
+                            Numbers are sent across the network to DynamoDB as
+                            strings, to  maximize  compatibility  across  lan-
+                            guages  and  libraries.  However,  DynamoDB treats
+                            them as number type  attributes  for  mathematical
+                            operations.
+
+                        B -> (blob)
+                            An attribute of type Binary. For example:
+                               "B": "dGhpcyB0ZXh0IGlzIGJhc2U2NC1lbmNvZGVk"
+
+                        SS -> (list)
+                            An attribute of type String Set. For example:
+                               "SS": ["Giraffe", "Hippo" ,"Zebra"]
+
+                            (string)
+
+                        NS -> (list)
+                            An attribute of type Number Set. For example:
+                               "NS": ["42.2", "-19", "7.5", "3.14"]
+
+                            Numbers are sent across the network to DynamoDB as
+                            strings, to  maximize  compatibility  across  lan-
+                            guages  and  libraries.  However,  DynamoDB treats
+                            them as number type  attributes  for  mathematical
+                            operations.
+
+                            (string)
+
+                        BS -> (list)
+                            An attribute of type Binary Set. For example:
+                               "BS": ["U3Vubnk=", "UmFpbnk=", "U25vd3k="]
+
+                            (blob)
+
+                        M -> (map)
+                            An attribute of type Map. For example:
+                               "M": {"Name": {"S": "Joe"}, "Age": {"N": "35"}}
+
+                            key -> (string)
+
+                            value -> (structure)
+                               Represents the data for an attribute.
+
+                               Each   attribute   value   is  described  as  a
+                               name-value pair. The name is the data type, and
+                               the value is the data itself.
+
+                               For  more  information,  see  Data Types in the
+                               Amazon DynamoDB Developer Guide .
+
+                               S -> (string)
+                                   An attribute of type String. For example:
+                                      "S": "Hello"
+
+                               N -> (string)
+                                   An attribute of type Number. For example:
+                                      "N": "123.45"
+
+                                   Numbers are sent across the network to  Dy-
+                                   namoDB  as strings, to maximize compatibil-
+                                   ity across languages  and  libraries.  How-
+                                   ever,  DynamoDB  treats them as number type
+                                   attributes for mathematical operations.
+
+                               B -> (blob)
+                                   An attribute of type Binary. For example:
+                                      "B":   "dGhpcyB0ZXh0IGlzIGJhc2U2NC1lbmN-
+                                      vZGVk"
+
+                               SS -> (list)
+                                   An  attribute of type String Set. For exam-
+                                   ple:
+                                      "SS": ["Giraffe", "Hippo" ,"Zebra"]
+
+                                   (string)
+
+                               NS -> (list)
+                                   An attribute of type Number Set. For  exam-
+                                   ple:
+                                      "NS": ["42.2", "-19", "7.5", "3.14"]
+
+                                   Numbers  are sent across the network to Dy-
+                                   namoDB as strings, to maximize  compatibil-
+                                   ity  across  languages  and libraries. How-
+                                   ever, DynamoDB treats them as  number  type
+                                   attributes for mathematical operations.
+
+                                   (string)
+
+                               BS -> (list)
+                                   An  attribute of type Binary Set. For exam-
+                                   ple:
+                                      "BS":      ["U3Vubnk=",      "UmFpbnk=",
+                                      "U25vd3k="]
+
+                                   (blob)
+
+                               M -> (map)
+                                   An attribute of type Map. For example:
+                                      "M": {"Name": {"S": "Joe"}, "Age": {"N":
+                                      "35"}}
+
+                                   key -> (string)
+
+                                   ( ... recursive ... )
+
+                               L -> (list)
+                                   An attribute of type List. For example:
+                                      "L": [ {"S": "Cookies"}  ,  {"S":  "Cof-
+                                      fee"}, {"N", "3.14159"}]
+
+                                   ( ... recursive ... )
+
+                               NULL -> (boolean)
+                                   An attribute of type Null. For example:
+                                      "NULL": true
+
+                               BOOL -> (boolean)
+                                   An attribute of type Boolean. For example:
+                                      "BOOL": true
+
+                        L -> (list)
+                            An attribute of type List. For example:
+                               "L":  [  {"S":  "Cookies"}  ,  {"S": "Coffee"},
+                               {"N", "3.14159"}]
+
+                            (structure)
+                               Represents the data for an attribute.
+
+                               Each  attribute  value  is   described   as   a
+                               name-value pair. The name is the data type, and
+                               the value is the data itself.
+
+                               For more information, see  Data  Types  in  the
+                               Amazon DynamoDB Developer Guide .
+
+                               S -> (string)
+                                   An attribute of type String. For example:
+                                      "S": "Hello"
+
+                               N -> (string)
+                                   An attribute of type Number. For example:
+                                      "N": "123.45"
+
+                                   Numbers  are sent across the network to Dy-
+                                   namoDB as strings, to maximize  compatibil-
+                                   ity  across  languages  and libraries. How-
+                                   ever, DynamoDB treats them as  number  type
+                                   attributes for mathematical operations.
+
+                               B -> (blob)
+                                   An attribute of type Binary. For example:
+                                      "B":   "dGhpcyB0ZXh0IGlzIGJhc2U2NC1lbmN-
+                                      vZGVk"
+
+                               SS -> (list)
+                                   An attribute of type String Set. For  exam-
+                                   ple:
+                                      "SS": ["Giraffe", "Hippo" ,"Zebra"]
+
+                                   (string)
+
+                               NS -> (list)
+                                   An  attribute of type Number Set. For exam-
+                                   ple:
+                                      "NS": ["42.2", "-19", "7.5", "3.14"]
+
+                                   Numbers are sent across the network to  Dy-
+                                   namoDB  as strings, to maximize compatibil-
+                                   ity across languages  and  libraries.  How-
+                                   ever,  DynamoDB  treats them as number type
+                                   attributes for mathematical operations.
+
+                                   (string)
+
+                               BS -> (list)
+                                   An attribute of type Binary Set. For  exam-
+                                   ple:
+                                      "BS":      ["U3Vubnk=",      "UmFpbnk=",
+                                      "U25vd3k="]
+
+                                   (blob)
+
+                               M -> (map)
+                                   An attribute of type Map. For example:
+                                      "M": {"Name": {"S": "Joe"}, "Age": {"N":
+                                      "35"}}
+
+                                   key -> (string)
+
+                                   ( ... recursive ... )
+
+                               L -> (list)
+                                   An attribute of type List. For example:
+                                      "L":  [  {"S":  "Cookies"} , {"S": "Cof-
+                                      fee"}, {"N", "3.14159"}]
+
+                                   ( ... recursive ... )
+
+                               NULL -> (boolean)
+                                   An attribute of type Null. For example:
+                                      "NULL": true
+
+                               BOOL -> (boolean)
+                                   An attribute of type Boolean. For example:
+                                      "BOOL": true
+
+                        NULL -> (boolean)
+                            An attribute of type Null. For example:
+                               "NULL": true
+
+                        BOOL -> (boolean)
+                            An attribute of type Boolean. For example:
+                               "BOOL": true
+
+                 TableName -> (string)
+                     Name of the table in which the item  to  be  deleted  re-
+                     sides.
+
+                 ConditionExpression -> (string)
+                     A  condition that must be satisfied in order for a condi-
+                     tional delete to succeed.
+
+                 ExpressionAttributeNames -> (map)
+                     One or more substitution tokens for attribute names in an
+                     expression.
+
+                     key -> (string)
+
+                     value -> (string)
+
+                 ExpressionAttributeValues -> (map)
+                     One  or more values that can be substituted in an expres-
+                     sion.
+
+                     key -> (string)
+
+                     value -> (structure)
+                        Represents the data for an attribute.
+
+                        Each attribute value  is  described  as  a  name-value
+                        pair.  The name is the data type, and the value is the
+                        data itself.
+
+                        For more information, see Data Types in the Amazon Dy-
+                        namoDB Developer Guide .
+
+                        S -> (string)
+                            An attribute of type String. For example:
+                               "S": "Hello"
+
+                        N -> (string)
+                            An attribute of type Number. For example:
+                               "N": "123.45"
+
+                            Numbers are sent across the network to DynamoDB as
+                            strings, to  maximize  compatibility  across  lan-
+                            guages  and  libraries.  However,  DynamoDB treats
+                            them as number type  attributes  for  mathematical
+                            operations.
+
+                        B -> (blob)
+                            An attribute of type Binary. For example:
+                               "B": "dGhpcyB0ZXh0IGlzIGJhc2U2NC1lbmNvZGVk"
+
+                        SS -> (list)
+                            An attribute of type String Set. For example:
+                               "SS": ["Giraffe", "Hippo" ,"Zebra"]
+
+                            (string)
+
+                        NS -> (list)
+                            An attribute of type Number Set. For example:
+                               "NS": ["42.2", "-19", "7.5", "3.14"]
+
+                            Numbers are sent across the network to DynamoDB as
+                            strings, to  maximize  compatibility  across  lan-
+                            guages  and  libraries.  However,  DynamoDB treats
+                            them as number type  attributes  for  mathematical
+                            operations.
+
+                            (string)
+
+                        BS -> (list)
+                            An attribute of type Binary Set. For example:
+                               "BS": ["U3Vubnk=", "UmFpbnk=", "U25vd3k="]
+
+                            (blob)
+
+                        M -> (map)
+                            An attribute of type Map. For example:
+                               "M": {"Name": {"S": "Joe"}, "Age": {"N": "35"}}
+
+                            key -> (string)
+
+                            value -> (structure)
+                               Represents the data for an attribute.
+
+                               Each   attribute   value   is  described  as  a
+                               name-value pair. The name is the data type, and
+                               the value is the data itself.
+
+                               For  more  information,  see  Data Types in the
+                               Amazon DynamoDB Developer Guide .
+
+                               S -> (string)
+                                   An attribute of type String. For example:
+                                      "S": "Hello"
+
+                               N -> (string)
+                                   An attribute of type Number. For example:
+                                      "N": "123.45"
+
+                                   Numbers are sent across the network to  Dy-
+                                   namoDB  as strings, to maximize compatibil-
+                                   ity across languages  and  libraries.  How-
+                                   ever,  DynamoDB  treats them as number type
+                                   attributes for mathematical operations.
+
+                               B -> (blob)
+                                   An attribute of type Binary. For example:
+                                      "B":   "dGhpcyB0ZXh0IGlzIGJhc2U2NC1lbmN-
+                                      vZGVk"
+
+                               SS -> (list)
+                                   An  attribute of type String Set. For exam-
+                                   ple:
+                                      "SS": ["Giraffe", "Hippo" ,"Zebra"]
+
+                                   (string)
+
+                               NS -> (list)
+                                   An attribute of type Number Set. For  exam-
+                                   ple:
+                                      "NS": ["42.2", "-19", "7.5", "3.14"]
+
+                                   Numbers  are sent across the network to Dy-
+                                   namoDB as strings, to maximize  compatibil-
+                                   ity  across  languages  and libraries. How-
+                                   ever, DynamoDB treats them as  number  type
+                                   attributes for mathematical operations.
+
+                                   (string)
+
+                               BS -> (list)
+                                   An  attribute of type Binary Set. For exam-
+                                   ple:
+                                      "BS":      ["U3Vubnk=",      "UmFpbnk=",
+                                      "U25vd3k="]
+
+                                   (blob)
+
+                               M -> (map)
+                                   An attribute of type Map. For example:
+                                      "M": {"Name": {"S": "Joe"}, "Age": {"N":
+                                      "35"}}
+
+                                   key -> (string)
+
+                                   ( ... recursive ... )
+
+                               L -> (list)
+                                   An attribute of type List. For example:
+                                      "L": [ {"S": "Cookies"}  ,  {"S":  "Cof-
+                                      fee"}, {"N", "3.14159"}]
+
+                                   ( ... recursive ... )
+
+                               NULL -> (boolean)
+                                   An attribute of type Null. For example:
+                                      "NULL": true
+
+                               BOOL -> (boolean)
+                                   An attribute of type Boolean. For example:
+                                      "BOOL": true
+
+                        L -> (list)
+                            An attribute of type List. For example:
+                               "L":  [  {"S":  "Cookies"}  ,  {"S": "Coffee"},
+                               {"N", "3.14159"}]
+
+                            (structure)
+                               Represents the data for an attribute.
+
+                               Each  attribute  value  is   described   as   a
+                               name-value pair. The name is the data type, and
+                               the value is the data itself.
+
+                               For more information, see  Data  Types  in  the
+                               Amazon DynamoDB Developer Guide .
+
+                               S -> (string)
+                                   An attribute of type String. For example:
+                                      "S": "Hello"
+
+                               N -> (string)
+                                   An attribute of type Number. For example:
+                                      "N": "123.45"
+
+                                   Numbers  are sent across the network to Dy-
+                                   namoDB as strings, to maximize  compatibil-
+                                   ity  across  languages  and libraries. How-
+                                   ever, DynamoDB treats them as  number  type
+                                   attributes for mathematical operations.
+
+                               B -> (blob)
+                                   An attribute of type Binary. For example:
+                                      "B":   "dGhpcyB0ZXh0IGlzIGJhc2U2NC1lbmN-
+                                      vZGVk"
+
+                               SS -> (list)
+                                   An attribute of type String Set. For  exam-
+                                   ple:
+                                      "SS": ["Giraffe", "Hippo" ,"Zebra"]
+
+                                   (string)
+
+                               NS -> (list)
+                                   An  attribute of type Number Set. For exam-
+                                   ple:
+                                      "NS": ["42.2", "-19", "7.5", "3.14"]
+
+                                   Numbers are sent across the network to  Dy-
+                                   namoDB  as strings, to maximize compatibil-
+                                   ity across languages  and  libraries.  How-
+                                   ever,  DynamoDB  treats them as number type
+                                   attributes for mathematical operations.
+
+                                   (string)
+
+                               BS -> (list)
+                                   An attribute of type Binary Set. For  exam-
+                                   ple:
+                                      "BS":      ["U3Vubnk=",      "UmFpbnk=",
+                                      "U25vd3k="]
+
+                                   (blob)
+
+                               M -> (map)
+                                   An attribute of type Map. For example:
+                                      "M": {"Name": {"S": "Joe"}, "Age": {"N":
+                                      "35"}}
+
+                                   key -> (string)
+
+                                   ( ... recursive ... )
+
+                               L -> (list)
+                                   An attribute of type List. For example:
+                                      "L":  [  {"S":  "Cookies"} , {"S": "Cof-
+                                      fee"}, {"N", "3.14159"}]
+
+                                   ( ... recursive ... )
+
+                               NULL -> (boolean)
+                                   An attribute of type Null. For example:
+                                      "NULL": true
+
+                               BOOL -> (boolean)
+                                   An attribute of type Boolean. For example:
+                                      "BOOL": true
+
+                        NULL -> (boolean)
+                            An attribute of type Null. For example:
+                               "NULL": true
+
+                        BOOL -> (boolean)
+                            An attribute of type Boolean. For example:
+                               "BOOL": true
+
+                 ReturnValuesOnConditionCheckFailure -> (string)
+                     Use ReturnValuesOnConditionCheckFailure to get  the  item
+                     attributes  if the Delete condition fails. For ReturnVal-
+                     uesOnConditionCheckFailure , the valid values  are:  NONE
+                     and ALL_OLD.
+
+              Update -> (structure)
+                 A request to perform an UpdateItem operation.
+
+                 Key -> (map)
+                     The  primary  key of the item to be updated. Each element
+                     consists of an attribute name and a value for that attri-
+                     bute.
+
+                     key -> (string)
+
+                     value -> (structure)
+                        Represents the data for an attribute.
+
+                        Each  attribute  value  is  described  as a name-value
+                        pair. The name is the data type, and the value is  the
+                        data itself.
+
+                        For more information, see Data Types in the Amazon Dy-
+                        namoDB Developer Guide .
+
+                        S -> (string)
+                            An attribute of type String. For example:
+                               "S": "Hello"
+
+                        N -> (string)
+                            An attribute of type Number. For example:
+                               "N": "123.45"
+
+                            Numbers are sent across the network to DynamoDB as
+                            strings,  to  maximize  compatibility  across lan-
+                            guages and  libraries.  However,  DynamoDB  treats
+                            them  as  number  type attributes for mathematical
+                            operations.
+
+                        B -> (blob)
+                            An attribute of type Binary. For example:
+                               "B": "dGhpcyB0ZXh0IGlzIGJhc2U2NC1lbmNvZGVk"
+
+                        SS -> (list)
+                            An attribute of type String Set. For example:
+                               "SS": ["Giraffe", "Hippo" ,"Zebra"]
+
+                            (string)
+
+                        NS -> (list)
+                            An attribute of type Number Set. For example:
+                               "NS": ["42.2", "-19", "7.5", "3.14"]
+
+                            Numbers are sent across the network to DynamoDB as
+                            strings,  to  maximize  compatibility  across lan-
+                            guages and  libraries.  However,  DynamoDB  treats
+                            them  as  number  type attributes for mathematical
+                            operations.
+
+                            (string)
+
+                        BS -> (list)
+                            An attribute of type Binary Set. For example:
+                               "BS": ["U3Vubnk=", "UmFpbnk=", "U25vd3k="]
+
+                            (blob)
+
+                        M -> (map)
+                            An attribute of type Map. For example:
+                               "M": {"Name": {"S": "Joe"}, "Age": {"N": "35"}}
+
+                            key -> (string)
+
+                            value -> (structure)
+                               Represents the data for an attribute.
+
+                               Each  attribute  value  is   described   as   a
+                               name-value pair. The name is the data type, and
+                               the value is the data itself.
+
+                               For more information, see  Data  Types  in  the
+                               Amazon DynamoDB Developer Guide .
+
+                               S -> (string)
+                                   An attribute of type String. For example:
+                                      "S": "Hello"
+
+                               N -> (string)
+                                   An attribute of type Number. For example:
+                                      "N": "123.45"
+
+                                   Numbers  are sent across the network to Dy-
+                                   namoDB as strings, to maximize  compatibil-
+                                   ity  across  languages  and libraries. How-
+                                   ever, DynamoDB treats them as  number  type
+                                   attributes for mathematical operations.
+
+                               B -> (blob)
+                                   An attribute of type Binary. For example:
+                                      "B":   "dGhpcyB0ZXh0IGlzIGJhc2U2NC1lbmN-
+                                      vZGVk"
+
+                               SS -> (list)
+                                   An attribute of type String Set. For  exam-
+                                   ple:
+                                      "SS": ["Giraffe", "Hippo" ,"Zebra"]
+
+                                   (string)
+
+                               NS -> (list)
+                                   An  attribute of type Number Set. For exam-
+                                   ple:
+                                      "NS": ["42.2", "-19", "7.5", "3.14"]
+
+                                   Numbers are sent across the network to  Dy-
+                                   namoDB  as strings, to maximize compatibil-
+                                   ity across languages  and  libraries.  How-
+                                   ever,  DynamoDB  treats them as number type
+                                   attributes for mathematical operations.
+
+                                   (string)
+
+                               BS -> (list)
+                                   An attribute of type Binary Set. For  exam-
+                                   ple:
+                                      "BS":      ["U3Vubnk=",      "UmFpbnk=",
+                                      "U25vd3k="]
+
+                                   (blob)
+
+                               M -> (map)
+                                   An attribute of type Map. For example:
+                                      "M": {"Name": {"S": "Joe"}, "Age": {"N":
+                                      "35"}}
+
+                                   key -> (string)
+
+                                   ( ... recursive ... )
+
+                               L -> (list)
+                                   An attribute of type List. For example:
+                                      "L":  [  {"S":  "Cookies"} , {"S": "Cof-
+                                      fee"}, {"N", "3.14159"}]
+
+                                   ( ... recursive ... )
+
+                               NULL -> (boolean)
+                                   An attribute of type Null. For example:
+                                      "NULL": true
+
+                               BOOL -> (boolean)
+                                   An attribute of type Boolean. For example:
+                                      "BOOL": true
+
+                        L -> (list)
+                            An attribute of type List. For example:
+                               "L": [  {"S":  "Cookies"}  ,  {"S":  "Coffee"},
+                               {"N", "3.14159"}]
+
+                            (structure)
+                               Represents the data for an attribute.
+
+                               Each   attribute   value   is  described  as  a
+                               name-value pair. The name is the data type, and
+                               the value is the data itself.
+
+                               For  more  information,  see  Data Types in the
+                               Amazon DynamoDB Developer Guide .
+
+                               S -> (string)
+                                   An attribute of type String. For example:
+                                      "S": "Hello"
+
+                               N -> (string)
+                                   An attribute of type Number. For example:
+                                      "N": "123.45"
+
+                                   Numbers are sent across the network to  Dy-
+                                   namoDB  as strings, to maximize compatibil-
+                                   ity across languages  and  libraries.  How-
+                                   ever,  DynamoDB  treats them as number type
+                                   attributes for mathematical operations.
+
+                               B -> (blob)
+                                   An attribute of type Binary. For example:
+                                      "B":   "dGhpcyB0ZXh0IGlzIGJhc2U2NC1lbmN-
+                                      vZGVk"
+
+                               SS -> (list)
+                                   An  attribute of type String Set. For exam-
+                                   ple:
+                                      "SS": ["Giraffe", "Hippo" ,"Zebra"]
+
+                                   (string)
+
+                               NS -> (list)
+                                   An attribute of type Number Set. For  exam-
+                                   ple:
+                                      "NS": ["42.2", "-19", "7.5", "3.14"]
+
+                                   Numbers  are sent across the network to Dy-
+                                   namoDB as strings, to maximize  compatibil-
+                                   ity  across  languages  and libraries. How-
+                                   ever, DynamoDB treats them as  number  type
+                                   attributes for mathematical operations.
+
+                                   (string)
+
+                               BS -> (list)
+                                   An  attribute of type Binary Set. For exam-
+                                   ple:
+                                      "BS":      ["U3Vubnk=",      "UmFpbnk=",
+                                      "U25vd3k="]
+
+                                   (blob)
+
+                               M -> (map)
+                                   An attribute of type Map. For example:
+                                      "M": {"Name": {"S": "Joe"}, "Age": {"N":
+                                      "35"}}
+
+                                   key -> (string)
+
+                                   ( ... recursive ... )
+
+                               L -> (list)
+                                   An attribute of type List. For example:
+                                      "L": [ {"S": "Cookies"}  ,  {"S":  "Cof-
+                                      fee"}, {"N", "3.14159"}]
+
+                                   ( ... recursive ... )
+
+                               NULL -> (boolean)
+                                   An attribute of type Null. For example:
+                                      "NULL": true
+
+                               BOOL -> (boolean)
+                                   An attribute of type Boolean. For example:
+                                      "BOOL": true
+
+                        NULL -> (boolean)
+                            An attribute of type Null. For example:
+                               "NULL": true
+
+                        BOOL -> (boolean)
+                            An attribute of type Boolean. For example:
+                               "BOOL": true
+
+                 UpdateExpression -> (string)
+                     An  expression  that defines one or more attributes to be
+                     updated, the action to be  performed  on  them,  and  new
+                     value(s) for them.
+
+                 TableName -> (string)
+                     Name of the table for the UpdateItem request.
+
+                 ConditionExpression -> (string)
+                     A  condition that must be satisfied in order for a condi-
+                     tional update to succeed.
+
+                 ExpressionAttributeNames -> (map)
+                     One or more substitution tokens for attribute names in an
+                     expression.
+
+                     key -> (string)
+
+                     value -> (string)
+
+                 ExpressionAttributeValues -> (map)
+                     One  or more values that can be substituted in an expres-
+                     sion.
+
+                     key -> (string)
+
+                     value -> (structure)
+                        Represents the data for an attribute.
+
+                        Each attribute value  is  described  as  a  name-value
+                        pair.  The name is the data type, and the value is the
+                        data itself.
+
+                        For more information, see Data Types in the Amazon Dy-
+                        namoDB Developer Guide .
+
+                        S -> (string)
+                            An attribute of type String. For example:
+                               "S": "Hello"
+
+                        N -> (string)
+                            An attribute of type Number. For example:
+                               "N": "123.45"
+
+                            Numbers are sent across the network to DynamoDB as
+                            strings, to  maximize  compatibility  across  lan-
+                            guages  and  libraries.  However,  DynamoDB treats
+                            them as number type  attributes  for  mathematical
+                            operations.
+
+                        B -> (blob)
+                            An attribute of type Binary. For example:
+                               "B": "dGhpcyB0ZXh0IGlzIGJhc2U2NC1lbmNvZGVk"
+
+                        SS -> (list)
+                            An attribute of type String Set. For example:
+                               "SS": ["Giraffe", "Hippo" ,"Zebra"]
+
+                            (string)
+
+                        NS -> (list)
+                            An attribute of type Number Set. For example:
+                               "NS": ["42.2", "-19", "7.5", "3.14"]
+
+                            Numbers are sent across the network to DynamoDB as
+                            strings, to  maximize  compatibility  across  lan-
+                            guages  and  libraries.  However,  DynamoDB treats
+                            them as number type  attributes  for  mathematical
+                            operations.
+
+                            (string)
+
+                        BS -> (list)
+                            An attribute of type Binary Set. For example:
+                               "BS": ["U3Vubnk=", "UmFpbnk=", "U25vd3k="]
+
+                            (blob)
+
+                        M -> (map)
+                            An attribute of type Map. For example:
+                               "M": {"Name": {"S": "Joe"}, "Age": {"N": "35"}}
+
+                            key -> (string)
+
+                            value -> (structure)
+                               Represents the data for an attribute.
+
+                               Each   attribute   value   is  described  as  a
+                               name-value pair. The name is the data type, and
+                               the value is the data itself.
+
+                               For  more  information,  see  Data Types in the
+                               Amazon DynamoDB Developer Guide .
+
+                               S -> (string)
+                                   An attribute of type String. For example:
+                                      "S": "Hello"
+
+                               N -> (string)
+                                   An attribute of type Number. For example:
+                                      "N": "123.45"
+
+                                   Numbers are sent across the network to  Dy-
+                                   namoDB  as strings, to maximize compatibil-
+                                   ity across languages  and  libraries.  How-
+                                   ever,  DynamoDB  treats them as number type
+                                   attributes for mathematical operations.
+
+                               B -> (blob)
+                                   An attribute of type Binary. For example:
+                                      "B":   "dGhpcyB0ZXh0IGlzIGJhc2U2NC1lbmN-
+                                      vZGVk"
+
+                               SS -> (list)
+                                   An  attribute of type String Set. For exam-
+                                   ple:
+                                      "SS": ["Giraffe", "Hippo" ,"Zebra"]
+
+                                   (string)
+
+                               NS -> (list)
+                                   An attribute of type Number Set. For  exam-
+                                   ple:
+                                      "NS": ["42.2", "-19", "7.5", "3.14"]
+
+                                   Numbers  are sent across the network to Dy-
+                                   namoDB as strings, to maximize  compatibil-
+                                   ity  across  languages  and libraries. How-
+                                   ever, DynamoDB treats them as  number  type
+                                   attributes for mathematical operations.
+
+                                   (string)
+
+                               BS -> (list)
+                                   An  attribute of type Binary Set. For exam-
+                                   ple:
+                                      "BS":      ["U3Vubnk=",      "UmFpbnk=",
+                                      "U25vd3k="]
+
+                                   (blob)
+
+                               M -> (map)
+                                   An attribute of type Map. For example:
+                                      "M": {"Name": {"S": "Joe"}, "Age": {"N":
+                                      "35"}}
+
+                                   key -> (string)
+
+                                   ( ... recursive ... )
+
+                               L -> (list)
+                                   An attribute of type List. For example:
+                                      "L": [ {"S": "Cookies"}  ,  {"S":  "Cof-
+                                      fee"}, {"N", "3.14159"}]
+
+                                   ( ... recursive ... )
+
+                               NULL -> (boolean)
+                                   An attribute of type Null. For example:
+                                      "NULL": true
+
+                               BOOL -> (boolean)
+                                   An attribute of type Boolean. For example:
+                                      "BOOL": true
+
+                        L -> (list)
+                            An attribute of type List. For example:
+                               "L":  [  {"S":  "Cookies"}  ,  {"S": "Coffee"},
+                               {"N", "3.14159"}]
+
+                            (structure)
+                               Represents the data for an attribute.
+
+                               Each  attribute  value  is   described   as   a
+                               name-value pair. The name is the data type, and
+                               the value is the data itself.
+
+                               For more information, see  Data  Types  in  the
+                               Amazon DynamoDB Developer Guide .
+
+                               S -> (string)
+                                   An attribute of type String. For example:
+                                      "S": "Hello"
+
+                               N -> (string)
+                                   An attribute of type Number. For example:
+                                      "N": "123.45"
+
+                                   Numbers  are sent across the network to Dy-
+                                   namoDB as strings, to maximize  compatibil-
+                                   ity  across  languages  and libraries. How-
+                                   ever, DynamoDB treats them as  number  type
+                                   attributes for mathematical operations.
+
+                               B -> (blob)
+                                   An attribute of type Binary. For example:
+                                      "B":   "dGhpcyB0ZXh0IGlzIGJhc2U2NC1lbmN-
+                                      vZGVk"
+
+                               SS -> (list)
+                                   An attribute of type String Set. For  exam-
+                                   ple:
+                                      "SS": ["Giraffe", "Hippo" ,"Zebra"]
+
+                                   (string)
+
+                               NS -> (list)
+                                   An  attribute of type Number Set. For exam-
+                                   ple:
+                                      "NS": ["42.2", "-19", "7.5", "3.14"]
+
+                                   Numbers are sent across the network to  Dy-
+                                   namoDB  as strings, to maximize compatibil-
+                                   ity across languages  and  libraries.  How-
+                                   ever,  DynamoDB  treats them as number type
+                                   attributes for mathematical operations.
+
+                                   (string)
+
+                               BS -> (list)
+                                   An attribute of type Binary Set. For  exam-
+                                   ple:
+                                      "BS":      ["U3Vubnk=",      "UmFpbnk=",
+                                      "U25vd3k="]
+
+                                   (blob)
+
+                               M -> (map)
+                                   An attribute of type Map. For example:
+                                      "M": {"Name": {"S": "Joe"}, "Age": {"N":
+                                      "35"}}
+
+                                   key -> (string)
+
+                                   ( ... recursive ... )
+
+                               L -> (list)
+                                   An attribute of type List. For example:
+                                      "L":  [  {"S":  "Cookies"} , {"S": "Cof-
+                                      fee"}, {"N", "3.14159"}]
+
+                                   ( ... recursive ... )
+
+                               NULL -> (boolean)
+                                   An attribute of type Null. For example:
+                                      "NULL": true
+
+                               BOOL -> (boolean)
+                                   An attribute of type Boolean. For example:
+                                      "BOOL": true
+
+                        NULL -> (boolean)
+                            An attribute of type Null. For example:
+                               "NULL": true
+
+                        BOOL -> (boolean)
+                            An attribute of type Boolean. For example:
+                               "BOOL": true
+
+                 ReturnValuesOnConditionCheckFailure -> (string)
+                     Use ReturnValuesOnConditionCheckFailure to get  the  item
+                     attributes  if the Update condition fails. For ReturnVal-
+                     uesOnConditionCheckFailure , the valid values are:  NONE,
+                     ALL_OLD, UPDATED_OLD, ALL_NEW, UPDATED_NEW.
+
+       JSON Syntax:
+
+          [
+            {
+              "ConditionCheck": {
+                "Key": {"string": {
+                      "S": "string",
+                      "N": "string",
+                      "B": blob,
+                      "SS": ["string", ...],
+                      "NS": ["string", ...],
+                      "BS": [blob, ...],
+                      "M": {"string": {
+                            "S": "string",
+                            "N": "string",
+                            "B": blob,
+                            "SS": ["string", ...],
+                            "NS": ["string", ...],
+                            "BS": [blob, ...],
+                            "M": {"string": { ... recursive ... }
+                              ...},
+                            "L": [
+                              { ... recursive ... }
+                              ...
+                            ],
+                            "NULL": true|false,
+                            "BOOL": true|false
+                          }
+                        ...},
+                      "L": [
+                        {
+                          "S": "string",
+                          "N": "string",
+                          "B": blob,
+                          "SS": ["string", ...],
+                          "NS": ["string", ...],
+                          "BS": [blob, ...],
+                          "M": {"string": { ... recursive ... }
+                            ...},
+                          "L": [
+                            { ... recursive ... }
+                            ...
+                          ],
+                          "NULL": true|false,
+                          "BOOL": true|false
+                        }
+                        ...
+                      ],
+                      "NULL": true|false,
+                      "BOOL": true|false
+                    }
+                  ...},
+                "TableName": "string",
+                "ConditionExpression": "string",
+                "ExpressionAttributeNames": {"string": "string"
+                  ...},
+                "ExpressionAttributeValues": {"string": {
+                      "S": "string",
+                      "N": "string",
+                      "B": blob,
+                      "SS": ["string", ...],
+                      "NS": ["string", ...],
+                      "BS": [blob, ...],
+                      "M": {"string": {
+                            "S": "string",
+                            "N": "string",
+                            "B": blob,
+                            "SS": ["string", ...],
+                            "NS": ["string", ...],
+                            "BS": [blob, ...],
+                            "M": {"string": { ... recursive ... }
+                              ...},
+                            "L": [
+                              { ... recursive ... }
+                              ...
+                            ],
+                            "NULL": true|false,
+                            "BOOL": true|false
+                          }
+                        ...},
+                      "L": [
+                        {
+                          "S": "string",
+                          "N": "string",
+                          "B": blob,
+                          "SS": ["string", ...],
+                          "NS": ["string", ...],
+                          "BS": [blob, ...],
+                          "M": {"string": { ... recursive ... }
+                            ...},
+                          "L": [
+                            { ... recursive ... }
+                            ...
+                          ],
+                          "NULL": true|false,
+                          "BOOL": true|false
+                        }
+                        ...
+                      ],
+                      "NULL": true|false,
+                      "BOOL": true|false
+                    }
+                  ...},
+                "ReturnValuesOnConditionCheckFailure": "ALL_OLD"|"NONE"
+              },
+              "Put": {
+                "Item": {"string": {
+                      "S": "string",
+                      "N": "string",
+                      "B": blob,
+                      "SS": ["string", ...],
+                      "NS": ["string", ...],
+                      "BS": [blob, ...],
+                      "M": {"string": {
+                            "S": "string",
+                            "N": "string",
+                            "B": blob,
+                            "SS": ["string", ...],
+                            "NS": ["string", ...],
+                            "BS": [blob, ...],
+                            "M": {"string": { ... recursive ... }
+                              ...},
+                            "L": [
+                              { ... recursive ... }
+                              ...
+                            ],
+                            "NULL": true|false,
+                            "BOOL": true|false
+                          }
+                        ...},
+                      "L": [
+                        {
+                          "S": "string",
+                          "N": "string",
+                          "B": blob,
+                          "SS": ["string", ...],
+                          "NS": ["string", ...],
+                          "BS": [blob, ...],
+                          "M": {"string": { ... recursive ... }
+                            ...},
+                          "L": [
+                            { ... recursive ... }
+                            ...
+                          ],
+                          "NULL": true|false,
+                          "BOOL": true|false
+                        }
+                        ...
+                      ],
+                      "NULL": true|false,
+                      "BOOL": true|false
+                    }
+                  ...},
+                "TableName": "string",
+                "ConditionExpression": "string",
+                "ExpressionAttributeNames": {"string": "string"
+                  ...},
+                "ExpressionAttributeValues": {"string": {
+                      "S": "string",
+                      "N": "string",
+                      "B": blob,
+                      "SS": ["string", ...],
+                      "NS": ["string", ...],
+                      "BS": [blob, ...],
+                      "M": {"string": {
+                            "S": "string",
+                            "N": "string",
+                            "B": blob,
+                            "SS": ["string", ...],
+                            "NS": ["string", ...],
+                            "BS": [blob, ...],
+                            "M": {"string": { ... recursive ... }
+                              ...},
+                            "L": [
+                              { ... recursive ... }
+                              ...
+                            ],
+                            "NULL": true|false,
+                            "BOOL": true|false
+                          }
+                        ...},
+                      "L": [
+                        {
+                          "S": "string",
+                          "N": "string",
+                          "B": blob,
+                          "SS": ["string", ...],
+                          "NS": ["string", ...],
+                          "BS": [blob, ...],
+                          "M": {"string": { ... recursive ... }
+                            ...},
+                          "L": [
+                            { ... recursive ... }
+                            ...
+                          ],
+                          "NULL": true|false,
+                          "BOOL": true|false
+                        }
+                        ...
+                      ],
+                      "NULL": true|false,
+                      "BOOL": true|false
+                    }
+                  ...},
+                "ReturnValuesOnConditionCheckFailure": "ALL_OLD"|"NONE"
+              },
+              "Delete": {
+                "Key": {"string": {
+                      "S": "string",
+                      "N": "string",
+                      "B": blob,
+                      "SS": ["string", ...],
+                      "NS": ["string", ...],
+                      "BS": [blob, ...],
+                      "M": {"string": {
+                            "S": "string",
+                            "N": "string",
+                            "B": blob,
+                            "SS": ["string", ...],
+                            "NS": ["string", ...],
+                            "BS": [blob, ...],
+                            "M": {"string": { ... recursive ... }
+                              ...},
+                            "L": [
+                              { ... recursive ... }
+                              ...
+                            ],
+                            "NULL": true|false,
+                            "BOOL": true|false
+                          }
+                        ...},
+                      "L": [
+                        {
+                          "S": "string",
+                          "N": "string",
+                          "B": blob,
+                          "SS": ["string", ...],
+                          "NS": ["string", ...],
+                          "BS": [blob, ...],
+                          "M": {"string": { ... recursive ... }
+                            ...},
+                          "L": [
+                            { ... recursive ... }
+                            ...
+                          ],
+                          "NULL": true|false,
+                          "BOOL": true|false
+                        }
+                        ...
+                      ],
+                      "NULL": true|false,
+                      "BOOL": true|false
+                    }
+                  ...},
+                "TableName": "string",
+                "ConditionExpression": "string",
+                "ExpressionAttributeNames": {"string": "string"
+                  ...},
+                "ExpressionAttributeValues": {"string": {
+                      "S": "string",
+                      "N": "string",
+                      "B": blob,
+                      "SS": ["string", ...],
+                      "NS": ["string", ...],
+                      "BS": [blob, ...],
+                      "M": {"string": {
+                            "S": "string",
+                            "N": "string",
+                            "B": blob,
+                            "SS": ["string", ...],
+                            "NS": ["string", ...],
+                            "BS": [blob, ...],
+                            "M": {"string": { ... recursive ... }
+                              ...},
+                            "L": [
+                              { ... recursive ... }
+                              ...
+                            ],
+                            "NULL": true|false,
+                            "BOOL": true|false
+                          }
+                        ...},
+                      "L": [
+                        {
+                          "S": "string",
+                          "N": "string",
+                          "B": blob,
+                          "SS": ["string", ...],
+                          "NS": ["string", ...],
+                          "BS": [blob, ...],
+                          "M": {"string": { ... recursive ... }
+                            ...},
+                          "L": [
+                            { ... recursive ... }
+                            ...
+                          ],
+                          "NULL": true|false,
+                          "BOOL": true|false
+                        }
+                        ...
+                      ],
+                      "NULL": true|false,
+                      "BOOL": true|false
+                    }
+                  ...},
+                "ReturnValuesOnConditionCheckFailure": "ALL_OLD"|"NONE"
+              },
+              "Update": {
+                "Key": {"string": {
+                      "S": "string",
+                      "N": "string",
+                      "B": blob,
+                      "SS": ["string", ...],
+                      "NS": ["string", ...],
+                      "BS": [blob, ...],
+                      "M": {"string": {
+                            "S": "string",
+                            "N": "string",
+                            "B": blob,
+                            "SS": ["string", ...],
+                            "NS": ["string", ...],
+                            "BS": [blob, ...],
+                            "M": {"string": { ... recursive ... }
+                              ...},
+                            "L": [
+                              { ... recursive ... }
+                              ...
+                            ],
+                            "NULL": true|false,
+                            "BOOL": true|false
+                          }
+                        ...},
+                      "L": [
+                        {
+                          "S": "string",
+                          "N": "string",
+                          "B": blob,
+                          "SS": ["string", ...],
+                          "NS": ["string", ...],
+                          "BS": [blob, ...],
+                          "M": {"string": { ... recursive ... }
+                            ...},
+                          "L": [
+                            { ... recursive ... }
+                            ...
+                          ],
+                          "NULL": true|false,
+                          "BOOL": true|false
+                        }
+                        ...
+                      ],
+                      "NULL": true|false,
+                      "BOOL": true|false
+                    }
+                  ...},
+                "UpdateExpression": "string",
+                "TableName": "string",
+                "ConditionExpression": "string",
+                "ExpressionAttributeNames": {"string": "string"
+                  ...},
+                "ExpressionAttributeValues": {"string": {
+                      "S": "string",
+                      "N": "string",
+                      "B": blob,
+                      "SS": ["string", ...],
+                      "NS": ["string", ...],
+                      "BS": [blob, ...],
+                      "M": {"string": {
+                            "S": "string",
+                            "N": "string",
+                            "B": blob,
+                            "SS": ["string", ...],
+                            "NS": ["string", ...],
+                            "BS": [blob, ...],
+                            "M": {"string": { ... recursive ... }
+                              ...},
+                            "L": [
+                              { ... recursive ... }
+                              ...
+                            ],
+                            "NULL": true|false,
+                            "BOOL": true|false
+                          }
+                        ...},
+                      "L": [
+                        {
+                          "S": "string",
+                          "N": "string",
+                          "B": blob,
+                          "SS": ["string", ...],
+                          "NS": ["string", ...],
+                          "BS": [blob, ...],
+                          "M": {"string": { ... recursive ... }
+                            ...},
+                          "L": [
+                            { ... recursive ... }
+                            ...
+                          ],
+                          "NULL": true|false,
+                          "BOOL": true|false
+                        }
+                        ...
+                      ],
+                      "NULL": true|false,
+                      "BOOL": true|false
+                    }
+                  ...},
+                "ReturnValuesOnConditionCheckFailure": "ALL_OLD"|"NONE"
+              }
+            }
+            ...
+          ]
+
+       --return-consumed-capacity (string)
+          Determines the level of detail about either provisioned or on-demand
+          throughput consumption that is returned in the response:
+
+          o INDEXES - The response includes the aggregate ConsumedCapacity for
+            the  operation,  together with ConsumedCapacity for each table and
+            secondary index that was accessed. Note that some operations, such
+            as GetItem and BatchGetItem , do not access any indexes at all. In
+            these cases, specifying INDEXES will only return  ConsumedCapacity
+            information for table(s).
+
+          o TOTAL  - The response includes only the aggregate ConsumedCapacity
+            for the operation.
+
+          o NONE - No ConsumedCapacity details are included in the response.
+
+          Possible values:
+
+          o INDEXES
+
+          o TOTAL
+
+          o NONE
+
+       --return-item-collection-metrics (string)
+          Determines whether item collection metrics are returned. If  set  to
+          SIZE  ,  the response includes statistics about item collections (if
+          any), that were modified during the operation and  are  returned  in
+          the  response.  If  set to NONE (the default), no statistics are re-
+          turned.
+
+          Possible values:
+
+          o SIZE
+
+          o NONE
+
+       --client-request-token (string)
+          Providing a ClientRequestToken makes the call to  TransactWriteItems
+          idempotent,  meaning that multiple identical calls have the same ef-
+          fect as one single call.
+
+          Although multiple identical calls using the same client request  to-
+          ken produce the same result on the server (no side effects), the re-
+          sponses to the calls might not be the same. If the ReturnConsumedCa-
+          pacity>  parameter  is set, then the initial TransactWriteItems call
+          returns the amount of write capacity units consumed  in  making  the
+          changes.  Subsequent  TransactWriteItems  calls with the same client
+          token return the number of read capacity units consumed  in  reading
+          the item.
+
+          A  client  request token is valid for 10 minutes after the first re-
+          quest that uses it is completed. After 10 minutes, any request  with
+          the  same  client token is treated as a new request. Do not resubmit
+          the same request with the same client token for more  than  10  min-
+          utes, or the result might not be idempotent.
+
+          If  you  submit a request with the same client token but a change in
+          other parameters within the 10-minute idempotency  window,  DynamoDB
+          returns an IdempotentParameterMismatch exception.
+
+       --cli-input-json  |  --cli-input-yaml (string) Reads arguments from the
+       JSON string provided. The JSON string follows the  format  provided  by
+       --generate-cli-skeleton. If other arguments are provided on the command
+       line, those values will override the JSON-provided values.  It  is  not
+       possible to pass arbitrary binary values using a JSON-provided value as
+       the string will be taken literally. This may  not  be  specified  along
+       with --cli-input-yaml.
+
+       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
+       output without sending an API request. If provided with no value or the
+       value input, prints a sample input JSON that can be used as an argument
+       for --cli-input-json. Similarly, if provided yaml-input it will print a
+       sample  input  YAML that can be used with --cli-input-yaml. If provided
+       with the value output, it validates the command inputs  and  returns  a
+       sample output JSON for that command.
+
+       See 'aws help' for descriptions of global parameters.
+
+EXAMPLES
+       Example 1: To write items atomically to one or more tables
+
+       The following transact-write-items example updates one item and deletes
+       another. The operation fails if either operation fails,  or  if  either
+       item contains a Rating attribute.
+
+          aws dynamodb transact-write-items \
+              --transact-items file://transact-items.json \
+              --return-consumed-capacity TOTAL \
+              --return-item-collection-metrics SIZE
+
+       Contents of the transact-items.json file:
+
+          [
+              {
+                  "Update": {
+                      "Key": {
+                          "Artist": {"S": "Acme Band"},
+                          "SongTitle": {"S": "Happy Day"}
+                      },
+                      "UpdateExpression": "SET AlbumTitle = :newval",
+                      "ExpressionAttributeValues": {
+                          ":newval": {"S": "Updated Album Title"}
+                      },
+                      "TableName": "MusicCollection",
+                      "ConditionExpression": "attribute_not_exists(Rating)"
+                  }
+              },
+              {
+                  "Delete": {
+                      "Key": {
+                          "Artist": {"S": "No One You Know"},
+                          "SongTitle": {"S": "Call Me Today"}
+                      },
+                      "TableName": "MusicCollection",
+                      "ConditionExpression": "attribute_not_exists(Rating)"
+                  }
+              }
+          ]
+
+       Output:
+
+          {
+              "ConsumedCapacity": [
+                  {
+                      "TableName": "MusicCollection",
+                      "CapacityUnits": 10.0,
+                      "WriteCapacityUnits": 10.0
+                  }
+              ],
+              "ItemCollectionMetrics": {
+                  "MusicCollection": [
+                      {
+                          "ItemCollectionKey": {
+                              "Artist": {
+                                  "S": "No One You Know"
+                              }
+                          },
+                          "SizeEstimateRangeGB": [
+                              0.0,
+                              1.0
+                          ]
+                      },
+                      {
+                          "ItemCollectionKey": {
+                              "Artist": {
+                                  "S": "Acme Band"
+                              }
+                          },
+                          "SizeEstimateRangeGB": [
+                              0.0,
+                              1.0
+                          ]
+                      }
+                  ]
+              }
+          }
+
+       For  more  information,  see  Managing  Complex Workflows with DynamoDB
+       Transactions in the Amazon DynamoDB Developer Guide.
+
+       Example 2: To write items atomically using a client request token
+
+       The following command uses a client request token to make the  call  to
+       transact-write-items  idempotent,  meaning that multiple calls have the
+       same effect as one single call.
+
+          aws dynamodb transact-write-items \
+              --transact-items file://transact-items.json \
+              --client-request-token abc123
+
+       Contents of the transact-items.json file:
+
+          [
+              {
+                  "Update": {
+                      "Key": {
+                          "Artist": {"S": "Acme Band"},
+                          "SongTitle": {"S": "Happy Day"}
+                      },
+                      "UpdateExpression": "SET AlbumTitle = :newval",
+                      "ExpressionAttributeValues": {
+                          ":newval": {"S": "Updated Album Title"}
+                      },
+                      "TableName": "MusicCollection",
+                      "ConditionExpression": "attribute_not_exists(Rating)"
+                  }
+              },
+              {
+                  "Delete": {
+                      "Key": {
+                          "Artist": {"S": "No One You Know"},
+                          "SongTitle": {"S": "Call Me Today"}
+                      },
+                      "TableName": "MusicCollection",
+                      "ConditionExpression": "attribute_not_exists(Rating)"
+                  }
+              }
+          ]
+
+       This command produces no output.
+
+       For more information, see  Managing  Complex  Workflows  with  DynamoDB
+       Transactions in the Amazon DynamoDB Developer Guide.
+
+OUTPUT
+       ConsumedCapacity -> (list)
+          The  capacity units consumed by the entire TransactWriteItems opera-
+          tion. The values of the list are ordered according to  the  ordering
+          of the TransactItems request parameter.
+
+          (structure)
+              The  capacity  units consumed by an operation. The data returned
+              includes the total provisioned throughput consumed,  along  with
+              statistics  for the table and any indexes involved in the opera-
+              tion. ConsumedCapacity is only returned if the request asked for
+              it. For more information, see Provisioned Throughput in the Ama-
+              zon DynamoDB Developer Guide .
+
+              TableName -> (string)
+                 The name of the table that was affected by the operation.
+
+              CapacityUnits -> (double)
+                 The total number of capacity units consumed by the operation.
+
+              ReadCapacityUnits -> (double)
+                 The total number of read capacity units consumed by the oper-
+                 ation.
+
+              WriteCapacityUnits -> (double)
+                 The  total number of write capacity units consumed by the op-
+                 eration.
+
+              Table -> (structure)
+                 The amount of throughput consumed on the  table  affected  by
+                 the operation.
+
+                 ReadCapacityUnits -> (double)
+                     The total number of read capacity units consumed on a ta-
+                     ble or an index.
+
+                 WriteCapacityUnits -> (double)
+                     The total number of write capacity units  consumed  on  a
+                     table or an index.
+
+                 CapacityUnits -> (double)
+                     The total number of capacity units consumed on a table or
+                     an index.
+
+              LocalSecondaryIndexes -> (map)
+                 The amount of throughput consumed on  each  local  index  af-
+                 fected by the operation.
+
+                 key -> (string)
+
+                 value -> (structure)
+                     Represents  the amount of provisioned throughput capacity
+                     consumed on a table or an index.
+
+                     ReadCapacityUnits -> (double)
+                        The total number of read capacity units consumed on  a
+                        table or an index.
+
+                     WriteCapacityUnits -> (double)
+                        The total number of write capacity units consumed on a
+                        table or an index.
+
+                     CapacityUnits -> (double)
+                        The total number of capacity units consumed on a table
+                        or an index.
+
+              GlobalSecondaryIndexes -> (map)
+                 The  amount  of  throughput consumed on each global index af-
+                 fected by the operation.
+
+                 key -> (string)
+
+                 value -> (structure)
+                     Represents the amount of provisioned throughput  capacity
+                     consumed on a table or an index.
+
+                     ReadCapacityUnits -> (double)
+                        The  total number of read capacity units consumed on a
+                        table or an index.
+
+                     WriteCapacityUnits -> (double)
+                        The total number of write capacity units consumed on a
+                        table or an index.
+
+                     CapacityUnits -> (double)
+                        The total number of capacity units consumed on a table
+                        or an index.
+
+       ItemCollectionMetrics -> (map)
+          A list of tables that were processed by TransactWriteItems and,  for
+          each  table,  information  about  any item collections that were af-
+          fected by individual UpdateItem , PutItem  ,  or  DeleteItem  opera-
+          tions.
+
+          key -> (string)
+
+          value -> (list)
+              (structure)
+                 Information  about  item  collections,  if any, that were af-
+                 fected by the operation. ItemCollectionMetrics  is  only  re-
+                 turned  if  the  request  asked for it. If the table does not
+                 have any local secondary indexes, this information is not re-
+                 turned in the response.
+
+                 ItemCollectionKey -> (map)
+                     The  partition  key  value  of  the item collection. This
+                     value is the same as the partition key value of the item.
+
+                     key -> (string)
+
+                     value -> (structure)
+                        Represents the data for an attribute.
+
+                        Each attribute value  is  described  as  a  name-value
+                        pair.  The name is the data type, and the value is the
+                        data itself.
+
+                        For more information, see Data Types in the Amazon Dy-
+                        namoDB Developer Guide .
+
+                        S -> (string)
+                            An attribute of type String. For example:
+                               "S": "Hello"
+
+                        N -> (string)
+                            An attribute of type Number. For example:
+                               "N": "123.45"
+
+                            Numbers are sent across the network to DynamoDB as
+                            strings, to  maximize  compatibility  across  lan-
+                            guages  and  libraries.  However,  DynamoDB treats
+                            them as number type  attributes  for  mathematical
+                            operations.
+
+                        B -> (blob)
+                            An attribute of type Binary. For example:
+                               "B": "dGhpcyB0ZXh0IGlzIGJhc2U2NC1lbmNvZGVk"
+
+                        SS -> (list)
+                            An attribute of type String Set. For example:
+                               "SS": ["Giraffe", "Hippo" ,"Zebra"]
+
+                            (string)
+
+                        NS -> (list)
+                            An attribute of type Number Set. For example:
+                               "NS": ["42.2", "-19", "7.5", "3.14"]
+
+                            Numbers are sent across the network to DynamoDB as
+                            strings, to  maximize  compatibility  across  lan-
+                            guages  and  libraries.  However,  DynamoDB treats
+                            them as number type  attributes  for  mathematical
+                            operations.
+
+                            (string)
+
+                        BS -> (list)
+                            An attribute of type Binary Set. For example:
+                               "BS": ["U3Vubnk=", "UmFpbnk=", "U25vd3k="]
+
+                            (blob)
+
+                        M -> (map)
+                            An attribute of type Map. For example:
+                               "M": {"Name": {"S": "Joe"}, "Age": {"N": "35"}}
+
+                            key -> (string)
+
+                            value -> (structure)
+                               Represents the data for an attribute.
+
+                               Each   attribute   value   is  described  as  a
+                               name-value pair. The name is the data type, and
+                               the value is the data itself.
+
+                               For  more  information,  see  Data Types in the
+                               Amazon DynamoDB Developer Guide .
+
+                               S -> (string)
+                                   An attribute of type String. For example:
+                                      "S": "Hello"
+
+                               N -> (string)
+                                   An attribute of type Number. For example:
+                                      "N": "123.45"
+
+                                   Numbers are sent across the network to  Dy-
+                                   namoDB  as strings, to maximize compatibil-
+                                   ity across languages  and  libraries.  How-
+                                   ever,  DynamoDB  treats them as number type
+                                   attributes for mathematical operations.
+
+                               B -> (blob)
+                                   An attribute of type Binary. For example:
+                                      "B":   "dGhpcyB0ZXh0IGlzIGJhc2U2NC1lbmN-
+                                      vZGVk"
+
+                               SS -> (list)
+                                   An  attribute of type String Set. For exam-
+                                   ple:
+                                      "SS": ["Giraffe", "Hippo" ,"Zebra"]
+
+                                   (string)
+
+                               NS -> (list)
+                                   An attribute of type Number Set. For  exam-
+                                   ple:
+                                      "NS": ["42.2", "-19", "7.5", "3.14"]
+
+                                   Numbers  are sent across the network to Dy-
+                                   namoDB as strings, to maximize  compatibil-
+                                   ity  across  languages  and libraries. How-
+                                   ever, DynamoDB treats them as  number  type
+                                   attributes for mathematical operations.
+
+                                   (string)
+
+                               BS -> (list)
+                                   An  attribute of type Binary Set. For exam-
+                                   ple:
+                                      "BS":      ["U3Vubnk=",      "UmFpbnk=",
+                                      "U25vd3k="]
+
+                                   (blob)
+
+                               M -> (map)
+                                   An attribute of type Map. For example:
+                                      "M": {"Name": {"S": "Joe"}, "Age": {"N":
+                                      "35"}}
+
+                                   key -> (string)
+
+                                   ( ... recursive ... )
+
+                               L -> (list)
+                                   An attribute of type List. For example:
+                                      "L": [ {"S": "Cookies"}  ,  {"S":  "Cof-
+                                      fee"}, {"N", "3.14159"}]
+
+                                   ( ... recursive ... )
+
+                               NULL -> (boolean)
+                                   An attribute of type Null. For example:
+                                      "NULL": true
+
+                               BOOL -> (boolean)
+                                   An attribute of type Boolean. For example:
+                                      "BOOL": true
+
+                        L -> (list)
+                            An attribute of type List. For example:
+                               "L":  [  {"S":  "Cookies"}  ,  {"S": "Coffee"},
+                               {"N", "3.14159"}]
+
+                            (structure)
+                               Represents the data for an attribute.
+
+                               Each  attribute  value  is   described   as   a
+                               name-value pair. The name is the data type, and
+                               the value is the data itself.
+
+                               For more information, see  Data  Types  in  the
+                               Amazon DynamoDB Developer Guide .
+
+                               S -> (string)
+                                   An attribute of type String. For example:
+                                      "S": "Hello"
+
+                               N -> (string)
+                                   An attribute of type Number. For example:
+                                      "N": "123.45"
+
+                                   Numbers  are sent across the network to Dy-
+                                   namoDB as strings, to maximize  compatibil-
+                                   ity  across  languages  and libraries. How-
+                                   ever, DynamoDB treats them as  number  type
+                                   attributes for mathematical operations.
+
+                               B -> (blob)
+                                   An attribute of type Binary. For example:
+                                      "B":   "dGhpcyB0ZXh0IGlzIGJhc2U2NC1lbmN-
+                                      vZGVk"
+
+                               SS -> (list)
+                                   An attribute of type String Set. For  exam-
+                                   ple:
+                                      "SS": ["Giraffe", "Hippo" ,"Zebra"]
+
+                                   (string)
+
+                               NS -> (list)
+                                   An  attribute of type Number Set. For exam-
+                                   ple:
+                                      "NS": ["42.2", "-19", "7.5", "3.14"]
+
+                                   Numbers are sent across the network to  Dy-
+                                   namoDB  as strings, to maximize compatibil-
+                                   ity across languages  and  libraries.  How-
+                                   ever,  DynamoDB  treats them as number type
+                                   attributes for mathematical operations.
+
+                                   (string)
+
+                               BS -> (list)
+                                   An attribute of type Binary Set. For  exam-
+                                   ple:
+                                      "BS":      ["U3Vubnk=",      "UmFpbnk=",
+                                      "U25vd3k="]
+
+                                   (blob)
+
+                               M -> (map)
+                                   An attribute of type Map. For example:
+                                      "M": {"Name": {"S": "Joe"}, "Age": {"N":
+                                      "35"}}
+
+                                   key -> (string)
+
+                                   ( ... recursive ... )
+
+                               L -> (list)
+                                   An attribute of type List. For example:
+                                      "L":  [  {"S":  "Cookies"} , {"S": "Cof-
+                                      fee"}, {"N", "3.14159"}]
+
+                                   ( ... recursive ... )
+
+                               NULL -> (boolean)
+                                   An attribute of type Null. For example:
+                                      "NULL": true
+
+                               BOOL -> (boolean)
+                                   An attribute of type Boolean. For example:
+                                      "BOOL": true
+
+                        NULL -> (boolean)
+                            An attribute of type Null. For example:
+                               "NULL": true
+
+                        BOOL -> (boolean)
+                            An attribute of type Boolean. For example:
+                               "BOOL": true
+
+                 SizeEstimateRangeGB -> (list)
+                     An estimate of item collection size, in  gigabytes.  This
+                     value is a two-element array containing a lower bound and
+                     an upper bound for the estimate.  The  estimate  includes
+                     the  size of all the items in the table, plus the size of
+                     all attributes projected into all of the local  secondary
+                     indexes  on  that  table.  Use  this  estimate to measure
+                     whether a local secondary index is approaching  its  size
+                     limit.
+
+                     The  estimate  is subject to change over time; therefore,
+                     do not rely on the precision or accuracy of the estimate.
+
+                     (double)
+
+
+
+                                                        TRANSACT-WRITE-ITEMS()

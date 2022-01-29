@@ -1,0 +1,215 @@
+START-TEXT-DETECTION()                                  START-TEXT-DETECTION()
+
+
+
+NAME
+       start-text-detection -
+
+DESCRIPTION
+       Starts asynchronous detection of text in a stored video.
+
+       Amazon Rekognition Video can detect text in a video stored in an Amazon
+       S3 bucket. Use  Video to specify the bucket name and  the  filename  of
+       the  video.  StartTextDetection returns a job identifier (JobId ) which
+       you use to get the results of the operation.  When  text  detection  is
+       finished, Amazon Rekognition Video publishes a completion status to the
+       Amazon Simple Notification Service topic that you specify in  Notifica-
+       tionChannel .
+
+       To  get  the  results of the text detection operation, first check that
+       the status value published to the Amazon SNS topic is  SUCCEEDED  .  if
+       so,  call   GetTextDetection  and pass the job identifier (JobId ) from
+       the initial call to StartTextDetection .
+
+       See also: AWS API Documentation
+
+       See 'aws help' for descriptions of global parameters.
+
+SYNOPSIS
+            start-text-detection
+          --video <value>
+          [--client-request-token <value>]
+          [--notification-channel <value>]
+          [--job-tag <value>]
+          [--filters <value>]
+          [--cli-input-json | --cli-input-yaml]
+          [--generate-cli-skeleton <value>]
+
+OPTIONS
+       --video (structure)
+          Video file stored in an Amazon S3 bucket. Amazon  Rekognition  video
+          start operations such as  StartLabelDetection use Video to specify a
+          video for analysis. The supported file formats are  .mp4,  .mov  and
+          .avi.
+
+          S3Object -> (structure)
+              The Amazon S3 bucket name and file name for the video.
+
+              Bucket -> (string)
+                 Name of the S3 bucket.
+
+              Name -> (string)
+                 S3 object key name.
+
+              Version -> (string)
+                 If  the bucket is versioning enabled, you can specify the ob-
+                 ject version.
+
+       Shorthand Syntax:
+
+          S3Object={Bucket=string,Name=string,Version=string}
+
+       JSON Syntax:
+
+          {
+            "S3Object": {
+              "Bucket": "string",
+              "Name": "string",
+              "Version": "string"
+            }
+          }
+
+       --client-request-token (string)
+          Idempotent token used to identify the start request. If you use  the
+          same token with multiple StartTextDetection requests, the same JobId
+          is returned. Use ClientRequestToken to prevent the same job from be-
+          ing accidentaly started more than once.
+
+       --notification-channel (structure)
+          The  Amazon Simple Notification Service topic to which Amazon Rekog-
+          nition publishes the completion status of a  video  analysis  opera-
+          tion.  For  more  information, see  api-video . Note that the Amazon
+          SNS topic must have a topic name that begins with  AmazonRekognition
+          if you are using the AmazonRekognitionServiceRole permissions policy
+          to access the topic. For more information, see Giving access to mul-
+          tiple Amazon SNS topics .
+
+          SNSTopicArn -> (string)
+              The  Amazon  SNS  topic to which Amazon Rekognition to posts the
+              completion status.
+
+          RoleArn -> (string)
+              The ARN of an IAM role that gives Amazon Rekognition  publishing
+              permissions to the Amazon SNS topic.
+
+       Shorthand Syntax:
+
+          SNSTopicArn=string,RoleArn=string
+
+       JSON Syntax:
+
+          {
+            "SNSTopicArn": "string",
+            "RoleArn": "string"
+          }
+
+       --job-tag (string)
+          An  identifier  returned  in the completion status published by your
+          Amazon Simple Notification Service topic. For example, you  can  use
+          JobTag to group related jobs and identify them in the completion no-
+          tification.
+
+       --filters (structure)
+          Optional parameters that let you set criteria the text must meet  to
+          be included in your response.
+
+          WordFilter -> (structure)
+              Filters focusing on qualities of the text, such as confidence or
+              size.
+
+              MinConfidence -> (float)
+                 Sets the confidence of word detection. Words  with  detection
+                 confidence  below this will be excluded from the result. Val-
+                 ues should be between 50 and 100 as Text in  Video  will  not
+                 return any result below 50.
+
+              MinBoundingBoxHeight -> (float)
+                 Sets  the minimum height of the word bounding box. Words with
+                 bounding box heights lesser than this value will be  excluded
+                 from the result. Value is relative to the video frame height.
+
+              MinBoundingBoxWidth -> (float)
+                 Sets  the  minimum width of the word bounding box. Words with
+                 bounding boxes widths lesser than this value will be excluded
+                 from the result. Value is relative to the video frame width.
+
+          RegionsOfInterest -> (list)
+              Filter focusing on a certain area of the frame. Uses a Bounding-
+              Box object to set the region of the screen.
+
+              (structure)
+                 Specifies a location within the frame that Rekognition checks
+                 for  text.  Uses  a BoundingBox object to set a region of the
+                 screen.
+
+                 A word is included in the region if the  word  is  more  than
+                 half  in  that  region. If there is more than one region, the
+                 word will be compared with all regions  of  the  screen.  Any
+                 word more than half in a region is kept in the results.
+
+                 BoundingBox -> (structure)
+                     The box representing a region of interest on screen.
+
+                     Width -> (float)
+                        Width  of  the  bounding box as a ratio of the overall
+                        image width.
+
+                     Height -> (float)
+                        Height of the bounding box as a ratio of  the  overall
+                        image height.
+
+                     Left -> (float)
+                        Left  coordinate  of  the  bounding  box as a ratio of
+                        overall image width.
+
+                     Top -> (float)
+                        Top coordinate of the bounding box as a ratio of over-
+                        all image height.
+
+       JSON Syntax:
+
+          {
+            "WordFilter": {
+              "MinConfidence": float,
+              "MinBoundingBoxHeight": float,
+              "MinBoundingBoxWidth": float
+            },
+            "RegionsOfInterest": [
+              {
+                "BoundingBox": {
+                  "Width": float,
+                  "Height": float,
+                  "Left": float,
+                  "Top": float
+                }
+              }
+              ...
+            ]
+          }
+
+       --cli-input-json  |  --cli-input-yaml (string) Reads arguments from the
+       JSON string provided. The JSON string follows the  format  provided  by
+       --generate-cli-skeleton. If other arguments are provided on the command
+       line, those values will override the JSON-provided values.  It  is  not
+       possible to pass arbitrary binary values using a JSON-provided value as
+       the string will be taken literally. This may  not  be  specified  along
+       with --cli-input-yaml.
+
+       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
+       output without sending an API request. If provided with no value or the
+       value input, prints a sample input JSON that can be used as an argument
+       for --cli-input-json. Similarly, if provided yaml-input it will print a
+       sample  input  YAML that can be used with --cli-input-yaml. If provided
+       with the value output, it validates the command inputs  and  returns  a
+       sample output JSON for that command.
+
+       See 'aws help' for descriptions of global parameters.
+
+OUTPUT
+       JobId -> (string)
+          Identifier for the text detection job. Use JobId to identify the job
+          in a subsequent call to GetTextDetection .
+
+
+
+                                                        START-TEXT-DETECTION()

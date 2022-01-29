@@ -1,0 +1,214 @@
+MODIFY-INSTANCE-PLACEMENT()                        MODIFY-INSTANCE-PLACEMENT()
+
+
+
+NAME
+       modify-instance-placement -
+
+DESCRIPTION
+       Modifies  the placement attributes for a specified instance. You can do
+       the following:
+
+       o Modify the affinity between an instance and a Dedicated Host  .  When
+         affinity  is  set  to  host and the instance is not associated with a
+         specific Dedicated Host, the next time the instance is  launched,  it
+         is  automatically  associated with the host on which it lands. If the
+         instance is restarted or rebooted, this relationship persists.
+
+       o Change the Dedicated Host with which an instance is associated.
+
+       o Change the instance tenancy of an instance.
+
+       o Move an instance to or from a placement group .
+
+       At least one attribute for affinity, host  ID,  tenancy,  or  placement
+       group  name  must be specified in the request. Affinity and tenancy can
+       be modified in the same request.
+
+       To modify the host ID, tenancy, placement group, or  partition  for  an
+       instance, the instance must be in the stopped state.
+
+       See also: AWS API Documentation
+
+       See 'aws help' for descriptions of global parameters.
+
+SYNOPSIS
+            modify-instance-placement
+          [--affinity <value>]
+          [--group-name <value>]
+          [--host-id <value>]
+          --instance-id <value>
+          [--tenancy <value>]
+          [--partition-number <value>]
+          [--host-resource-group-arn <value>]
+          [--cli-input-json | --cli-input-yaml]
+          [--generate-cli-skeleton <value>]
+
+OPTIONS
+       --affinity (string)
+          The affinity setting for the instance.
+
+          Possible values:
+
+          o default
+
+          o host
+
+       --group-name (string)
+          The  name of the placement group in which to place the instance. For
+          spread placement groups, the instance must have a tenancy of default
+          . For cluster and partition placement groups, the instance must have
+          a tenancy of default or dedicated .
+
+          To remove an instance from  a  placement  group,  specify  an  empty
+          string ("").
+
+       --host-id (string)
+          The ID of the Dedicated Host with which to associate the instance.
+
+       --instance-id (string)
+          The ID of the instance that you are modifying.
+
+       --tenancy (string)
+          The tenancy for the instance.
+
+          NOTE:
+              For T3 instances, you can't change the tenancy from dedicated to
+              host , or from host to dedicated . Attempting  to  make  one  of
+              these  unsupported tenancy changes results in the InvalidTenancy
+              error code.
+
+          Possible values:
+
+          o dedicated
+
+          o host
+
+       --partition-number (integer)
+          The number of the partition in which to place  the  instance.  Valid
+          only if the placement group strategy is set to partition .
+
+       --host-resource-group-arn (string)
+          The ARN of the host resource group in which to place the instance.
+
+       --cli-input-json  |  --cli-input-yaml (string) Reads arguments from the
+       JSON string provided. The JSON string follows the  format  provided  by
+       --generate-cli-skeleton. If other arguments are provided on the command
+       line, those values will override the JSON-provided values.  It  is  not
+       possible to pass arbitrary binary values using a JSON-provided value as
+       the string will be taken literally. This may  not  be  specified  along
+       with --cli-input-yaml.
+
+       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
+       output without sending an API request. If provided with no value or the
+       value input, prints a sample input JSON that can be used as an argument
+       for --cli-input-json. Similarly, if provided yaml-input it will print a
+       sample  input  YAML that can be used with --cli-input-yaml. If provided
+       with the value output, it validates the command inputs  and  returns  a
+       sample output JSON for that command.
+
+       See 'aws help' for descriptions of global parameters.
+
+EXAMPLES
+       Example 1: To remove an instance's affinity with a Dedicated Host
+
+       The  following  modify-instance-placement example removes an instance's
+       affinity with a Dedicated Host and enables it to launch on  any  avail-
+       able Dedicated Host in your account that supports its instance type.
+
+          aws ec2 modify-instance-placement \
+              --instance-id i-0e6ddf6187EXAMPLE \
+              --affinity default
+
+       Output:
+
+          {
+              "Return": true
+          }
+
+       Example  2: To establish affinity between an instance and the specified
+       Dedicated Host
+
+       The following modify-instance-placement example  establishes  a  launch
+       relationship  between an instance and a Dedicated Host. The instance is
+       only able to run on the specified Dedicated Host.
+
+          aws ec2 modify-instance-placement \
+              --instance-id i-0e6ddf6187EXAMPLE \
+              --affinity host \
+              --host-id i-0e6ddf6187EXAMPLE
+
+       Output:
+
+          {
+              "Return": true
+          }
+
+       For more information, see Modifying Instance Tenancy  and  Affinity  in
+       the Amazon Elastic Compute Cloud User Guide for Linux Instances.
+
+       Example 3: To move an instance to a placement group
+
+       The  following modify-instance-placement example moves an instance to a
+       placement group, stop the instance, modify the instance placement,  and
+       then restart the instance.
+
+          aws ec2 stop-instances \
+              --instance-ids i-0123a456700123456
+
+          aws ec2 modify-instance-placement \
+              --instance-id i-0123a456700123456 \
+              --group-name MySpreadGroup
+
+          aws ec2 start-instances \
+              --instance-ids i-0123a456700123456
+
+       For  more information, see Changing the Placement Group for an Instance
+       in the Amazon Elastic Compute Cloud Users Guide.
+
+       Example 4: To remove an instance from a placement group
+
+       The following modify-instance-placement  example  removes  an  instance
+       from a placement group by stopping the instance, modifying the instance
+       placement, and then restarting  the  instance.  The  following  example
+       specifies an empty string ("") for the placement group name to indicate
+       that the instance is not to be located in a placement group.
+
+       Stop the instance:
+
+          aws ec2 stop-instances \
+              --instance-ids i-0123a456700123456
+
+       Modify the placement (Windows Command Prompt, Linux, and macOS):
+
+          aws ec2 modify-instance-placement \
+              --instance-id i-0123a456700123456 \
+              --group-name ""
+
+       Modify the placement (Windows PowerShell):
+
+          aws ec2 modify-instance-placement `
+              --instance-id i-0123a456700123456 `
+              --group-name """"
+
+       Restart the instance:
+
+          aws ec2 start-instances \
+              --instance-ids i-0123a456700123456
+
+       Output:
+
+          {
+              "Return": true
+          }
+
+       For more information, see Modifying Instance Tenancy  and  Affinity  in
+       the Amazon Elastic Compute Cloud User Guide for Linux Instances.
+
+OUTPUT
+       Return -> (boolean)
+          Is true if the request succeeds, and an error otherwise.
+
+
+
+                                                   MODIFY-INSTANCE-PLACEMENT()

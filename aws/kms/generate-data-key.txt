@@ -1,0 +1,228 @@
+GENERATE-DATA-KEY()                                        GENERATE-DATA-KEY()
+
+
+
+NAME
+       generate-data-key -
+
+DESCRIPTION
+       Generates  a unique symmetric data key for client-side encryption. This
+       operation returns a plaintext copy of the data key and a copy  that  is
+       encrypted  under  a KMS key that you specify. You can use the plaintext
+       key to encrypt your data outside of KMS and store  the  encrypted  data
+       key with the encrypted data.
+          GenerateDataKey  returns  a  unique  data  key for each request. The
+          bytes in the plaintext key are not related to the caller or the  KMS
+          key.
+
+       To generate a data key, specify the symmetric KMS key that will be used
+       to encrypt the data key. You cannot use an asymmetric KMS key to gener-
+       ate  data  keys.  To get the type of your KMS key, use the  DescribeKey
+       operation. You must also specify the length of the data key. Use either
+       the KeySpec or NumberOfBytes parameters (but not both). For 128-bit and
+       256-bit data keys, use the KeySpec parameter.
+
+       To get only an encrypted copy of the data  key,  use   GenerateDataKey-
+       WithoutPlaintext  .  To  generate  an asymmetric data key pair, use the
+       GenerateDataKeyPair or  GenerateDataKeyPairWithoutPlaintext  operation.
+       To get a cryptographically secure random byte string, use  GenerateRan-
+       dom .
+
+       You can use the optional encryption context to add additional  security
+       to  the encryption operation. If you specify an EncryptionContext , you
+       must specify the same encryption context (a case-sensitive exact match)
+       when  decrypting  the encrypted data key. Otherwise, the request to de-
+       crypt fails with an InvalidCiphertextException . For more  information,
+       see Encryption Context in the Key Management Service Developer Guide .
+
+       Applications in Amazon Web Services Nitro Enclaves can call this opera-
+       tion by using the Amazon Web Services Nitro Enclaves Development Kit  .
+       For  information  about  the  supporting parameters, see How Amazon Web
+       Services Nitro Enclaves use KMS in the Key Management Service Developer
+       Guide .
+
+       The KMS key that you use for this operation must be in a compatible key
+       state. For details, see Key state: Effect on your KMS key  in  the  Key
+       Management Service Developer Guide .
+          How to use your data key
+
+       We recommend that you use the following pattern to encrypt data locally
+       in your application. You can write your own code or use  a  client-side
+       encryption  library,  such  as the Amazon Web Services Encryption SDK ,
+       the Amazon DynamoDB Encryption Client , or Amazon  S3  client-side  en-
+       cryption to do these tasks for you.
+
+       To encrypt data outside of KMS:
+
+       o Use the GenerateDataKey operation to get a data key.
+
+       o Use  the  plaintext data key (in the Plaintext field of the response)
+         to encrypt your data outside of KMS. Then erase  the  plaintext  data
+         key from memory.
+
+       o Store  the encrypted data key (in the CiphertextBlob field of the re-
+         sponse) with the encrypted data.
+
+       To decrypt data outside of KMS:
+
+       o Use the  Decrypt operation to decrypt the encrypted data key. The op-
+         eration returns a plaintext copy of the data key.
+
+       o Use the plaintext data key to decrypt data outside of KMS, then erase
+         the plaintext data key from memory.
+          Cross-account use : Yes. To perform this operation with a KMS key in
+          a  different  Amazon  Web  Services  account, specify the key ARN or
+          alias ARN in the value of the KeyId parameter.
+
+          Required permissions : kms:GenerateDataKey (key policy)
+
+          Related operations:
+
+       o Decrypt
+
+       o Encrypt
+
+       o GenerateDataKeyPair
+
+       o GenerateDataKeyPairWithoutPlaintext
+
+       o GenerateDataKeyWithoutPlaintext
+
+       See also: AWS API Documentation
+
+       See 'aws help' for descriptions of global parameters.
+
+SYNOPSIS
+            generate-data-key
+          --key-id <value>
+          [--encryption-context <value>]
+          [--number-of-bytes <value>]
+          [--key-spec <value>]
+          [--grant-tokens <value>]
+          [--cli-input-json | --cli-input-yaml]
+          [--generate-cli-skeleton <value>]
+
+OPTIONS
+       --key-id (string)
+          Identifies the symmetric KMS key that encrypts the data key.
+
+          To specify a KMS key, use its key ID, key ARN, alias name, or  alias
+          ARN.  When using an alias name, prefix it with "alias/" . To specify
+          a KMS key in a different Amazon Web Services account, you  must  use
+          the key ARN or alias ARN.
+
+          For example:
+
+          o Key ID: 1234abcd-12ab-34cd-56ef-1234567890ab
+
+          o Key                                                           ARN:
+            arn:aws:kms:us-east-2:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab
+
+          o Alias name: alias/ExampleAlias
+
+          o Alias ARN: arn:aws:kms:us-east-2:111122223333:alias/ExampleAlias
+
+          To  get  the key ID and key ARN for a KMS key, use  ListKeys or  De-
+          scribeKey . To get the alias name and alias ARN, use  ListAliases .
+
+       --encryption-context (map)
+          Specifies the encryption context that will be used  when  encrypting
+          the data key.
+
+          An  encryption context is a collection of non-secret key-value pairs
+          that represents additional authenticated data. When you use  an  en-
+          cryption  context to encrypt data, you must specify the same (an ex-
+          act case-sensitive match) encryption context to decrypt the data. An
+          encryption  context is optional when encrypting with a symmetric KMS
+          key, but it is highly recommended.
+
+          For more information, see Encryption Context in the  Key  Management
+          Service Developer Guide .
+
+          key -> (string)
+
+          value -> (string)
+
+       Shorthand Syntax:
+
+          KeyName1=string,KeyName2=string
+
+       JSON Syntax:
+
+          {"string": "string"
+            ...}
+
+       --number-of-bytes (integer)
+          Specifies  the length of the data key in bytes. For example, use the
+          value 64 to generate a 512-bit data key (64 bytes is 512 bits).  For
+          128-bit  (16-byte)  and 256-bit (32-byte) data keys, use the KeySpec
+          parameter.
+
+          You must specify either the KeySpec or the  NumberOfBytes  parameter
+          (but not both) in every GenerateDataKey request.
+
+       --key-spec (string)
+          Specifies  the  length  of  the  data key. Use AES_128 to generate a
+          128-bit symmetric key, or AES_256 to generate  a  256-bit  symmetric
+          key.
+
+          You  must  specify either the KeySpec or the NumberOfBytes parameter
+          (but not both) in every GenerateDataKey request.
+
+          Possible values:
+
+          o AES_256
+
+          o AES_128
+
+       --grant-tokens (list)
+          A list of grant tokens.
+
+          Use a grant token when your permission to call this operation  comes
+          from  a  new  grant that has not yet achieved eventual consistency .
+          For more information, see Grant token and Using a grant token in the
+          Key Management Service Developer Guide .
+
+          (string)
+
+       Syntax:
+
+          "string" "string" ...
+
+       --cli-input-json  |  --cli-input-yaml (string) Reads arguments from the
+       JSON string provided. The JSON string follows the  format  provided  by
+       --generate-cli-skeleton. If other arguments are provided on the command
+       line, those values will override the JSON-provided values.  It  is  not
+       possible to pass arbitrary binary values using a JSON-provided value as
+       the string will be taken literally. This may  not  be  specified  along
+       with --cli-input-yaml.
+
+       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
+       output without sending an API request. If provided with no value or the
+       value input, prints a sample input JSON that can be used as an argument
+       for --cli-input-json. Similarly, if provided yaml-input it will print a
+       sample  input  YAML that can be used with --cli-input-yaml. If provided
+       with the value output, it validates the command inputs  and  returns  a
+       sample output JSON for that command.
+
+       See 'aws help' for descriptions of global parameters.
+
+OUTPUT
+       CiphertextBlob -> (blob)
+          The encrypted copy of the data key. When you use the HTTP API or the
+          Amazon Web Services CLI, the value is Base64-encoded. Otherwise,  it
+          is not Base64-encoded.
+
+       Plaintext -> (blob)
+          The  plaintext data key. When you use the HTTP API or the Amazon Web
+          Services CLI, the value is  Base64-encoded.  Otherwise,  it  is  not
+          Base64-encoded.  Use  this  data key to encrypt your data outside of
+          KMS. Then, remove it from memory as soon as possible.
+
+       KeyId -> (string)
+          The Amazon Resource Name (key ARN ) of the KMS  key  that  encrypted
+          the data key.
+
+
+
+                                                           GENERATE-DATA-KEY()

@@ -1,0 +1,2198 @@
+UPDATE-DESTINATION()                                      UPDATE-DESTINATION()
+
+
+
+NAME
+       update-destination -
+
+DESCRIPTION
+       Updates the specified destination of the specified delivery stream.
+
+       Use  this operation to change the destination type (for example, to re-
+       place the Amazon S3 destination with Amazon Redshift) or change the pa-
+       rameters  associated  with  a  destination  (for example, to change the
+       bucket name of the Amazon S3 destination). The update might  not  occur
+       immediately.  The  target delivery stream remains active while the con-
+       figurations are updated, so data writes to the delivery stream can con-
+       tinue  during  this process. The updated configurations are usually ef-
+       fective within a few minutes.
+
+       Switching between Amazon ES and other services is not supported. For an
+       Amazon  ES destination, you can only update to another Amazon ES desti-
+       nation.
+
+       If the destination type is the same, Kinesis Data Firehose  merges  the
+       configuration  parameters  specified with the destination configuration
+       that already exists on the delivery stream. If any  of  the  parameters
+       are  not  specified  in the call, the existing values are retained. For
+       example, in the Amazon S3 destination, if   EncryptionConfiguration  is
+       not  specified, then the existing EncryptionConfiguration is maintained
+       on the destination.
+
+       If the destination type is not the same, for example, changing the des-
+       tination  from Amazon S3 to Amazon Redshift, Kinesis Data Firehose does
+       not merge any parameters. In this case, all parameters must  be  speci-
+       fied.
+
+       Kinesis Data Firehose uses CurrentDeliveryStreamVersionId to avoid race
+       conditions and conflicting merges. This is a required  field,  and  the
+       service  updates  the  configuration only if the existing configuration
+       has a version ID that matches. After the  update  is  applied  success-
+       fully,  the  version  ID  is  updated,  and can be retrieved using  De-
+       scribeDeliveryStream . Use the new version ID to set  CurrentDeliveryS-
+       treamVersionId in the next call.
+
+       See also: AWS API Documentation
+
+       See 'aws help' for descriptions of global parameters.
+
+SYNOPSIS
+            update-destination
+          --delivery-stream-name <value>
+          --current-delivery-stream-version-id <value>
+          --destination-id <value>
+          [--s3-destination-update <value>]
+          [--extended-s3-destination-update <value>]
+          [--redshift-destination-update <value>]
+          [--elasticsearch-destination-update <value>]
+          [--amazonopensearchservice-destination-update <value>]
+          [--splunk-destination-update <value>]
+          [--http-endpoint-destination-update <value>]
+          [--cli-input-json | --cli-input-yaml]
+          [--generate-cli-skeleton <value>]
+
+OPTIONS
+       --delivery-stream-name (string)
+          The name of the delivery stream.
+
+       --current-delivery-stream-version-id (string)
+          Obtain  this  value  from the VersionId result of  DeliveryStreamDe-
+          scription . This value is required, and helps  the  service  perform
+          conditional operations. For example, if there is an interleaving up-
+          date and this value is null, then the update destination fails.  Af-
+          ter  the  update  is successful, the VersionId value is updated. The
+          service then performs a merge of the old configuration with the  new
+          configuration.
+
+       --destination-id (string)
+          The ID of the destination.
+
+       --s3-destination-update (structure)
+          [Deprecated] Describes an update for a destination in Amazon S3.
+
+          RoleARN -> (string)
+              The  Amazon Resource Name (ARN) of the AWS credentials. For more
+              information, see Amazon Resource Names (ARNs)  and  AWS  Service
+              Namespaces .
+
+          BucketARN -> (string)
+              The  ARN  of the S3 bucket. For more information, see Amazon Re-
+              source Names (ARNs) and AWS Service Namespaces .
+
+          Prefix -> (string)
+              The "YYYY/MM/DD/HH" time format prefix is automatically used for
+              delivered Amazon S3 files. You can also specify a custom prefix,
+              as described in Custom Prefixes for Amazon S3 Objects .
+
+          ErrorOutputPrefix -> (string)
+              A prefix that Kinesis Data Firehose evaluates and adds to failed
+              records  before  writing them to S3. This prefix appears immedi-
+              ately following the bucket name. For information  about  how  to
+              specify this prefix, see Custom Prefixes for Amazon S3 Objects .
+
+          BufferingHints -> (structure)
+              The  buffering  option. If no value is specified, BufferingHints
+              object default values are used.
+
+              SizeInMBs -> (integer)
+                 Buffer incoming data to the specified size, in  MiBs,  before
+                 delivering  it  to  the  destination. The default value is 5.
+                 This parameter is optional but if you specify a value for it,
+                 you  must  also  specify  a value for IntervalInSeconds , and
+                 vice versa.
+
+                 We recommend setting this parameter to a value  greater  than
+                 the  amount  of  data  you typically ingest into the delivery
+                 stream in 10 seconds. For example, if  you  typically  ingest
+                 data at 1 MiB/sec, the value should be 10 MiB or higher.
+
+              IntervalInSeconds -> (integer)
+                 Buffer  incoming  data  for  the specified period of time, in
+                 seconds, before delivering it to the destination. The default
+                 value is 300. This parameter is optional but if you specify a
+                 value for it, you must also specify a value for  SizeInMBs  ,
+                 and vice versa.
+
+          CompressionFormat -> (string)
+              The compression format. If no value is specified, the default is
+              UNCOMPRESSED .
+
+              The compression formats SNAPPY or ZIP cannot  be  specified  for
+              Amazon  Redshift  destinations because they are not supported by
+              the Amazon Redshift  COPY  operation  that  reads  from  the  S3
+              bucket.
+
+          EncryptionConfiguration -> (structure)
+              The  encryption configuration. If no value is specified, the de-
+              fault is no encryption.
+
+              NoEncryptionConfig -> (string)
+                 Specifically override existing encryption information to  en-
+                 sure that no encryption is used.
+
+              KMSEncryptionConfig -> (structure)
+                 The encryption key.
+
+                 AWSKMSKeyARN -> (string)
+                     The  Amazon  Resource  Name  (ARN) of the encryption key.
+                     Must belong to the same AWS  Region  as  the  destination
+                     Amazon  S3  bucket.  For more information, see Amazon Re-
+                     source Names (ARNs) and AWS Service Namespaces .
+
+          CloudWatchLoggingOptions -> (structure)
+              The CloudWatch logging options for your delivery stream.
+
+              Enabled -> (boolean)
+                 Enables or disables CloudWatch logging.
+
+              LogGroupName -> (string)
+                 The CloudWatch group name for logging. This value is required
+                 if CloudWatch logging is enabled.
+
+              LogStreamName -> (string)
+                 The CloudWatch log stream name for logging. This value is re-
+                 quired if CloudWatch logging is enabled.
+
+       Shorthand Syntax:
+
+          RoleARN=string,BucketARN=string,Prefix=string,ErrorOutputPrefix=string,BufferingHints={SizeInMBs=integer,IntervalInSeconds=integer},CompressionFormat=string,EncryptionConfiguration={NoEncryptionConfig=string,KMSEncryptionConfig={AWSKMSKeyARN=string}},CloudWatchLoggingOptions={Enabled=boolean,LogGroupName=string,LogStreamName=string}
+
+       JSON Syntax:
+
+          {
+            "RoleARN": "string",
+            "BucketARN": "string",
+            "Prefix": "string",
+            "ErrorOutputPrefix": "string",
+            "BufferingHints": {
+              "SizeInMBs": integer,
+              "IntervalInSeconds": integer
+            },
+            "CompressionFormat": "UNCOMPRESSED"|"GZIP"|"ZIP"|"Snappy"|"HADOOP_SNAPPY",
+            "EncryptionConfiguration": {
+              "NoEncryptionConfig": "NoEncryption",
+              "KMSEncryptionConfig": {
+                "AWSKMSKeyARN": "string"
+              }
+            },
+            "CloudWatchLoggingOptions": {
+              "Enabled": true|false,
+              "LogGroupName": "string",
+              "LogStreamName": "string"
+            }
+          }
+
+       --extended-s3-destination-update (structure)
+          Describes an update for a destination in Amazon S3.
+
+          RoleARN -> (string)
+              The Amazon Resource Name (ARN) of the AWS credentials. For  more
+              information,  see  Amazon  Resource Names (ARNs) and AWS Service
+              Namespaces .
+
+          BucketARN -> (string)
+              The ARN of the S3 bucket. For more information, see  Amazon  Re-
+              source Names (ARNs) and AWS Service Namespaces .
+
+          Prefix -> (string)
+              The "YYYY/MM/DD/HH" time format prefix is automatically used for
+              delivered Amazon S3 files. You can also specify a custom prefix,
+              as described in Custom Prefixes for Amazon S3 Objects .
+
+          ErrorOutputPrefix -> (string)
+              A prefix that Kinesis Data Firehose evaluates and adds to failed
+              records before writing them to S3. This prefix  appears  immedi-
+              ately  following  the  bucket name. For information about how to
+              specify this prefix, see Custom Prefixes for Amazon S3 Objects .
+
+          BufferingHints -> (structure)
+              The buffering option.
+
+              SizeInMBs -> (integer)
+                 Buffer incoming data to the specified size, in  MiBs,  before
+                 delivering  it  to  the  destination. The default value is 5.
+                 This parameter is optional but if you specify a value for it,
+                 you  must  also  specify  a value for IntervalInSeconds , and
+                 vice versa.
+
+                 We recommend setting this parameter to a value  greater  than
+                 the  amount  of  data  you typically ingest into the delivery
+                 stream in 10 seconds. For example, if  you  typically  ingest
+                 data at 1 MiB/sec, the value should be 10 MiB or higher.
+
+              IntervalInSeconds -> (integer)
+                 Buffer  incoming  data  for  the specified period of time, in
+                 seconds, before delivering it to the destination. The default
+                 value is 300. This parameter is optional but if you specify a
+                 value for it, you must also specify a value for  SizeInMBs  ,
+                 and vice versa.
+
+          CompressionFormat -> (string)
+              The compression format. If no value is specified, the default is
+              UNCOMPRESSED .
+
+          EncryptionConfiguration -> (structure)
+              The encryption configuration. If no value is specified, the  de-
+              fault is no encryption.
+
+              NoEncryptionConfig -> (string)
+                 Specifically  override existing encryption information to en-
+                 sure that no encryption is used.
+
+              KMSEncryptionConfig -> (structure)
+                 The encryption key.
+
+                 AWSKMSKeyARN -> (string)
+                     The Amazon Resource Name (ARN)  of  the  encryption  key.
+                     Must  belong  to  the  same AWS Region as the destination
+                     Amazon S3 bucket. For more information,  see  Amazon  Re-
+                     source Names (ARNs) and AWS Service Namespaces .
+
+          CloudWatchLoggingOptions -> (structure)
+              The Amazon CloudWatch logging options for your delivery stream.
+
+              Enabled -> (boolean)
+                 Enables or disables CloudWatch logging.
+
+              LogGroupName -> (string)
+                 The CloudWatch group name for logging. This value is required
+                 if CloudWatch logging is enabled.
+
+              LogStreamName -> (string)
+                 The CloudWatch log stream name for logging. This value is re-
+                 quired if CloudWatch logging is enabled.
+
+          ProcessingConfiguration -> (structure)
+              The data processing configuration.
+
+              Enabled -> (boolean)
+                 Enables or disables data processing.
+
+              Processors -> (list)
+                 The data processors.
+
+                 (structure)
+                     Describes a data processor.
+
+                     Type -> (string)
+                        The type of processor.
+
+                     Parameters -> (list)
+                        The processor parameters.
+
+                        (structure)
+                            Describes the processor parameter.
+
+                            ParameterName -> (string)
+                               The name of the parameter.
+
+                            ParameterValue -> (string)
+                               The parameter value.
+
+          S3BackupMode -> (string)
+              You  can  update a delivery stream to enable Amazon S3 backup if
+              it is disabled. If backup is enabled, you can't update  the  de-
+              livery stream to disable it.
+
+          S3BackupUpdate -> (structure)
+              The Amazon S3 destination for backup.
+
+              RoleARN -> (string)
+                 The  Amazon  Resource  Name (ARN) of the AWS credentials. For
+                 more information, see Amazon Resource Names  (ARNs)  and  AWS
+                 Service Namespaces .
+
+              BucketARN -> (string)
+                 The  ARN  of  the S3 bucket. For more information, see Amazon
+                 Resource Names (ARNs) and AWS Service Namespaces .
+
+              Prefix -> (string)
+                 The "YYYY/MM/DD/HH" time format prefix is automatically  used
+                 for  delivered Amazon S3 files. You can also specify a custom
+                 prefix, as described in Custom Prefixes for Amazon S3 Objects
+                 .
+
+              ErrorOutputPrefix -> (string)
+                 A  prefix  that  Kinesis  Data Firehose evaluates and adds to
+                 failed records before writing them to S3. This prefix appears
+                 immediately  following the bucket name. For information about
+                 how to specify this prefix, see Custom Prefixes for Amazon S3
+                 Objects .
+
+              BufferingHints -> (structure)
+                 The  buffering  option. If no value is specified, BufferingH-
+                 ints object default values are used.
+
+                 SizeInMBs -> (integer)
+                     Buffer incoming data to the specified size, in MiBs,  be-
+                     fore  delivering it to the destination. The default value
+                     is 5. This parameter is optional but  if  you  specify  a
+                     value  for  it,  you must also specify a value for Inter-
+                     valInSeconds , and vice versa.
+
+                     We recommend setting this parameter to  a  value  greater
+                     than the amount of data you typically ingest into the de-
+                     livery stream in 10 seconds. For example,  if  you  typi-
+                     cally  ingest  data  at 1 MiB/sec, the value should be 10
+                     MiB or higher.
+
+                 IntervalInSeconds -> (integer)
+                     Buffer incoming data for the specified period of time, in
+                     seconds, before delivering it to the destination. The de-
+                     fault value is 300. This parameter is optional but if you
+                     specify a value for it, you must also specify a value for
+                     SizeInMBs , and vice versa.
+
+              CompressionFormat -> (string)
+                 The compression format. If no value is specified, the default
+                 is UNCOMPRESSED .
+
+                 The compression formats SNAPPY or ZIP cannot be specified for
+                 Amazon Redshift destinations because they are  not  supported
+                 by  the Amazon Redshift COPY operation that reads from the S3
+                 bucket.
+
+              EncryptionConfiguration -> (structure)
+                 The encryption configuration. If no value is  specified,  the
+                 default is no encryption.
+
+                 NoEncryptionConfig -> (string)
+                     Specifically  override existing encryption information to
+                     ensure that no encryption is used.
+
+                 KMSEncryptionConfig -> (structure)
+                     The encryption key.
+
+                     AWSKMSKeyARN -> (string)
+                        The Amazon Resource Name (ARN) of the encryption  key.
+                        Must  belong to the same AWS Region as the destination
+                        Amazon S3 bucket. For more information, see Amazon Re-
+                        source Names (ARNs) and AWS Service Namespaces .
+
+              CloudWatchLoggingOptions -> (structure)
+                 The CloudWatch logging options for your delivery stream.
+
+                 Enabled -> (boolean)
+                     Enables or disables CloudWatch logging.
+
+                 LogGroupName -> (string)
+                     The  CloudWatch group name for logging. This value is re-
+                     quired if CloudWatch logging is enabled.
+
+                 LogStreamName -> (string)
+                     The CloudWatch log stream name for logging. This value is
+                     required if CloudWatch logging is enabled.
+
+          DataFormatConversionConfiguration -> (structure)
+              The  serializer,  deserializer,  and  schema for converting data
+              from the JSON format to the Parquet or ORC format before writing
+              it to Amazon S3.
+
+              SchemaConfiguration -> (structure)
+                 Specifies  the  AWS Glue Data Catalog table that contains the
+                 column information. This parameter is required if Enabled  is
+                 set to true.
+
+                 RoleARN -> (string)
+                     The role that Kinesis Data Firehose can use to access AWS
+                     Glue. This role must be in the same account you  use  for
+                     Kinesis  Data  Firehose.  Cross-account  roles aren't al-
+                     lowed.
+
+                     WARNING:
+                        If the SchemaConfiguration request parameter  is  used
+                        as part of invoking the CreateDeliveryStream API, then
+                        the RoleARN property is required and its value must be
+                        specified.
+
+                 CatalogId -> (string)
+                     The  ID of the AWS Glue Data Catalog. If you don't supply
+                     this, the AWS account ID is used by default.
+
+                 DatabaseName -> (string)
+                     Specifies the name of the AWS Glue database that contains
+                     the schema for the output data.
+
+                     WARNING:
+                        If  the  SchemaConfiguration request parameter is used
+                        as part of invoking the CreateDeliveryStream API, then
+                        the  DatabaseName  property  is required and its value
+                        must be specified.
+
+                 TableName -> (string)
+                     Specifies the AWS Glue table that contains the column in-
+                     formation that constitutes your data schema.
+
+                     WARNING:
+                        If  the  SchemaConfiguration request parameter is used
+                        as part of invoking the CreateDeliveryStream API, then
+                        the  TableName property is required and its value must
+                        be specified.
+
+                 Region -> (string)
+                     If you don't specify an AWS Region, the  default  is  the
+                     current Region.
+
+                 VersionId -> (string)
+                     Specifies  the  table version for the output data schema.
+                     If you don't specify this version ID, or if you set it to
+                     LATEST  , Kinesis Data Firehose uses the most recent ver-
+                     sion. This means that any updates to the table are  auto-
+                     matically picked up.
+
+              InputFormatConfiguration -> (structure)
+                 Specifies  the  deserializer that you want Kinesis Data Fire-
+                 hose to use to convert the format of  your  data  from  JSON.
+                 This parameter is required if Enabled is set to true.
+
+                 Deserializer -> (structure)
+                     Specifies  which  deserializer to use. You can choose ei-
+                     ther the Apache Hive JSON SerDe or the OpenX JSON  SerDe.
+                     If both are non-null, the server rejects the request.
+
+                     OpenXJsonSerDe -> (structure)
+                        The OpenX SerDe. Used by Kinesis Data Firehose for de-
+                        serializing data, which means converting it  from  the
+                        JSON  format  in preparation for serializing it to the
+                        Parquet or ORC format. This is one of two  deserializ-
+                        ers  you can choose, depending on which one offers the
+                        functionality you need. The other option is the native
+                        Hive / HCatalog JsonSerDe.
+
+                        ConvertDotsInJsonKeysToUnderscores -> (boolean)
+                            When set to true , specifies that the names of the
+                            keys include dots and that you want  Kinesis  Data
+                            Firehose to replace them with underscores. This is
+                            useful because Apache Hive does not allow dots  in
+                            column  names. For example, if the JSON contains a
+                            key whose name is "a.b", you can define the column
+                            name to be "a_b" when using this option.
+
+                            The default is false .
+
+                        CaseInsensitive -> (boolean)
+                            When  set  to true , which is the default, Kinesis
+                            Data Firehose converts JSON keys to lowercase  be-
+                            fore deserializing them.
+
+                        ColumnToJsonKeyMappings -> (map)
+                            Maps column names to JSON keys that aren't identi-
+                            cal to the column names. This is useful  when  the
+                            JSON contains keys that are Hive keywords. For ex-
+                            ample, timestamp is a Hive keyword. If you have  a
+                            JSON  key  named timestamp , set this parameter to
+                            {"ts": "timestamp"} to map this key  to  a  column
+                            named ts .
+
+                            key -> (string)
+
+                            value -> (string)
+
+                     HiveJsonSerDe -> (structure)
+                        The  native Hive / HCatalog JsonSerDe. Used by Kinesis
+                        Data Firehose for deserializing data, which means con-
+                        verting it from the JSON format in preparation for se-
+                        rializing it to the Parquet or ORC format. This is one
+                        of  two  deserializers  you  can  choose, depending on
+                        which one offers the functionality you need. The other
+                        option is the OpenX SerDe.
+
+                        TimestampFormats -> (list)
+                            Indicates  how  you  want Kinesis Data Firehose to
+                            parse the date and timestamps that may be  present
+                            in  your  input data JSON. To specify these format
+                            strings, follow the pattern syntax  of  JodaTime's
+                            DateTimeFormat  format  strings. For more informa-
+                            tion, see Class DateTimeFormat . You can also  use
+                            the  special  value  millis to parse timestamps in
+                            epoch milliseconds. If you don't specify a format,
+                            Kinesis    Data   Firehose   uses   java.sql.Time-
+                            stamp::valueOf by default.
+
+                            (string)
+
+              OutputFormatConfiguration -> (structure)
+                 Specifies the serializer that you want Kinesis Data  Firehose
+                 to  use  to convert the format of your data to the Parquet or
+                 ORC format. This parameter is required if Enabled is  set  to
+                 true.
+
+                 Serializer -> (structure)
+                     Specifies  which serializer to use. You can choose either
+                     the ORC SerDe or the Parquet SerDe. If both are non-null,
+                     the server rejects the request.
+
+                     ParquetSerDe -> (structure)
+                        A serializer to use for converting data to the Parquet
+                        format before storing it in Amazon S3. For more infor-
+                        mation, see Apache Parquet .
+
+                        BlockSizeBytes -> (integer)
+                            The  Hadoop  Distributed  File System (HDFS) block
+                            size. This is useful if you  intend  to  copy  the
+                            data  from  Amazon S3 to HDFS before querying. The
+                            default is 256 MiB and the minimum is 64 MiB.  Ki-
+                            nesis  Data  Firehose  uses this value for padding
+                            calculations.
+
+                        PageSizeBytes -> (integer)
+                            The Parquet page size. Column chunks  are  divided
+                            into  pages. A page is conceptually an indivisible
+                            unit (in terms of compression and  encoding).  The
+                            minimum value is 64 KiB and the default is 1 MiB.
+
+                        Compression -> (string)
+                            The  compression code to use over data blocks. The
+                            possible values are UNCOMPRESSED ,  SNAPPY  ,  and
+                            GZIP  , with the default being SNAPPY . Use SNAPPY
+                            for higher decompression speed. Use  GZIP  if  the
+                            compression ratio is more important than speed.
+
+                        EnableDictionaryCompression -> (boolean)
+                            Indicates  whether  to  enable dictionary compres-
+                            sion.
+
+                        MaxPaddingBytes -> (integer)
+                            The maximum amount of padding to  apply.  This  is
+                            useful  if you intend to copy the data from Amazon
+                            S3 to HDFS before querying. The default is 0.
+
+                        WriterVersion -> (string)
+                            Indicates the version of row format to output. The
+                            possible  values are V1 and V2 . The default is V1
+                            .
+
+                     OrcSerDe -> (structure)
+                        A serializer to use for converting  data  to  the  ORC
+                        format before storing it in Amazon S3. For more infor-
+                        mation, see Apache ORC .
+
+                        StripeSizeBytes -> (integer)
+                            The number of bytes in each stripe. The default is
+                            64 MiB and the minimum is 8 MiB.
+
+                        BlockSizeBytes -> (integer)
+                            The  Hadoop  Distributed  File System (HDFS) block
+                            size. This is useful if you  intend  to  copy  the
+                            data  from  Amazon S3 to HDFS before querying. The
+                            default is 256 MiB and the minimum is 64 MiB.  Ki-
+                            nesis  Data  Firehose  uses this value for padding
+                            calculations.
+
+                        RowIndexStride -> (integer)
+                            The number of rows between index entries. The  de-
+                            fault is 10,000 and the minimum is 1,000.
+
+                        EnablePadding -> (boolean)
+                            Set this to true to indicate that you want stripes
+                            to be padded to the HDFS block boundaries. This is
+                            useful  if you intend to copy the data from Amazon
+                            S3 to HDFS before querying. The default is false .
+
+                        PaddingTolerance -> (double)
+                            A number between 0 and 1 that defines  the  toler-
+                            ance  for  block  padding as a decimal fraction of
+                            stripe size. The  default  value  is  0.05,  which
+                            means 5 percent of stripe size.
+
+                            For  the  default values of 64 MiB ORC stripes and
+                            256 MiB HDFS blocks,  the  default  block  padding
+                            tolerance  of  5 percent reserves a maximum of 3.2
+                            MiB for padding within the 256 MiB block. In  such
+                            a  case, if the available size within the block is
+                            more than 3.2 MiB, a new, smaller  stripe  is  in-
+                            serted to fit within that space. This ensures that
+                            no stripe crosses block boundaries and causes  re-
+                            mote reads within a node-local task.
+
+                            Kinesis  Data Firehose ignores this parameter when
+                            OrcSerDe$EnablePadding is false .
+
+                        Compression -> (string)
+                            The compression code to use over data blocks.  The
+                            default is SNAPPY .
+
+                        BloomFilterColumns -> (list)
+                            The  column  names for which you want Kinesis Data
+                            Firehose to create bloom filters. The  default  is
+                            null .
+
+                            (string)
+
+                        BloomFilterFalsePositiveProbability -> (double)
+                            The Bloom filter false positive probability (FPP).
+                            The lower the FPP, the bigger  the  Bloom  filter.
+                            The  default  value is 0.05, the minimum is 0, and
+                            the maximum is 1.
+
+                        DictionaryKeyThreshold -> (double)
+                            Represents the fraction of  the  total  number  of
+                            non-null  rows.  To  turn off dictionary encoding,
+                            set this fraction to a number that  is  less  than
+                            the  number  of  distinct keys in a dictionary. To
+                            always use dictionary encoding, set this threshold
+                            to 1.
+
+                        FormatVersion -> (string)
+                            The  version  of  the  file to write. The possible
+                            values are V0_11 and V0_12 . The default is  V0_12
+                            .
+
+              Enabled -> (boolean)
+                 Defaults  to  true  .  Set it to false if you want to disable
+                 format conversion while preserving the configuration details.
+
+          DynamicPartitioningConfiguration -> (structure)
+              The configuration of the  dynamic  partitioning  mechanism  that
+              creates  smaller data sets from the streaming data by partition-
+              ing it based on partition keys. Currently, dynamic  partitioning
+              is  only supported for Amazon S3 destinations. For more informa-
+              tion,                                                        see
+              https://docs.aws.amazon.com/firehose/latest/dev/dynamic-partitioning.html
+
+              RetryOptions -> (structure)
+                 The retry behavior in case Kinesis Data Firehose is unable to
+                 deliver data to an Amazon S3 prefix.
+
+                 DurationInSeconds -> (integer)
+                     The period of time during which Kinesis Data Firehose re-
+                     tries to deliver data to the specified Amazon S3 prefix.
+
+              Enabled -> (boolean)
+                 Specifies that the dynamic partitioning is enabled  for  this
+                 Kinesis Data Firehose delivery stream.
+
+       JSON Syntax:
+
+          {
+            "RoleARN": "string",
+            "BucketARN": "string",
+            "Prefix": "string",
+            "ErrorOutputPrefix": "string",
+            "BufferingHints": {
+              "SizeInMBs": integer,
+              "IntervalInSeconds": integer
+            },
+            "CompressionFormat": "UNCOMPRESSED"|"GZIP"|"ZIP"|"Snappy"|"HADOOP_SNAPPY",
+            "EncryptionConfiguration": {
+              "NoEncryptionConfig": "NoEncryption",
+              "KMSEncryptionConfig": {
+                "AWSKMSKeyARN": "string"
+              }
+            },
+            "CloudWatchLoggingOptions": {
+              "Enabled": true|false,
+              "LogGroupName": "string",
+              "LogStreamName": "string"
+            },
+            "ProcessingConfiguration": {
+              "Enabled": true|false,
+              "Processors": [
+                {
+                  "Type": "RecordDeAggregation"|"Lambda"|"MetadataExtraction"|"AppendDelimiterToRecord",
+                  "Parameters": [
+                    {
+                      "ParameterName": "LambdaArn"|"NumberOfRetries"|"MetadataExtractionQuery"|"JsonParsingEngine"|"RoleArn"|"BufferSizeInMBs"|"BufferIntervalInSeconds"|"SubRecordType"|"Delimiter",
+                      "ParameterValue": "string"
+                    }
+                    ...
+                  ]
+                }
+                ...
+              ]
+            },
+            "S3BackupMode": "Disabled"|"Enabled",
+            "S3BackupUpdate": {
+              "RoleARN": "string",
+              "BucketARN": "string",
+              "Prefix": "string",
+              "ErrorOutputPrefix": "string",
+              "BufferingHints": {
+                "SizeInMBs": integer,
+                "IntervalInSeconds": integer
+              },
+              "CompressionFormat": "UNCOMPRESSED"|"GZIP"|"ZIP"|"Snappy"|"HADOOP_SNAPPY",
+              "EncryptionConfiguration": {
+                "NoEncryptionConfig": "NoEncryption",
+                "KMSEncryptionConfig": {
+                  "AWSKMSKeyARN": "string"
+                }
+              },
+              "CloudWatchLoggingOptions": {
+                "Enabled": true|false,
+                "LogGroupName": "string",
+                "LogStreamName": "string"
+              }
+            },
+            "DataFormatConversionConfiguration": {
+              "SchemaConfiguration": {
+                "RoleARN": "string",
+                "CatalogId": "string",
+                "DatabaseName": "string",
+                "TableName": "string",
+                "Region": "string",
+                "VersionId": "string"
+              },
+              "InputFormatConfiguration": {
+                "Deserializer": {
+                  "OpenXJsonSerDe": {
+                    "ConvertDotsInJsonKeysToUnderscores": true|false,
+                    "CaseInsensitive": true|false,
+                    "ColumnToJsonKeyMappings": {"string": "string"
+                      ...}
+                  },
+                  "HiveJsonSerDe": {
+                    "TimestampFormats": ["string", ...]
+                  }
+                }
+              },
+              "OutputFormatConfiguration": {
+                "Serializer": {
+                  "ParquetSerDe": {
+                    "BlockSizeBytes": integer,
+                    "PageSizeBytes": integer,
+                    "Compression": "UNCOMPRESSED"|"GZIP"|"SNAPPY",
+                    "EnableDictionaryCompression": true|false,
+                    "MaxPaddingBytes": integer,
+                    "WriterVersion": "V1"|"V2"
+                  },
+                  "OrcSerDe": {
+                    "StripeSizeBytes": integer,
+                    "BlockSizeBytes": integer,
+                    "RowIndexStride": integer,
+                    "EnablePadding": true|false,
+                    "PaddingTolerance": double,
+                    "Compression": "NONE"|"ZLIB"|"SNAPPY",
+                    "BloomFilterColumns": ["string", ...],
+                    "BloomFilterFalsePositiveProbability": double,
+                    "DictionaryKeyThreshold": double,
+                    "FormatVersion": "V0_11"|"V0_12"
+                  }
+                }
+              },
+              "Enabled": true|false
+            },
+            "DynamicPartitioningConfiguration": {
+              "RetryOptions": {
+                "DurationInSeconds": integer
+              },
+              "Enabled": true|false
+            }
+          }
+
+       --redshift-destination-update (structure)
+          Describes an update for a destination in Amazon Redshift.
+
+          RoleARN -> (string)
+              The  Amazon Resource Name (ARN) of the AWS credentials. For more
+              information, see Amazon Resource Names (ARNs)  and  AWS  Service
+              Namespaces .
+
+          ClusterJDBCURL -> (string)
+              The database connection string.
+
+          CopyCommand -> (structure)
+              The COPY command.
+
+              DataTableName -> (string)
+                 The name of the target table. The table must already exist in
+                 the database.
+
+              DataTableColumns -> (string)
+                 A comma-separated list of column names.
+
+              CopyOptions -> (string)
+                 Optional parameters to use with the Amazon Redshift COPY com-
+                 mand.  For  more  information,  see the "Optional Parameters"
+                 section of Amazon Redshift COPY command . Some possible exam-
+                 ples  that  would  apply to Kinesis Data Firehose are as fol-
+                 lows:
+                     delimiter '\t' lzop; - fields are delimited with "t" (TAB
+                     character) and compressed using lzop.
+
+                     delimiter  '|'  -  fields are delimited with "|" (this is
+                     the default delimiter).
+
+                     delimiter '|' escape - the delimiter should be escaped.
+
+                     fixedwidth   'venueid:3,venuename:25,venuecity:12,venues-
+                     tate:2,venueseats:6'  -  fields  are  fixed  width in the
+                     source, with each width specified after every  column  in
+                     the table.
+
+                     JSON 's3://mybucket/jsonpaths.txt' - data is in JSON for-
+                     mat, and the path specified is the format of the data.
+
+                 For more examples, see Amazon Redshift COPY command  examples
+                 .
+
+          Username -> (string)
+              The name of the user.
+
+          Password -> (string)
+              The user password.
+
+          RetryOptions -> (structure)
+              The  retry  behavior  in case Kinesis Data Firehose is unable to
+              deliver documents to Amazon Redshift. Default value is 3600  (60
+              minutes).
+
+              DurationInSeconds -> (integer)
+                 The length of time during which Kinesis Data Firehose retries
+                 delivery after a failure, starting from the  initial  request
+                 and  including  the  first attempt. The default value is 3600
+                 seconds (60 minutes). Kinesis Data Firehose does not retry if
+                 the  value  of  DurationInSeconds is 0 (zero) or if the first
+                 delivery attempt takes longer than the current value.
+
+          S3Update -> (structure)
+              The Amazon S3 destination.
+
+              The compression formats SNAPPY or ZIP  cannot  be  specified  in
+              RedshiftDestinationUpdate.S3Update  because  the Amazon Redshift
+              COPY operation that reads from the  S3  bucket  doesn't  support
+              these compression formats.
+
+              RoleARN -> (string)
+                 The  Amazon  Resource  Name (ARN) of the AWS credentials. For
+                 more information, see Amazon Resource Names  (ARNs)  and  AWS
+                 Service Namespaces .
+
+              BucketARN -> (string)
+                 The  ARN  of  the S3 bucket. For more information, see Amazon
+                 Resource Names (ARNs) and AWS Service Namespaces .
+
+              Prefix -> (string)
+                 The "YYYY/MM/DD/HH" time format prefix is automatically  used
+                 for  delivered Amazon S3 files. You can also specify a custom
+                 prefix, as described in Custom Prefixes for Amazon S3 Objects
+                 .
+
+              ErrorOutputPrefix -> (string)
+                 A  prefix  that  Kinesis  Data Firehose evaluates and adds to
+                 failed records before writing them to S3. This prefix appears
+                 immediately  following the bucket name. For information about
+                 how to specify this prefix, see Custom Prefixes for Amazon S3
+                 Objects .
+
+              BufferingHints -> (structure)
+                 The  buffering  option. If no value is specified, BufferingH-
+                 ints object default values are used.
+
+                 SizeInMBs -> (integer)
+                     Buffer incoming data to the specified size, in MiBs,  be-
+                     fore  delivering it to the destination. The default value
+                     is 5. This parameter is optional but  if  you  specify  a
+                     value  for  it,  you must also specify a value for Inter-
+                     valInSeconds , and vice versa.
+
+                     We recommend setting this parameter to  a  value  greater
+                     than the amount of data you typically ingest into the de-
+                     livery stream in 10 seconds. For example,  if  you  typi-
+                     cally  ingest  data  at 1 MiB/sec, the value should be 10
+                     MiB or higher.
+
+                 IntervalInSeconds -> (integer)
+                     Buffer incoming data for the specified period of time, in
+                     seconds, before delivering it to the destination. The de-
+                     fault value is 300. This parameter is optional but if you
+                     specify a value for it, you must also specify a value for
+                     SizeInMBs , and vice versa.
+
+              CompressionFormat -> (string)
+                 The compression format. If no value is specified, the default
+                 is UNCOMPRESSED .
+
+                 The compression formats SNAPPY or ZIP cannot be specified for
+                 Amazon Redshift destinations because they are  not  supported
+                 by  the Amazon Redshift COPY operation that reads from the S3
+                 bucket.
+
+              EncryptionConfiguration -> (structure)
+                 The encryption configuration. If no value is  specified,  the
+                 default is no encryption.
+
+                 NoEncryptionConfig -> (string)
+                     Specifically  override existing encryption information to
+                     ensure that no encryption is used.
+
+                 KMSEncryptionConfig -> (structure)
+                     The encryption key.
+
+                     AWSKMSKeyARN -> (string)
+                        The Amazon Resource Name (ARN) of the encryption  key.
+                        Must  belong to the same AWS Region as the destination
+                        Amazon S3 bucket. For more information, see Amazon Re-
+                        source Names (ARNs) and AWS Service Namespaces .
+
+              CloudWatchLoggingOptions -> (structure)
+                 The CloudWatch logging options for your delivery stream.
+
+                 Enabled -> (boolean)
+                     Enables or disables CloudWatch logging.
+
+                 LogGroupName -> (string)
+                     The  CloudWatch group name for logging. This value is re-
+                     quired if CloudWatch logging is enabled.
+
+                 LogStreamName -> (string)
+                     The CloudWatch log stream name for logging. This value is
+                     required if CloudWatch logging is enabled.
+
+          ProcessingConfiguration -> (structure)
+              The data processing configuration.
+
+              Enabled -> (boolean)
+                 Enables or disables data processing.
+
+              Processors -> (list)
+                 The data processors.
+
+                 (structure)
+                     Describes a data processor.
+
+                     Type -> (string)
+                        The type of processor.
+
+                     Parameters -> (list)
+                        The processor parameters.
+
+                        (structure)
+                            Describes the processor parameter.
+
+                            ParameterName -> (string)
+                               The name of the parameter.
+
+                            ParameterValue -> (string)
+                               The parameter value.
+
+          S3BackupMode -> (string)
+              You  can  update a delivery stream to enable Amazon S3 backup if
+              it is disabled. If backup is enabled, you can't update  the  de-
+              livery stream to disable it.
+
+          S3BackupUpdate -> (structure)
+              The Amazon S3 destination for backup.
+
+              RoleARN -> (string)
+                 The  Amazon  Resource  Name (ARN) of the AWS credentials. For
+                 more information, see Amazon Resource Names  (ARNs)  and  AWS
+                 Service Namespaces .
+
+              BucketARN -> (string)
+                 The  ARN  of  the S3 bucket. For more information, see Amazon
+                 Resource Names (ARNs) and AWS Service Namespaces .
+
+              Prefix -> (string)
+                 The "YYYY/MM/DD/HH" time format prefix is automatically  used
+                 for  delivered Amazon S3 files. You can also specify a custom
+                 prefix, as described in Custom Prefixes for Amazon S3 Objects
+                 .
+
+              ErrorOutputPrefix -> (string)
+                 A  prefix  that  Kinesis  Data Firehose evaluates and adds to
+                 failed records before writing them to S3. This prefix appears
+                 immediately  following the bucket name. For information about
+                 how to specify this prefix, see Custom Prefixes for Amazon S3
+                 Objects .
+
+              BufferingHints -> (structure)
+                 The  buffering  option. If no value is specified, BufferingH-
+                 ints object default values are used.
+
+                 SizeInMBs -> (integer)
+                     Buffer incoming data to the specified size, in MiBs,  be-
+                     fore  delivering it to the destination. The default value
+                     is 5. This parameter is optional but  if  you  specify  a
+                     value  for  it,  you must also specify a value for Inter-
+                     valInSeconds , and vice versa.
+
+                     We recommend setting this parameter to  a  value  greater
+                     than the amount of data you typically ingest into the de-
+                     livery stream in 10 seconds. For example,  if  you  typi-
+                     cally  ingest  data  at 1 MiB/sec, the value should be 10
+                     MiB or higher.
+
+                 IntervalInSeconds -> (integer)
+                     Buffer incoming data for the specified period of time, in
+                     seconds, before delivering it to the destination. The de-
+                     fault value is 300. This parameter is optional but if you
+                     specify a value for it, you must also specify a value for
+                     SizeInMBs , and vice versa.
+
+              CompressionFormat -> (string)
+                 The compression format. If no value is specified, the default
+                 is UNCOMPRESSED .
+
+                 The compression formats SNAPPY or ZIP cannot be specified for
+                 Amazon Redshift destinations because they are  not  supported
+                 by  the Amazon Redshift COPY operation that reads from the S3
+                 bucket.
+
+              EncryptionConfiguration -> (structure)
+                 The encryption configuration. If no value is  specified,  the
+                 default is no encryption.
+
+                 NoEncryptionConfig -> (string)
+                     Specifically  override existing encryption information to
+                     ensure that no encryption is used.
+
+                 KMSEncryptionConfig -> (structure)
+                     The encryption key.
+
+                     AWSKMSKeyARN -> (string)
+                        The Amazon Resource Name (ARN) of the encryption  key.
+                        Must  belong to the same AWS Region as the destination
+                        Amazon S3 bucket. For more information, see Amazon Re-
+                        source Names (ARNs) and AWS Service Namespaces .
+
+              CloudWatchLoggingOptions -> (structure)
+                 The CloudWatch logging options for your delivery stream.
+
+                 Enabled -> (boolean)
+                     Enables or disables CloudWatch logging.
+
+                 LogGroupName -> (string)
+                     The  CloudWatch group name for logging. This value is re-
+                     quired if CloudWatch logging is enabled.
+
+                 LogStreamName -> (string)
+                     The CloudWatch log stream name for logging. This value is
+                     required if CloudWatch logging is enabled.
+
+          CloudWatchLoggingOptions -> (structure)
+              The Amazon CloudWatch logging options for your delivery stream.
+
+              Enabled -> (boolean)
+                 Enables or disables CloudWatch logging.
+
+              LogGroupName -> (string)
+                 The CloudWatch group name for logging. This value is required
+                 if CloudWatch logging is enabled.
+
+              LogStreamName -> (string)
+                 The CloudWatch log stream name for logging. This value is re-
+                 quired if CloudWatch logging is enabled.
+
+       JSON Syntax:
+
+          {
+            "RoleARN": "string",
+            "ClusterJDBCURL": "string",
+            "CopyCommand": {
+              "DataTableName": "string",
+              "DataTableColumns": "string",
+              "CopyOptions": "string"
+            },
+            "Username": "string",
+            "Password": "string",
+            "RetryOptions": {
+              "DurationInSeconds": integer
+            },
+            "S3Update": {
+              "RoleARN": "string",
+              "BucketARN": "string",
+              "Prefix": "string",
+              "ErrorOutputPrefix": "string",
+              "BufferingHints": {
+                "SizeInMBs": integer,
+                "IntervalInSeconds": integer
+              },
+              "CompressionFormat": "UNCOMPRESSED"|"GZIP"|"ZIP"|"Snappy"|"HADOOP_SNAPPY",
+              "EncryptionConfiguration": {
+                "NoEncryptionConfig": "NoEncryption",
+                "KMSEncryptionConfig": {
+                  "AWSKMSKeyARN": "string"
+                }
+              },
+              "CloudWatchLoggingOptions": {
+                "Enabled": true|false,
+                "LogGroupName": "string",
+                "LogStreamName": "string"
+              }
+            },
+            "ProcessingConfiguration": {
+              "Enabled": true|false,
+              "Processors": [
+                {
+                  "Type": "RecordDeAggregation"|"Lambda"|"MetadataExtraction"|"AppendDelimiterToRecord",
+                  "Parameters": [
+                    {
+                      "ParameterName": "LambdaArn"|"NumberOfRetries"|"MetadataExtractionQuery"|"JsonParsingEngine"|"RoleArn"|"BufferSizeInMBs"|"BufferIntervalInSeconds"|"SubRecordType"|"Delimiter",
+                      "ParameterValue": "string"
+                    }
+                    ...
+                  ]
+                }
+                ...
+              ]
+            },
+            "S3BackupMode": "Disabled"|"Enabled",
+            "S3BackupUpdate": {
+              "RoleARN": "string",
+              "BucketARN": "string",
+              "Prefix": "string",
+              "ErrorOutputPrefix": "string",
+              "BufferingHints": {
+                "SizeInMBs": integer,
+                "IntervalInSeconds": integer
+              },
+              "CompressionFormat": "UNCOMPRESSED"|"GZIP"|"ZIP"|"Snappy"|"HADOOP_SNAPPY",
+              "EncryptionConfiguration": {
+                "NoEncryptionConfig": "NoEncryption",
+                "KMSEncryptionConfig": {
+                  "AWSKMSKeyARN": "string"
+                }
+              },
+              "CloudWatchLoggingOptions": {
+                "Enabled": true|false,
+                "LogGroupName": "string",
+                "LogStreamName": "string"
+              }
+            },
+            "CloudWatchLoggingOptions": {
+              "Enabled": true|false,
+              "LogGroupName": "string",
+              "LogStreamName": "string"
+            }
+          }
+
+       --elasticsearch-destination-update (structure)
+          Describes an update for a destination in Amazon ES.
+
+          RoleARN -> (string)
+              The  Amazon Resource Name (ARN) of the IAM role to be assumed by
+              Kinesis Data Firehose for calling the  Amazon  ES  Configuration
+              API  and for indexing documents. For more information, see Grant
+              Kinesis Data Firehose Access to an  Amazon  S3  Destination  and
+              Amazon Resource Names (ARNs) and AWS Service Namespaces .
+
+          DomainARN -> (string)
+              The  ARN of the Amazon ES domain. The IAM role must have permis-
+              sions for DescribeElasticsearchDomain , DescribeElasticsearchDo-
+              mains , and DescribeElasticsearchDomainConfig after assuming the
+              IAM role specified in RoleARN . For more information, see Amazon
+              Resource Names (ARNs) and AWS Service Namespaces .
+
+              Specify either ClusterEndpoint or DomainARN .
+
+          ClusterEndpoint -> (string)
+              The endpoint to use when communicating with the cluster. Specify
+              either this ClusterEndpoint or the DomainARN field.
+
+          IndexName -> (string)
+              The Elasticsearch index name.
+
+          TypeName -> (string)
+              The Elasticsearch type name. For Elasticsearch 6.x, there can be
+              only one type per index. If you try to specify a new type for an
+              existing index that already has another type, Kinesis Data Fire-
+              hose returns an error during runtime.
+
+              If  you  upgrade  Elasticsearch  from 6.x to 7.x and dont update
+              your delivery stream, Kinesis Data Firehose still delivers  data
+              to  Elasticsearch  with the old index name and type name. If you
+              want to update your delivery stream with a new index name,  pro-
+              vide an empty string for TypeName .
+
+          IndexRotationPeriod -> (string)
+              The  Elasticsearch index rotation period. Index rotation appends
+              a timestamp to IndexName to facilitate  the  expiration  of  old
+              data. For more information, see Index Rotation for the Amazon ES
+              Destination . Default value is OneDay .
+
+          BufferingHints -> (structure)
+              The buffering options. If no value is specified,  Elasticsearch-
+              BufferingHints object default values are used.
+
+              IntervalInSeconds -> (integer)
+                 Buffer  incoming  data  for  the specified period of time, in
+                 seconds, before delivering it to the destination. The default
+                 value is 300 (5 minutes).
+
+              SizeInMBs -> (integer)
+                 Buffer  incoming  data  to the specified size, in MBs, before
+                 delivering it to the destination. The default value is 5.
+
+                 We recommend setting this parameter to a value  greater  than
+                 the  amount  of  data  you typically ingest into the delivery
+                 stream in 10 seconds. For example, if  you  typically  ingest
+                 data at 1 MB/sec, the value should be 10 MB or higher.
+
+          RetryOptions -> (structure)
+              The  retry  behavior  in case Kinesis Data Firehose is unable to
+              deliver documents to Amazon ES. The default value is 300 (5 min-
+              utes).
+
+              DurationInSeconds -> (integer)
+                 After  an  initial failure to deliver to Amazon ES, the total
+                 amount of time during which Kinesis Data Firehose retries de-
+                 livery  (including  the  first  attempt). After this time has
+                 elapsed, the failed documents are written to Amazon  S3.  De-
+                 fault  value  is 300 seconds (5 minutes). A value of 0 (zero)
+                 results in no retries.
+
+          S3Update -> (structure)
+              The Amazon S3 destination.
+
+              RoleARN -> (string)
+                 The Amazon Resource Name (ARN) of the  AWS  credentials.  For
+                 more  information,  see  Amazon Resource Names (ARNs) and AWS
+                 Service Namespaces .
+
+              BucketARN -> (string)
+                 The ARN of the S3 bucket. For more  information,  see  Amazon
+                 Resource Names (ARNs) and AWS Service Namespaces .
+
+              Prefix -> (string)
+                 The  "YYYY/MM/DD/HH" time format prefix is automatically used
+                 for delivered Amazon S3 files. You can also specify a  custom
+                 prefix, as described in Custom Prefixes for Amazon S3 Objects
+                 .
+
+              ErrorOutputPrefix -> (string)
+                 A prefix that Kinesis Data Firehose  evaluates  and  adds  to
+                 failed records before writing them to S3. This prefix appears
+                 immediately following the bucket name. For information  about
+                 how to specify this prefix, see Custom Prefixes for Amazon S3
+                 Objects .
+
+              BufferingHints -> (structure)
+                 The buffering option. If no value is  specified,  BufferingH-
+                 ints object default values are used.
+
+                 SizeInMBs -> (integer)
+                     Buffer  incoming data to the specified size, in MiBs, be-
+                     fore delivering it to the destination. The default  value
+                     is  5.  This  parameter  is optional but if you specify a
+                     value for it, you must also specify a  value  for  Inter-
+                     valInSeconds , and vice versa.
+
+                     We  recommend  setting  this parameter to a value greater
+                     than the amount of data you typically ingest into the de-
+                     livery  stream  in  10 seconds. For example, if you typi-
+                     cally ingest data at 1 MiB/sec, the value  should  be  10
+                     MiB or higher.
+
+                 IntervalInSeconds -> (integer)
+                     Buffer incoming data for the specified period of time, in
+                     seconds, before delivering it to the destination. The de-
+                     fault value is 300. This parameter is optional but if you
+                     specify a value for it, you must also specify a value for
+                     SizeInMBs , and vice versa.
+
+              CompressionFormat -> (string)
+                 The compression format. If no value is specified, the default
+                 is UNCOMPRESSED .
+
+                 The compression formats SNAPPY or ZIP cannot be specified for
+                 Amazon  Redshift  destinations because they are not supported
+                 by the Amazon Redshift COPY operation that reads from the  S3
+                 bucket.
+
+              EncryptionConfiguration -> (structure)
+                 The  encryption  configuration. If no value is specified, the
+                 default is no encryption.
+
+                 NoEncryptionConfig -> (string)
+                     Specifically override existing encryption information  to
+                     ensure that no encryption is used.
+
+                 KMSEncryptionConfig -> (structure)
+                     The encryption key.
+
+                     AWSKMSKeyARN -> (string)
+                        The  Amazon Resource Name (ARN) of the encryption key.
+                        Must belong to the same AWS Region as the  destination
+                        Amazon S3 bucket. For more information, see Amazon Re-
+                        source Names (ARNs) and AWS Service Namespaces .
+
+              CloudWatchLoggingOptions -> (structure)
+                 The CloudWatch logging options for your delivery stream.
+
+                 Enabled -> (boolean)
+                     Enables or disables CloudWatch logging.
+
+                 LogGroupName -> (string)
+                     The CloudWatch group name for logging. This value is  re-
+                     quired if CloudWatch logging is enabled.
+
+                 LogStreamName -> (string)
+                     The CloudWatch log stream name for logging. This value is
+                     required if CloudWatch logging is enabled.
+
+          ProcessingConfiguration -> (structure)
+              The data processing configuration.
+
+              Enabled -> (boolean)
+                 Enables or disables data processing.
+
+              Processors -> (list)
+                 The data processors.
+
+                 (structure)
+                     Describes a data processor.
+
+                     Type -> (string)
+                        The type of processor.
+
+                     Parameters -> (list)
+                        The processor parameters.
+
+                        (structure)
+                            Describes the processor parameter.
+
+                            ParameterName -> (string)
+                               The name of the parameter.
+
+                            ParameterValue -> (string)
+                               The parameter value.
+
+          CloudWatchLoggingOptions -> (structure)
+              The CloudWatch logging options for your delivery stream.
+
+              Enabled -> (boolean)
+                 Enables or disables CloudWatch logging.
+
+              LogGroupName -> (string)
+                 The CloudWatch group name for logging. This value is required
+                 if CloudWatch logging is enabled.
+
+              LogStreamName -> (string)
+                 The CloudWatch log stream name for logging. This value is re-
+                 quired if CloudWatch logging is enabled.
+
+       JSON Syntax:
+
+          {
+            "RoleARN": "string",
+            "DomainARN": "string",
+            "ClusterEndpoint": "string",
+            "IndexName": "string",
+            "TypeName": "string",
+            "IndexRotationPeriod": "NoRotation"|"OneHour"|"OneDay"|"OneWeek"|"OneMonth",
+            "BufferingHints": {
+              "IntervalInSeconds": integer,
+              "SizeInMBs": integer
+            },
+            "RetryOptions": {
+              "DurationInSeconds": integer
+            },
+            "S3Update": {
+              "RoleARN": "string",
+              "BucketARN": "string",
+              "Prefix": "string",
+              "ErrorOutputPrefix": "string",
+              "BufferingHints": {
+                "SizeInMBs": integer,
+                "IntervalInSeconds": integer
+              },
+              "CompressionFormat": "UNCOMPRESSED"|"GZIP"|"ZIP"|"Snappy"|"HADOOP_SNAPPY",
+              "EncryptionConfiguration": {
+                "NoEncryptionConfig": "NoEncryption",
+                "KMSEncryptionConfig": {
+                  "AWSKMSKeyARN": "string"
+                }
+              },
+              "CloudWatchLoggingOptions": {
+                "Enabled": true|false,
+                "LogGroupName": "string",
+                "LogStreamName": "string"
+              }
+            },
+            "ProcessingConfiguration": {
+              "Enabled": true|false,
+              "Processors": [
+                {
+                  "Type": "RecordDeAggregation"|"Lambda"|"MetadataExtraction"|"AppendDelimiterToRecord",
+                  "Parameters": [
+                    {
+                      "ParameterName": "LambdaArn"|"NumberOfRetries"|"MetadataExtractionQuery"|"JsonParsingEngine"|"RoleArn"|"BufferSizeInMBs"|"BufferIntervalInSeconds"|"SubRecordType"|"Delimiter",
+                      "ParameterValue": "string"
+                    }
+                    ...
+                  ]
+                }
+                ...
+              ]
+            },
+            "CloudWatchLoggingOptions": {
+              "Enabled": true|false,
+              "LogGroupName": "string",
+              "LogStreamName": "string"
+            }
+          }
+
+       --amazonopensearchservice-destination-update  (structure)  RoleARN   ->
+       (string)
+          DomainARN -> (string)
+
+          ClusterEndpoint -> (string)
+
+          IndexName -> (string)
+
+          TypeName -> (string)
+
+          IndexRotationPeriod -> (string)
+
+          BufferingHints -> (structure)
+              IntervalInSeconds -> (integer)
+
+              SizeInMBs -> (integer)
+
+          RetryOptions -> (structure)
+              DurationInSeconds -> (integer)
+
+          S3Update -> (structure)
+              Describes an update for a destination in Amazon S3.
+
+              RoleARN -> (string)
+                 The  Amazon  Resource  Name (ARN) of the AWS credentials. For
+                 more information, see Amazon Resource Names  (ARNs)  and  AWS
+                 Service Namespaces .
+
+              BucketARN -> (string)
+                 The  ARN  of  the S3 bucket. For more information, see Amazon
+                 Resource Names (ARNs) and AWS Service Namespaces .
+
+              Prefix -> (string)
+                 The "YYYY/MM/DD/HH" time format prefix is automatically  used
+                 for  delivered Amazon S3 files. You can also specify a custom
+                 prefix, as described in Custom Prefixes for Amazon S3 Objects
+                 .
+
+              ErrorOutputPrefix -> (string)
+                 A  prefix  that  Kinesis  Data Firehose evaluates and adds to
+                 failed records before writing them to S3. This prefix appears
+                 immediately  following the bucket name. For information about
+                 how to specify this prefix, see Custom Prefixes for Amazon S3
+                 Objects .
+
+              BufferingHints -> (structure)
+                 The  buffering  option. If no value is specified, BufferingH-
+                 ints object default values are used.
+
+                 SizeInMBs -> (integer)
+                     Buffer incoming data to the specified size, in MiBs,  be-
+                     fore  delivering it to the destination. The default value
+                     is 5. This parameter is optional but  if  you  specify  a
+                     value  for  it,  you must also specify a value for Inter-
+                     valInSeconds , and vice versa.
+
+                     We recommend setting this parameter to  a  value  greater
+                     than the amount of data you typically ingest into the de-
+                     livery stream in 10 seconds. For example,  if  you  typi-
+                     cally  ingest  data  at 1 MiB/sec, the value should be 10
+                     MiB or higher.
+
+                 IntervalInSeconds -> (integer)
+                     Buffer incoming data for the specified period of time, in
+                     seconds, before delivering it to the destination. The de-
+                     fault value is 300. This parameter is optional but if you
+                     specify a value for it, you must also specify a value for
+                     SizeInMBs , and vice versa.
+
+              CompressionFormat -> (string)
+                 The compression format. If no value is specified, the default
+                 is UNCOMPRESSED .
+
+                 The compression formats SNAPPY or ZIP cannot be specified for
+                 Amazon Redshift destinations because they are  not  supported
+                 by  the Amazon Redshift COPY operation that reads from the S3
+                 bucket.
+
+              EncryptionConfiguration -> (structure)
+                 The encryption configuration. If no value is  specified,  the
+                 default is no encryption.
+
+                 NoEncryptionConfig -> (string)
+                     Specifically  override existing encryption information to
+                     ensure that no encryption is used.
+
+                 KMSEncryptionConfig -> (structure)
+                     The encryption key.
+
+                     AWSKMSKeyARN -> (string)
+                        The Amazon Resource Name (ARN) of the encryption  key.
+                        Must  belong to the same AWS Region as the destination
+                        Amazon S3 bucket. For more information, see Amazon Re-
+                        source Names (ARNs) and AWS Service Namespaces .
+
+              CloudWatchLoggingOptions -> (structure)
+                 The CloudWatch logging options for your delivery stream.
+
+                 Enabled -> (boolean)
+                     Enables or disables CloudWatch logging.
+
+                 LogGroupName -> (string)
+                     The  CloudWatch group name for logging. This value is re-
+                     quired if CloudWatch logging is enabled.
+
+                 LogStreamName -> (string)
+                     The CloudWatch log stream name for logging. This value is
+                     required if CloudWatch logging is enabled.
+
+          ProcessingConfiguration -> (structure)
+              Describes a data processing configuration.
+
+              Enabled -> (boolean)
+                 Enables or disables data processing.
+
+              Processors -> (list)
+                 The data processors.
+
+                 (structure)
+                     Describes a data processor.
+
+                     Type -> (string)
+                        The type of processor.
+
+                     Parameters -> (list)
+                        The processor parameters.
+
+                        (structure)
+                            Describes the processor parameter.
+
+                            ParameterName -> (string)
+                               The name of the parameter.
+
+                            ParameterValue -> (string)
+                               The parameter value.
+
+          CloudWatchLoggingOptions -> (structure)
+              Describes  the Amazon CloudWatch logging options for your deliv-
+              ery stream.
+
+              Enabled -> (boolean)
+                 Enables or disables CloudWatch logging.
+
+              LogGroupName -> (string)
+                 The CloudWatch group name for logging. This value is required
+                 if CloudWatch logging is enabled.
+
+              LogStreamName -> (string)
+                 The CloudWatch log stream name for logging. This value is re-
+                 quired if CloudWatch logging is enabled.
+
+       JSON Syntax:
+
+          {
+            "RoleARN": "string",
+            "DomainARN": "string",
+            "ClusterEndpoint": "string",
+            "IndexName": "string",
+            "TypeName": "string",
+            "IndexRotationPeriod": "NoRotation"|"OneHour"|"OneDay"|"OneWeek"|"OneMonth",
+            "BufferingHints": {
+              "IntervalInSeconds": integer,
+              "SizeInMBs": integer
+            },
+            "RetryOptions": {
+              "DurationInSeconds": integer
+            },
+            "S3Update": {
+              "RoleARN": "string",
+              "BucketARN": "string",
+              "Prefix": "string",
+              "ErrorOutputPrefix": "string",
+              "BufferingHints": {
+                "SizeInMBs": integer,
+                "IntervalInSeconds": integer
+              },
+              "CompressionFormat": "UNCOMPRESSED"|"GZIP"|"ZIP"|"Snappy"|"HADOOP_SNAPPY",
+              "EncryptionConfiguration": {
+                "NoEncryptionConfig": "NoEncryption",
+                "KMSEncryptionConfig": {
+                  "AWSKMSKeyARN": "string"
+                }
+              },
+              "CloudWatchLoggingOptions": {
+                "Enabled": true|false,
+                "LogGroupName": "string",
+                "LogStreamName": "string"
+              }
+            },
+            "ProcessingConfiguration": {
+              "Enabled": true|false,
+              "Processors": [
+                {
+                  "Type": "RecordDeAggregation"|"Lambda"|"MetadataExtraction"|"AppendDelimiterToRecord",
+                  "Parameters": [
+                    {
+                      "ParameterName": "LambdaArn"|"NumberOfRetries"|"MetadataExtractionQuery"|"JsonParsingEngine"|"RoleArn"|"BufferSizeInMBs"|"BufferIntervalInSeconds"|"SubRecordType"|"Delimiter",
+                      "ParameterValue": "string"
+                    }
+                    ...
+                  ]
+                }
+                ...
+              ]
+            },
+            "CloudWatchLoggingOptions": {
+              "Enabled": true|false,
+              "LogGroupName": "string",
+              "LogStreamName": "string"
+            }
+          }
+
+       --splunk-destination-update (structure)
+          Describes an update for a destination in Splunk.
+
+          HECEndpoint -> (string)
+              The HTTP Event Collector (HEC) endpoint to  which  Kinesis  Data
+              Firehose sends your data.
+
+          HECEndpointType -> (string)
+              This type can be either "Raw" or "Event."
+
+          HECToken -> (string)
+              A  GUID that you obtain from your Splunk cluster when you create
+              a new HEC endpoint.
+
+          HECAcknowledgmentTimeoutInSeconds -> (integer)
+              The amount of time that Kinesis Data Firehose waits  to  receive
+              an acknowledgment from Splunk after it sends data. At the end of
+              the timeout period, Kinesis Data Firehose either tries  to  send
+              the  data  again  or  considers it an error, based on your retry
+              settings.
+
+          RetryOptions -> (structure)
+              The retry behavior in case Kinesis Data Firehose  is  unable  to
+              deliver  data  to Splunk or if it doesn't receive an acknowledg-
+              ment of receipt from Splunk.
+
+              DurationInSeconds -> (integer)
+                 The total amount of time that Kinesis Data Firehose spends on
+                 retries.  This  duration  starts after the initial attempt to
+                 send data to Splunk fails. It  doesn't  include  the  periods
+                 during  which  Kinesis Data Firehose waits for acknowledgment
+                 from Splunk after each attempt.
+
+          S3BackupMode -> (string)
+              Specifies how you want Kinesis Data Firehose to  back  up  docu-
+              ments  to  Amazon  S3. When set to FailedDocumentsOnly , Kinesis
+              Data Firehose writes any data that could not be indexed  to  the
+              configured  Amazon S3 destination. When set to AllEvents , Kine-
+              sis Data Firehose delivers all incoming records  to  Amazon  S3,
+              and also writes failed documents to Amazon S3. The default value
+              is FailedEventsOnly .
+
+              You can update this backup mode  from  FailedEventsOnly  to  Al-
+              lEvents . You can't update it from AllEvents to FailedEventsOnly
+              .
+
+          S3Update -> (structure)
+              Your update to the configuration of the backup Amazon  S3  loca-
+              tion.
+
+              RoleARN -> (string)
+                 The  Amazon  Resource  Name (ARN) of the AWS credentials. For
+                 more information, see Amazon Resource Names  (ARNs)  and  AWS
+                 Service Namespaces .
+
+              BucketARN -> (string)
+                 The  ARN  of  the S3 bucket. For more information, see Amazon
+                 Resource Names (ARNs) and AWS Service Namespaces .
+
+              Prefix -> (string)
+                 The "YYYY/MM/DD/HH" time format prefix is automatically  used
+                 for  delivered Amazon S3 files. You can also specify a custom
+                 prefix, as described in Custom Prefixes for Amazon S3 Objects
+                 .
+
+              ErrorOutputPrefix -> (string)
+                 A  prefix  that  Kinesis  Data Firehose evaluates and adds to
+                 failed records before writing them to S3. This prefix appears
+                 immediately  following the bucket name. For information about
+                 how to specify this prefix, see Custom Prefixes for Amazon S3
+                 Objects .
+
+              BufferingHints -> (structure)
+                 The  buffering  option. If no value is specified, BufferingH-
+                 ints object default values are used.
+
+                 SizeInMBs -> (integer)
+                     Buffer incoming data to the specified size, in MiBs,  be-
+                     fore  delivering it to the destination. The default value
+                     is 5. This parameter is optional but  if  you  specify  a
+                     value  for  it,  you must also specify a value for Inter-
+                     valInSeconds , and vice versa.
+
+                     We recommend setting this parameter to  a  value  greater
+                     than the amount of data you typically ingest into the de-
+                     livery stream in 10 seconds. For example,  if  you  typi-
+                     cally  ingest  data  at 1 MiB/sec, the value should be 10
+                     MiB or higher.
+
+                 IntervalInSeconds -> (integer)
+                     Buffer incoming data for the specified period of time, in
+                     seconds, before delivering it to the destination. The de-
+                     fault value is 300. This parameter is optional but if you
+                     specify a value for it, you must also specify a value for
+                     SizeInMBs , and vice versa.
+
+              CompressionFormat -> (string)
+                 The compression format. If no value is specified, the default
+                 is UNCOMPRESSED .
+
+                 The compression formats SNAPPY or ZIP cannot be specified for
+                 Amazon Redshift destinations because they are  not  supported
+                 by  the Amazon Redshift COPY operation that reads from the S3
+                 bucket.
+
+              EncryptionConfiguration -> (structure)
+                 The encryption configuration. If no value is  specified,  the
+                 default is no encryption.
+
+                 NoEncryptionConfig -> (string)
+                     Specifically  override existing encryption information to
+                     ensure that no encryption is used.
+
+                 KMSEncryptionConfig -> (structure)
+                     The encryption key.
+
+                     AWSKMSKeyARN -> (string)
+                        The Amazon Resource Name (ARN) of the encryption  key.
+                        Must  belong to the same AWS Region as the destination
+                        Amazon S3 bucket. For more information, see Amazon Re-
+                        source Names (ARNs) and AWS Service Namespaces .
+
+              CloudWatchLoggingOptions -> (structure)
+                 The CloudWatch logging options for your delivery stream.
+
+                 Enabled -> (boolean)
+                     Enables or disables CloudWatch logging.
+
+                 LogGroupName -> (string)
+                     The  CloudWatch group name for logging. This value is re-
+                     quired if CloudWatch logging is enabled.
+
+                 LogStreamName -> (string)
+                     The CloudWatch log stream name for logging. This value is
+                     required if CloudWatch logging is enabled.
+
+          ProcessingConfiguration -> (structure)
+              The data processing configuration.
+
+              Enabled -> (boolean)
+                 Enables or disables data processing.
+
+              Processors -> (list)
+                 The data processors.
+
+                 (structure)
+                     Describes a data processor.
+
+                     Type -> (string)
+                        The type of processor.
+
+                     Parameters -> (list)
+                        The processor parameters.
+
+                        (structure)
+                            Describes the processor parameter.
+
+                            ParameterName -> (string)
+                               The name of the parameter.
+
+                            ParameterValue -> (string)
+                               The parameter value.
+
+          CloudWatchLoggingOptions -> (structure)
+              The Amazon CloudWatch logging options for your delivery stream.
+
+              Enabled -> (boolean)
+                 Enables or disables CloudWatch logging.
+
+              LogGroupName -> (string)
+                 The CloudWatch group name for logging. This value is required
+                 if CloudWatch logging is enabled.
+
+              LogStreamName -> (string)
+                 The CloudWatch log stream name for logging. This value is re-
+                 quired if CloudWatch logging is enabled.
+
+       JSON Syntax:
+
+          {
+            "HECEndpoint": "string",
+            "HECEndpointType": "Raw"|"Event",
+            "HECToken": "string",
+            "HECAcknowledgmentTimeoutInSeconds": integer,
+            "RetryOptions": {
+              "DurationInSeconds": integer
+            },
+            "S3BackupMode": "FailedEventsOnly"|"AllEvents",
+            "S3Update": {
+              "RoleARN": "string",
+              "BucketARN": "string",
+              "Prefix": "string",
+              "ErrorOutputPrefix": "string",
+              "BufferingHints": {
+                "SizeInMBs": integer,
+                "IntervalInSeconds": integer
+              },
+              "CompressionFormat": "UNCOMPRESSED"|"GZIP"|"ZIP"|"Snappy"|"HADOOP_SNAPPY",
+              "EncryptionConfiguration": {
+                "NoEncryptionConfig": "NoEncryption",
+                "KMSEncryptionConfig": {
+                  "AWSKMSKeyARN": "string"
+                }
+              },
+              "CloudWatchLoggingOptions": {
+                "Enabled": true|false,
+                "LogGroupName": "string",
+                "LogStreamName": "string"
+              }
+            },
+            "ProcessingConfiguration": {
+              "Enabled": true|false,
+              "Processors": [
+                {
+                  "Type": "RecordDeAggregation"|"Lambda"|"MetadataExtraction"|"AppendDelimiterToRecord",
+                  "Parameters": [
+                    {
+                      "ParameterName": "LambdaArn"|"NumberOfRetries"|"MetadataExtractionQuery"|"JsonParsingEngine"|"RoleArn"|"BufferSizeInMBs"|"BufferIntervalInSeconds"|"SubRecordType"|"Delimiter",
+                      "ParameterValue": "string"
+                    }
+                    ...
+                  ]
+                }
+                ...
+              ]
+            },
+            "CloudWatchLoggingOptions": {
+              "Enabled": true|false,
+              "LogGroupName": "string",
+              "LogStreamName": "string"
+            }
+          }
+
+       --http-endpoint-destination-update (structure)
+          Describes an update to the specified HTTP endpoint destination.
+
+          EndpointConfiguration -> (structure)
+              Describes the configuration of the HTTP endpoint destination.
+
+              Url -> (string)
+                 The URL of the HTTP endpoint selected as the destination.
+
+                 WARNING:
+                     If  you  choose an HTTP endpoint as your destination, re-
+                     view and follow the instructions in the Appendix  -  HTTP
+                     Endpoint Delivery Request and Response Specifications .
+
+              Name -> (string)
+                 The name of the HTTP endpoint selected as the destination.
+
+              AccessKey -> (string)
+                 The  access key required for Kinesis Firehose to authenticate
+                 with the HTTP endpoint selected as the destination.
+
+          BufferingHints -> (structure)
+              Describes buffering options that can be applied to the data  be-
+              fore  it is delivered to the HTTPS endpoint destination. Kinesis
+              Data Firehose teats these options as hints, and it might  choose
+              to  use more optimal values. The SizeInMBs and IntervalInSeconds
+              parameters are optional. However, if specify a value for one  of
+              them, you must also provide a value for the other.
+
+              SizeInMBs -> (integer)
+                 Buffer  incoming  data  to the specified size, in MBs, before
+                 delivering it to the destination. The default value is 5.
+
+                 We recommend setting this parameter to a value  greater  than
+                 the  amount  of  data  you typically ingest into the delivery
+                 stream in 10 seconds. For example, if  you  typically  ingest
+                 data at 1 MB/sec, the value should be 10 MB or higher.
+
+              IntervalInSeconds -> (integer)
+                 Buffer  incoming  data  for  the specified period of time, in
+                 seconds, before delivering it to the destination. The default
+                 value is 300 (5 minutes).
+
+          CloudWatchLoggingOptions -> (structure)
+              Describes  the Amazon CloudWatch logging options for your deliv-
+              ery stream.
+
+              Enabled -> (boolean)
+                 Enables or disables CloudWatch logging.
+
+              LogGroupName -> (string)
+                 The CloudWatch group name for logging. This value is required
+                 if CloudWatch logging is enabled.
+
+              LogStreamName -> (string)
+                 The CloudWatch log stream name for logging. This value is re-
+                 quired if CloudWatch logging is enabled.
+
+          RequestConfiguration -> (structure)
+              The configuration of the request sent to the HTTP endpoint spec-
+              ified as the destination.
+
+              ContentEncoding -> (string)
+                 Kinesis  Data  Firehose uses the content encoding to compress
+                 the body of a request before sending the request to the  des-
+                 tination.  For  more information, see Content-Encoding in MDN
+                 Web Docs, the official Mozilla documentation.
+
+              CommonAttributes -> (list)
+                 Describes the metadata sent to the HTTP endpoint destination.
+
+                 (structure)
+                     Describes the metadata that's delivered to the  specified
+                     HTTP endpoint destination.
+
+                     AttributeName -> (string)
+                        The name of the HTTP endpoint common attribute.
+
+                     AttributeValue -> (string)
+                        The value of the HTTP endpoint common attribute.
+
+          ProcessingConfiguration -> (structure)
+              Describes a data processing configuration.
+
+              Enabled -> (boolean)
+                 Enables or disables data processing.
+
+              Processors -> (list)
+                 The data processors.
+
+                 (structure)
+                     Describes a data processor.
+
+                     Type -> (string)
+                        The type of processor.
+
+                     Parameters -> (list)
+                        The processor parameters.
+
+                        (structure)
+                            Describes the processor parameter.
+
+                            ParameterName -> (string)
+                               The name of the parameter.
+
+                            ParameterValue -> (string)
+                               The parameter value.
+
+          RoleARN -> (string)
+              Kinesis Data Firehose uses this IAM role for all the permissions
+              that the delivery stream needs.
+
+          RetryOptions -> (structure)
+              Describes the retry behavior in case Kinesis  Data  Firehose  is
+              unable  to  deliver data to the specified HTTP endpoint destina-
+              tion, or if it doesn't receive a valid acknowledgment of receipt
+              from the specified HTTP endpoint destination.
+
+              DurationInSeconds -> (integer)
+                 The total amount of time that Kinesis Data Firehose spends on
+                 retries. This duration starts after the  initial  attempt  to
+                 send data to the custom destination via HTTPS endpoint fails.
+                 It doesn't include the  periods  during  which  Kinesis  Data
+                 Firehose waits for acknowledgment from the specified destina-
+                 tion after each attempt.
+
+          S3BackupMode -> (string)
+              Describes the S3 bucket backup options for the data that Kinesis
+              Firehose delivers to the HTTP endpoint destination. You can back
+              up all documents (AllData ) or only the documents  that  Kinesis
+              Data  Firehose  could not deliver to the specified HTTP endpoint
+              destination (FailedDataOnly ).
+
+          S3Update -> (structure)
+              Describes an update for a destination in Amazon S3.
+
+              RoleARN -> (string)
+                 The Amazon Resource Name (ARN) of the  AWS  credentials.  For
+                 more  information,  see  Amazon Resource Names (ARNs) and AWS
+                 Service Namespaces .
+
+              BucketARN -> (string)
+                 The ARN of the S3 bucket. For more  information,  see  Amazon
+                 Resource Names (ARNs) and AWS Service Namespaces .
+
+              Prefix -> (string)
+                 The  "YYYY/MM/DD/HH" time format prefix is automatically used
+                 for delivered Amazon S3 files. You can also specify a  custom
+                 prefix, as described in Custom Prefixes for Amazon S3 Objects
+                 .
+
+              ErrorOutputPrefix -> (string)
+                 A prefix that Kinesis Data Firehose  evaluates  and  adds  to
+                 failed records before writing them to S3. This prefix appears
+                 immediately following the bucket name. For information  about
+                 how to specify this prefix, see Custom Prefixes for Amazon S3
+                 Objects .
+
+              BufferingHints -> (structure)
+                 The buffering option. If no value is  specified,  BufferingH-
+                 ints object default values are used.
+
+                 SizeInMBs -> (integer)
+                     Buffer  incoming data to the specified size, in MiBs, be-
+                     fore delivering it to the destination. The default  value
+                     is  5.  This  parameter  is optional but if you specify a
+                     value for it, you must also specify a  value  for  Inter-
+                     valInSeconds , and vice versa.
+
+                     We  recommend  setting  this parameter to a value greater
+                     than the amount of data you typically ingest into the de-
+                     livery  stream  in  10 seconds. For example, if you typi-
+                     cally ingest data at 1 MiB/sec, the value  should  be  10
+                     MiB or higher.
+
+                 IntervalInSeconds -> (integer)
+                     Buffer incoming data for the specified period of time, in
+                     seconds, before delivering it to the destination. The de-
+                     fault value is 300. This parameter is optional but if you
+                     specify a value for it, you must also specify a value for
+                     SizeInMBs , and vice versa.
+
+              CompressionFormat -> (string)
+                 The compression format. If no value is specified, the default
+                 is UNCOMPRESSED .
+
+                 The compression formats SNAPPY or ZIP cannot be specified for
+                 Amazon  Redshift  destinations because they are not supported
+                 by the Amazon Redshift COPY operation that reads from the  S3
+                 bucket.
+
+              EncryptionConfiguration -> (structure)
+                 The  encryption  configuration. If no value is specified, the
+                 default is no encryption.
+
+                 NoEncryptionConfig -> (string)
+                     Specifically override existing encryption information  to
+                     ensure that no encryption is used.
+
+                 KMSEncryptionConfig -> (structure)
+                     The encryption key.
+
+                     AWSKMSKeyARN -> (string)
+                        The  Amazon Resource Name (ARN) of the encryption key.
+                        Must belong to the same AWS Region as the  destination
+                        Amazon S3 bucket. For more information, see Amazon Re-
+                        source Names (ARNs) and AWS Service Namespaces .
+
+              CloudWatchLoggingOptions -> (structure)
+                 The CloudWatch logging options for your delivery stream.
+
+                 Enabled -> (boolean)
+                     Enables or disables CloudWatch logging.
+
+                 LogGroupName -> (string)
+                     The CloudWatch group name for logging. This value is  re-
+                     quired if CloudWatch logging is enabled.
+
+                 LogStreamName -> (string)
+                     The CloudWatch log stream name for logging. This value is
+                     required if CloudWatch logging is enabled.
+
+       JSON Syntax:
+
+          {
+            "EndpointConfiguration": {
+              "Url": "string",
+              "Name": "string",
+              "AccessKey": "string"
+            },
+            "BufferingHints": {
+              "SizeInMBs": integer,
+              "IntervalInSeconds": integer
+            },
+            "CloudWatchLoggingOptions": {
+              "Enabled": true|false,
+              "LogGroupName": "string",
+              "LogStreamName": "string"
+            },
+            "RequestConfiguration": {
+              "ContentEncoding": "NONE"|"GZIP",
+              "CommonAttributes": [
+                {
+                  "AttributeName": "string",
+                  "AttributeValue": "string"
+                }
+                ...
+              ]
+            },
+            "ProcessingConfiguration": {
+              "Enabled": true|false,
+              "Processors": [
+                {
+                  "Type": "RecordDeAggregation"|"Lambda"|"MetadataExtraction"|"AppendDelimiterToRecord",
+                  "Parameters": [
+                    {
+                      "ParameterName": "LambdaArn"|"NumberOfRetries"|"MetadataExtractionQuery"|"JsonParsingEngine"|"RoleArn"|"BufferSizeInMBs"|"BufferIntervalInSeconds"|"SubRecordType"|"Delimiter",
+                      "ParameterValue": "string"
+                    }
+                    ...
+                  ]
+                }
+                ...
+              ]
+            },
+            "RoleARN": "string",
+            "RetryOptions": {
+              "DurationInSeconds": integer
+            },
+            "S3BackupMode": "FailedDataOnly"|"AllData",
+            "S3Update": {
+              "RoleARN": "string",
+              "BucketARN": "string",
+              "Prefix": "string",
+              "ErrorOutputPrefix": "string",
+              "BufferingHints": {
+                "SizeInMBs": integer,
+                "IntervalInSeconds": integer
+              },
+              "CompressionFormat": "UNCOMPRESSED"|"GZIP"|"ZIP"|"Snappy"|"HADOOP_SNAPPY",
+              "EncryptionConfiguration": {
+                "NoEncryptionConfig": "NoEncryption",
+                "KMSEncryptionConfig": {
+                  "AWSKMSKeyARN": "string"
+                }
+              },
+              "CloudWatchLoggingOptions": {
+                "Enabled": true|false,
+                "LogGroupName": "string",
+                "LogStreamName": "string"
+              }
+            }
+          }
+
+       --cli-input-json | --cli-input-yaml (string) Reads arguments  from  the
+       JSON  string  provided.  The JSON string follows the format provided by
+       --generate-cli-skeleton. If other arguments are provided on the command
+       line,  those  values  will override the JSON-provided values. It is not
+       possible to pass arbitrary binary values using a JSON-provided value as
+       the  string  will  be  taken literally. This may not be specified along
+       with --cli-input-yaml.
+
+       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
+       output without sending an API request. If provided with no value or the
+       value input, prints a sample input JSON that can be used as an argument
+       for --cli-input-json. Similarly, if provided yaml-input it will print a
+       sample input YAML that can be used with --cli-input-yaml.  If  provided
+       with  the  value  output, it validates the command inputs and returns a
+       sample output JSON for that command.
+
+       See 'aws help' for descriptions of global parameters.
+
+OUTPUT
+       None
+
+
+
+                                                          UPDATE-DESTINATION()

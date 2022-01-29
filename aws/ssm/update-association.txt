@@ -1,0 +1,804 @@
+UPDATE-ASSOCIATION()                                      UPDATE-ASSOCIATION()
+
+
+
+NAME
+       update-association -
+
+DESCRIPTION
+       Updates  an  association.  You can update the association name and ver-
+       sion, the document version, schedule,  parameters,  and  Amazon  Simple
+       Storage  Service  (Amazon S3) output. When you call UpdateAssociation ,
+       the system drops all optional parameters from  the  request  and  over-
+       writes  the  association with null values for those parameters. This is
+       by design. You must specify all optional parameters in the  call,  even
+       if  you are not changing the parameters. This includes the Name parame-
+       ter. Before calling this API action, we recommend  that  you  call  the
+       DescribeAssociation  API  operation and make a note of all optional pa-
+       rameters required for your UpdateAssociation call.
+
+       In order to call this API operation, your Identity and  Access  Manage-
+       ment (IAM) user account, group, or role must be configured with permis-
+       sion to call the  DescribeAssociation API operation. If you don't  have
+       permission to call DescribeAssociation , then you receive the following
+       error: An error occurred (AccessDeniedException) when calling  the  Up-
+       dateAssociation  operation:  User:  <user_arn> isn't authorized to per-
+       form: ssm:DescribeAssociation on resource: <resource_arn>
+
+       WARNING:
+          When you update an association,  the  association  immediately  runs
+          against the specified targets. You can add the ApplyOnlyAtCronInter-
+          val parameter to run the association during the next schedule run.
+
+       See also: AWS API Documentation
+
+       See 'aws help' for descriptions of global parameters.
+
+SYNOPSIS
+            update-association
+          --association-id <value>
+          [--parameters <value>]
+          [--document-version <value>]
+          [--schedule-expression <value>]
+          [--output-location <value>]
+          [--name <value>]
+          [--targets <value>]
+          [--association-name <value>]
+          [--association-version <value>]
+          [--automation-target-parameter-name <value>]
+          [--max-errors <value>]
+          [--max-concurrency <value>]
+          [--compliance-severity <value>]
+          [--sync-compliance <value>]
+          [--apply-only-at-cron-interval | --no-apply-only-at-cron-interval]
+          [--calendar-names <value>]
+          [--target-locations <value>]
+          [--cli-input-json | --cli-input-yaml]
+          [--generate-cli-skeleton <value>]
+
+OPTIONS
+       --association-id (string)
+          The ID of the association you want to update.
+
+       --parameters (map)
+          The parameters you want to update for the association. If you create
+          a  parameter  using Parameter Store, a capability of Amazon Web Ser-
+          vices  Systems  Manager,  you  can  reference  the  parameter  using
+          {{ssm:parameter-name}} .
+
+          key -> (string)
+
+          value -> (list)
+              (string)
+
+       Shorthand Syntax:
+
+          KeyName1=string,string,KeyName2=string,string
+
+       JSON Syntax:
+
+          {"string": ["string", ...]
+            ...}
+
+       --document-version (string)
+          The document version you want update for the association.
+
+          WARNING:
+              State  Manager  doesn't  support running associations that use a
+              new version of a document if that document is  shared  from  an-
+              other  account. State Manager always runs the default version of
+              a document if shared from another account, even though the  Sys-
+              tems  Manager console shows that a new version was processed. If
+              you want to run an association using a new version of a document
+              shared  form  another account, you must set the document version
+              to default .
+
+       --schedule-expression (string)
+          The cron expression used to schedule the association that  you  want
+          to update.
+
+       --output-location (structure)
+          An S3 bucket where you want to store the results of this request.
+
+          S3Location -> (structure)
+              An  S3  bucket  where  you want to store the results of this re-
+              quest.
+
+              OutputS3Region -> (string)
+                 The Amazon Web Services Region of the S3 bucket.
+
+              OutputS3BucketName -> (string)
+                 The name of the S3 bucket.
+
+              OutputS3KeyPrefix -> (string)
+                 The S3 bucket subfolder.
+
+       Shorthand Syntax:
+
+          S3Location={OutputS3Region=string,OutputS3BucketName=string,OutputS3KeyPrefix=string}
+
+       JSON Syntax:
+
+          {
+            "S3Location": {
+              "OutputS3Region": "string",
+              "OutputS3BucketName": "string",
+              "OutputS3KeyPrefix": "string"
+            }
+          }
+
+       --name (string)
+          The name of the SSM Command document or Automation runbook that con-
+          tains the configuration information for the managed node.
+
+          You  can specify Amazon Web Services-predefined documents, documents
+          you created, or a document that is shared with you from another  ac-
+          count.
+
+          For Systems Manager document (SSM document) that are shared with you
+          from other Amazon Web Services accounts, you must specify  the  com-
+          plete SSM document ARN, in the following format:
+
+              ``
+              arn:aws:ssm:region :account-id :document/document-name ``
+
+          For example:
+              arn:aws:ssm:us-east-2:12345678912:document/My-Shared-Document
+
+          For  Amazon  Web Services-predefined documents and SSM documents you
+          created in your account, you only need to specify the document name.
+          For example, AWS-ApplyPatchBaseline or My-Document .
+
+       --targets (list)
+          The targets of the association.
+
+          (structure)
+              An  array  of search criteria that targets managed nodes using a
+              key-value pair that you specify.
+
+              NOTE:
+                 One or more targets must be specified for maintenance  window
+                 Run  Command-type  tasks.  Depending on the task, targets are
+                 optional for other maintenance window task types (Automation,
+                 Lambda,  and Step Functions). For more information about run-
+                 ning tasks that don't specify targets, see Registering  main-
+                 tenance  window  tasks without targets in the Amazon Web Ser-
+                 vices Systems Manager User Guide .
+
+              Supported formats include the following.
+
+              o Key=InstanceIds,Values=<instance-id-1>,<instance-id-2>,<in-
+                stance-id-3>
+
+              o Key=tag:<my-tag-key>,Values=<my-tag-value-1>,<my-tag-value-2>
+
+              o Key=tag-key,Values=<my-tag-key-1>,<my-tag-key-2>
+
+              o Run  Command  and  Maintenance  window  targets only : Key=re-
+                source-groups:Name,Values=<resource-group-name>
+
+              o Maintenance  window  targets  only  :  Key=resource-groups:Re-
+                sourceTypeFilters,Values=<resource-type-1>,<resource-type-2>
+
+              o Automation   targets   only   :  Key=ResourceGroup;Values=<re-
+                source-group-name>
+
+              For example:
+
+              o Key=InstanceIds,Values=i-02573cafcfEXAMPLE,i-0471e04240EXAM-
+                PLE,i-07782c72faEXAMPLE
+
+              o Key=tag:CostCenter,Values=CostCenter1,CostCenter2,CostCenter3
+
+              o Key=tag-key,Values=Name,Instance-Type,CostCenter
+
+              o Run  Command  and  Maintenance  window  targets only : Key=re-
+                source-groups:Name,Values=ProductionResourceGroup   This exam-
+                ple  demonstrates  how to target all resources in the resource
+                group ProductionResourceGroup in your maintenance window.
+
+              o Maintenance  window  targets  only  :  Key=resource-groups:Re-
+                sourceTypeFilters,Values=AWS::EC2::INSTANCE,AWS::EC2::VPC
+                This example demonstrates how to target  only  Amazon  Elastic
+                Compute  Cloud (Amazon EC2) instances and VPCs in your mainte-
+                nance window.
+
+              o Automation targets only : Key=ResourceGroup,Values=MyResource-
+                Group
+
+              o State  Manager association targets only : Key=InstanceIds,Val-
+                ues=*   This example demonstrates how to  target  all  managed
+                instances in the Amazon Web Services Region where the associa-
+                tion was created.
+
+              For more information about how to send commands that target man-
+              aged  nodes  using  Key,Value parameters, see Targeting multiple
+              instances in the Amazon Web Services Systems Manager User  Guide
+              .
+
+              Key -> (string)
+                 User-defined  criteria  for sending commands that target man-
+                 aged nodes that meet the criteria.
+
+              Values -> (list)
+                 User-defined criteria that maps to Key . For example, if  you
+                 specified  tag:ServerRole , you could specify value:WebServer
+                 to run a command  on  instances  that  include  EC2  tags  of
+                 ServerRole,WebServer .
+
+                 Depending on the type of target, the maximum number of values
+                 for a key might be lower than the global maximum of 50.
+
+                 (string)
+
+       Shorthand Syntax:
+
+          Key=string,Values=string,string ...
+
+       JSON Syntax:
+
+          [
+            {
+              "Key": "string",
+              "Values": ["string", ...]
+            }
+            ...
+          ]
+
+       --association-name (string)
+          The name of the association that you want to update.
+
+       --association-version (string)
+          This parameter is provided for  concurrency  control  purposes.  You
+          must  specify  the latest association version in the service. If you
+          want to ensure that this request succeeds, either specify $LATEST  ,
+          or omit this parameter.
+
+       --automation-target-parameter-name (string)
+          Choose  the  parameter  that  will  define  how your automation will
+          branch out. This target is required for associations that use an Au-
+          tomation  runbook and target resources by using rate controls. Auto-
+          mation is a capability of Amazon Web Services Systems Manager.
+
+       --max-errors (string)
+          The number of errors that are allowed before the system stops  send-
+          ing  requests  to run the association on additional targets. You can
+          specify either an absolute number of errors, for example  10,  or  a
+          percentage of the target set, for example 10%. If you specify 3, for
+          example, the system stops sending requests when the fourth error  is
+          received.  If  you specify 0, then the system stops sending requests
+          after the first error is returned. If you run an association  on  50
+          managed nodes and set MaxError to 10%, then the system stops sending
+          the request when the sixth error is received.
+
+          Executions that are already running an association when MaxErrors is
+          reached  are  allowed  to complete, but some of these executions may
+          fail as well. If you need to ensure that there won't  be  more  than
+          max-errors failed executions, set MaxConcurrency to 1 so that execu-
+          tions proceed one at a time.
+
+       --max-concurrency (string)
+          The maximum number of targets allowed to run the association at  the
+          same time. You can specify a number, for example 10, or a percentage
+          of the target set, for example 10%. The default value is 100%, which
+          means all targets run the association at the same time.
+
+          If  a  new  managed  node  starts and attempts to run an association
+          while Systems Manager is running  MaxConcurrency  associations,  the
+          association is allowed to run. During the next association interval,
+          the new managed node will process its association within  the  limit
+          specified for MaxConcurrency .
+
+       --compliance-severity (string)
+          The severity level to assign to the association.
+
+          Possible values:
+
+          o CRITICAL
+
+          o HIGH
+
+          o MEDIUM
+
+          o LOW
+
+          o UNSPECIFIED
+
+       --sync-compliance (string)
+          The mode for generating association compliance. You can specify AUTO
+          or MANUAL . In AUTO mode, the system uses the status of the associa-
+          tion  execution  to determine the compliance status. If the associa-
+          tion execution runs successfully, then the association is  COMPLIANT
+          . If the association execution doesn't run successfully, the associ-
+          ation is NON-COMPLIANT .
+
+          In MANUAL mode, you must specify the AssociationId  as  a  parameter
+          for  the  PutComplianceItems API operation. In this case, compliance
+          data isn't managed by State Manager, a capability of Amazon Web Ser-
+          vices  Systems  Manager.  It  is  managed by your direct call to the
+          PutComplianceItems API operation.
+
+          By default, all associations use AUTO mode.
+
+          Possible values:
+
+          o AUTO
+
+          o MANUAL
+
+       --apply-only-at-cron-interval | --no-apply-only-at-cron-interval (bool-
+       ean)
+          By default, when you update an association, the system runs it imme-
+          diately after it is updated and then according to the  schedule  you
+          specified.  Specify  this option if you don't want an association to
+          run immediately after you update it. This parameter isn't  supported
+          for rate expressions.
+
+          Also, if you specified this option when you created the association,
+          you can reset it. To do so, specify the no-apply-only-at-cron-inter-
+          val parameter when you update the association from the command line.
+          This parameter forces the association to run immediately  after  up-
+          dating it and according to the interval specified.
+
+       --calendar-names (list)
+          The  names  or  Amazon  Resource Names (ARNs) of the Change Calendar
+          type documents you want to gate your associations under. The associ-
+          ations only run when that change calendar is open. For more informa-
+          tion, see Amazon Web Services Systems Manager Change Calendar .
+
+          (string)
+
+       Syntax:
+
+          "string" "string" ...
+
+       --target-locations (list)
+          A location is a combination of Amazon Web Services Regions and  Ama-
+          zon Web Services accounts where you want to run the association. Use
+          this action to update an association in multiple Regions and  multi-
+          ple accounts.
+
+          (structure)
+              The  combination  of  Amazon Web Services Regions and Amazon Web
+              Services accounts targeted by the current Automation execution.
+
+              Accounts -> (list)
+                 The Amazon Web Services accounts targeted by the current  Au-
+                 tomation execution.
+
+                 (string)
+
+              Regions -> (list)
+                 The Amazon Web Services Regions targeted by the current Auto-
+                 mation execution.
+
+                 (string)
+
+              TargetLocationMaxConcurrency -> (string)
+                 The maximum number of Amazon Web Services Regions and  Amazon
+                 Web  Services  accounts allowed to run the Automation concur-
+                 rently.
+
+              TargetLocationMaxErrors -> (string)
+                 The maximum number of errors allowed before the system  stops
+                 queueing  additional  Automation executions for the currently
+                 running Automation.
+
+              ExecutionRoleName -> (string)
+                 The Automation execution role used by the  currently  running
+                 Automation.  If  not specified, the default value is AWS-Sys-
+                 temsManager-AutomationExecutionRole .
+
+       Shorthand Syntax:
+
+          Accounts=string,string,Regions=string,string,TargetLocationMaxConcurrency=string,TargetLocationMaxErrors=string,ExecutionRoleName=string ...
+
+       JSON Syntax:
+
+          [
+            {
+              "Accounts": ["string", ...],
+              "Regions": ["string", ...],
+              "TargetLocationMaxConcurrency": "string",
+              "TargetLocationMaxErrors": "string",
+              "ExecutionRoleName": "string"
+            }
+            ...
+          ]
+
+       --cli-input-json | --cli-input-yaml (string) Reads arguments  from  the
+       JSON  string  provided.  The JSON string follows the format provided by
+       --generate-cli-skeleton. If other arguments are provided on the command
+       line,  those  values  will override the JSON-provided values. It is not
+       possible to pass arbitrary binary values using a JSON-provided value as
+       the  string  will  be  taken literally. This may not be specified along
+       with --cli-input-yaml.
+
+       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
+       output without sending an API request. If provided with no value or the
+       value input, prints a sample input JSON that can be used as an argument
+       for --cli-input-json. Similarly, if provided yaml-input it will print a
+       sample input YAML that can be used with --cli-input-yaml.  If  provided
+       with  the  value  output, it validates the command inputs and returns a
+       sample output JSON for that command.
+
+       See 'aws help' for descriptions of global parameters.
+
+EXAMPLES
+       Example 1: To update a document association
+
+       The following update-association example updates an association with  a
+       new document version.
+
+          aws ssm update-association \
+              --association-id "8dfe3659-4309-493a-8755-0123456789ab" \
+              --document-version "\$LATEST"
+
+       Output:
+
+          {
+              "AssociationDescription": {
+                  "Name": "AWS-UpdateSSMAgent",
+                  "AssociationVersion": "2",
+                  "Date": 1550508093.293,
+                  "LastUpdateAssociationDate": 1550508106.596,
+                  "Overview": {
+                      "Status": "Pending",
+                      "DetailedStatus": "Creating"
+                  },
+                  "DocumentVersion": "$LATEST",
+                  "AssociationId": "8dfe3659-4309-493a-8755-0123456789ab",
+                  "Targets": [
+                      {
+                          "Key": "tag:Name",
+                          "Values": [
+                              "Linux"
+                          ]
+                      }
+                  ],
+                  "LastExecutionDate": 1550508094.879,
+                  "LastSuccessfulExecutionDate": 1550508094.879
+              }
+          }
+
+       For  more information, see Editing and creating a new version of an as-
+       sociation in the AWS Systems Manager User Guide.
+
+       Example 2: To update the schedule expression of an association
+
+       The following update-association example updates the  schedule  expres-
+       sion for the specified association.
+
+          aws ssm update-association \
+              --association-id "8dfe3659-4309-493a-8755-0123456789ab" \
+              --schedule-expression "cron(0 0 0/4 1/1 * ? *)"
+
+       Output:
+
+          {
+              "AssociationDescription": {
+                  "Name": "AWS-HelloWorld",
+                  "AssociationVersion": "2",
+                  "Date": "2021-02-08T13:54:19.203000-08:00",
+                  "LastUpdateAssociationDate": "2021-06-29T11:51:07.933000-07:00",
+                  "Overview": {
+                      "Status": "Pending",
+                      "DetailedStatus": "Creating"
+                  },
+                  "DocumentVersion": "$DEFAULT",
+                  "AssociationId": "8dfe3659-4309-493a-8755-0123456789ab",
+                  "Targets": [
+                      {
+                          "Key": "aws:NoOpAutomationTag",
+                          "Values": [
+                              "AWS-NoOpAutomationTarget-Value"
+                          ]
+                      }
+                  ],
+                  "ScheduleExpression": "cron(0 0 0/4 1/1 * ? *)",
+                  "LastExecutionDate": "2021-06-26T19:00:48.110000-07:00",
+                  "ApplyOnlyAtCronInterval": false
+              }
+          }
+
+       For  more information, see Editing and creating a new version of an as-
+       sociation in the AWS Systems Manager User Guide.
+
+OUTPUT
+       AssociationDescription -> (structure)
+          The description of the association that was updated.
+
+          Name -> (string)
+              The name of the SSM document.
+
+          InstanceId -> (string)
+              The managed node ID.
+
+          AssociationVersion -> (string)
+              The association version.
+
+          Date -> (timestamp)
+              The date when the association was made.
+
+          LastUpdateAssociationDate -> (timestamp)
+              The date when the association was last updated.
+
+          Status -> (structure)
+              The association status.
+
+              Date -> (timestamp)
+                 The date when the status changed.
+
+              Name -> (string)
+                 The status.
+
+              Message -> (string)
+                 The reason for the status.
+
+              AdditionalInfo -> (string)
+                 A user-defined string.
+
+          Overview -> (structure)
+              Information about the association.
+
+              Status -> (string)
+                 The status of the association. Status can be:  Pending,  Suc-
+                 cess, or Failed.
+
+              DetailedStatus -> (string)
+                 A detailed status of the association.
+
+              AssociationStatusAggregatedCount -> (map)
+                 Returns the number of targets for the association status. For
+                 example, if you  created  an  association  with  two  managed
+                 nodes,  and one of them was successful, this would return the
+                 count of managed nodes by status.
+
+                 key -> (string)
+
+                 value -> (integer)
+
+          DocumentVersion -> (string)
+              The document version.
+
+          AutomationTargetParameterName -> (string)
+              Choose the parameter that will define how your  automation  will
+              branch out. This target is required for associations that use an
+              Automation runbook and target resources by using rate  controls.
+              Automation  is  a capability of Amazon Web Services Systems Man-
+              ager.
+
+          Parameters -> (map)
+              A description of the parameters for a document.
+
+              key -> (string)
+
+              value -> (list)
+                 (string)
+
+          AssociationId -> (string)
+              The association ID.
+
+          Targets -> (list)
+              The managed nodes targeted by the request.
+
+              (structure)
+                 An array of search criteria that targets managed nodes  using
+                 a key-value pair that you specify.
+
+                 NOTE:
+                     One  or  more  targets  must be specified for maintenance
+                     window Run Command-type tasks.  Depending  on  the  task,
+                     targets  are  optional  for other maintenance window task
+                     types (Automation, Lambda, and Step Functions). For  more
+                     information  about  running tasks that don't specify tar-
+                     gets, see Registering maintenance  window  tasks  without
+                     targets  in  the Amazon Web Services Systems Manager User
+                     Guide .
+
+                 Supported formats include the following.
+
+                 o Key=InstanceIds,Values=<instance-id-1>,<instance-id-2>,<in-
+                   stance-id-3>
+
+                 o Key=tag:<my-tag-key>,Val-
+                   ues=<my-tag-value-1>,<my-tag-value-2>
+
+                 o Key=tag-key,Values=<my-tag-key-1>,<my-tag-key-2>
+
+                 o Run Command and Maintenance window targets only  :  Key=re-
+                   source-groups:Name,Values=<resource-group-name>
+
+                 o Maintenance  window  targets only : Key=resource-groups:Re-
+                   sourceTypeFilters,Values=<resource-type-1>,<re-
+                   source-type-2>
+
+                 o Automation  targets  only  :  Key=ResourceGroup;Values=<re-
+                   source-group-name>
+
+                 For example:
+
+                 o Key=InstanceIds,Values=i-02573cafcfEXAMPLE,i-0471e04240EX-
+                   AMPLE,i-07782c72faEXAMPLE
+
+                 o Key=tag:CostCenter,Values=CostCenter1,CostCenter2,CostCen-
+                   ter3
+
+                 o Key=tag-key,Values=Name,Instance-Type,CostCenter
+
+                 o Run Command and Maintenance window targets only  :  Key=re-
+                   source-groups:Name,Values=ProductionResourceGroup      This
+                   example demonstrates how to target all resources in the re-
+                   source  group  ProductionResourceGroup  in your maintenance
+                   window.
+
+                 o Maintenance window targets only  :  Key=resource-groups:Re-
+                   sourceTypeFilters,Values=AWS::EC2::INSTANCE,AWS::EC2::VPC
+                   This example demonstrates how to target only Amazon Elastic
+                   Compute Cloud (Amazon EC2) instances and VPCs in your main-
+                   tenance window.
+
+                 o Automation targets  only  :  Key=ResourceGroup,Values=MyRe-
+                   sourceGroup
+
+                 o State   Manager  association  targets  only  :  Key=Instan-
+                   ceIds,Values=*   This example demonstrates  how  to  target
+                   all  managed  instances  in  the Amazon Web Services Region
+                   where the association was created.
+
+                 For more information about how to send commands  that  target
+                 managed  nodes using Key,Value parameters, see Targeting mul-
+                 tiple instances in the Amazon Web  Services  Systems  Manager
+                 User Guide .
+
+                 Key -> (string)
+                     User-defined  criteria  for  sending commands that target
+                     managed nodes that meet the criteria.
+
+                 Values -> (list)
+                     User-defined criteria that maps to Key . For example,  if
+                     you   specified   tag:ServerRole   ,  you  could  specify
+                     value:WebServer to run a command on  instances  that  in-
+                     clude EC2 tags of ServerRole,WebServer .
+
+                     Depending  on  the  type of target, the maximum number of
+                     values for a key might be lower than the  global  maximum
+                     of 50.
+
+                     (string)
+
+          ScheduleExpression -> (string)
+              A cron expression that specifies a schedule when the association
+              runs.
+
+          OutputLocation -> (structure)
+              An S3 bucket where you want to store the output details  of  the
+              request.
+
+              S3Location -> (structure)
+                 An  S3 bucket where you want to store the results of this re-
+                 quest.
+
+                 OutputS3Region -> (string)
+                     The Amazon Web Services Region of the S3 bucket.
+
+                 OutputS3BucketName -> (string)
+                     The name of the S3 bucket.
+
+                 OutputS3KeyPrefix -> (string)
+                     The S3 bucket subfolder.
+
+          LastExecutionDate -> (timestamp)
+              The date on which the association was last run.
+
+          LastSuccessfulExecutionDate -> (timestamp)
+              The last date on which the association was successfully run.
+
+          AssociationName -> (string)
+              The association name.
+
+          MaxErrors -> (string)
+              The number of errors that are allowed before  the  system  stops
+              sending  requests  to run the association on additional targets.
+              You can specify either an absolute number of errors, for example
+              10,  or  a percentage of the target set, for example 10%. If you
+              specify 3, for example, the system stops sending  requests  when
+              the  fourth error is received. If you specify 0, then the system
+              stops sending requests after the first error is returned. If you
+              run  an association on 50 managed nodes and set MaxError to 10%,
+              then the system stops sending the request when the  sixth  error
+              is received.
+
+              Executions  that  are already running an association when MaxEr-
+              rors is reached are allowed to complete, but some of these  exe-
+              cutions may fail as well. If you need to ensure that there won't
+              be more than max-errors failed executions, set MaxConcurrency to
+              1 so that executions proceed one at a time.
+
+          MaxConcurrency -> (string)
+              The  maximum number of targets allowed to run the association at
+              the same time. You can specify a number, for example  10,  or  a
+              percentage of the target set, for example 10%. The default value
+              is 100%, which means all targets run the association at the same
+              time.
+
+              If  a new managed node starts and attempts to run an association
+              while Systems Manager is  running  MaxConcurrency  associations,
+              the  association  is allowed to run. During the next association
+              interval, the new managed  node  will  process  its  association
+              within the limit specified for MaxConcurrency .
+
+          ComplianceSeverity -> (string)
+              The severity level that is assigned to the association.
+
+          SyncCompliance -> (string)
+              The  mode for generating association compliance. You can specify
+              AUTO or MANUAL . In AUTO mode, the system uses the status of the
+              association execution to determine the compliance status. If the
+              association execution runs successfully, then the association is
+              COMPLIANT  .  If  the association execution doesn't run success-
+              fully, the association is NON-COMPLIANT .
+
+              In MANUAL mode, you must specify the AssociationId as a  parame-
+              ter  for  the   PutComplianceItems  API operation. In this case,
+              compliance data isn't managed by State Manager, a capability  of
+              Amazon  Web  Services Systems Manager. It is managed by your di-
+              rect call to the  PutComplianceItems API operation.
+
+              By default, all associations use AUTO mode.
+
+          ApplyOnlyAtCronInterval -> (boolean)
+              By default, when you create a new associations, the system  runs
+              it  immediately  after  it  is created and then according to the
+              schedule you specified. Specify this option if you don't want an
+              association to run immediately after you create it. This parame-
+              ter isn't supported for rate expressions.
+
+          CalendarNames -> (list)
+              The names or Amazon Resource Names (ARNs) of the Change Calendar
+              type  documents  your associations are gated under. The associa-
+              tions only run when that change calendar is open. For  more  in-
+              formation, see Amazon Web Services Systems Manager Change Calen-
+              dar .
+
+              (string)
+
+          TargetLocations -> (list)
+              The combination of Amazon Web Services Regions  and  Amazon  Web
+              Services accounts where you want to run the association.
+
+              (structure)
+                 The combination of Amazon Web Services Regions and Amazon Web
+                 Services accounts targeted by the current  Automation  execu-
+                 tion.
+
+                 Accounts -> (list)
+                     The  Amazon Web Services accounts targeted by the current
+                     Automation execution.
+
+                     (string)
+
+                 Regions -> (list)
+                     The Amazon Web Services Regions targeted by  the  current
+                     Automation execution.
+
+                     (string)
+
+                 TargetLocationMaxConcurrency -> (string)
+                     The  maximum  number  of  Amazon Web Services Regions and
+                     Amazon Web Services accounts allowed to run  the  Automa-
+                     tion concurrently.
+
+                 TargetLocationMaxErrors -> (string)
+                     The  maximum  number  of errors allowed before the system
+                     stops queueing additional Automation executions  for  the
+                     currently running Automation.
+
+                 ExecutionRoleName -> (string)
+                     The  Automation execution role used by the currently run-
+                     ning Automation. If not specified, the default  value  is
+                     AWS-SystemsManager-AutomationExecutionRole .
+
+
+
+                                                          UPDATE-ASSOCIATION()

@@ -1,0 +1,257 @@
+BATCH-PUT-ASSET-PROPERTY-VALUE()              BATCH-PUT-ASSET-PROPERTY-VALUE()
+
+
+
+NAME
+       batch-put-asset-property-value -
+
+DESCRIPTION
+       Sends  a list of asset property values to IoT SiteWise. Each value is a
+       timestamp-quality-value (TQV) data point.  For  more  information,  see
+       Ingesting data using the API in the IoT SiteWise User Guide .
+
+       To identify an asset property, you must specify one of the following:
+
+       o The assetId and propertyId of an asset property.
+
+       o A  propertyAlias  ,  which is a data stream alias (for example, /com-
+         pany/windfarm/3/turbine/7/temperature ). To  define  an  asset  prop-
+         erty's alias, see UpdateAssetProperty .
+
+       WARNING:
+          With respect to Unix epoch time, IoT SiteWise accepts only TQVs that
+          have a timestamp of no more than 7 days in the past and no more than
+          10 minutes in the future. IoT SiteWise rejects timestamps outside of
+          the inclusive range of [-7 days, +10 minutes] and returns  a  Times-
+          tampOutOfRangeException error.
+
+          For each asset property, IoT SiteWise overwrites TQVs with duplicate
+          timestamps unless the newer TQV has a different quality.  For  exam-
+          ple, if you store a TQV {T1, GOOD, V1} , then storing {T1, GOOD, V2}
+          replaces the existing TQV.
+
+       IoT SiteWise authorizes access to each BatchPutAssetPropertyValue entry
+       individually.  For more information, see BatchPutAssetPropertyValue au-
+       thorization in the IoT SiteWise User Guide .
+
+       See also: AWS API Documentation
+
+       See 'aws help' for descriptions of global parameters.
+
+SYNOPSIS
+            batch-put-asset-property-value
+          --entries <value>
+          [--cli-input-json | --cli-input-yaml]
+          [--generate-cli-skeleton <value>]
+
+OPTIONS
+       --entries (list)
+          The list of asset property value entries for the batch put  request.
+          You can specify up to 10 entries per request.
+
+          (structure)
+              Contains  a  list  of value updates for an asset property in the
+              list of asset entries consumed by the BatchPutAssetPropertyValue
+              API operation.
+
+              entryId -> (string)
+                 The  user  specified ID for the entry. You can use this ID to
+                 identify which entries failed.
+
+              assetId -> (string)
+                 The ID of the asset to update.
+
+              propertyId -> (string)
+                 The ID of the asset property for this entry.
+
+              propertyAlias -> (string)
+                 The alias that identifies the property,  such  as  an  OPC-UA
+                 server   data   stream   path  (for  example,  /company/wind-
+                 farm/3/turbine/7/temperature ).  For  more  information,  see
+                 Mapping  industrial  data  streams to asset properties in the
+                 IoT SiteWise User Guide .
+
+              propertyValues -> (list)
+                 The list of property values to upload. You can specify up  to
+                 10 propertyValues array elements.
+
+                 (structure)
+                     Contains asset property value information.
+
+                     value -> (structure)
+                        The value of the asset property (see Variant ).
+
+                        stringValue -> (string)
+                            Asset  property  data  of type string (sequence of
+                            characters).
+
+                        integerValue -> (integer)
+                            Asset property data of type  integer  (whole  num-
+                            ber).
+
+                        doubleValue -> (double)
+                            Asset property data of type double (floating point
+                            number).
+
+                        booleanValue -> (boolean)
+                            Asset property  data  of  type  Boolean  (true  or
+                            false).
+
+                     timestamp -> (structure)
+                        The timestamp of the asset property value.
+
+                        timeInSeconds -> (long)
+                            The  timestamp date, in seconds, in the Unix epoch
+                            format. Fractional nanosecond data is provided  by
+                            offsetInNanos .
+
+                        offsetInNanos -> (integer)
+                            The nanosecond offset from timeInSeconds .
+
+                     quality -> (string)
+                        The quality of the asset property value.
+
+       JSON Syntax:
+
+          [
+            {
+              "entryId": "string",
+              "assetId": "string",
+              "propertyId": "string",
+              "propertyAlias": "string",
+              "propertyValues": [
+                {
+                  "value": {
+                    "stringValue": "string",
+                    "integerValue": integer,
+                    "doubleValue": double,
+                    "booleanValue": true|false
+                  },
+                  "timestamp": {
+                    "timeInSeconds": long,
+                    "offsetInNanos": integer
+                  },
+                  "quality": "GOOD"|"BAD"|"UNCERTAIN"
+                }
+                ...
+              ]
+            }
+            ...
+          ]
+
+       --cli-input-json  |  --cli-input-yaml (string) Reads arguments from the
+       JSON string provided. The JSON string follows the  format  provided  by
+       --generate-cli-skeleton. If other arguments are provided on the command
+       line, those values will override the JSON-provided values.  It  is  not
+       possible to pass arbitrary binary values using a JSON-provided value as
+       the string will be taken literally. This may  not  be  specified  along
+       with --cli-input-yaml.
+
+       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
+       output without sending an API request. If provided with no value or the
+       value input, prints a sample input JSON that can be used as an argument
+       for --cli-input-json. Similarly, if provided yaml-input it will print a
+       sample  input  YAML that can be used with --cli-input-yaml. If provided
+       with the value output, it validates the command inputs  and  returns  a
+       sample output JSON for that command.
+
+       See 'aws help' for descriptions of global parameters.
+
+EXAMPLES
+       To send data to asset properties
+
+       The  following  batch-put-asset-property-value  example sends power and
+       temperature  data  to  the  asset  properties  identified  by  property
+       aliases.
+
+          aws iotsitewise batch-put-asset-property-value \
+              --cli-input-json file://batch-put-asset-property-value.json
+
+       Contents of batch-put-asset-property-value.json:
+
+          {
+              "entries": [
+                  {
+                      "entryId": "1575691200./company/windfarm/3/turbine/7/power",
+                      "propertyAlias": "/company/windfarm/3/turbine/7/power",
+                      "propertyValues": [
+                          {
+                              "value": {
+                                  "doubleValue": 4.92
+                              },
+                              "timestamp": {
+                                  "timeInSeconds": 1575691200
+                              },
+                              "quality": "GOOD"
+                          }
+                      ]
+                  },
+                  {
+                      "entryId": "1575691200./company/windfarm/3/turbine/7/temperature",
+                      "propertyAlias": "/company/windfarm/3/turbine/7/temperature",
+                      "propertyValues": [
+                          {
+                              "value": {
+                                  "integerValue": 38
+                              },
+                              "timestamp": {
+                                  "timeInSeconds": 1575691200
+                              }
+                          }
+                      ]
+                  }
+              ]
+          }
+
+       Output:
+
+          {
+              "errorEntries": []
+          }
+
+       For more information, see Ingesting data using the AWS IoT SiteWise API
+       in the AWS IoT SiteWise User Guide.
+
+OUTPUT
+       errorEntries -> (list)
+          A list of the errors (if any) associated with the batch put request.
+          Each error entry contains the entryId of the entry that failed.
+
+          (structure)
+              Contains error information for asset property value entries that
+              are associated with the BatchPutAssetPropertyValue API.
+
+              entryId -> (string)
+                 The ID of the failed entry.
+
+              errors -> (list)
+                 The list of update property value errors.
+
+                 (structure)
+                     Contains error information from updating a batch of asset
+                     property values.
+
+                     errorCode -> (string)
+                        The error code.
+
+                     errorMessage -> (string)
+                        The associated error message.
+
+                     timestamps -> (list)
+                        A list of timestamps for each error, if any.
+
+                        (structure)
+                            Contains  a  timestamp  with  optional  nanosecond
+                            granularity.
+
+                            timeInSeconds -> (long)
+                               The timestamp date, in  seconds,  in  the  Unix
+                               epoch  format.  Fractional  nanosecond  data is
+                               provided by offsetInNanos .
+
+                            offsetInNanos -> (integer)
+                               The nanosecond offset from timeInSeconds .
+
+
+
+                                              BATCH-PUT-ASSET-PROPERTY-VALUE()

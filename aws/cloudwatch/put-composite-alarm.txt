@@ -1,0 +1,251 @@
+PUT-COMPOSITE-ALARM()                                    PUT-COMPOSITE-ALARM()
+
+
+
+NAME
+       put-composite-alarm -
+
+DESCRIPTION
+       Creates  or  updates  a  composite  alarm . When you create a composite
+       alarm, you specify a rule expression for the alarm that takes into  ac-
+       count  the alarm states of other alarms that you have created. The com-
+       posite alarm goes into ALARM state only if all conditions of  the  rule
+       are met.
+
+       The alarms specified in a composite alarm's rule expression can include
+       metric alarms and other composite alarms.
+
+       Using composite alarms can reduce alarm noise. You can create  multiple
+       metric alarms, and also create a composite alarm and set up alerts only
+       for the composite alarm. For example,  you  could  create  a  composite
+       alarm  that goes into ALARM state only when more than one of the under-
+       lying metric alarms are in ALARM state.
+
+       Currently, the only alarm actions that can be taken by composite alarms
+       are notifying SNS topics.
+
+       NOTE:
+          It  is possible to create a loop or cycle of composite alarms, where
+          composite alarm A depends on composite alarm B, and composite  alarm
+          B  also  depends  on  composite alarm A. In this scenario, you can't
+          delete any composite alarm that is part of the cycle  because  there
+          is  always  still  a composite alarm that depends on that alarm that
+          you want to delete.
+
+          To get out of such a situation, you must break the cycle by changing
+          the rule of one of the composite alarms in the cycle to remove a de-
+          pendency that creates the cycle. The  simplest  change  to  make  to
+          break  a  cycle  is  to change the AlarmRule of one of the alarms to
+          False .
+
+          Additionally, the evaluation of composite alarms stops if CloudWatch
+          detects a cycle in the evaluation path.
+
+       When  this  operation  creates an alarm, the alarm state is immediately
+       set to INSUFFICIENT_DATA . The alarm is then evaluated and its state is
+       set  appropriately.  Any actions associated with the new state are then
+       executed. For a composite alarm, this initial time  after  creation  is
+       the only time that the alarm can be in INSUFFICIENT_DATA state.
+
+       When you update an existing alarm, its state is left unchanged, but the
+       update completely overwrites the previous configuration of the alarm.
+
+       To use this operation, you must be signed on with  the  cloudwatch:Put-
+       CompositeAlarm permission that is scoped to * . You can't create a com-
+       posite alarms if your  cloudwatch:PutCompositeAlarm  permission  has  a
+       narrower scope.
+
+       If  you  are  an IAM user, you must have iam:CreateServiceLinkedRole to
+       create a composite alarm that has Systems Manager OpsItem actions.
+
+       See also: AWS API Documentation
+
+       See 'aws help' for descriptions of global parameters.
+
+SYNOPSIS
+            put-composite-alarm
+          [--actions-enabled | --no-actions-enabled]
+          [--alarm-actions <value>]
+          [--alarm-description <value>]
+          --alarm-name <value>
+          --alarm-rule <value>
+          [--insufficient-data-actions <value>]
+          [--ok-actions <value>]
+          [--tags <value>]
+          [--cli-input-json | --cli-input-yaml]
+          [--generate-cli-skeleton <value>]
+
+OPTIONS
+       --actions-enabled | --no-actions-enabled (boolean)
+          Indicates whether actions should be executed during any  changes  to
+          the alarm state of the composite alarm. The default is TRUE .
+
+       --alarm-actions (list)
+          The  actions  to  execute  when  this alarm transitions to the ALARM
+          state from any other state. Each action is specified  as  an  Amazon
+          Resource Name (ARN).
+
+          Valid Values:
+          ``
+          arn:aws:sns:region :account-id :sns-topic-name `` |
+          ``
+          arn:aws:ssm:region :account-id :opsitem:severity ``
+
+          (string)
+
+       Syntax:
+
+          "string" "string" ...
+
+       --alarm-description (string)
+          The description for the composite alarm.
+
+       --alarm-name (string)
+          The  name  for  the composite alarm. This name must be unique within
+          the Region.
+
+       --alarm-rule (string)
+          An expression that specifies which other alarms are to be  evaluated
+          to  determine  this composite alarm's state. For each alarm that you
+          reference, you designate a  function  that  specifies  whether  that
+          alarm  needs  to  be  in ALARM state, OK state, or INSUFFICIENT_DATA
+          state. You can use operators (AND, OR and NOT) to  combine  multiple
+          functions  in  a single expression. You can use parenthesis to logi-
+          cally group the functions in your expression.
+
+          You can use either alarm names or ARNs to reference the other alarms
+          that are to be evaluated.
+
+          Functions can include the following:
+
+          o ALARM("*alarm-name*  or  *alarm-ARN* ") is TRUE if the named alarm
+            is in ALARM state.
+
+          o OK("*alarm-name* or *alarm-ARN* ") is TRUE if the named  alarm  is
+            in OK state.
+
+          o INSUFFICIENT_DATA("*alarm-name*  or  *alarm-ARN* ") is TRUE if the
+            named alarm is in INSUFFICIENT_DATA state.
+
+          o TRUE always evaluates to TRUE.
+
+          o FALSE always evaluates to FALSE.
+
+          TRUE and FALSE are useful for testing a complex AlarmRule structure,
+          and for testing your alarm actions.
+
+          Alarm  names  specified  in  AlarmRule  can  be surrounded with dou-
+          ble-quotes ("), but do not have to be.
+
+          The following are some examples of AlarmRule :
+
+          o ALARM(CPUUtilizationTooHigh) AND ALARM(DiskReadOpsTooHigh)  speci-
+            fies  that  the composite alarm goes into ALARM state only if both
+            CPUUtilizationTooHigh and DiskReadOpsTooHigh alarms are  in  ALARM
+            state.
+
+          o ALARM(CPUUtilizationTooHigh)  AND  NOT ALARM(DeploymentInProgress)
+            specifies that the alarm goes to ALARM  state  if  CPUUtilization-
+            TooHigh is in ALARM state and DeploymentInProgress is not in ALARM
+            state. This example reduces alarm noise during a known  deployment
+            window.
+
+          o (ALARM(CPUUtilizationTooHigh)  OR  ALARM(DiskReadOpsTooHigh))  AND
+            OK(NetworkOutTooHigh) goes into  ALARM  state  if  CPUUtilization-
+            TooHigh  OR  DiskReadOpsTooHigh is in ALARM state, and if Network-
+            OutTooHigh is in OK state. This provides another example of  using
+            a composite alarm to prevent noise. This rule ensures that you are
+            not notified with an alarm action on high CPU or disk usage  if  a
+            known network problem is also occurring.
+
+          The  AlarmRule  can  specify  as  many as 100 "children" alarms. The
+          AlarmRule expression can have as many as 500 elements. Elements  are
+          child alarms, TRUE or FALSE statements, and parentheses.
+
+       --insufficient-data-actions (list)
+          The  actions  to execute when this alarm transitions to the INSUFFI-
+          CIENT_DATA state from any other state. Each action is  specified  as
+          an Amazon Resource Name (ARN).
+
+          Valid Values:
+          ``
+          arn:aws:sns:region :account-id :sns-topic-name ``
+
+          (string)
+
+       Syntax:
+
+          "string" "string" ...
+
+       --ok-actions (list)
+          The  actions  to  execute when this alarm transitions to an OK state
+          from any other state. Each action is specified as an Amazon Resource
+          Name (ARN).
+
+          Valid Values:
+          ``
+          arn:aws:sns:region :account-id :sns-topic-name ``
+
+          (string)
+
+       Syntax:
+
+          "string" "string" ...
+
+       --tags (list)
+          A list of key-value pairs to associate with the composite alarm. You
+          can associate as many as 50 tags with an alarm.
+
+          Tags can help you organize and categorize your  resources.  You  can
+          also  use them to scope user permissions, by granting a user permis-
+          sion to access or change only resources with certain tag values.
+
+          (structure)
+              A key-value pair associated with a CloudWatch resource.
+
+              Key -> (string)
+                 A string that you can use to assign a value. The  combination
+                 of  tag  keys and values can help you organize and categorize
+                 your resources.
+
+              Value -> (string)
+                 The value for the specified tag key.
+
+       Shorthand Syntax:
+
+          Key=string,Value=string ...
+
+       JSON Syntax:
+
+          [
+            {
+              "Key": "string",
+              "Value": "string"
+            }
+            ...
+          ]
+
+       --cli-input-json | --cli-input-yaml (string) Reads arguments  from  the
+       JSON  string  provided.  The JSON string follows the format provided by
+       --generate-cli-skeleton. If other arguments are provided on the command
+       line,  those  values  will override the JSON-provided values. It is not
+       possible to pass arbitrary binary values using a JSON-provided value as
+       the  string  will  be  taken literally. This may not be specified along
+       with --cli-input-yaml.
+
+       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
+       output without sending an API request. If provided with no value or the
+       value input, prints a sample input JSON that can be used as an argument
+       for --cli-input-json. Similarly, if provided yaml-input it will print a
+       sample input YAML that can be used with --cli-input-yaml.  If  provided
+       with  the  value  output, it validates the command inputs and returns a
+       sample output JSON for that command.
+
+       See 'aws help' for descriptions of global parameters.
+
+OUTPUT
+       None
+
+
+
+                                                         PUT-COMPOSITE-ALARM()

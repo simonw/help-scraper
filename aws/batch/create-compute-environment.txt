@@ -1,0 +1,673 @@
+CREATE-COMPUTE-ENVIRONMENT()                      CREATE-COMPUTE-ENVIRONMENT()
+
+
+
+NAME
+       create-compute-environment -
+
+DESCRIPTION
+       Creates  an Batch compute environment. You can create MANAGED or UNMAN-
+       AGED compute environments. MANAGED compute environments can use  Amazon
+       EC2  or  Fargate resources. UNMANAGED compute environments can only use
+       EC2 resources.
+
+       In a managed compute environment, Batch manages the  capacity  and  in-
+       stance  types  of the compute resources within the environment. This is
+       based on the compute resource specification  that  you  define  or  the
+       launch  template  that you specify when you create the compute environ-
+       ment. Either, you can choose to use EC2  On-Demand  Instances  and  EC2
+       Spot  Instances.  Or,  you can use Fargate and Fargate Spot capacity in
+       your managed compute environment. You  can  optionally  set  a  maximum
+       price  so  that Spot Instances only launch when the Spot Instance price
+       is less than a specified percentage of the On-Demand price.
+
+       NOTE:
+          Multi-node parallel jobs aren't supported on Spot Instances.
+
+       In an unmanaged compute environment, you can manage your own  EC2  com-
+       pute  resources  and  have  a lot of flexibility with how you configure
+       your compute resources. For example, you can use custom AMIs.  However,
+       you  must  verify  that each of your AMIs meet the Amazon ECS container
+       instance AMI specification. For more  information,  see  container  in-
+       stance  AMIs  in the Amazon Elastic Container Service Developer Guide .
+       After you created your unmanaged compute environment, you can  use  the
+       DescribeComputeEnvironments  operation  to  find the Amazon ECS cluster
+       that's associated with it. Then, launch your container  instances  into
+       that  Amazon ECS cluster. For more information, see Launching an Amazon
+       ECS container instance in the Amazon Elastic Container  Service  Devel-
+       oper Guide .
+
+       NOTE:
+          Batch  doesn't  upgrade  the AMIs in a compute environment after the
+          environment is created. For example, it doesn't update the AMIs when
+          a newer version of the Amazon ECS optimized AMI is available. There-
+          fore, you're responsible for managing  the  guest  operating  system
+          (including  its updates and security patches) and any additional ap-
+          plication software or utilities that you install on the compute  re-
+          sources. To use a new AMI for your Batch jobs, complete these steps:
+
+          o Create a new compute environment with the new AMI.
+
+          o Add the compute environment to an existing job queue.
+
+          o Remove the earlier compute environment from your job queue.
+
+          o Delete the earlier compute environment.
+
+       See also: AWS API Documentation
+
+       See 'aws help' for descriptions of global parameters.
+
+SYNOPSIS
+            create-compute-environment
+          --compute-environment-name <value>
+          --type <value>
+          [--state <value>]
+          [--unmanagedv-cpus <value>]
+          [--compute-resources <value>]
+          [--service-role <value>]
+          [--tags <value>]
+          [--cli-input-json | --cli-input-yaml]
+          [--generate-cli-skeleton <value>]
+
+OPTIONS
+       --compute-environment-name (string)
+          The  name  for your compute environment. It can be up to 128 letters
+          long. It can contain uppercase and lowercase letters,  numbers,  hy-
+          phens (-), and underscores (_).
+
+       --type (string)
+          The type of the compute environment: MANAGED or UNMANAGED . For more
+          information, see Compute Environments in the Batch User Guide .
+
+          Possible values:
+
+          o MANAGED
+
+          o UNMANAGED
+
+       --state (string)
+          The state of the compute environment. If the state is ENABLED , then
+          the  compute environment accepts jobs from a queue and can scale out
+          automatically based on queues.
+
+          If the state is ENABLED , then the Batch scheduler  can  attempt  to
+          place  jobs  from  an  associated job queue on the compute resources
+          within the environment. If the compute environment is managed,  then
+          it can scale its instances out or in automatically, based on the job
+          queue demand.
+
+          If the state is DISABLED , then the Batch scheduler doesn't  attempt
+          to  place jobs within the environment. Jobs in a STARTING or RUNNING
+          state continue to progress normally. Managed compute environments in
+          the DISABLED state don't scale out. However, they scale in to minvC-
+          pus value after instances become idle.
+
+          Possible values:
+
+          o ENABLED
+
+          o DISABLED
+
+       --unmanagedv-cpus (integer)
+          The maximum number of vCPUs for an  unmanaged  compute  environment.
+          This  parameter  is  only  used for fair share scheduling to reserve
+          vCPU capacity for new share identifiers.  If  this  parameter  isn't
+          provided for a fair share job queue, no vCPU capacity is reserved.
+
+          NOTE:
+              This  parameter is only supported when the type parameter is set
+              to UNMANAGED /
+
+       --compute-resources (structure)
+          Details about the compute resources managed by the compute  environ-
+          ment.  This  parameter is required for managed compute environments.
+          For more information, see Compute Environments  in  the  Batch  User
+          Guide .
+
+          type -> (string)
+              The  type of compute environment: EC2 , SPOT , FARGATE , or FAR-
+              GATE_SPOT . For more information, see  Compute  Environments  in
+              the Batch User Guide .
+
+              If  you  choose  SPOT , you must also specify an Amazon EC2 Spot
+              Fleet role with the spotIamFleetRole parameter. For more  infor-
+              mation, see Amazon EC2 Spot Fleet role in the Batch User Guide .
+
+          allocationStrategy -> (string)
+              The  allocation  strategy to use for the compute resource if not
+              enough instances of the best fitting instance type can be  allo-
+              cated.  This  might  be  because of availability of the instance
+              type in the Region or Amazon EC2 service limits . For  more  in-
+              formation, see Allocation Strategies in the Batch User Guide .
+
+              NOTE:
+                 This  parameter  isn't applicable to jobs that are running on
+                 Fargate resources, and shouldn't be specified.
+
+                 BEST_FIT (default)
+
+              Batch selects an instance type that best fits the needs  of  the
+              jobs with a preference for the lowest-cost instance type. If ad-
+              ditional instances of the selected instance type  aren't  avail-
+              able,  Batch waits for the additional instances to be available.
+              If there aren't enough instances available, or if  the  user  is
+              reaching  Amazon  EC2 service limits then additional jobs aren't
+              run until the currently running jobs have completed. This  allo-
+              cation  strategy keeps costs lower but can limit scaling. If you
+              are using Spot Fleets with BEST_FIT then the Spot Fleet IAM Role
+              must be specified.
+                 BEST_FIT_PROGRESSIVE
+
+              Batch  will  select  additional  instance  types  that are large
+              enough to meet the requirements of the jobs in the queue, with a
+              preference  for  instance types with a lower cost per unit vCPU.
+              If additional instances  of  the  previously  selected  instance
+              types aren't available, Batch will select new instance types.
+                 SPOT_CAPACITY_OPTIMIZED
+
+              Batch  will  select  one  or  more instance types that are large
+              enough to meet the requirements of the jobs in the queue, with a
+              preference  for instance types that are less likely to be inter-
+              rupted. This allocation strategy is only available for Spot  In-
+              stance compute resources.
+
+              With   both   BEST_FIT_PROGRESSIVE  and  SPOT_CAPACITY_OPTIMIZED
+              strategies, Batch might need to go above maxvCpus to  meet  your
+              capacity requirements. In this event, Batch never exceeds maxvC-
+              pus by more than a single instance.
+
+          minvCpus -> (integer)
+              The minimum number of  Amazon  EC2  vCPUs  that  an  environment
+              should maintain (even if the compute environment is DISABLED ).
+
+              NOTE:
+                 This  parameter  isn't applicable to jobs that are running on
+                 Fargate resources, and shouldn't be specified.
+
+          maxvCpus -> (integer)
+              The maximum number of Amazon EC2 vCPUs that a  compute  environ-
+              ment can reach.
+
+              NOTE:
+                 With  both  BEST_FIT_PROGRESSIVE  and SPOT_CAPACITY_OPTIMIZED
+                 allocation strategies, Batch might need to exceed maxvCpus to
+                 meet  your  capacity requirements. In this event, Batch never
+                 exceeds maxvCpus by more than a single instance. For example,
+                 no  more than a single instance from among those specified in
+                 your compute environment is allocated.
+
+          desiredvCpus -> (integer)
+              The desired number of Amazon EC2 vCPUS in the  compute  environ-
+              ment.  Batch modifies this value between the minimum and maximum
+              values, based on job queue demand.
+
+              NOTE:
+                 This parameter isn't applicable to jobs that are  running  on
+                 Fargate resources, and shouldn't be specified.
+
+          instanceTypes -> (list)
+              The  instances  types  that can be launched. You can specify in-
+              stance families to launch any instance type within  those  fami-
+              lies (for example, c5 or p3 ), or you can specify specific sizes
+              within a family (such as c5.8xlarge ). You can also choose opti-
+              mal  to  select instance types (from the C4, M4, and R4 instance
+              families) that match the demand of your job queues.
+
+              NOTE:
+                 This parameter isn't applicable to jobs that are  running  on
+                 Fargate resources, and shouldn't be specified.
+
+              NOTE:
+                 When  you  create  a  compute environment, the instance types
+                 that you select for the compute environment  must  share  the
+                 same architecture. For example, you can't mix x86 and ARM in-
+                 stances in the same compute environment.
+
+              NOTE:
+                 Currently, optimal uses instance types from the C4,  M4,  and
+                 R4  instance  families.  In  Regions that don't have instance
+                 types from those instance families, instance types  from  the
+                 C5, M5. and R5 instance families are used.
+
+              (string)
+
+          imageId -> (string)
+              The Amazon Machine Image (AMI) ID used for instances launched in
+              the compute environment. This parameter is overridden by the im-
+              ageIdOverride member of the Ec2Configuration structure.
+
+              NOTE:
+                 This  parameter  isn't applicable to jobs that are running on
+                 Fargate resources, and shouldn't be specified.
+
+              NOTE:
+                 The AMI that you choose for a compute environment must  match
+                 the architecture of the instance types that you intend to use
+                 for that compute environment. For example,  if  your  compute
+                 environment  uses A1 instance types, the compute resource AMI
+                 that you choose must support ARM instances. Amazon ECS  vends
+                 both  x86 and ARM versions of the Amazon ECS-optimized Amazon
+                 Linux 2 AMI. For more information, see  Amazon  ECS-optimized
+                 Amazon  Linux  2  AMI in the Amazon Elastic Container Service
+                 Developer Guide .
+
+          subnets -> (list)
+              The VPC subnets where the compute resources are launched.  These
+              subnets  must  be within the same VPC. Fargate compute resources
+              can contain up to 16 subnets. For more information, see VPCs and
+              Subnets in the Amazon VPC User Guide .
+
+              (string)
+
+          securityGroupIds -> (list)
+              The   Amazon  EC2  security  groups  associated  with  instances
+              launched in the compute environment. One or more security groups
+              must  be specified, either in securityGroupIds or using a launch
+              template referenced in launchTemplate . This  parameter  is  re-
+              quired  for  jobs that are running on Fargate resources and must
+              contain at least one security  group.  Fargate  doesn't  support
+              launch  templates.  If  security groups are specified using both
+              securityGroupIds and launchTemplate , the  values  in  security-
+              GroupIds are used.
+
+              (string)
+
+          ec2KeyPair -> (string)
+              The  Amazon  EC2  key pair that's used for instances launched in
+              the compute environment. You can use this key pair to log in  to
+              your instances with SSH.
+
+              NOTE:
+                 This  parameter  isn't applicable to jobs that are running on
+                 Fargate resources, and shouldn't be specified.
+
+          instanceRole -> (string)
+              The Amazon ECS instance profile applied to Amazon EC2  instances
+              in a compute environment. You can specify the short name or full
+              Amazon Resource Name (ARN) of an instance profile. For  example,
+              `` ecsInstanceRole `` or
+              ``
+              arn:aws:iam::<aws_account_id>  :instance-profile/ecsInstanceRole
+              `` . For more information, see Amazon ECS Instance Role  in  the
+              Batch User Guide .
+
+              NOTE:
+                 This  parameter  isn't applicable to jobs that are running on
+                 Fargate resources, and shouldn't be specified.
+
+          tags -> (map)
+              Key-value pair tags to be applied  to  EC2  resources  that  are
+              launched  in  the compute environment. For Batch, these take the
+              form of "String1": "String2", where String1 is the tag  key  and
+              String2 is the tag valuefor example, { "Name": "Batch Instance -
+              C4OnDemand" } . This is helpful for recognizing your  Batch  in-
+              stances  in  the Amazon EC2 console. These tags can't be updated
+              or removed after the compute environment is created. Any changes
+              to  these tags require that you create a new compute environment
+              and remove the old compute environment. These tags  aren't  seen
+              when using the Batch ListTagsForResource API operation.
+
+              NOTE:
+                 This  parameter  isn't applicable to jobs that are running on
+                 Fargate resources, and shouldn't be specified.
+
+              key -> (string)
+
+              value -> (string)
+
+          placementGroup -> (string)
+              The Amazon EC2 placement group to associate  with  your  compute
+              resources.  If  you intend to submit multi-node parallel jobs to
+              your compute environment, you should consider creating a cluster
+              placement  group  and  associate it with your compute resources.
+              This keeps your multi-node parallel job on a logical grouping of
+              instances  within  a  single Availability Zone with high network
+              flow potential. For more information, see  Placement  Groups  in
+              the Amazon EC2 User Guide for Linux Instances .
+
+              NOTE:
+                 This  parameter  isn't applicable to jobs that are running on
+                 Fargate resources, and shouldn't be specified.
+
+          bidPercentage -> (integer)
+              The maximum percentage that a Spot Instance price  can  be  when
+              compared  with the On-Demand price for that instance type before
+              instances are launched. For example, if your maximum  percentage
+              is 20%, then the Spot price must be less than 20% of the current
+              On-Demand price for that Amazon EC2 instance. You always pay the
+              lowest  (market) price and never more than your maximum percent-
+              age. If you leave this field empty, the default value is 100% of
+              the On-Demand price.
+
+              NOTE:
+                 This  parameter  isn't applicable to jobs that are running on
+                 Fargate resources, and shouldn't be specified.
+
+          spotIamFleetRole -> (string)
+              The Amazon Resource Name (ARN) of the Amazon EC2 Spot Fleet  IAM
+              role  applied  to  a  SPOT compute environment. This role is re-
+              quired if the allocation strategy set to BEST_FIT or if the  al-
+              location  strategy  isn't  specified.  For more information, see
+              Amazon EC2 Spot Fleet Role in the Batch User Guide .
+
+              NOTE:
+                 This parameter isn't applicable to jobs that are  running  on
+                 Fargate resources, and shouldn't be specified.
+
+              WARNING:
+                 To  tag  your  Spot Instances on creation, the Spot Fleet IAM
+                 role specified here must use the newer AmazonEC2SpotFleetTag-
+                 gingRole  managed  policy.  The  previously  recommended Ama-
+                 zonEC2SpotFleetRole managed policy doesn't have the  required
+                 permissions  to tag Spot Instances. For more information, see
+                 Spot Instances not tagged on creation in the Batch User Guide
+                 .
+
+          launchTemplate -> (structure)
+              The launch template to use for your compute resources. Any other
+              compute resource parameters that you specify  in  a   CreateCom-
+              puteEnvironment  API  operation  override the same parameters in
+              the launch template. You must specify either the launch template
+              ID  or  launch  template  name in the request, but not both. For
+              more information, see Launch Template Support in the Batch  User
+              Guide .
+
+              NOTE:
+                 This  parameter  isn't applicable to jobs that are running on
+                 Fargate resources, and shouldn't be specified.
+
+              launchTemplateId -> (string)
+                 The ID of the launch template.
+
+              launchTemplateName -> (string)
+                 The name of the launch template.
+
+              version -> (string)
+                 The version number of the launch template, $Latest , or  $De-
+                 fault .
+
+                 If  the  value  is $Latest , the latest version of the launch
+                 template is used. If the value is $Default , the default ver-
+                 sion of the launch template is used.
+
+                 WARNING:
+                     After the compute environment is created, the launch tem-
+                     plate version that's used isn't changed, even if the $De-
+                     fault  or  $Latest version for the launch template is up-
+                     dated. To use a new launch template version, create a new
+                     compute  environment,  add the new compute environment to
+                     the existing job queue, remove the old  compute  environ-
+                     ment from the job queue, and delete the old compute envi-
+                     ronment.
+
+                 Default: $Default .
+
+          ec2Configuration -> (list)
+              Provides information used to select Amazon Machine Images (AMIs)
+              for  EC2  instances in the compute environment. If Ec2Configura-
+              tion isn't specified, the default is ECS_AL2 .
+
+              One or two values can be provided.
+
+              NOTE:
+                 This parameter isn't applicable to jobs that are  running  on
+                 Fargate resources, and shouldn't be specified.
+
+              (structure)
+                 Provides  information  used  to  select Amazon Machine Images
+                 (AMIs) for instances in the compute environment.  If  Ec2Con-
+                 figuration  isn't  specified,  the default is ECS_AL2 (Amazon
+                 Linux 2 ).
+
+                 NOTE:
+                     This object isn't applicable to jobs that are running  on
+                     Fargate resources.
+
+                 imageType -> (string)
+                     The  image type to match with the instance type to select
+                     an AMI. If the imageIdOverride parameter isn't specified,
+                     then  a  recent  Amazon  ECS-optimized Amazon Linux 2 AMI
+                     (ECS_AL2 ) is used.
+                            ECS_AL2
+
+                        Amazon Linux 2  Default for all non-GPU instance fami-
+                        lies.
+                            ECS_AL2_NVIDIA
+
+                        Amazon Linux 2 (GPU) Default for all GPU instance fam-
+                        ilies (for example P4 and G4 ) and can be used for all
+                        non Amazon Web Services Graviton-based instance types.
+                            ECS_AL1
+
+                        Amazon   Linux   .   Amazon   Linux  is  reaching  the
+                        end-of-life of standard support. For more information,
+                        see Amazon Linux AMI .
+
+                 imageIdOverride -> (string)
+                     The AMI ID used for instances launched in the compute en-
+                     vironment that match the image type. This  setting  over-
+                     rides the imageId set in the computeResource object.
+
+       Shorthand Syntax:
+
+          type=string,allocationStrategy=string,minvCpus=integer,maxvCpus=integer,desiredvCpus=integer,instanceTypes=string,string,imageId=string,subnets=string,string,securityGroupIds=string,string,ec2KeyPair=string,instanceRole=string,tags={KeyName1=string,KeyName2=string},placementGroup=string,bidPercentage=integer,spotIamFleetRole=string,launchTemplate={launchTemplateId=string,launchTemplateName=string,version=string},ec2Configuration=[{imageType=string,imageIdOverride=string},{imageType=string,imageIdOverride=string}]
+
+       JSON Syntax:
+
+          {
+            "type": "EC2"|"SPOT"|"FARGATE"|"FARGATE_SPOT",
+            "allocationStrategy": "BEST_FIT"|"BEST_FIT_PROGRESSIVE"|"SPOT_CAPACITY_OPTIMIZED",
+            "minvCpus": integer,
+            "maxvCpus": integer,
+            "desiredvCpus": integer,
+            "instanceTypes": ["string", ...],
+            "imageId": "string",
+            "subnets": ["string", ...],
+            "securityGroupIds": ["string", ...],
+            "ec2KeyPair": "string",
+            "instanceRole": "string",
+            "tags": {"string": "string"
+              ...},
+            "placementGroup": "string",
+            "bidPercentage": integer,
+            "spotIamFleetRole": "string",
+            "launchTemplate": {
+              "launchTemplateId": "string",
+              "launchTemplateName": "string",
+              "version": "string"
+            },
+            "ec2Configuration": [
+              {
+                "imageType": "string",
+                "imageIdOverride": "string"
+              }
+              ...
+            ]
+          }
+
+       --service-role (string)
+          The  full  Amazon  Resource  Name  (ARN) of the IAM role that allows
+          Batch to make calls to other Amazon Web Services  services  on  your
+          behalf.  For  more  information,  see  Batch service IAM role in the
+          Batch User Guide .
+
+          WARNING:
+              If your account already created the Batch  service-linked  role,
+              that role is used by default for your compute environment unless
+              you specify a different role here. If the  Batch  service-linked
+              role  doesn't  exist  in  your account, and no role is specified
+              here, the service attempts to create  the  Batch  service-linked
+              role in your account.
+
+          If your specified role has a path other than / , then you must spec-
+          ify either the full role ARN (recommended) or prefix the  role  name
+          with  the  path. For example, if a role with the name bar has a path
+          of /foo/ then you would specify /foo/bar as the role name. For  more
+          information, see Friendly names and paths in the IAM User Guide .
+
+          NOTE:
+              Depending  on  how  you created your Batch service role, its ARN
+              might contain the service-role path prefix. When you only  spec-
+              ify  the  name  of the service role, Batch assumes that your ARN
+              doesn't use the service-role path prefix. Because  of  this,  we
+              recommend  that  you  specify  the full ARN of your service role
+              when you create compute environments.
+
+       --tags (map)
+          The tags that you apply to the compute environment to help you cate-
+          gorize  and  organize your resources. Each tag consists of a key and
+          an optional value. For more information, see Tagging Amazon Web Ser-
+          vices Resources in Amazon Web Services General Reference .
+
+          These  tags  can  be  updated  or  removed using the TagResource and
+          UntagResource API operations. These tags don't propagate to the  un-
+          derlying compute resources.
+
+          key -> (string)
+
+          value -> (string)
+
+       Shorthand Syntax:
+
+          KeyName1=string,KeyName2=string
+
+       JSON Syntax:
+
+          {"string": "string"
+            ...}
+
+       --cli-input-json  |  --cli-input-yaml (string) Reads arguments from the
+       JSON string provided. The JSON string follows the  format  provided  by
+       --generate-cli-skeleton. If other arguments are provided on the command
+       line, those values will override the JSON-provided values.  It  is  not
+       possible to pass arbitrary binary values using a JSON-provided value as
+       the string will be taken literally. This may  not  be  specified  along
+       with --cli-input-yaml.
+
+       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
+       output without sending an API request. If provided with no value or the
+       value input, prints a sample input JSON that can be used as an argument
+       for --cli-input-json. Similarly, if provided yaml-input it will print a
+       sample  input  YAML that can be used with --cli-input-yaml. If provided
+       with the value output, it validates the command inputs  and  returns  a
+       sample output JSON for that command.
+
+       See 'aws help' for descriptions of global parameters.
+
+EXAMPLES
+       To create a managed compute environment with On-Demand instances
+
+       This example creates a managed compute environment with specific C4 in-
+       stance types that are launched on demand. The  compute  environment  is
+       called C4OnDemand.
+
+       Command:
+
+          aws batch create-compute-environment --cli-input-json file://<path_to_json_file>/C4OnDemand.json
+
+       JSON file format:
+
+          {
+            "computeEnvironmentName": "C4OnDemand",
+            "type": "MANAGED",
+            "state": "ENABLED",
+            "computeResources": {
+              "type": "EC2",
+              "minvCpus": 0,
+              "maxvCpus": 128,
+              "desiredvCpus": 48,
+              "instanceTypes": [
+                "c4.large",
+                "c4.xlarge",
+                "c4.2xlarge",
+                "c4.4xlarge",
+                "c4.8xlarge"
+              ],
+              "subnets": [
+                "subnet-220c0e0a",
+                "subnet-1a95556d",
+                "subnet-978f6dce"
+              ],
+              "securityGroupIds": [
+                "sg-cf5093b2"
+              ],
+              "ec2KeyPair": "id_rsa",
+              "instanceRole": "ecsInstanceRole",
+              "tags": {
+                "Name": "Batch Instance - C4OnDemand"
+              }
+            },
+            "serviceRole": "arn:aws:iam::012345678910:role/AWSBatchServiceRole"
+          }
+
+       Output:
+
+          {
+              "computeEnvironmentName": "C4OnDemand",
+              "computeEnvironmentArn": "arn:aws:batch:us-east-1:012345678910:compute-environment/C4OnDemand"
+          }
+
+       To create a managed compute environment with Spot Instances
+
+       This example creates a managed compute environment with the M4 instance
+       type that is launched when the Spot bid price is at or below 20% of the
+       On-Demand  price  for  the  instance  type.  The compute environment is
+       called M4Spot.
+
+       Command:
+
+          aws batch create-compute-environment --cli-input-json file://<path_to_json_file>/M4Spot.json
+
+       JSON file format:
+
+          {
+            "computeEnvironmentName": "M4Spot",
+            "type": "MANAGED",
+            "state": "ENABLED",
+            "computeResources": {
+              "type": "SPOT",
+              "spotIamFleetRole": "arn:aws:iam::012345678910:role/aws-ec2-spot-fleet-role",
+              "minvCpus": 0,
+              "maxvCpus": 128,
+              "desiredvCpus": 4,
+              "instanceTypes": [
+                "m4"
+              ],
+              "bidPercentage": 20,
+              "subnets": [
+                "subnet-220c0e0a",
+                "subnet-1a95556d",
+                "subnet-978f6dce"
+              ],
+              "securityGroupIds": [
+                "sg-cf5093b2"
+              ],
+              "ec2KeyPair": "id_rsa",
+              "instanceRole": "ecsInstanceRole",
+              "tags": {
+                "Name": "Batch Instance - M4Spot"
+              }
+            },
+            "serviceRole": "arn:aws:iam::012345678910:role/AWSBatchServiceRole"
+          }
+
+       Output:
+
+          {
+              "computeEnvironmentName": "M4Spot",
+              "computeEnvironmentArn": "arn:aws:batch:us-east-1:012345678910:compute-environment/M4Spot"
+          }
+
+OUTPUT
+       computeEnvironmentName -> (string)
+          The name of the compute environment. It can be  up  to  128  letters
+          long.  It  can contain uppercase and lowercase letters, numbers, hy-
+          phens (-), and underscores (_).
+
+       computeEnvironmentArn -> (string)
+          The Amazon Resource Name (ARN) of the compute environment.
+
+
+
+                                                  CREATE-COMPUTE-ENVIRONMENT()

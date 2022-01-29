@@ -1,0 +1,246 @@
+DETECT-STACK-RESOURCE-DRIFT()                    DETECT-STACK-RESOURCE-DRIFT()
+
+
+
+NAME
+       detect-stack-resource-drift -
+
+DESCRIPTION
+       Returns  information  about  whether  a resource's actual configuration
+       differs, or has drifted , from it's expected configuration, as  defined
+       in  the stack template and any values specified as template parameters.
+       This information includes actual and expected property values  for  re-
+       sources in which CloudFormation detects drift. Only resource properties
+       explicitly defined in the stack template are  checked  for  drift.  For
+       more  information about stack and resource drift, see Detecting Unregu-
+       lated Configuration Changes to Stacks and Resources .
+
+       Use DetectStackResourceDrift to detect drift on  individual  resources,
+       or   DetectStackDrift to detect drift on all resources in a given stack
+       that support drift detection.
+
+       Resources that do not  currently  support  drift  detection  cannot  be
+       checked.  For  a  list  of  resources that support drift detection, see
+       Resources that Support Drift Detection .
+
+       See also: AWS API Documentation
+
+       See 'aws help' for descriptions of global parameters.
+
+SYNOPSIS
+            detect-stack-resource-drift
+          --stack-name <value>
+          --logical-resource-id <value>
+          [--cli-input-json | --cli-input-yaml]
+          [--generate-cli-skeleton <value>]
+
+OPTIONS
+       --stack-name (string)
+          The name of the stack to which the resource belongs.
+
+       --logical-resource-id (string)
+          The logical name of the resource for which to return drift  informa-
+          tion.
+
+       --cli-input-json  |  --cli-input-yaml (string) Reads arguments from the
+       JSON string provided. The JSON string follows the  format  provided  by
+       --generate-cli-skeleton. If other arguments are provided on the command
+       line, those values will override the JSON-provided values.  It  is  not
+       possible to pass arbitrary binary values using a JSON-provided value as
+       the string will be taken literally. This may  not  be  specified  along
+       with --cli-input-yaml.
+
+       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
+       output without sending an API request. If provided with no value or the
+       value input, prints a sample input JSON that can be used as an argument
+       for --cli-input-json. Similarly, if provided yaml-input it will print a
+       sample  input  YAML that can be used with --cli-input-yaml. If provided
+       with the value output, it validates the command inputs  and  returns  a
+       sample output JSON for that command.
+
+       See 'aws help' for descriptions of global parameters.
+
+EXAMPLES
+       To detect drift for a resource
+
+       The  following  detect-stack-resource-drift  example  checks a resource
+       named MyFunction in a stack named MyStack for drift:
+
+          aws cloudformation detect-stack-resource-drift \
+             --stack-name MyStack \
+             --logical-resource-id MyFunction
+
+       The output shows an AWS Lambda function that was modified out-of-band:
+
+          {
+              "StackResourceDrift": {
+                  "StackId": "arn:aws:cloudformation:us-west-2:123456789012:stack/MyStack/d0a825a0-e4cd-xmpl-b9fb-061c69e99204",
+                  "LogicalResourceId": "MyFunction",
+                  "PhysicalResourceId": "my-function-SEZV4XMPL4S5",
+                  "ResourceType": "AWS::Lambda::Function",
+                  "ExpectedProperties": "{\"Description\":\"Write a file to S3.\",\"Environment\":{\"Variables\":{\"bucket\":\"my-stack-bucket-1vc62xmplgguf\"}},\"Handler\":\"index.handler\",\"MemorySize\":128,\"Role\":\"arn:aws:iam::123456789012:role/my-functionRole-HIZXMPLEOM9E\",\"Runtime\":\"nodejs10.x\",\"Tags\":[{\"Key\":\"lambda:createdBy\",\"Value\":\"SAM\"}],\"Timeout\":900,\"TracingConfig\":{\"Mode\":\"Active\"}}",
+                  "ActualProperties": "{\"Description\":\"Write a file to S3.\",\"Environment\":{\"Variables\":{\"bucket\":\"my-stack-bucket-1vc62xmplgguf\"}},\"Handler\":\"index.handler\",\"MemorySize\":256,\"Role\":\"arn:aws:iam::123456789012:role/my-functionRole-HIZXMPLEOM9E\",\"Runtime\":\"nodejs10.x\",\"Tags\":[{\"Key\":\"lambda:createdBy\",\"Value\":\"SAM\"}],\"Timeout\":22,\"TracingConfig\":{\"Mode\":\"Active\"}}",
+                  "PropertyDifferences": [
+                      {
+                          "PropertyPath": "/MemorySize",
+                          "ExpectedValue": "128",
+                          "ActualValue": "256",
+                          "DifferenceType": "NOT_EQUAL"
+                      },
+                      {
+                          "PropertyPath": "/Timeout",
+                          "ExpectedValue": "900",
+                          "ActualValue": "22",
+                          "DifferenceType": "NOT_EQUAL"
+                      }
+                  ],
+                  "StackResourceDriftStatus": "MODIFIED",
+                  "Timestamp": "2019-10-02T05:58:47.433Z"
+              }
+          }
+
+OUTPUT
+       StackResourceDrift -> (structure)
+          Information about whether the resource's  actual  configuration  has
+          drifted  from  its expected template configuration, including actual
+          and expected property values and any differences detected.
+
+          StackId -> (string)
+              The ID of the stack.
+
+          LogicalResourceId -> (string)
+              The logical name of the resource specified in the template.
+
+          PhysicalResourceId -> (string)
+              The name or unique identifier that corresponds to a physical in-
+              stance ID of a resource supported by CloudFormation.
+
+          PhysicalResourceIdContext -> (list)
+              Context  information  that  enables  CloudFormation  to uniquely
+              identify a resource. CloudFormation uses context key-value pairs
+              in  cases  where  a  resource's logical and physical IDs are not
+              enough  to  uniquely  identify  that  resource.   Each   context
+              key-value  pair  specifies  a  unique resource that contains the
+              targeted resource.
+
+              (structure)
+                 Context information that enables CloudFormation  to  uniquely
+                 identify  a  resource.  CloudFormation uses context key-value
+                 pairs in cases where a resource's logical  and  physical  IDs
+                 are  not enough to uniquely identify that resource. Each con-
+                 text key-value pair specifies a resource  that  contains  the
+                 targeted resource.
+
+                 Key -> (string)
+                     The resource context key.
+
+                 Value -> (string)
+                     The resource context value.
+
+          ResourceType -> (string)
+              The type of the resource.
+
+          ExpectedProperties -> (string)
+              A  JSON structure containing the expected property values of the
+              stack resource, as defined in the stack template and any  values
+              specified as template parameters.
+
+              For  resources  whose StackResourceDriftStatus is DELETED , this
+              structure will not be present.
+
+          ActualProperties -> (string)
+              A JSON structure containing the actual property  values  of  the
+              stack resource.
+
+              For  resources  whose StackResourceDriftStatus is DELETED , this
+              structure will not be present.
+
+          PropertyDifferences -> (list)
+              A collection of the resource properties whose actual values dif-
+              fer  from  their expected values. These will be present only for
+              resources whose StackResourceDriftStatus is MODIFIED .
+
+              (structure)
+                 Information about a resource property whose actual value dif-
+                 fers  from  its  expected value, as defined in the stack tem-
+                 plate and any values specified as template parameters.  These
+                 will  be present only for resources whose StackResourceDrift-
+                 Status is MODIFIED . For more information, see Detecting  Un-
+                 regulated Configuration Changes to Stacks and Resources .
+
+                 PropertyPath -> (string)
+                     The fully-qualified path to the resource property.
+
+                 ExpectedValue -> (string)
+                     The  expected property value of the resource property, as
+                     defined in the stack template and any values specified as
+                     template parameters.
+
+                 ActualValue -> (string)
+                     The actual property value of the resource property.
+
+                 DifferenceType -> (string)
+                     The type of property difference.
+
+                     o ADD  :  A  value  has been added to a resource property
+                       that is an array or list data type.
+
+                     o REMOVE : The property has been removed from the current
+                       resource configuration.
+
+                     o NOT_EQUAL : The current property value differs from its
+                       expected value (as defined in the  stack  template  and
+                       any values specified as template parameters).
+
+          StackResourceDriftStatus -> (string)
+              Status  of  the  resource's actual configuration compared to its
+              expected configuration
+
+              o DELETED : The resource differs from its expected template con-
+                figuration because the resource has been deleted.
+
+              o MODIFIED  :  One or more resource properties differ from their
+                expected values (as defined in the stack template and any val-
+                ues specified as template parameters).
+
+              o IN_SYNC : The resources's actual configuration matches its ex-
+                pected template configuration.
+
+              o NOT_CHECKED : CloudFormation does not  currently  return  this
+                value.
+
+          Timestamp -> (timestamp)
+              Time  at  which  CloudFormation performed drift detection on the
+              stack resource.
+
+          ModuleInfo -> (structure)
+              Contains information about the module from  which  the  resource
+              was  created, if the resource was created from a module included
+              in the stack template.
+
+              TypeHierarchy -> (string)
+                 A concantenated list of the the module type or types contain-
+                 ing  the  resource. Module types are listed starting with the
+                 inner-most nested module, and separated by / .
+
+                 In the following example, the resource  was  created  from  a
+                 module  of  type AWS::First::Example::MODULE , that is nested
+                 inside a parent module of type AWS::Second::Example::MODULE .
+                     AWS::First::Example::MODULE/AWS::Second::Example::MODULE
+
+              LogicalIdHierarchy -> (string)
+                 A concantenated list of the logical IDs of the module or mod-
+                 ules  containing  the  resource.  Modules are listed starting
+                 with the inner-most nested module, and separated by / .
+
+                 In the following example, the resource  was  created  from  a
+                 module, moduleA , that is nested inside a parent module, mod-
+                 uleB .
+                     moduleA/moduleB
+
+                 For more information, see Referencing resources in  a  module
+                 in the CloudFormation User Guide .
+
+
+
+                                                 DETECT-STACK-RESOURCE-DRIFT()

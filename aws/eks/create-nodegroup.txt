@@ -1,0 +1,724 @@
+CREATE-NODEGROUP()                                          CREATE-NODEGROUP()
+
+
+
+NAME
+       create-nodegroup -
+
+DESCRIPTION
+       Creates  a  managed  node group for an Amazon EKS cluster. You can only
+       create a node group for your cluster that is equal to the  current  Ku-
+       bernetes  version for the cluster. All node groups are created with the
+       latest AMI release version for the respective minor Kubernetes  version
+       of the cluster, unless you deploy a custom AMI using a launch template.
+       For more information about using launch templates, see Launch  template
+       support .
+
+       An  Amazon  EKS  managed node group is an Amazon EC2 Auto Scaling group
+       and associated Amazon EC2 instances that are managed by Amazon Web Ser-
+       vices  for an Amazon EKS cluster. Each node group uses a version of the
+       Amazon EKS optimized Amazon Linux 2  AMI.  For  more  information,  see
+       Managed Node Groups in the Amazon EKS User Guide .
+
+       See also: AWS API Documentation
+
+       See 'aws help' for descriptions of global parameters.
+
+SYNOPSIS
+            create-nodegroup
+          --cluster-name <value>
+          --nodegroup-name <value>
+          [--scaling-config <value>]
+          [--disk-size <value>]
+          --subnets <value>
+          [--instance-types <value>]
+          [--ami-type <value>]
+          [--remote-access <value>]
+          --node-role <value>
+          [--labels <value>]
+          [--taints <value>]
+          [--tags <value>]
+          [--client-request-token <value>]
+          [--launch-template <value>]
+          [--update-config <value>]
+          [--capacity-type <value>]
+          [--release-version <value>]
+          [--kubernetes-version <value>]
+          [--cli-input-json | --cli-input-yaml]
+          [--generate-cli-skeleton <value>]
+
+OPTIONS
+       --cluster-name (string)
+          The name of the cluster to create the node group in.
+
+       --nodegroup-name (string)
+          The unique name to give your node group.
+
+       --scaling-config (structure)
+          The scaling configuration details for the Auto Scaling group that is
+          created for your node group.
+
+          minSize -> (integer)
+              The minimum number of nodes that  the  managed  node  group  can
+              scale in to.
+
+          maxSize -> (integer)
+              The  maximum  number  of  nodes  that the managed node group can
+              scale out to. For information about the maximum number that  you
+              can  specify,  see  Amazon  EKS service quotas in the Amazon EKS
+              User Guide .
+
+          desiredSize -> (integer)
+              The current number of nodes that the managed node  group  should
+              maintain.
+
+              WARNING:
+                 If  you  use Cluster Autoscaler, you shouldn't change the de-
+                 siredSize value directly, as this can cause the  Cluster  Au-
+                 toscaler to suddenly scale up or scale down.
+
+              Whenever  this  parameter changes, the number of worker nodes in
+              the node group is updated to the specified size. If this parame-
+              ter  is given a value that is smaller than the current number of
+              running worker nodes, the necessary number of worker  nodes  are
+              terminated  to match the given value. When using CloudFormation,
+              no action occurs if you remove this parameter from your CFN tem-
+              plate.
+
+              This parameter can be different from minSize in some cases, such
+              as when starting with extra hosts for  testing.  This  parameter
+              can  also  be different when you want to start with an estimated
+              number of needed hosts, but let Cluster  Autoscaler  reduce  the
+              number  if  there are too many. When Cluster Autoscaler is used,
+              the desiredSize parameter is altered by Cluster Autoscaler  (but
+              can  be  out-of-date  for  short  periods  of time). Cluster Au-
+              toscaler doesn't scale a managed node group lower  than  minSize
+              or higher than maxSize.
+
+       Shorthand Syntax:
+
+          minSize=integer,maxSize=integer,desiredSize=integer
+
+       JSON Syntax:
+
+          {
+            "minSize": integer,
+            "maxSize": integer,
+            "desiredSize": integer
+          }
+
+       --disk-size (integer)
+          The  root  device  disk size (in GiB) for your node group instances.
+          The default disk size is 20 GiB. If  you  specify  launchTemplate  ,
+          then  don't  specify  diskSize  ,  or the node group deployment will
+          fail. For more information about using launch templates with  Amazon
+          EKS, see Launch template support in the Amazon EKS User Guide.
+
+       --subnets (list)
+          The  subnets  to  use for the Auto Scaling group that is created for
+          your node group. If you specify launchTemplate , then don't  specify
+          `                                                           SubnetId
+          https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_CreateNetworkInterface.html`__
+          in your launch template, or the node group deployment will fail. For
+          more information about using launch templates with Amazon  EKS,  see
+          Launch template support in the Amazon EKS User Guide.
+
+          (string)
+
+       Syntax:
+
+          "string" "string" ...
+
+       --instance-types (list)
+          Specify  the  instance  types for a node group. If you specify a GPU
+          instance type, be sure to specify AL2_x86_64_GPU  with  the  amiType
+          parameter. If you specify launchTemplate , then you can specify zero
+          or one instance type in your launch template or you can specify 0-20
+          instance  types  for  instanceTypes . If however, you specify an in-
+          stance type in your launch template and specify any instanceTypes  ,
+          the  node  group  deployment  will fail. If you don't specify an in-
+          stance type in  a  launch  template  or  for  instanceTypes  ,  then
+          t3.medium  is used, by default. If you specify Spot for capacityType
+          , then we recommend specifying multiple values for  instanceTypes  .
+          For  more  information,  see  Managed  node group capacity types and
+          Launch template support in the Amazon EKS User Guide .
+
+          (string)
+
+       Syntax:
+
+          "string" "string" ...
+
+       --ami-type (string)
+          The AMI type for your node group. GPU instance types should use  the
+          AL2_x86_64_GPU AMI type. Non-GPU instances should use the AL2_x86_64
+          AMI type. Arm instances should use  the  AL2_ARM_64  AMI  type.  All
+          types  use the Amazon EKS optimized Amazon Linux 2 AMI. If you spec-
+          ify launchTemplate , and your launch template  uses  a  custom  AMI,
+          then don't specify amiType , or the node group deployment will fail.
+          For more information about using launch templates with  Amazon  EKS,
+          see Launch template support in the Amazon EKS User Guide.
+
+          Possible values:
+
+          o AL2_x86_64
+
+          o AL2_x86_64_GPU
+
+          o AL2_ARM_64
+
+          o CUSTOM
+
+          o BOTTLEROCKET_ARM_64
+
+          o BOTTLEROCKET_x86_64
+
+       --remote-access (structure)
+          The  remote  access (SSH) configuration to use with your node group.
+          If you specify launchTemplate , then don't specify remoteAccess , or
+          the  node group deployment will fail. For more information about us-
+          ing launch templates with Amazon EKS, see Launch template support in
+          the Amazon EKS User Guide.
+
+          ec2SshKey -> (string)
+              The  Amazon  EC2 SSH key that provides access for SSH communica-
+              tion with the nodes in the managed node group. For more informa-
+              tion, see Amazon EC2 key pairs and Linux instances in the Amazon
+              Elastic Compute Cloud User Guide for Linux Instances .
+
+          sourceSecurityGroups -> (list)
+              The security groups that are allowed SSH access (port 22) to the
+              nodes. If you specify an Amazon EC2 SSH key but do not specify a
+              source security group when you create a managed node group, then
+              port  22 on the nodes is opened to the internet (0.0.0.0/0). For
+              more information, see Security Groups for Your VPC in the Amazon
+              Virtual Private Cloud User Guide .
+
+              (string)
+
+       Shorthand Syntax:
+
+          ec2SshKey=string,sourceSecurityGroups=string,string
+
+       JSON Syntax:
+
+          {
+            "ec2SshKey": "string",
+            "sourceSecurityGroups": ["string", ...]
+          }
+
+       --node-role (string)
+          The  Amazon  Resource  Name  (ARN) of the IAM role to associate with
+          your node group. The Amazon EKS worker  node  kubelet  daemon  makes
+          calls to Amazon Web Services APIs on your behalf. Nodes receive per-
+          missions for these API calls through an IAM instance profile and as-
+          sociated  policies.  Before  you  can launch nodes and register them
+          into a cluster, you must create an IAM role for those nodes  to  use
+          when  they  are  launched. For more information, see Amazon EKS node
+          IAM role in the  *  Amazon  EKS  User  Guide  *  .  If  you  specify
+          launchTemplate   ,   then   don't   specify   `   IamInstanceProfile
+          https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_IamInstanceProfile.html`__
+          in your launch template, or the node group deployment will fail. For
+          more information about using launch templates with Amazon  EKS,  see
+          Launch template support in the Amazon EKS User Guide.
+
+       --labels (map)
+          The  Kubernetes  labels to be applied to the nodes in the node group
+          when they are created.
+
+          key -> (string)
+
+          value -> (string)
+
+       Shorthand Syntax:
+
+          KeyName1=string,KeyName2=string
+
+       JSON Syntax:
+
+          {"string": "string"
+            ...}
+
+       --taints (list)
+          The Kubernetes taints to be applied to the nodes in the node group.
+
+          (structure)
+              A property that allows a node to repel a set of pods.
+
+              key -> (string)
+                 The key of the taint.
+
+              value -> (string)
+                 The value of the taint.
+
+              effect -> (string)
+                 The effect of the taint.
+
+       Shorthand Syntax:
+
+          key=string,value=string,effect=string ...
+
+       JSON Syntax:
+
+          [
+            {
+              "key": "string",
+              "value": "string",
+              "effect": "NO_SCHEDULE"|"NO_EXECUTE"|"PREFER_NO_SCHEDULE"
+            }
+            ...
+          ]
+
+       --tags (map)
+          The metadata to apply to the node group to assist  with  categoriza-
+          tion  and  organization.  Each tag consists of a key and an optional
+          value. You define both. Node group tags  do  not  propagate  to  any
+          other  resources  associated with the node group, such as the Amazon
+          EC2 instances or subnets.
+
+          key -> (string)
+
+          value -> (string)
+
+       Shorthand Syntax:
+
+          KeyName1=string,KeyName2=string
+
+       JSON Syntax:
+
+          {"string": "string"
+            ...}
+
+       --client-request-token (string)
+          Unique, case-sensitive identifier that you  provide  to  ensure  the
+          idempotency of the request.
+
+       --launch-template (structure)
+          An object representing a node group's launch template specification.
+          If specified, then do not specify instanceTypes , diskSize , or  re-
+          moteAccess and make sure that the launch template meets the require-
+          ments in launchTemplateSpecification .
+
+          name -> (string)
+              The name of the launch template.
+
+          version -> (string)
+              The version of the launch template to  use.  If  no  version  is
+              specified, then the template's default version is used.
+
+          id -> (string)
+              The ID of the launch template.
+
+       Shorthand Syntax:
+
+          name=string,version=string,id=string
+
+       JSON Syntax:
+
+          {
+            "name": "string",
+            "version": "string",
+            "id": "string"
+          }
+
+       --update-config (structure)
+          The node group update configuration.
+
+          maxUnavailable -> (integer)
+              The maximum number of nodes unavailable at once during a version
+              update. Nodes will be updated in parallel. This value  or  maxU-
+              navailablePercentage  is  required  to  have a value.The maximum
+              number is 100.
+
+          maxUnavailablePercentage -> (integer)
+              The maximum percentage of nodes unavailable during a version up-
+              date.  This  percentage of nodes will be updated in parallel, up
+              to 100 nodes at once. This value or maxUnavailable  is  required
+              to have a value.
+
+       Shorthand Syntax:
+
+          maxUnavailable=integer,maxUnavailablePercentage=integer
+
+       JSON Syntax:
+
+          {
+            "maxUnavailable": integer,
+            "maxUnavailablePercentage": integer
+          }
+
+       --capacity-type (string)
+          The capacity type for your node group.
+
+          Possible values:
+
+          o ON_DEMAND
+
+          o SPOT
+
+       --release-version (string)
+          The  AMI  version  of  the Amazon EKS optimized AMI to use with your
+          node group. By default, the latest available  AMI  version  for  the
+          node  group's  current Kubernetes version is used. For more informa-
+          tion, see Amazon EKS optimized Amazon Linux 2 AMI  versions  in  the
+          Amazon  EKS  User  Guide  . If you specify launchTemplate , and your
+          launch template uses a custom AMI, then don't specify releaseVersion
+          , or the node group deployment will fail. For more information about
+          using launch templates with Amazon EKS, see Launch template  support
+          in the Amazon EKS User Guide.
+
+       --kubernetes-version (string)
+          The  Kubernetes  version  to use for your managed nodes. By default,
+          the Kubernetes version of the cluster is used, and this is the  only
+          accepted  specified  value. If you specify launchTemplate , and your
+          launch template uses a custom AMI, then don't specify version  ,  or
+          the  node group deployment will fail. For more information about us-
+          ing launch templates with Amazon EKS, see Launch template support in
+          the Amazon EKS User Guide.
+
+       --cli-input-json  |  --cli-input-yaml (string) Reads arguments from the
+       JSON string provided. The JSON string follows the  format  provided  by
+       --generate-cli-skeleton. If other arguments are provided on the command
+       line, those values will override the JSON-provided values.  It  is  not
+       possible to pass arbitrary binary values using a JSON-provided value as
+       the string will be taken literally. This may  not  be  specified  along
+       with --cli-input-yaml.
+
+       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
+       output without sending an API request. If provided with no value or the
+       value input, prints a sample input JSON that can be used as an argument
+       for --cli-input-json. Similarly, if provided yaml-input it will print a
+       sample  input  YAML that can be used with --cli-input-yaml. If provided
+       with the value output, it validates the command inputs  and  returns  a
+       sample output JSON for that command.
+
+       See 'aws help' for descriptions of global parameters.
+
+OUTPUT
+       nodegroup -> (structure)
+          The full description of your new node group.
+
+          nodegroupName -> (string)
+              The name associated with an Amazon EKS managed node group.
+
+          nodegroupArn -> (string)
+              The  Amazon Resource Name (ARN) associated with the managed node
+              group.
+
+          clusterName -> (string)
+              The name of the cluster that the managed node group resides in.
+
+          version -> (string)
+              The Kubernetes version of the managed node group.
+
+          releaseVersion -> (string)
+              If the node group was deployed using a launch  template  with  a
+              custom  AMI,  then  this is the AMI ID that was specified in the
+              launch template. For node groups that weren't deployed  using  a
+              launch template, this is the version of the Amazon EKS optimized
+              AMI that the node group was deployed with.
+
+          createdAt -> (timestamp)
+              The Unix epoch timestamp in seconds for when  the  managed  node
+              group was created.
+
+          modifiedAt -> (timestamp)
+              The  Unix  epoch  timestamp in seconds for when the managed node
+              group was last modified.
+
+          status -> (string)
+              The current status of the managed node group.
+
+          capacityType -> (string)
+              The capacity type of your managed node group.
+
+          scalingConfig -> (structure)
+              The scaling configuration details for  the  Auto  Scaling  group
+              that is associated with your node group.
+
+              minSize -> (integer)
+                 The  minimum  number of nodes that the managed node group can
+                 scale in to.
+
+              maxSize -> (integer)
+                 The maximum number of nodes that the managed node  group  can
+                 scale  out  to. For information about the maximum number that
+                 you can specify, see Amazon EKS service quotas in the  Amazon
+                 EKS User Guide .
+
+              desiredSize -> (integer)
+                 The  current  number  of  nodes  that  the managed node group
+                 should maintain.
+
+                 WARNING:
+                     If you use Cluster Autoscaler, you shouldn't  change  the
+                     desiredSize value directly, as this can cause the Cluster
+                     Autoscaler to suddenly scale up or scale down.
+
+                 Whenever this parameter changes, the number of  worker  nodes
+                 in  the  node group is updated to the specified size. If this
+                 parameter is given a value that is smaller than  the  current
+                 number  of  running  worker  nodes,  the  necessary number of
+                 worker nodes are terminated to match the  given  value.  When
+                 using CloudFormation, no action occurs if you remove this pa-
+                 rameter from your CFN template.
+
+                 This parameter can be different from minSize in  some  cases,
+                 such  as when starting with extra hosts for testing. This pa-
+                 rameter can also be different when you want to start with  an
+                 estimated  number of needed hosts, but let Cluster Autoscaler
+                 reduce the number if there are too  many.  When  Cluster  Au-
+                 toscaler  is  used,  the  desiredSize parameter is altered by
+                 Cluster Autoscaler (but can be out-of-date for short  periods
+                 of  time).  Cluster  Autoscaler  doesn't scale a managed node
+                 group lower than minSize or higher than maxSize.
+
+          instanceTypes -> (list)
+              If the node group wasn't deployed with a launch  template,  then
+              this  is  the  instance  type  that  is associated with the node
+              group. If the node group was deployed with  a  launch  template,
+              then this is null .
+
+              (string)
+
+          subnets -> (list)
+              The  subnets that were specified for the Auto Scaling group that
+              is associated with your node group.
+
+              (string)
+
+          remoteAccess -> (structure)
+              If the node group wasn't deployed with a launch  template,  then
+              this  is the remote access configuration that is associated with
+              the node group. If the node group was  deployed  with  a  launch
+              template, then this is null .
+
+              ec2SshKey -> (string)
+                 The  Amazon EC2 SSH key that provides access for SSH communi-
+                 cation with the nodes in the managed node group. For more in-
+                 formation,  see  Amazon  EC2 key pairs and Linux instances in
+                 the Amazon Elastic Compute Cloud User  Guide  for  Linux  In-
+                 stances .
+
+              sourceSecurityGroups -> (list)
+                 The  security groups that are allowed SSH access (port 22) to
+                 the nodes. If you specify an Amazon EC2 SSH key  but  do  not
+                 specify  a  source  security  group when you create a managed
+                 node group, then port 22 on the nodes is opened to the inter-
+                 net  (0.0.0.0/0).  For  more information, see Security Groups
+                 for Your VPC in the Amazon Virtual Private Cloud User Guide .
+
+                 (string)
+
+          amiType -> (string)
+              If the node group was deployed using a launch  template  with  a
+              custom  AMI,  then this is CUSTOM . For node groups that weren't
+              deployed using a launch template, this is the AMI type that  was
+              specified in the node group configuration.
+
+          nodeRole -> (string)
+              The  IAM  role  associated  with your node group. The Amazon EKS
+              node kubelet daemon makes calls to Amazon Web Services  APIs  on
+              your  behalf.  Nodes  receive  permissions  for  these API calls
+              through an IAM instance profile and associated policies.
+
+          labels -> (map)
+              The Kubernetes labels applied to the nodes in the node group.
+
+              NOTE:
+                 Only labels that are applied with  the  Amazon  EKS  API  are
+                 shown  here.  There may be other Kubernetes labels applied to
+                 the nodes in this group.
+
+              key -> (string)
+
+              value -> (string)
+
+          taints -> (list)
+              The Kubernetes taints to be applied to the  nodes  in  the  node
+              group when they are created. Effect is one of No_Schedule , Pre-
+              fer_No_Schedule , or No_Execute . Kubernetes taints can be  used
+              together with tolerations to control how workloads are scheduled
+              to your nodes.
+
+              (structure)
+                 A property that allows a node to repel a set of pods.
+
+                 key -> (string)
+                     The key of the taint.
+
+                 value -> (string)
+                     The value of the taint.
+
+                 effect -> (string)
+                     The effect of the taint.
+
+          resources -> (structure)
+              The resources associated with the node group, such as Auto Scal-
+              ing groups and security groups for remote access.
+
+              autoScalingGroups -> (list)
+                 The Auto Scaling groups associated with the node group.
+
+                 (structure)
+                     An  Auto  Scaling group that is associated with an Amazon
+                     EKS managed node group.
+
+                     name -> (string)
+                        The name of the Auto Scaling group associated with  an
+                        Amazon EKS managed node group.
+
+              remoteAccessSecurityGroup -> (string)
+                 The  remote  access  security  group associated with the node
+                 group. This security group controls SSH access to the nodes.
+
+          diskSize -> (integer)
+              If the node group wasn't deployed with a launch  template,  then
+              this  is  the  disk size in the node group configuration. If the
+              node group was deployed with a launch  template,  then  this  is
+              null .
+
+          health -> (structure)
+              The  health  status  of the node group. If there are issues with
+              your node group's health, they are listed here.
+
+              issues -> (list)
+                 Any issues that are associated with the node group.
+
+                 (structure)
+                     An object representing an issue with an  Amazon  EKS  re-
+                     source.
+
+                     code -> (string)
+                        A brief description of the error.
+
+                        o AccessDenied  :  Amazon  EKS  or one or more of your
+                          managed nodes is failing to authenticate  or  autho-
+                          rize with your Kubernetes cluster API server.
+
+                        o AsgInstanceLaunchFailures  : Your Auto Scaling group
+                          is experiencing failures while attempting to  launch
+                          instances.
+
+                        o AutoScalingGroupNotFound : We couldn't find the Auto
+                          Scaling  group  associated  with  the  managed  node
+                          group.  You  may be able to recreate an Auto Scaling
+                          group with the same settings to recover.
+
+                        o ClusterUnreachable : Amazon EKS or one  or  more  of
+                          your  managed nodes is unable to to communicate with
+                          your Kubernetes cluster API server. This can  happen
+                          if  there  are network disruptions or if API servers
+                          are timing out processing requests.
+
+                        o Ec2LaunchTemplateNotFound :  We  couldn't  find  the
+                          Amazon  EC2  launch  template  for your managed node
+                          group. You may be able to recreate a launch template
+                          with the same settings to recover.
+
+                        o Ec2LaunchTemplateVersionMismatch  :  The  Amazon EC2
+                          launch template version for your managed node  group
+                          does  not match the version that Amazon EKS created.
+                          You may be able to revert to the version that Amazon
+                          EKS created to recover.
+
+                        o Ec2SecurityGroupDeletionFailure   :   We  could  not
+                          delete the remote access  security  group  for  your
+                          managed node group. Remove any dependencies from the
+                          security group.
+
+                        o Ec2SecurityGroupNotFound  :  We  couldn't  find  the
+                          cluster  security  group  for  the cluster. You must
+                          recreate your cluster.
+
+                        o Ec2SubnetInvalidConfiguration : One or  more  Amazon
+                          EC2  subnets specified for a node group do not auto-
+                          matically assign public IP  addresses  to  instances
+                          launched  into  it. If you want your instances to be
+                          assigned a public IP address, then you need  to  en-
+                          able  the  auto-assign public IP address setting for
+                          the subnet. See Modifying the public IPv4 addressing
+                          attribute  for  your  subnet  in the Amazon VPC User
+                          Guide.
+
+                        o IamInstanceProfileNotFound : We  couldn't  find  the
+                          IAM  instance  profile  for your managed node group.
+                          You may be able to recreate an instance profile with
+                          the same settings to recover.
+
+                        o IamNodeRoleNotFound  : We couldn't find the IAM role
+                          for your managed node group.  You  may  be  able  to
+                          recreate  an  IAM role with the same settings to re-
+                          cover.
+
+                        o InstanceLimitExceeded : Your Amazon Web Services ac-
+                          count  is unable to launch any more instances of the
+                          specified instance type. You may be able to  request
+                          an Amazon EC2 instance limit increase to recover.
+
+                        o InsufficientFreeAddresses  : One or more of the sub-
+                          nets associated with your managed  node  group  does
+                          not  have  enough  available  IP  addresses  for new
+                          nodes.
+
+                        o InternalFailure : These errors are usually caused by
+                          an Amazon EKS server-side issue.
+
+                        o NodeCreationFailure  :  Your  launched instances are
+                          unable to register with  your  Amazon  EKS  cluster.
+                          Common  causes of this failure are insufficient node
+                          IAM role permissions or lack  of  outbound  internet
+                          access for the nodes.
+
+                     message -> (string)
+                        The error message associated with the issue.
+
+                     resourceIds -> (list)
+                        The  Amazon  Web Services resources that are afflicted
+                        by this issue.
+
+                        (string)
+
+          updateConfig -> (structure)
+              The node group update configuration.
+
+              maxUnavailable -> (integer)
+                 The maximum number of nodes unavailable at once during a ver-
+                 sion update. Nodes will be updated in parallel. This value or
+                 maxUnavailablePercentage is required to have a value.The max-
+                 imum number is 100.
+
+              maxUnavailablePercentage -> (integer)
+                 The  maximum percentage of nodes unavailable during a version
+                 update. This percentage of nodes will be updated in parallel,
+                 up  to 100 nodes at once. This value or maxUnavailable is re-
+                 quired to have a value.
+
+          launchTemplate -> (structure)
+              If a launch template was used to create  the  node  group,  then
+              this is the launch template that was used.
+
+              name -> (string)
+                 The name of the launch template.
+
+              version -> (string)
+                 The  version  of the launch template to use. If no version is
+                 specified, then the template's default version is used.
+
+              id -> (string)
+                 The ID of the launch template.
+
+          tags -> (map)
+              The metadata applied to the node group to  assist  with  catego-
+              rization and organization. Each tag consists of a key and an op-
+              tional value. You define both. Node group tags do not  propagate
+              to  any  other resources associated with the node group, such as
+              the Amazon EC2 instances or subnets.
+
+              key -> (string)
+
+              value -> (string)
+
+
+
+                                                            CREATE-NODEGROUP()

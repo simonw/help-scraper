@@ -1,0 +1,198 @@
+INVOKE()                                                              INVOKE()
+
+
+
+NAME
+       invoke -
+
+DESCRIPTION
+       Invokes a Lambda function. You can invoke a function synchronously (and
+       wait for the response), or asynchronously. To invoke a  function  asyn-
+       chronously, set InvocationType to Event .
+
+       For  synchronous  invocation , details about the function response, in-
+       cluding errors, are included in the response body and headers. For  ei-
+       ther  invocation  type,  you can find more information in the execution
+       log and trace .
+
+       When an error occurs, your function  may  be  invoked  multiple  times.
+       Retry  behavior varies by error type, client, event source, and invoca-
+       tion type. For example, if you invoke a function asynchronously and  it
+       returns  an  error,  Lambda executes the function up to two more times.
+       For more information, see Retry Behavior .
+
+       For asynchronous invocation , Lambda adds  events  to  a  queue  before
+       sending  them  to  your function. If your function does not have enough
+       capacity to keep up with the queue, events may be  lost.  Occasionally,
+       your function may receive the same event multiple times, even if no er-
+       ror occurs. To retain events that were not  processed,  configure  your
+       function with a dead-letter queue .
+
+       The  status  code  in the API response doesn't reflect function errors.
+       Error codes are reserved for errors that prevent your function from ex-
+       ecuting, such as permissions errors, limit errors , or issues with your
+       function's  code  and  configuration.  For  example,   Lambda   returns
+       TooManyRequestsException  if  executing the function would cause you to
+       exceed a concurrency limit at either the account level (ConcurrentInvo-
+       cationLimitExceeded  ) or function level (ReservedFunctionConcurrentIn-
+       vocationLimitExceeded ).
+
+       For functions with a long timeout, your client  might  be  disconnected
+       during  synchronous invocation while it waits for a response. Configure
+       your HTTP client, SDK, firewall, proxy, or operating  system  to  allow
+       for long connections with timeout or keep-alive settings.
+
+       This  operation  requires  permission for the lambda:InvokeFunction ac-
+       tion.
+
+       See also: AWS API Documentation
+
+       See 'aws help' for descriptions of global parameters.
+
+SYNOPSIS
+            invoke
+          --function-name <value>
+          [--invocation-type <value>]
+          [--log-type <value>]
+          [--client-context <value>]
+          [--payload <value>]
+          [--qualifier <value>]
+          <outfile>
+
+OPTIONS
+       --function-name (string)
+          The name of the Lambda function, version, or alias.
+              Name formats
+
+          o Function name  -  my-function  (name-only),  my-function:v1  (with
+            alias).
+
+          o Function    ARN    -   arn:aws:lambda:us-west-2:123456789012:func-
+            tion:my-function .
+
+          o Partial ARN - 123456789012:function:my-function .
+
+          You can append a version number or alias to any of the formats.  The
+          length  constraint applies only to the full ARN. If you specify only
+          the function name, it is limited to 64 characters in length.
+
+       --invocation-type (string)
+          Choose from the following options.
+
+          o RequestResponse (default) -  Invoke  the  function  synchronously.
+            Keep  the connection open until the function returns a response or
+            times out. The API response includes the function response and ad-
+            ditional data.
+
+          o Event  - Invoke the function asynchronously. Send events that fail
+            multiple times to the function's dead-letter queue (if  it's  con-
+            figured). The API response only includes a status code.
+
+          o DryRun  -  Validate  parameter  values and verify that the user or
+            role has permission to invoke the function.
+
+          Possible values:
+
+          o Event
+
+          o RequestResponse
+
+          o DryRun
+
+       --log-type (string)
+          Set to Tail to include the execution log in the response. Applies to
+          synchronously invoked functions only.
+
+          Possible values:
+
+          o None
+
+          o Tail
+
+       --client-context (string)
+          Up to 3583 bytes of base64-encoded data about the invoking client to
+          pass to the function in the context object.
+
+       --payload (blob)
+          The JSON that you want to provide to your Lambda function as input.
+
+          You can enter the JSON directly. For example,  --payload  '{  "key":
+          "value"  }'  . You can also specify a file path. For example, --pay-
+          load file://payload.json .
+
+       --qualifier (string)
+          Specify a version or alias to invoke  a  published  version  of  the
+          function.
+
+       outfile (string) Filename where the content will be saved
+
+       See 'aws help' for descriptions of global parameters.
+
+EXAMPLES
+       Example 1: To invoke a Lambda function synchronously
+
+       The  following  invoke  example  invokes  the my-function function syn-
+       chronously.
+
+          aws lambda invoke \
+              --cli-binary-format raw-in-base64-out \
+              --function-name my-function \
+              --payload '{ "name": "Bob" }' \
+              response.json
+
+       Output:
+
+          {
+              "ExecutedVersion": "$LATEST",
+              "StatusCode": 200
+          }
+
+       For more information, see Synchronous Invocation in the AWS Lambda  De-
+       veloper Guide.
+
+       Example 2: To invoke a Lambda function asynchronously
+
+       The  following  invoke  example  invokes the my-function function asyn-
+       chronously.
+
+          aws lambda invoke \
+              --cli-binary-format raw-in-base64-out \
+              --function-name my-function \
+              --invocation-type Event \
+              --payload '{ "name": "Bob" }' \
+              response.json
+
+       Output:
+
+          {
+              "StatusCode": 202
+          }
+
+       For more information, see Asynchronous Invocation in the AWS Lambda De-
+       veloper Guide.
+
+OUTPUT
+       StatusCode -> (integer)
+          The  HTTP  status code is in the 200 range for a successful request.
+          For the RequestResponse invocation type, this status  code  is  200.
+          For  the  Event  invocation  type,  this status code is 202. For the
+          DryRun invocation type, the status code is 204.
+
+       FunctionError -> (string)
+          If present, indicates that an error occurred during function  execu-
+          tion. Details about the error are included in the response payload.
+
+       LogResult -> (string)
+          The last 4 KB of the execution log, which is base64 encoded.
+
+       Payload -> (blob)
+          The response from the function, or an error object.
+
+       ExecutedVersion -> (string)
+          The  version  of the function that executed. When you invoke a func-
+          tion with an alias, this indicates which version the alias  resolved
+          to.
+
+
+
+                                                                      INVOKE()

@@ -1,0 +1,173 @@
+SCHEDULE-KEY-DELETION()                                SCHEDULE-KEY-DELETION()
+
+
+
+NAME
+       schedule-key-deletion -
+
+DESCRIPTION
+       Schedules  the deletion of a KMS key. By default, KMS applies a waiting
+       period of 30 days, but you can specify a waiting period of  7-30  days.
+       When this operation is successful, the key state of the KMS key changes
+       to PendingDeletion and the key can't be used in any cryptographic oper-
+       ations.  It  remains  in this state for the duration of the waiting pe-
+       riod. Before the waiting period ends, you can use  CancelKeyDeletion to
+       cancel  the deletion of the KMS key. After the waiting period ends, KMS
+       deletes the KMS key, its key material, and all KMS data associated with
+       it, including all aliases that refer to it.
+
+       WARNING:
+          Deleting a KMS key is a destructive and potentially dangerous opera-
+          tion. When a KMS key is deleted, all data that was  encrypted  under
+          the  KMS key is unrecoverable. (The only exception is a multi-Region
+          replica key.) To prevent the use of a KMS key without  deleting  it,
+          use  DisableKey .
+
+       If  you  schedule  deletion of a KMS key from a custom key store , when
+       the waiting period expires, ScheduleKeyDeletion  deletes  the  KMS  key
+       from  KMS. Then KMS makes a best effort to delete the key material from
+       the associated CloudHSM cluster. However, you might  need  to  manually
+       delete the orphaned key material from the cluster and its backups.
+
+       You  can  schedule  the  deletion of a multi-Region primary key and its
+       replica keys at any time. However, KMS will not delete  a  multi-Region
+       primary key with existing replica keys. If you schedule the deletion of
+       a primary key with replicas, its key  state  changes  to  PendingRepli-
+       caDeletion  and it cannot be replicated or used in cryptographic opera-
+       tions. This status can continue indefinitely.  When  the  last  of  its
+       replicas  keys  is  deleted  (not just scheduled), the key state of the
+       primary key changes to PendingDeletion and its waiting period (Pending-
+       WindowInDays  )  begins. For details, see Deleting multi-Region keys in
+       the Key Management Service Developer Guide .
+
+       For more information about scheduling  a  KMS  key  for  deletion,  see
+       Deleting KMS keys in the Key Management Service Developer Guide .
+
+       The KMS key that you use for this operation must be in a compatible key
+       state. For details, see Key state: Effect on your KMS key  in  the  Key
+       Management Service Developer Guide .
+          Cross-account  use  : No. You cannot perform this operation on a KMS
+          key in a different Amazon Web Services account.
+
+          Required permissions : kms:ScheduleKeyDeletion (key policy)
+
+          Related operations
+
+       o CancelKeyDeletion
+
+       o DisableKey
+
+       See also: AWS API Documentation
+
+       See 'aws help' for descriptions of global parameters.
+
+SYNOPSIS
+            schedule-key-deletion
+          --key-id <value>
+          [--pending-window-in-days <value>]
+          [--cli-input-json | --cli-input-yaml]
+          [--generate-cli-skeleton <value>]
+
+OPTIONS
+       --key-id (string)
+          The unique identifier of the KMS key to delete.
+
+          Specify the key ID or key ARN of the KMS key.
+
+          For example:
+
+          o Key ID: 1234abcd-12ab-34cd-56ef-1234567890ab
+
+          o Key                                                           ARN:
+            arn:aws:kms:us-east-2:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab
+
+          To get the key ID and key ARN for a KMS key, use  ListKeys  or   De-
+          scribeKey .
+
+       --pending-window-in-days (integer)
+          The  waiting  period, specified in number of days. After the waiting
+          period ends, KMS deletes the KMS key.
+
+          If the KMS key is a multi-Region  primary  key  with  replicas,  the
+          waiting  period begins when the last of its replica keys is deleted.
+          Otherwise, the waiting period begins immediately.
+
+          This value is optional. If you include a value, it must be between 7
+          and 30, inclusive. If you do not include a value, it defaults to 30.
+
+       --cli-input-json  |  --cli-input-yaml (string) Reads arguments from the
+       JSON string provided. The JSON string follows the  format  provided  by
+       --generate-cli-skeleton. If other arguments are provided on the command
+       line, those values will override the JSON-provided values.  It  is  not
+       possible to pass arbitrary binary values using a JSON-provided value as
+       the string will be taken literally. This may  not  be  specified  along
+       with --cli-input-yaml.
+
+       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
+       output without sending an API request. If provided with no value or the
+       value input, prints a sample input JSON that can be used as an argument
+       for --cli-input-json. Similarly, if provided yaml-input it will print a
+       sample  input  YAML that can be used with --cli-input-yaml. If provided
+       with the value output, it validates the command inputs  and  returns  a
+       sample output JSON for that command.
+
+       See 'aws help' for descriptions of global parameters.
+
+EXAMPLES
+       To schedule the deletion of a customer managed CMK.
+
+       The  following  schedule-key-deletion  example  schedules the specified
+       customer managed CMK to be deleted in 15 days.
+
+       o The --key-id parameter identifies the CMK. This example  uses  a  key
+         ARN value, but you can use either the key ID or the ARN of the CMK.
+
+       o The  --pending-window-in-days  parameter  specifies the length of the
+         waiting period. By default, the waiting period is 30 days. This exam-
+         ple  specifies  a  value of 15, which tells AWS to permanently delete
+         the CMK 15 days after the command completes.
+
+            aws kms schedule-key-deletion \
+                --key-id arn:aws:kms:us-west-2:123456789012:key/1234abcd-12ab-34cd-56ef-1234567890ab \
+                --pending-window-in-days 15
+
+       The response returns the key ARN and the deletion date in Unix time. To
+       view the deletion date in local time, use the AWS KMS console.
+
+          {
+              "KeyId": "arn:aws:kms:us-west-2:123456789012:key/1234abcd-12ab-34cd-56ef-1234567890ab",
+              "DeletionDate": 1567382400.0
+          }
+
+       For  more information, see Deleting Customer Master Keys in the AWS Key
+       Management Service Developer Guide.
+
+OUTPUT
+       KeyId -> (string)
+          The Amazon Resource Name (key ARN ) of the KMS key whose deletion is
+          scheduled.
+
+       DeletionDate -> (timestamp)
+          The date and time after which KMS deletes the KMS key.
+
+          If the KMS key is a multi-Region primary key with replica keys, this
+          field does not appear. The deletion date for the primary  key  isn't
+          known until its last replica key is deleted.
+
+       KeyState -> (string)
+          The current status of the KMS key.
+
+          For  more  information  about how key state affects the use of a KMS
+          key, see Key state: Effect on your KMS key  in  the  Key  Management
+          Service Developer Guide .
+
+       PendingWindowInDays -> (integer)
+          The waiting period before the KMS key is deleted.
+
+          If  the  KMS  key  is  a multi-Region primary key with replicas, the
+          waiting period begins when the last of its replica keys is  deleted.
+          Otherwise, the waiting period begins immediately.
+
+
+
+                                                       SCHEDULE-KEY-DELETION()

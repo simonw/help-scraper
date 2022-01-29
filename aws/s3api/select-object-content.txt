@@ -1,0 +1,393 @@
+SELECT-OBJECT-CONTENT()                                SELECT-OBJECT-CONTENT()
+
+
+
+NAME
+       select-object-content -
+
+DESCRIPTION
+       This action filters the contents of an Amazon S3 object based on a sim-
+       ple structured query language (SQL) statement. In  the  request,  along
+       with  the  SQL  expression,  you must also specify a data serialization
+       format (JSON, CSV, or Apache Parquet) of the  object.  Amazon  S3  uses
+       this format to parse object data into records, and returns only records
+       that match the specified SQL expression. You must also specify the data
+       serialization format for the response.
+
+       This action is not supported by Amazon S3 on Outposts.
+
+       For more information about Amazon S3 Select, see Selecting Content from
+       Objects and SELECT Command in the Amazon S3 User Guide .
+
+       For more information about using SQL with Amazon  S3  Select,  see  SQL
+       Reference  for  Amazon S3 Select and S3 Glacier Select in the Amazon S3
+       User Guide .
+          Permissions
+
+       You must have s3:GetObject permission for this operation. Amazon S3 Se-
+       lect does not support anonymous access. For more information about per-
+       missions, see Specifying Permissions in a Policy in the Amazon S3  User
+       Guide .
+          Object Data Formats
+
+       You  can  use Amazon S3 Select to query objects that have the following
+       format properties:
+
+       o CSV, JSON, and Parquet - Objects must be in  CSV,  JSON,  or  Parquet
+         format.
+
+       o UTF-8 - UTF-8 is the only encoding type Amazon S3 Select supports.
+
+       o GZIP  or  BZIP2  - CSV and JSON files can be compressed using GZIP or
+         BZIP2. GZIP and BZIP2 are the only compression formats that Amazon S3
+         Select  supports  for  CSV  and JSON files. Amazon S3 Select supports
+         columnar compression for Parquet using GZIP or Snappy. Amazon S3  Se-
+         lect does not support whole-object compression for Parquet objects.
+
+       o Server-side  encryption  - Amazon S3 Select supports querying objects
+         that are protected with server-side encryption. For objects that  are
+         encrypted  with  customer-provided  encryption keys (SSE-C), you must
+         use HTTPS, and you must use the headers that are  documented  in  the
+         GetObject . For more information about SSE-C, see Server-Side Encryp-
+         tion (Using Customer-Provided Encryption Keys) in the Amazon S3  User
+         Guide . For objects that are encrypted with Amazon S3 managed encryp-
+         tion keys (SSE-S3)  and  Amazon  Web  Services  KMS  keys  (SSE-KMS),
+         server-side encryption is handled transparently, so you don't need to
+         specify anything. For more information about server-side  encryption,
+         including  SSE-S3  and SSE-KMS, see Protecting Data Using Server-Side
+         Encryption in the Amazon S3 User Guide .
+          Working with the Response Body
+
+       Given the response size is unknown, Amazon S3 Select  streams  the  re-
+       sponse  as a series of messages and includes a Transfer-Encoding header
+       with chunked as its value in the response. For  more  information,  see
+       Appendix: SelectObjectContent Response .
+          GetObject Support
+
+       The SelectObjectContent action does not support the following GetObject
+       functionality. For more information, see GetObject .
+
+       o Range : Although you can specify a scan range for an Amazon S3 Select
+         request  (see  SelectObjectContentRequest  - ScanRange in the request
+         parameters), you cannot specify the range of bytes of  an  object  to
+         return.
+
+       o GLACIER,  DEEP_ARCHIVE  and  REDUCED_REDUNDANCY  storage classes: You
+         cannot specify the GLACIER, DEEP_ARCHIVE, or REDUCED_REDUNDANCY stor-
+         age  classes. For more information, about storage classes see Storage
+         Classes in the Amazon S3 User Guide .
+          Special Errors
+
+       For a list of special errors for this operation, see List of SELECT Ob-
+       ject Content Error Codes
+          Related Resources
+
+       o GetObject
+
+       o GetBucketLifecycleConfiguration
+
+       o PutBucketLifecycleConfiguration
+
+       See also: AWS API Documentation
+
+       See 'aws help' for descriptions of global parameters.
+
+SYNOPSIS
+            select-object-content
+          --bucket <value>
+          --key <value>
+          [--sse-customer-algorithm <value>]
+          [--sse-customer-key <value>]
+          [--sse-customer-key-md5 <value>]
+          --expression <value>
+          --expression-type <value>
+          [--request-progress <value>]
+          --input-serialization <value>
+          --output-serialization <value>
+          [--scan-range <value>]
+          [--expected-bucket-owner <value>]
+          <outfile>
+
+OPTIONS
+       --bucket (string)
+          The S3 bucket.
+
+       --key (string)
+          The object key.
+
+       --sse-customer-algorithm (string)
+          The  SSE Algorithm used to encrypt the object. For more information,
+          see Server-Side Encryption (Using Customer-Provided Encryption  Keys
+          .
+
+       --sse-customer-key (string)
+          The  SSE Customer Key. For more information, see Server-Side Encryp-
+          tion (Using Customer-Provided Encryption Keys .
+
+       --sse-customer-key-md5 (string)
+          The SSE Customer Key MD5. For more information, see Server-Side  En-
+          cryption (Using Customer-Provided Encryption Keys .
+
+       --expression (string)
+          The expression that is used to query the object.
+
+       --expression-type (string)
+          The type of the provided expression (for example, SQL).
+
+          Possible values:
+
+          o SQL
+
+       --request-progress (structure)
+          Specifies  if  periodic  request  progress information should be en-
+          abled.
+
+          Enabled -> (boolean)
+              Specifies whether periodic QueryProgress frames should be  sent.
+              Valid values: TRUE, FALSE. Default value: FALSE.
+
+       Shorthand Syntax:
+
+          Enabled=boolean
+
+       JSON Syntax:
+
+          {
+            "Enabled": true|false
+          }
+
+       --input-serialization (structure)
+          Describes  the  format  of  the  data  in  the  object that is being
+          queried.
+
+          CSV -> (structure)
+              Describes the serialization of a CSV-encoded object.
+
+              FileHeaderInfo -> (string)
+                 Describes the first line of input. Valid values are:
+
+                 o NONE : First line is not a header.
+
+                 o IGNORE : First line is a header,  but  you  can't  use  the
+                   header  values to indicate the column in an expression. You
+                   can use column position (such as _1, _2, ) to indicate  the
+                   column (SELECT s._1 FROM OBJECT s ).
+
+                 o Use  :  First  line is a header, and you can use the header
+                   value to identify a column in an expression (SELECT  "name"
+                   FROM OBJECT ).
+
+              Comments -> (string)
+                 A  single character used to indicate that a row should be ig-
+                 nored when the character is present at the start of that row.
+                 You can specify any character to indicate a comment line.
+
+              QuoteEscapeCharacter -> (string)
+                 A single character used for escaping the quotation mark char-
+                 acter inside an already escaped value. For example, the value
+                 """ a , b """ is parsed as " a , b ".
+
+              RecordDelimiter -> (string)
+                 A single character used to separate individual records in the
+                 input. Instead of the default value, you can specify an arbi-
+                 trary delimiter.
+
+              FieldDelimiter -> (string)
+                 A  single  character  used to separate individual fields in a
+                 record. You can specify an arbitrary delimiter.
+
+              QuoteCharacter -> (string)
+                 A single character used for escaping when the field delimiter
+                 is  part  of  the  value. For example, if the value is a, b ,
+                 Amazon S3 wraps this field value in quotation marks, as  fol-
+                 lows: " a , b " .
+
+                 Type: String
+
+                 Default: "
+
+                 Ancestors: CSV
+
+              AllowQuotedRecordDelimiter -> (boolean)
+                 Specifies that CSV field values may contain quoted record de-
+                 limiters and such records should be allowed. Default value is
+                 FALSE. Setting this value to TRUE may lower performance.
+
+          CompressionType -> (string)
+              Specifies object's compression format. Valid values: NONE, GZIP,
+              BZIP2. Default Value: NONE.
+
+          JSON -> (structure)
+              Specifies JSON as object's input serialization format.
+
+              Type -> (string)
+                 The type of JSON. Valid values: Document, Lines.
+
+          Parquet -> (structure)
+              Specifies Parquet as object's input serialization format.
+
+       Shorthand Syntax:
+
+          CSV={FileHeaderInfo=string,Comments=string,QuoteEscapeCharacter=string,RecordDelimiter=string,FieldDelimiter=string,QuoteCharacter=string,AllowQuotedRecordDelimiter=boolean},CompressionType=string,JSON={Type=string},Parquet={}
+
+       JSON Syntax:
+
+          {
+            "CSV": {
+              "FileHeaderInfo": "USE"|"IGNORE"|"NONE",
+              "Comments": "string",
+              "QuoteEscapeCharacter": "string",
+              "RecordDelimiter": "string",
+              "FieldDelimiter": "string",
+              "QuoteCharacter": "string",
+              "AllowQuotedRecordDelimiter": true|false
+            },
+            "CompressionType": "NONE"|"GZIP"|"BZIP2",
+            "JSON": {
+              "Type": "DOCUMENT"|"LINES"
+            },
+            "Parquet": {
+
+            }
+          }
+
+       --output-serialization (structure)
+          Describes the format of the data that you want Amazon S3  to  return
+          in response.
+
+          CSV -> (structure)
+              Describes the serialization of CSV-encoded Select results.
+
+              QuoteFields -> (string)
+                 Indicates  whether  to  use  quotation  marks  around  output
+                 fields.
+
+                 o ALWAYS : Always use quotation marks for output fields.
+
+                 o ASNEEDED : Use  quotation  marks  for  output  fields  when
+                   needed.
+
+              QuoteEscapeCharacter -> (string)
+                 The  single  character  used for escaping the quote character
+                 inside an already escaped value.
+
+              RecordDelimiter -> (string)
+                 A single character used to separate individual records in the
+                 output.  Instead of the default value, you can specify an ar-
+                 bitrary delimiter.
+
+              FieldDelimiter -> (string)
+                 The value used to separate individual fields in a record. You
+                 can specify an arbitrary delimiter.
+
+              QuoteCharacter -> (string)
+                 A single character used for escaping when the field delimiter
+                 is part of the value. For example, if the value  is  a,  b  ,
+                 Amazon  S3 wraps this field value in quotation marks, as fol-
+                 lows: " a , b " .
+
+          JSON -> (structure)
+              Specifies JSON as request's output serialization format.
+
+              RecordDelimiter -> (string)
+                 The value used to separate individual records in the  output.
+                 If  no value is specified, Amazon S3 uses a newline character
+                 ('n').
+
+       Shorthand Syntax:
+
+          CSV={QuoteFields=string,QuoteEscapeCharacter=string,RecordDelimiter=string,FieldDelimiter=string,QuoteCharacter=string},JSON={RecordDelimiter=string}
+
+       JSON Syntax:
+
+          {
+            "CSV": {
+              "QuoteFields": "ALWAYS"|"ASNEEDED",
+              "QuoteEscapeCharacter": "string",
+              "RecordDelimiter": "string",
+              "FieldDelimiter": "string",
+              "QuoteCharacter": "string"
+            },
+            "JSON": {
+              "RecordDelimiter": "string"
+            }
+          }
+
+       --scan-range (structure)
+          Specifies the byte range of the object to get the  records  from.  A
+          record  is  processed when its first byte is contained by the range.
+          This parameter is optional, but  when  specified,  it  must  not  be
+          empty.  See RFC 2616, Section 14.35.1 about how to specify the start
+          and end of the range.
+              ScanRange may be used in the following ways:
+
+          o <scanrange><start>50</start><end>100</end></scanrange>  -  process
+            only the records starting between the bytes 50 and 100 (inclusive,
+            counting from zero)
+
+          o <scanrange><start>50</start></scanrange>  -   process   only   the
+            records starting after the byte 50
+
+          o <scanrange><end>50</end></scanrange>  -  process  only the records
+            within the last 50 bytes of the file.
+
+          Start -> (long)
+              Specifies the start of the byte range.  This  parameter  is  op-
+              tional.  Valid  values: non-negative integers. The default value
+              is 0. If only start is supplied, it means scan from  that  point
+              to     the    end    of    the    file.For    example;    <scan-
+              range><start>50</start></scanrange> means scan from byte 50  un-
+              til the end of the file.
+
+          End -> (long)
+              Specifies the end of the byte range. This parameter is optional.
+              Valid values: non-negative integers. The default  value  is  one
+              less  than the size of the object being queried. If only the End
+              parameter is supplied, it is interpreted to mean scan the last N
+              bytes  of the file. For example, <scanrange><end>50</end></scan-
+              range> means scan the last 50 bytes.
+
+       Shorthand Syntax:
+
+          Start=long,End=long
+
+       JSON Syntax:
+
+          {
+            "Start": long,
+            "End": long
+          }
+
+       --expected-bucket-owner (string)
+          The account ID of the expected bucket owner. If the bucket is  owned
+          by  a different account, the request will fail with an HTTP 403 (Ac-
+          cess Denied) error.
+
+       outfile (string) Filename where the records will be saved
+
+       See 'aws help' for descriptions of global parameters.
+
+EXAMPLES
+       To filter the contents of an Amazon S3 object based on an SQL statement
+
+       The  following  select-object-content  example   filters   the   object
+       my-data-file.csv with the specified SQL statement and sends output to a
+       file.
+
+          aws s3api select-object-content \
+              --bucket my-bucket \
+              --key my-data-file.csv \
+              --expression "select * from s3object limit 100" \
+              --expression-type 'SQL' \
+              --input-serialization '{"CSV": {}, "CompressionType": "NONE"}' \
+              --output-serialization '{"CSV": {}}' "output.csv"
+
+       This command produces no output.
+
+OUTPUT
+       This command generates no output.  The selected object content is writ-
+       ten to the specified outfile.
+
+
+
+                                                       SELECT-OBJECT-CONTENT()

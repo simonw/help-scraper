@@ -1,0 +1,346 @@
+CREATE-EXPLAINABILITY()                                CREATE-EXPLAINABILITY()
+
+
+
+NAME
+       create-explainability -
+
+DESCRIPTION
+       NOTE:
+          Explainability is only available for Forecasts and Predictors gener-
+          ated from an AutoPredictor ( CreateAutoPredictor )
+
+       Creates an Amazon Forecast Explainability.
+
+       Explainability helps you better understand how the attributes  in  your
+       datasets  impact  forecast. Amazon Forecast uses a metric called Impact
+       scores to quantify the relative impact of each attribute and  determine
+       whether they increase or decrease forecast values.
+
+       To enable Forecast Explainability, your predictor must include at least
+       one of the following: related time series, item metadata, or additional
+       datasets like Holidays and the Weather Index.
+
+       CreateExplainability accepts either a Predictor ARN or Forecast ARN. To
+       receive aggregated Impact scores for all time series and time points in
+       your  datasets,  provide  a Predictor ARN. To receive Impact scores for
+       specific time series and time points, provide a Forecast ARN.
+          CreateExplainability with a Predictor ARN
+
+       NOTE:
+          You can only have one Explainability resource per predictor. If  you
+          already enabled ExplainPredictor in  CreateAutoPredictor , that pre-
+          dictor already has an Explainability resource.
+
+       The following parameters are required when providing a Predictor ARN:
+
+       o ExplainabilityName - A unique name for the Explainability.
+
+       o ResourceArn - The Arn of the predictor.
+
+       o TimePointGranularity - Must be set to ALL.
+
+       o TimeSeriesGranularity - Must be set to ALL.
+
+       Do not specify a value for the following parameters:
+
+       o DataSource - Only valid when TimeSeriesGranularity is SPECIFIC.
+
+       o Schema - Only valid when TimeSeriesGranularity is SPECIFIC.
+
+       o StartDateTime - Only valid when TimePointGranularity is SPECIFIC.
+
+       o EndDateTime - Only valid when TimePointGranularity is SPECIFIC.
+          CreateExplainability with a Forecast ARN
+
+       NOTE:
+          You can specify a maximum of 50 time series and 500 time points.
+
+       The following parameters are required when providing a Predictor ARN:
+
+       o ExplainabilityName - A unique name for the Explainability.
+
+       o ResourceArn - The Arn of the forecast.
+
+       o TimePointGranularity - Either ALL or SPECIFIC.
+
+       o TimeSeriesGranularity - Either ALL or SPECIFIC.
+
+       If you set TimeSeriesGranularity to SPECIFIC, you must also provide the
+       following:
+
+       o DataSource - The S3 location of the CSV file specifying your time se-
+         ries.
+
+       o Schema - The Schema defines the attributes and attribute types listed
+         in the Data Source.
+
+       If  you set TimePointGranularity to SPECIFIC, you must also provide the
+       following:
+
+       o StartDateTime - The first timestamp in the range of time points.
+
+       o EndDateTime - The last timestamp in the range of time points.
+
+       See also: AWS API Documentation
+
+       See 'aws help' for descriptions of global parameters.
+
+SYNOPSIS
+            create-explainability
+          --explainability-name <value>
+          --resource-arn <value>
+          --explainability-config <value>
+          [--data-source <value>]
+          [--schema <value>]
+          [--enable-visualization | --no-enable-visualization]
+          [--start-date-time <value>]
+          [--end-date-time <value>]
+          [--tags <value>]
+          [--cli-input-json | --cli-input-yaml]
+          [--generate-cli-skeleton <value>]
+
+OPTIONS
+       --explainability-name (string)
+          A unique name for the Explainability.
+
+       --resource-arn (string)
+          The Amazon Resource Name (ARN) of the Predictor or Forecast used  to
+          create the Explainability.
+
+       --explainability-config (structure)
+          The  configuration  settings that define the granularity of time se-
+          ries and time points for the Explainability.
+
+          TimeSeriesGranularity -> (string)
+              To  create  an  Explainability  for  all  time  series  in  your
+              datasets,  use  ALL  .  To create an Explainability for specific
+              time series in your datasets, use SPECIFIC .
+
+              Specify time series by uploading a CSV  file  to  an  Amazon  S3
+              bucket  and  set  the  location within the  DataDestination data
+              type.
+
+          TimePointGranularity -> (string)
+              To create an Explainability for all time points in your forecast
+              horizon, use ALL . To create an Explainability for specific time
+              points in your forecast horizon, use SPECIFIC .
+
+              Specify time points with the StartDateTime and  EndDateTime  pa-
+              rameters within the  CreateExplainability operation.
+
+       Shorthand Syntax:
+
+          TimeSeriesGranularity=string,TimePointGranularity=string
+
+       JSON Syntax:
+
+          {
+            "TimeSeriesGranularity": "ALL"|"SPECIFIC",
+            "TimePointGranularity": "ALL"|"SPECIFIC"
+          }
+
+       --data-source (structure)
+          The source of your data, an AWS Identity and Access Management (IAM)
+          role that allows Amazon Forecast to access the data and, optionally,
+          an AWS Key Management Service (KMS) key.
+
+          S3Config -> (structure)
+              The  path to the data stored in an Amazon Simple Storage Service
+              (Amazon S3) bucket along with  the  credentials  to  access  the
+              data.
+
+              Path -> (string)
+                 The  path  to  an  Amazon  Simple Storage Service (Amazon S3)
+                 bucket or file(s) in an Amazon S3 bucket.
+
+              RoleArn -> (string)
+                 The ARN of the AWS Identity and Access Management (IAM)  role
+                 that  Amazon  Forecast  can  assume  to  access the Amazon S3
+                 bucket or files. If you provide a  value  for  the  KMSKeyArn
+                 key, the role must allow access to the key.
+
+                 Passing  a  role  across  AWS accounts is not allowed. If you
+                 pass a role that isn't in your account, you get an InvalidIn-
+                 putException error.
+
+              KMSKeyArn -> (string)
+                 The  Amazon Resource Name (ARN) of an AWS Key Management Ser-
+                 vice (KMS) key.
+
+       Shorthand Syntax:
+
+          S3Config={Path=string,RoleArn=string,KMSKeyArn=string}
+
+       JSON Syntax:
+
+          {
+            "S3Config": {
+              "Path": "string",
+              "RoleArn": "string",
+              "KMSKeyArn": "string"
+            }
+          }
+
+       --schema (structure)
+          Defines the fields of a dataset.
+
+          Attributes -> (list)
+              An array of attributes specifying the  name  and  type  of  each
+              field in a dataset.
+
+              (structure)
+                 An  attribute  of  a schema, which defines a dataset field. A
+                 schema attribute is required for every field  in  a  dataset.
+                 The   Schema  object contains an array of SchemaAttribute ob-
+                 jects.
+
+                 AttributeName -> (string)
+                     The name of the dataset field.
+
+                 AttributeType -> (string)
+                     The data type of the field.
+
+       Shorthand Syntax:
+
+          Attributes=[{AttributeName=string,AttributeType=string},{AttributeName=string,AttributeType=string}]
+
+       JSON Syntax:
+
+          {
+            "Attributes": [
+              {
+                "AttributeName": "string",
+                "AttributeType": "string"|"integer"|"float"|"timestamp"|"geolocation"
+              }
+              ...
+            ]
+          }
+
+       --enable-visualization | --no-enable-visualization (boolean)
+          Create an Expainability visualization that is  viewable  within  the
+          AWS console.
+
+       --start-date-time (string)
+          If  TimePointGranularity is set to SPECIFIC , define the first point
+          for the Explainability.
+
+          Use the following timestamp  format:  yyyy-MM-ddTHH:mm:ss  (example:
+          2015-01-01T20:00:00)
+
+       --end-date-time (string)
+          If  TimePointGranularity  is  set to SPECIFIC , define the last time
+          point for the Explainability.
+
+          Use the following timestamp  format:  yyyy-MM-ddTHH:mm:ss  (example:
+          2015-01-01T20:00:00)
+
+       --tags (list)
+          Optional  metadata  to  help  you  categorize  and organize your re-
+          sources. Each tag consists of a key and an optional value,  both  of
+          which you define. Tag keys and values are case sensitive.
+
+          The following restrictions apply to tags:
+
+          o For  each  resource,  each tag key must be unique and each tag key
+            must have one value.
+
+          o Maximum number of tags per resource: 50.
+
+          o Maximum key length: 128 Unicode characters in UTF-8.
+
+          o Maximum value length: 256 Unicode characters in UTF-8.
+
+          o Accepted characters: all letters and numbers, spaces representable
+            in  UTF-8,  and  +  -  = . _ : / @. If your tagging schema is used
+            across other services and resources, the character restrictions of
+            those services also apply.
+
+          o Key  prefixes cannot include any upper or lowercase combination of
+            aws: or AWS: . Values can have this prefix. If a tag value has aws
+            as  its prefix but the key does not, Forecast considers it to be a
+            user tag and will count against the limit of 50  tags.  Tags  with
+            only  the key prefix of aws do not count against your tags per re-
+            source limit. You cannot edit or delete tag keys with this prefix.
+
+          (structure)
+              The optional metadata that you apply to a resource to  help  you
+              categorize  and organize them. Each tag consists of a key and an
+              optional value, both of which you define.
+
+              The following basic restrictions apply to tags:
+
+              o Maximum number of tags per resource - 50.
+
+              o For each resource, each tag key must be unique, and  each  tag
+                key can have only one value.
+
+              o Maximum key length - 128 Unicode characters in UTF-8.
+
+              o Maximum value length - 256 Unicode characters in UTF-8.
+
+              o If  your  tagging  schema is used across multiple services and
+                resources, remember that other services may have  restrictions
+                on  allowed characters. Generally allowed characters are: let-
+                ters, numbers, and spaces representable in UTF-8, and the fol-
+                lowing characters: + - = . _ : / @.
+
+              o Tag keys and values are case sensitive.
+
+              o Do not use aws: , AWS: , or any upper or lowercase combination
+                of such as a prefix for keys as it is reserved  for  AWS  use.
+                You  cannot  edit  or delete tag keys with this prefix. Values
+                can have this prefix. If a tag value has aws as its prefix but
+                the  key does not, then Forecast considers it to be a user tag
+                and will count against the limit of 50 tags.  Tags  with  only
+                the  key  prefix of aws do not count against your tags per re-
+                source limit.
+
+              Key -> (string)
+                 One part of a key-value pair that makes up a tag. A key is  a
+                 general label that acts like a category for more specific tag
+                 values.
+
+              Value -> (string)
+                 The optional part of a key-value pair that makes up a tag.  A
+                 value acts as a descriptor within a tag category (key).
+
+       Shorthand Syntax:
+
+          Key=string,Value=string ...
+
+       JSON Syntax:
+
+          [
+            {
+              "Key": "string",
+              "Value": "string"
+            }
+            ...
+          ]
+
+       --cli-input-json  |  --cli-input-yaml (string) Reads arguments from the
+       JSON string provided. The JSON string follows the  format  provided  by
+       --generate-cli-skeleton. If other arguments are provided on the command
+       line, those values will override the JSON-provided values.  It  is  not
+       possible to pass arbitrary binary values using a JSON-provided value as
+       the string will be taken literally. This may  not  be  specified  along
+       with --cli-input-yaml.
+
+       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
+       output without sending an API request. If provided with no value or the
+       value input, prints a sample input JSON that can be used as an argument
+       for --cli-input-json. Similarly, if provided yaml-input it will print a
+       sample  input  YAML that can be used with --cli-input-yaml. If provided
+       with the value output, it validates the command inputs  and  returns  a
+       sample output JSON for that command.
+
+       See 'aws help' for descriptions of global parameters.
+
+OUTPUT
+       ExplainabilityArn -> (string)
+          The Amazon Resource Name (ARN) of the Explainability.
+
+
+
+                                                       CREATE-EXPLAINABILITY()

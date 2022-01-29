@@ -1,0 +1,918 @@
+CREATE-PREDICTOR()                                          CREATE-PREDICTOR()
+
+
+
+NAME
+       create-predictor -
+
+DESCRIPTION
+       NOTE:
+          This  operation creates a legacy predictor that does not include all
+          the predictor functionalities provided by Amazon Forecast. To create
+          a  predictor  that  is  compatible with all aspects of Forecast, use
+          CreateAutoPredictor .
+
+       Creates an Amazon Forecast predictor.
+
+       In the request, provide a dataset group and either specify an algorithm
+       or let Amazon Forecast choose an algorithm for you using AutoML. If you
+       specify an algorithm, you also can override algorithm-specific hyperpa-
+       rameters.
+
+       Amazon  Forecast uses the algorithm to train a predictor using the lat-
+       est version of the datasets in the specified  dataset  group.  You  can
+       then generate a forecast using the  CreateForecast operation.
+
+       To see the evaluation metrics, use the  GetAccuracyMetrics operation.
+
+       You can specify a featurization configuration to fill and aggregate the
+       data fields in the TARGET_TIME_SERIES dataset to improve  model  train-
+       ing. For more information, see  FeaturizationConfig .
+
+       For  RELATED_TIME_SERIES  datasets,  CreatePredictor  verifies that the
+       DataFrequency specified when the dataset was created matches the  Fore-
+       castFrequency  .  TARGET_TIME_SERIES  datasets don't have this restric-
+       tion. Amazon Forecast also verifies the delimiter and timestamp format.
+       For more information, see  howitworks-datasets-groups .
+
+       By  default, predictors are trained and evaluated at the 0.1 (P10), 0.5
+       (P50), and 0.9 (P90) quantiles. You can choose custom forecast types to
+       train and evaluate your predictor by setting the ForecastTypes .
+          AutoML
+
+       If  you  want Amazon Forecast to evaluate each algorithm and choose the
+       one that minimizes the objective function , set PerformAutoML to true .
+       The  objective  function  is defined as the mean of the weighted losses
+       over the forecast types. By default, these are the p10,  p50,  and  p90
+       quantile losses. For more information, see  EvaluationResult .
+
+       When AutoML is enabled, the following properties are disallowed:
+
+       o AlgorithmArn
+
+       o HPOConfig
+
+       o PerformHPO
+
+       o TrainingParameters
+
+       To get a list of all of your predictors, use the  ListPredictors opera-
+       tion.
+
+       NOTE:
+          Before you can use the predictor to create a forecast, the Status of
+          the  predictor  must  be  ACTIVE , signifying that training has com-
+          pleted. To get the status, use the  DescribePredictor operation.
+
+       See also: AWS API Documentation
+
+       See 'aws help' for descriptions of global parameters.
+
+SYNOPSIS
+            create-predictor
+          --predictor-name <value>
+          [--algorithm-arn <value>]
+          --forecast-horizon <value>
+          [--forecast-types <value>]
+          [--perform-auto-ml | --no-perform-auto-ml]
+          [--auto-ml-override-strategy <value>]
+          [--perform-hpo | --no-perform-hpo]
+          [--training-parameters <value>]
+          [--evaluation-parameters <value>]
+          [--hpo-config <value>]
+          --input-data-config <value>
+          --featurization-config <value>
+          [--encryption-config <value>]
+          [--tags <value>]
+          [--optimization-metric <value>]
+          [--cli-input-json | --cli-input-yaml]
+          [--generate-cli-skeleton <value>]
+
+OPTIONS
+       --predictor-name (string)
+          A name for the predictor.
+
+       --algorithm-arn (string)
+          The Amazon Resource Name (ARN) of the algorithm  to  use  for  model
+          training. Required if PerformAutoML is not set to true .
+              Supported algorithms:
+
+          o arn:aws:forecast:::algorithm/ARIMA
+
+          o arn:aws:forecast:::algorithm/CNN-QR
+
+          o arn:aws:forecast:::algorithm/Deep_AR_Plus
+
+          o arn:aws:forecast:::algorithm/ETS
+
+          o arn:aws:forecast:::algorithm/NPTS
+
+          o arn:aws:forecast:::algorithm/Prophet
+
+       --forecast-horizon (integer)
+          Specifies the number of time-steps that the model is trained to pre-
+          dict. The forecast horizon is also called the prediction length.
+
+          For example, if you configure a dataset for  daily  data  collection
+          (using  the DataFrequency parameter of the  CreateDataset operation)
+          and set the forecast horizon to 10, the  model  returns  predictions
+          for 10 days.
+
+          The  maximum forecast horizon is the lesser of 500 time-steps or 1/3
+          of the TARGET_TIME_SERIES dataset length.
+
+       --forecast-types (list)
+          Specifies the forecast types used to  train  a  predictor.  You  can
+          specify  up  to five forecast types. Forecast types can be quantiles
+          from 0.01 to 0.99, by increments of 0.01 or  higher.  You  can  also
+          specify the mean forecast with mean .
+
+          The default value is ["0.10", "0.50", "0.9"] .
+
+          (string)
+
+       Syntax:
+
+          "string" "string" ...
+
+       --perform-auto-ml | --no-perform-auto-ml (boolean)
+          Whether  to perform AutoML. When Amazon Forecast performs AutoML, it
+          evaluates the algorithms it provides and chooses the best  algorithm
+          and configuration for your training dataset.
+
+          The default value is false . In this case, you are required to spec-
+          ify an algorithm.
+
+          Set PerformAutoML to true to have Amazon  Forecast  perform  AutoML.
+          This is a good option if you aren't sure which algorithm is suitable
+          for your training data. In this case, PerformHPO must be false.
+
+       --auto-ml-override-strategy (string)
+
+          NOTE:
+              The LatencyOptimized AutoML override strategy is only  available
+              in  private beta. Contact AWS Support or your account manager to
+              learn more about access privileges.
+
+          Used to overide the default AutoML strategy, which  is  to  optimize
+          predictor  accuracy.  To  apply  an  AutoML  strategy that minimizes
+          training time, use LatencyOptimized .
+
+          This parameter is only valid for predictors trained using AutoML.
+
+          Possible values:
+
+          o LatencyOptimized
+
+          o AccuracyOptimized
+
+       --perform-hpo | --no-perform-hpo (boolean)
+          Whether to perform hyperparameter optimization (HPO). HPO finds  op-
+          timal  hyperparameter  values for your training data. The process of
+          performing HPO is known as running a hyperparameter tuning job.
+
+          The default value is false . In this case, Amazon Forecast uses  de-
+          fault hyperparameter values from the chosen algorithm.
+
+          To  override the default values, set PerformHPO to true and, option-
+          ally, supply the  HyperParameterTuningJobConfig object.  The  tuning
+          job  specifies  a metric to optimize, which hyperparameters partici-
+          pate in tuning, and the valid range for each tunable hyperparameter.
+          In  this  case, you are required to specify an algorithm and Perfor-
+          mAutoML must be false.
+
+          The following algorithms support HPO:
+
+          o DeepAR+
+
+          o CNN-QR
+
+       --training-parameters (map)
+          The hyperparameters to override for model training. The hyperparame-
+          ters  that you can override are listed in the individual algorithms.
+          For the  list  of  supported  algorithms,  see   aws-forecast-choos-
+          ing-recipes .
+
+          key -> (string)
+
+          value -> (string)
+
+       Shorthand Syntax:
+
+          KeyName1=string,KeyName2=string
+
+       JSON Syntax:
+
+          {"string": "string"
+            ...}
+
+       --evaluation-parameters (structure)
+          Used  to override the default evaluation parameters of the specified
+          algorithm. Amazon Forecast evaluates  a  predictor  by  splitting  a
+          dataset  into training data and testing data. The evaluation parame-
+          ters define how to perform the split and the number of iterations.
+
+          NumberOfBacktestWindows -> (integer)
+              The number of times to split the input data. The default  is  1.
+              Valid values are 1 through 5.
+
+          BackTestWindowOffset -> (integer)
+              The  point  from  the end of the dataset where you want to split
+              the data for model training and  testing  (evaluation).  Specify
+              the value as the number of data points. The default is the value
+              of the forecast horizon. BackTestWindowOffset  can  be  used  to
+              mimic  a  past  virtual  forecast start date. This value must be
+              greater than or equal to the forecast horizon and less than half
+              of the TARGET_TIME_SERIES dataset length.
+                 ForecastHorizon   <=   BackTestWindowOffset   <  1/2  *  TAR-
+                 GET_TIME_SERIES dataset length
+
+       Shorthand Syntax:
+
+          NumberOfBacktestWindows=integer,BackTestWindowOffset=integer
+
+       JSON Syntax:
+
+          {
+            "NumberOfBacktestWindows": integer,
+            "BackTestWindowOffset": integer
+          }
+
+       --hpo-config (structure)
+          Provides hyperparameter override values for the  algorithm.  If  you
+          don't  provide  this parameter, Amazon Forecast uses default values.
+          The individual algorithms specify which hyperparameters support  hy-
+          perparameter   optimization   (HPO).   For   more  information,  see
+          aws-forecast-choosing-recipes .
+
+          If you included the HPOConfig object, you  must  set  PerformHPO  to
+          true.
+
+          ParameterRanges -> (structure)
+              Specifies the ranges of valid values for the hyperparameters.
+
+              CategoricalParameterRanges -> (list)
+                 Specifies the tunable range for each categorical hyperparame-
+                 ter.
+
+                 (structure)
+                     Specifies a categorical hyperparameter and it's range  of
+                     tunable  values.  This  object is part of the  Parameter-
+                     Ranges object.
+
+                     Name -> (string)
+                        The name of the categorical hyperparameter to tune.
+
+                     Values -> (list)
+                        A list of the tunable categories for the  hyperparame-
+                        ter.
+
+                        (string)
+
+              ContinuousParameterRanges -> (list)
+                 Specifies  the tunable range for each continuous hyperparame-
+                 ter.
+
+                 (structure)
+                     Specifies a continuous hyperparameter and it's  range  of
+                     tunable  values.  This  object is part of the  Parameter-
+                     Ranges object.
+
+                     Name -> (string)
+                        The name of the hyperparameter to tune.
+
+                     MaxValue -> (double)
+                        The maximum tunable value of the hyperparameter.
+
+                     MinValue -> (double)
+                        The minimum tunable value of the hyperparameter.
+
+                     ScalingType -> (string)
+                        The scale that hyperparameter tuning  uses  to  search
+                        the hyperparameter range. Valid values:
+                            Auto
+
+                        Amazon Forecast hyperparameter tuning chooses the best
+                        scale for the hyperparameter.
+                            Linear
+
+                        Hyperparameter tuning searches the values in  the  hy-
+                        perparameter range by using a linear scale.
+                            Logarithmic
+
+                        Hyperparameter  tuning  searches the values in the hy-
+                        perparameter range by using a logarithmic scale.
+
+                        Logarithmic scaling works only for  ranges  that  have
+                        values greater than 0.
+                            ReverseLogarithmic
+
+                        hyperparameter  tuning  searches the values in the hy-
+                        perparameter range  by  using  a  reverse  logarithmic
+                        scale.
+
+                        Reverse logarithmic scaling works only for ranges that
+                        are entirely within the range 0 <= x < 1.0.
+
+                        For information about choosing a hyperparameter scale,
+                        see Hyperparameter Scaling . One of the following val-
+                        ues:
+
+              IntegerParameterRanges -> (list)
+                 Specifies the tunable range for each integer hyperparameter.
+
+                 (structure)
+                     Specifies an integer hyperparameter  and  it's  range  of
+                     tunable  values.  This  object is part of the  Parameter-
+                     Ranges object.
+
+                     Name -> (string)
+                        The name of the hyperparameter to tune.
+
+                     MaxValue -> (integer)
+                        The maximum tunable value of the hyperparameter.
+
+                     MinValue -> (integer)
+                        The minimum tunable value of the hyperparameter.
+
+                     ScalingType -> (string)
+                        The scale that hyperparameter tuning  uses  to  search
+                        the hyperparameter range. Valid values:
+                            Auto
+
+                        Amazon Forecast hyperparameter tuning chooses the best
+                        scale for the hyperparameter.
+                            Linear
+
+                        Hyperparameter tuning searches the values in  the  hy-
+                        perparameter range by using a linear scale.
+                            Logarithmic
+
+                        Hyperparameter  tuning  searches the values in the hy-
+                        perparameter range by using a logarithmic scale.
+
+                        Logarithmic scaling works only for  ranges  that  have
+                        values greater than 0.
+                            ReverseLogarithmic
+
+                        Not supported for IntegerParameterRange .
+
+                        Reverse logarithmic scaling works only for ranges that
+                        are entirely within the range 0 <= x < 1.0.
+
+                        For information about choosing a hyperparameter scale,
+                        see Hyperparameter Scaling . One of the following val-
+                        ues:
+
+       JSON Syntax:
+
+          {
+            "ParameterRanges": {
+              "CategoricalParameterRanges": [
+                {
+                  "Name": "string",
+                  "Values": ["string", ...]
+                }
+                ...
+              ],
+              "ContinuousParameterRanges": [
+                {
+                  "Name": "string",
+                  "MaxValue": double,
+                  "MinValue": double,
+                  "ScalingType": "Auto"|"Linear"|"Logarithmic"|"ReverseLogarithmic"
+                }
+                ...
+              ],
+              "IntegerParameterRanges": [
+                {
+                  "Name": "string",
+                  "MaxValue": integer,
+                  "MinValue": integer,
+                  "ScalingType": "Auto"|"Linear"|"Logarithmic"|"ReverseLogarithmic"
+                }
+                ...
+              ]
+            }
+          }
+
+       --input-data-config (structure)
+          Describes the dataset group that contains the data to use  to  train
+          the predictor.
+
+          DatasetGroupArn -> (string)
+              The Amazon Resource Name (ARN) of the dataset group.
+
+          SupplementaryFeatures -> (list)
+              An  array  of supplementary features. The only supported feature
+              is a holiday calendar.
+
+              (structure)
+
+                 NOTE:
+                     This object belongs to the  CreatePredictor operation. If
+                     you  created  your  predictor with  CreateAutoPredictor ,
+                     see  AdditionalDataset .
+
+                 Describes a supplementary feature of a  dataset  group.  This
+                 object  is part of the  InputDataConfig object. Forecast sup-
+                 ports the Weather Index and Holidays built-in featurizations.
+                     Weather Index
+
+                 The Amazon Forecast Weather Index is a built-in featurization
+                 that  incorporates  historical and projected weather informa-
+                 tion into your model.  The  Weather  Index  supplements  your
+                 datasets  with  over two years of historical weather data and
+                 up to 14 days of projected weather data.  For  more  informa-
+                 tion, see Amazon Forecast Weather Index .
+                     Holidays
+
+                 Holidays is a built-in featurization that incorporates a fea-
+                 ture-engineered dataset of national holiday information  into
+                 your model. It provides native support for the holiday calen-
+                 dars of 66 countries. To view the holiday calendars, refer to
+                 the Jollyday library. For more information, see Holidays Fea-
+                 turization .
+
+                 Name -> (string)
+                     The name of the  feature.  Valid  values:  "holiday"  and
+                     "weather" .
+
+                 Value -> (string)
+                        Weather Index
+
+                     To enable the Weather Index, set the value to "true"
+                        Holidays
+
+                     To  enable  Holidays,  specify  a country with one of the
+                     following two-letter country codes:
+
+                     o "AL" - ALBANIA
+
+                     o "AR" - ARGENTINA
+
+                     o "AT" - AUSTRIA
+
+                     o "AU" - AUSTRALIA
+
+                     o "BA" - BOSNIA HERZEGOVINA
+
+                     o "BE" - BELGIUM
+
+                     o "BG" - BULGARIA
+
+                     o "BO" - BOLIVIA
+
+                     o "BR" - BRAZIL
+
+                     o "BY" - BELARUS
+
+                     o "CA" - CANADA
+
+                     o "CL" - CHILE
+
+                     o "CO" - COLOMBIA
+
+                     o "CR" - COSTA RICA
+
+                     o "HR" - CROATIA
+
+                     o "CZ" - CZECH REPUBLIC
+
+                     o "DK" - DENMARK
+
+                     o "EC" - ECUADOR
+
+                     o "EE" - ESTONIA
+
+                     o "ET" - ETHIOPIA
+
+                     o "FI" - FINLAND
+
+                     o "FR" - FRANCE
+
+                     o "DE" - GERMANY
+
+                     o "GR" - GREECE
+
+                     o "HU" - HUNGARY
+
+                     o "IS" - ICELAND
+
+                     o "IN" - INDIA
+
+                     o "IE" - IRELAND
+
+                     o "IT" - ITALY
+
+                     o "JP" - JAPAN
+
+                     o "KZ" - KAZAKHSTAN
+
+                     o "KR" - KOREA
+
+                     o "LV" - LATVIA
+
+                     o "LI" - LIECHTENSTEIN
+
+                     o "LT" - LITHUANIA
+
+                     o "LU" - LUXEMBOURG
+
+                     o "MK" - MACEDONIA
+
+                     o "MT" - MALTA
+
+                     o "MX" - MEXICO
+
+                     o "MD" - MOLDOVA
+
+                     o "ME" - MONTENEGRO
+
+                     o "NL" - NETHERLANDS
+
+                     o "NZ" - NEW ZEALAND
+
+                     o "NI" - NICARAGUA
+
+                     o "NG" - NIGERIA
+
+                     o "NO" - NORWAY
+
+                     o "PA" - PANAMA
+
+                     o "PY" - PARAGUAY
+
+                     o "PE" - PERU
+
+                     o "PL" - POLAND
+
+                     o "PT" - PORTUGAL
+
+                     o "RO" - ROMANIA
+
+                     o "RU" - RUSSIA
+
+                     o "RS" - SERBIA
+
+                     o "SK" - SLOVAKIA
+
+                     o "SI" - SLOVENIA
+
+                     o "ZA" - SOUTH AFRICA
+
+                     o "ES" - SPAIN
+
+                     o "SE" - SWEDEN
+
+                     o "CH" - SWITZERLAND
+
+                     o "UA" - UKRAINE
+
+                     o "AE" - UNITED ARAB EMIRATES
+
+                     o "US" - UNITED STATES
+
+                     o "UK" - UNITED KINGDOM
+
+                     o "UY" - URUGUAY
+
+                     o "VE" - VENEZUELA
+
+       Shorthand Syntax:
+
+          DatasetGroupArn=string,SupplementaryFeatures=[{Name=string,Value=string},{Name=string,Value=string}]
+
+       JSON Syntax:
+
+          {
+            "DatasetGroupArn": "string",
+            "SupplementaryFeatures": [
+              {
+                "Name": "string",
+                "Value": "string"
+              }
+              ...
+            ]
+          }
+
+       --featurization-config (structure)
+          The featurization configuration.
+
+          ForecastFrequency -> (string)
+              The frequency of predictions in a forecast.
+
+              Valid intervals are Y (Year), M (Month), W (Week),  D  (Day),  H
+              (Hour),  30min  (30 minutes), 15min (15 minutes), 10min (10 min-
+              utes), 5min (5 minutes), and 1min (1 minute). For  example,  "Y"
+              indicates every year and "5min" indicates every five minutes.
+
+              The  frequency  must  be  greater  than  or  equal  to  the TAR-
+              GET_TIME_SERIES dataset frequency.
+
+              When a RELATED_TIME_SERIES dataset is  provided,  the  frequency
+              must be equal to the RELATED_TIME_SERIES dataset frequency.
+
+          ForecastDimensions -> (list)
+              An  array  of  dimension (field) names that specify how to group
+              the generated forecast.
+
+              For example, suppose that you are generating a forecast for item
+              sales  across  all  of  your stores, and your dataset contains a
+              store_id field. If you want the sales forecast for each item  by
+              store, you would specify store_id as the dimension.
+
+              All  forecast  dimensions  specified  in  the TARGET_TIME_SERIES
+              dataset don't need to be specified in  the  CreatePredictor  re-
+              quest. All forecast dimensions specified in the RELATED_TIME_SE-
+              RIES dataset must be specified in the CreatePredictor request.
+
+              (string)
+
+          Featurizations -> (list)
+              An array of featurization (transformation) information  for  the
+              fields of a dataset.
+
+              (structure)
+
+                 NOTE:
+                     This object belongs to the  CreatePredictor operation. If
+                     you created your predictor  with   CreateAutoPredictor  ,
+                     see  AttributeConfig .
+
+                 Provides  featurization  (transformation)  information  for a
+                 dataset field. This object is part of the   FeaturizationCon-
+                 fig object.
+
+                 For example:
+                     {
+
+                     "AttributeName": "demand",
+
+                     FeaturizationPipeline [ {
+
+                     "FeaturizationMethodName": "filling",
+
+                     "FeaturizationMethodParameters":  {"aggregation":  "avg",
+                     "backfill": "nan"}
+
+                     } ]
+
+                     }
+
+                 AttributeName -> (string)
+                     The name of the schema attribute that specifies the  data
+                     field to be featurized. Amazon Forecast supports the tar-
+                     get  field  of  the  TARGET_TIME_SERIES   and   the   RE-
+                     LATED_TIME_SERIES  datasets.  For example, for the RETAIL
+                     domain, the target is demand , and for the CUSTOM domain,
+                     the  target  is  target_value . For more information, see
+                     howitworks-missing-values .
+
+                 FeaturizationPipeline -> (list)
+                     An array of one FeaturizationMethod object that specifies
+                     the feature transformation method.
+
+                     (structure)
+                        Provides  information about the method that featurizes
+                        (transforms) a dataset field. The method  is  part  of
+                        the  FeaturizationPipeline  of  the  Featurization ob-
+                        ject.
+
+                        The following is an example of how you specify a  Fea-
+                        turizationMethod object.
+                            {
+
+                            "FeaturizationMethodName": "filling",
+
+                            "FeaturizationMethodParameters":   {"aggregation":
+                            "sum", "middlefill": "zero", "backfill": "zero"}
+
+                            }
+
+                        FeaturizationMethodName -> (string)
+                            The name of the method. The  "filling"  method  is
+                            the only supported method.
+
+                        FeaturizationMethodParameters -> (map)
+                            The method parameters (key-value pairs), which are
+                            a map of override parameters. Specify these param-
+                            eters to override the default values. Related Time
+                            Series attributes do not accept aggregation param-
+                            eters.
+
+                            The  following list shows the parameters and their
+                            valid  values  for  the  "filling"   featurization
+                            method for a Target Time Series dataset. Bold sig-
+                            nifies the default value.
+
+                            o aggregation : sum , avg , first , min , max
+
+                            o frontfill : none
+
+                            o middlefill : zero , nan (not a number), value  ,
+                              median , mean , min , max
+
+                            o backfill  : zero , nan , value , median , mean ,
+                              min , max
+
+                            The following list shows the parameters and  their
+                            valid  values for a Related Time Series featuriza-
+                            tion method (there are no defaults):
+
+                            o middlefill : zero , value , median , mean ,  min
+                              , max
+
+                            o backfill  : zero , value , median , mean , min ,
+                              max
+
+                            o futurefill : zero , value , median , mean ,  min
+                              , max
+
+                            To  set  a filling method to a specific value, set
+                            the fill parameter to value and define  the  value
+                            in  a corresponding _value parameter. For example,
+                            to set backfilling to a value of  2,  include  the
+                            following:    "backfill":   "value"   and   "back-
+                            fill_value":"2" .
+
+                            key -> (string)
+
+                            value -> (string)
+
+       JSON Syntax:
+
+          {
+            "ForecastFrequency": "string",
+            "ForecastDimensions": ["string", ...],
+            "Featurizations": [
+              {
+                "AttributeName": "string",
+                "FeaturizationPipeline": [
+                  {
+                    "FeaturizationMethodName": "filling",
+                    "FeaturizationMethodParameters": {"string": "string"
+                      ...}
+                  }
+                  ...
+                ]
+              }
+              ...
+            ]
+          }
+
+       --encryption-config (structure)
+          An AWS Key Management Service (KMS) key and the AWS Identity and Ac-
+          cess Management (IAM) role that Amazon Forecast can assume to access
+          the key.
+
+          RoleArn -> (string)
+              The ARN of the IAM role that Amazon Forecast can assume  to  ac-
+              cess the AWS KMS key.
+
+              Passing a role across AWS accounts is not allowed. If you pass a
+              role that isn't in your account, you get  an  InvalidInputExcep-
+              tion error.
+
+          KMSKeyArn -> (string)
+              The Amazon Resource Name (ARN) of the KMS key.
+
+       Shorthand Syntax:
+
+          RoleArn=string,KMSKeyArn=string
+
+       JSON Syntax:
+
+          {
+            "RoleArn": "string",
+            "KMSKeyArn": "string"
+          }
+
+       --tags (list)
+          The  optional  metadata  that you apply to the predictor to help you
+          categorize and organize them. Each tag consists of a key and an  op-
+          tional value, both of which you define.
+
+          The following basic restrictions apply to tags:
+
+          o Maximum number of tags per resource - 50.
+
+          o For  each  resource, each tag key must be unique, and each tag key
+            can have only one value.
+
+          o Maximum key length - 128 Unicode characters in UTF-8.
+
+          o Maximum value length - 256 Unicode characters in UTF-8.
+
+          o If your tagging schema is used across multiple  services  and  re-
+            sources, remember that other services may have restrictions on al-
+            lowed characters. Generally allowed characters are: letters,  num-
+            bers, and spaces representable in UTF-8, and the following charac-
+            ters: + - = . _ : / @.
+
+          o Tag keys and values are case sensitive.
+
+          o Do not use aws: , AWS: , or any upper or lowercase combination  of
+            such  as a prefix for keys as it is reserved for AWS use. You can-
+            not edit or delete tag keys with this prefix. Values can have this
+            prefix. If a tag value has aws as its prefix but the key does not,
+            then Forecast considers it to be a user tag and will count against
+            the  limit of 50 tags. Tags with only the key prefix of aws do not
+            count against your tags per resource limit.
+
+          (structure)
+              The optional metadata that you apply to a resource to  help  you
+              categorize  and organize them. Each tag consists of a key and an
+              optional value, both of which you define.
+
+              The following basic restrictions apply to tags:
+
+              o Maximum number of tags per resource - 50.
+
+              o For each resource, each tag key must be unique, and  each  tag
+                key can have only one value.
+
+              o Maximum key length - 128 Unicode characters in UTF-8.
+
+              o Maximum value length - 256 Unicode characters in UTF-8.
+
+              o If  your  tagging  schema is used across multiple services and
+                resources, remember that other services may have  restrictions
+                on  allowed characters. Generally allowed characters are: let-
+                ters, numbers, and spaces representable in UTF-8, and the fol-
+                lowing characters: + - = . _ : / @.
+
+              o Tag keys and values are case sensitive.
+
+              o Do not use aws: , AWS: , or any upper or lowercase combination
+                of such as a prefix for keys as it is reserved  for  AWS  use.
+                You  cannot  edit  or delete tag keys with this prefix. Values
+                can have this prefix. If a tag value has aws as its prefix but
+                the  key does not, then Forecast considers it to be a user tag
+                and will count against the limit of 50 tags.  Tags  with  only
+                the  key  prefix of aws do not count against your tags per re-
+                source limit.
+
+              Key -> (string)
+                 One part of a key-value pair that makes up a tag. A key is  a
+                 general label that acts like a category for more specific tag
+                 values.
+
+              Value -> (string)
+                 The optional part of a key-value pair that makes up a tag.  A
+                 value acts as a descriptor within a tag category (key).
+
+       Shorthand Syntax:
+
+          Key=string,Value=string ...
+
+       JSON Syntax:
+
+          [
+            {
+              "Key": "string",
+              "Value": "string"
+            }
+            ...
+          ]
+
+       --optimization-metric (string)
+          The accuracy metric used to optimize the predictor.
+
+          Possible values:
+
+          o WAPE
+
+          o RMSE
+
+          o AverageWeightedQuantileLoss
+
+          o MASE
+
+          o MAPE
+
+       --cli-input-json  |  --cli-input-yaml (string) Reads arguments from the
+       JSON string provided. The JSON string follows the  format  provided  by
+       --generate-cli-skeleton. If other arguments are provided on the command
+       line, those values will override the JSON-provided values.  It  is  not
+       possible to pass arbitrary binary values using a JSON-provided value as
+       the string will be taken literally. This may  not  be  specified  along
+       with --cli-input-yaml.
+
+       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
+       output without sending an API request. If provided with no value or the
+       value input, prints a sample input JSON that can be used as an argument
+       for --cli-input-json. Similarly, if provided yaml-input it will print a
+       sample  input  YAML that can be used with --cli-input-yaml. If provided
+       with the value output, it validates the command inputs  and  returns  a
+       sample output JSON for that command.
+
+       See 'aws help' for descriptions of global parameters.
+
+OUTPUT
+       PredictorArn -> (string)
+          The Amazon Resource Name (ARN) of the predictor.
+
+
+
+                                                            CREATE-PREDICTOR()

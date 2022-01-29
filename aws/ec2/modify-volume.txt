@@ -1,0 +1,264 @@
+MODIFY-VOLUME()                                                MODIFY-VOLUME()
+
+
+
+NAME
+       modify-volume -
+
+DESCRIPTION
+       You  can modify several parameters of an existing EBS volume, including
+       volume size, volume type, and IOPS capacity. If your EBS volume is  at-
+       tached  to a current-generation EC2 instance type, you might be able to
+       apply these changes without stopping the instance or detaching the vol-
+       ume  from  it.  For  more  information about modifying EBS volumes, see
+       Amazon EBS Elastic Volumes (Linux instances) or Amazon EBS Elastic Vol-
+       umes (Windows instances).
+
+       When you complete a resize operation on your volume, you need to extend
+       the volume's file-system size to take advantage of the new storage  ca-
+       pacity.  For more information, see Extend a Linux file system or Extend
+       a Windows file system .
+
+       You can use CloudWatch Events to check the status of a modification  to
+       an  EBS volume. For information about CloudWatch Events, see the Amazon
+       CloudWatch Events User Guide . You can also track the status of a modi-
+       fication  using   DescribeVolumesModifications  . For information about
+       tracking status changes using either method, see Monitor  the  progress
+       of volume modifications .
+
+       With  previous-generation  instance types, resizing an EBS volume might
+       require detaching and reattaching the volume or stopping and restarting
+       the instance.
+
+       If you reach the maximum volume modification rate per volume limit, you
+       must wait at least six hours before applying further  modifications  to
+       the affected EBS volume.
+
+       See also: AWS API Documentation
+
+       See 'aws help' for descriptions of global parameters.
+
+SYNOPSIS
+            modify-volume
+          [--dry-run | --no-dry-run]
+          --volume-id <value>
+          [--size <value>]
+          [--volume-type <value>]
+          [--iops <value>]
+          [--throughput <value>]
+          [--multi-attach-enabled | --no-multi-attach-enabled]
+          [--cli-input-json | --cli-input-yaml]
+          [--generate-cli-skeleton <value>]
+
+OPTIONS
+       --dry-run | --no-dry-run (boolean)
+          Checks  whether  you  have  the required permissions for the action,
+          without actually making the request, and provides an error response.
+          If  you have the required permissions, the error response is DryRun-
+          Operation . Otherwise, it is UnauthorizedOperation .
+
+       --volume-id (string)
+          The ID of the volume.
+
+       --size (integer)
+          The target size of the volume, in GiB. The target volume  size  must
+          be greater than or equal to the existing size of the volume.
+
+          The following are the supported volumes sizes for each volume type:
+
+          o gp2 and gp3 : 1-16,384
+
+          o io1 and io2 : 4-16,384
+
+          o st1 and sc1 : 125-16,384
+
+          o standard : 1-1,024
+
+          Default: The existing size is retained.
+
+       --volume-type (string)
+          The  target EBS volume type of the volume. For more information, see
+          Amazon EBS volume types in the Amazon  Elastic  Compute  Cloud  User
+          Guide .
+
+          Default: The existing type is retained.
+
+          Possible values:
+
+          o standard
+
+          o io1
+
+          o io2
+
+          o gp2
+
+          o sc1
+
+          o st1
+
+          o gp3
+
+       --iops (integer)
+          The target IOPS rate of the volume. This parameter is valid only for
+          gp3 , io1 , and io2 volumes.
+
+          The following are the supported values for each volume type:
+
+          o gp3 : 3,000-16,000 IOPS
+
+          o io1 : 100-64,000 IOPS
+
+          o io2 : 100-64,000 IOPS
+
+          Default: The existing value is retained if you keep the same  volume
+          type.  If you change the volume type to io1 , io2 , or gp3 , the de-
+          fault is 3,000.
+
+       --throughput (integer)
+          The target throughput of the volume, in  MiB/s.  This  parameter  is
+          valid only for gp3 volumes. The maximum value is 1,000.
+
+          Default:  The  existing  value  is retained if the source and target
+          volume type is gp3 . Otherwise, the default value is 125.
+
+          Valid Range: Minimum value of 125. Maximum value of 1000.
+
+       --multi-attach-enabled | --no-multi-attach-enabled (boolean)
+          Specifies whether to enable Amazon EBS Multi-Attach. If  you  enable
+          Multi-Attach,  you can attach the volume to up to 16 Nitro-based in-
+          stances in the same Availability Zone. This parameter  is  supported
+          with  io1 and io2 volumes only. For more information, see Amazon EBS
+          Multi-Attach in the Amazon Elastic Compute Cloud User Guide .
+
+       --cli-input-json | --cli-input-yaml (string) Reads arguments  from  the
+       JSON  string  provided.  The JSON string follows the format provided by
+       --generate-cli-skeleton. If other arguments are provided on the command
+       line,  those  values  will override the JSON-provided values. It is not
+       possible to pass arbitrary binary values using a JSON-provided value as
+       the  string  will  be  taken literally. This may not be specified along
+       with --cli-input-yaml.
+
+       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
+       output without sending an API request. If provided with no value or the
+       value input, prints a sample input JSON that can be used as an argument
+       for --cli-input-json. Similarly, if provided yaml-input it will print a
+       sample input YAML that can be used with --cli-input-yaml.  If  provided
+       with  the  value  output, it validates the command inputs and returns a
+       sample output JSON for that command.
+
+       See 'aws help' for descriptions of global parameters.
+
+EXAMPLES
+       Example 1: To modify a volume by changing its size
+
+       The following modify-volume example changes the size of  the  specified
+       volume to 150GB.
+
+       Command:
+
+          aws ec2 modify-volume --size 150 --volume-id vol-1234567890abcdef0
+
+       Output:
+
+          {
+              "VolumeModification": {
+                  "TargetSize": 150,
+                  "TargetVolumeType": "io1",
+                  "ModificationState": "modifying",
+                  "VolumeId": " vol-1234567890abcdef0",
+                  "TargetIops": 100,
+                  "StartTime": "2019-05-17T11:27:19.000Z",
+                  "Progress": 0,
+                  "OriginalVolumeType": "io1",
+                  "OriginalIops": 100,
+                  "OriginalSize": 100
+              }
+          }
+
+       Example  2:  To  modify  a  volume by changing its type, size, and IOPS
+       value
+
+       The following modify-volume example changes the volume type  to  Provi-
+       sioned  IOPS SSD, sets the target IOPS rate to 10000, and sets the vol-
+       ume size to 350GB.
+
+          aws ec2 modify-volume \
+              --volume-type io1 \
+              --iops 10000 \
+              --size 350 \
+              --volume-id vol-1234567890abcdef0
+
+       Output:
+
+          {
+              "VolumeModification": {
+                  "TargetSize": 350,
+                  "TargetVolumeType": "io1",
+                  "ModificationState": "modifying",
+                  "VolumeId": "vol-0721c1a9d08c93bf6",
+                  "TargetIops": 10000,
+                  "StartTime": "2019-05-17T11:38:57.000Z",
+                  "Progress": 0,
+                  "OriginalVolumeType": "gp2",
+                  "OriginalIops": 150,
+                  "OriginalSize": 50
+              }
+          }
+
+OUTPUT
+       VolumeModification -> (structure)
+          Information about the volume modification.
+
+          VolumeId -> (string)
+              The ID of the volume.
+
+          ModificationState -> (string)
+              The current modification state. The modification state  is  null
+              for unmodified volumes.
+
+          StatusMessage -> (string)
+              A status message about the modification progress or failure.
+
+          TargetSize -> (integer)
+              The target size of the volume, in GiB.
+
+          TargetIops -> (integer)
+              The target IOPS rate of the volume.
+
+          TargetVolumeType -> (string)
+              The target EBS volume type of the volume.
+
+          TargetThroughput -> (integer)
+              The target throughput of the volume, in MiB/s.
+
+          TargetMultiAttachEnabled -> (boolean)
+              The target setting for Amazon EBS Multi-Attach.
+
+          OriginalSize -> (integer)
+              The original size of the volume, in GiB.
+
+          OriginalIops -> (integer)
+              The original IOPS rate of the volume.
+
+          OriginalVolumeType -> (string)
+              The original EBS volume type of the volume.
+
+          OriginalThroughput -> (integer)
+              The original throughput of the volume, in MiB/s.
+
+          OriginalMultiAttachEnabled -> (boolean)
+              The original setting for Amazon EBS Multi-Attach.
+
+          Progress -> (long)
+              The modification progress, from 0 to 100 percent complete.
+
+          StartTime -> (timestamp)
+              The modification start time.
+
+          EndTime -> (timestamp)
+              The modification completion or failure time.
+
+
+
+                                                               MODIFY-VOLUME()

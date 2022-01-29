@@ -1,0 +1,251 @@
+UPDATE-GROUP-QUERY()                                      UPDATE-GROUP-QUERY()
+
+
+
+NAME
+       update-group-query -
+
+DESCRIPTION
+       Updates  the  resource query of a group. For more information about re-
+       source queries, see Create a tag-based group in Resource Groups .
+          Minimum permissions
+
+       To run this command, you must have the following permissions:
+
+       o resource-groups:UpdateGroupQuery
+
+       See also: AWS API Documentation
+
+       See 'aws help' for descriptions of global parameters.
+
+SYNOPSIS
+            update-group-query
+          [--group-name <value>]
+          [--group <value>]
+          --resource-query <value>
+          [--cli-input-json | --cli-input-yaml]
+          [--generate-cli-skeleton <value>]
+
+OPTIONS
+       --group-name (string)
+          Don't use this parameter. Use Group instead.
+
+       --group (string)
+          The name or the ARN of the resource group to query.
+
+       --resource-query (structure)
+          The resource query to determine which AWS resources are  members  of
+          this resource group.
+
+          NOTE:
+              A  resource  group  can  contain either a Configuration or a Re-
+              sourceQuery , but not both.
+
+          Type -> (string)
+              The type of the query. You can use the following values:
+
+              o
+
+                *
+                CLOUDFORMATION_STACK_1_0: * Specifies that the Query  contains
+                an ARN for a CloudFormation stack.
+
+              o ``TAG_FILTERS_1_0:``  * Specifies that the ``Query`` parameter
+                contains a JSON string that represents a collection of  simple
+                tag  filters for resource types and tags. The JSON string uses
+                a    syntax    similar     to     the     ``     `GetResources
+                <https://docs.aws.amazon.com/resourcegroupstagging/lat-
+                est/APIReference/API_GetResources.html>`__ ``  operation,  but
+                uses  only  the `` `ResourceTypeFilters <https://docs.aws.ama-
+                zon.com/resourcegroupstagging/latest/APIReference/API_GetRe-
+                sources.html#resourcegrouptagging-GetResources-request-Re-
+                sourceTypeFilters>`__     ``      and      ``      `TagFilters
+                <https://docs.aws.amazon.com/resourcegroupstagging/lat-
+                est/APIReference/API_GetResources.html#resourcegrouptag-
+                ging-GetResources-request-TagFiltersTagFilters>`__  `` fields.
+                If you specify more than one  tag  key,  only  resources  that
+                match  all  tag keys, and at least one value of each specified
+                tag key, are returned in your query. If you specify more  than
+                one  value  for a tag key, a resource matches the filter if it
+                has a tag key value that matches *any of the specified values.
+                For example, consider the following sample query for resources
+                that have two tags, Stage and Version , with two values  each:
+                [{"Stage":["Test","Deploy"]},{"Version":["1","2"]}]    The re-
+                sults of this query could include the following.
+
+                o An  EC2  instance  that  has   the   following   two   tags:
+                  {"Stage":"Deploy"} , and {"Version":"2"}
+
+                o An   S3   bucket   that   has   the   following   two  tags:
+                  {"Stage":"Test"} , and {"Version":"1"}
+
+              The query would not include the following items in the  results,
+              however.
+
+                 o An   EC2   instance   that  has  only  the  following  tag:
+                   {"Stage":"Deploy"} . The instance does not have all of  the
+                   tag  keys  specified  in the filter, so it is excluded from
+                   the results.
+
+                 o An  RDS  database  that  has  the   following   two   tags:
+                   {"Stage":"Archived"} and {"Version":"4"}   The database has
+                   all of the tag keys, but none of those keys has an  associ-
+                   ated  value that matches at least one of the specified val-
+                   ues in the filter.
+
+          Query -> (string)
+              The query that defines a group or a search.
+
+       Shorthand Syntax:
+
+          Type=string,Query=string
+
+       JSON Syntax:
+
+          {
+            "Type": "TAG_FILTERS_1_0"|"CLOUDFORMATION_STACK_1_0",
+            "Query": "string"
+          }
+
+       --cli-input-json | --cli-input-yaml (string) Reads arguments  from  the
+       JSON  string  provided.  The JSON string follows the format provided by
+       --generate-cli-skeleton. If other arguments are provided on the command
+       line,  those  values  will override the JSON-provided values. It is not
+       possible to pass arbitrary binary values using a JSON-provided value as
+       the  string  will  be  taken literally. This may not be specified along
+       with --cli-input-yaml.
+
+       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
+       output without sending an API request. If provided with no value or the
+       value input, prints a sample input JSON that can be used as an argument
+       for --cli-input-json. Similarly, if provided yaml-input it will print a
+       sample input YAML that can be used with --cli-input-yaml.  If  provided
+       with  the  value  output, it validates the command inputs and returns a
+       sample output JSON for that command.
+
+       See 'aws help' for descriptions of global parameters.
+
+EXAMPLES
+       Example 1: To update the query for a tag-based resource group
+
+       The following update-group-query example updates the query attached  to
+       the specified tag-based resource group.
+
+          aws resource-groups update-group-query \
+              --group-name tbq-WebServer \
+              --resource-query '{"Type":"TAG_FILTERS_1_0", "Query":"{\"ResourceTypeFilters\":[\"AWS::EC2::Instance\"],\"TagFilters\":[{\"Key\":\"Name\", \"Values\":[\"WebServers\"]}]}"}'
+
+       Output:
+
+          {
+              "Group": {
+                  "GroupArn": "arn:aws:resource-groups:us-east-2:123456789012:group/tbq-WebServer",
+                  "Name": "tbq-WebServer"
+              },
+              "ResourceQuery": {
+                  "Type": "TAG_FILTERS_1_0",
+                  "Query": "{\"ResourceTypeFilters\":[\"AWS::EC2::Instance\"],\"TagFilters\":[{\"Key\":\"Name\", \"Values\":[\"WebServers\"]}]}"
+              }
+          }
+
+       For more information, see Update Groups in the AWS Resource Groups User
+       Guide.
+
+       Example 2: To update the query for  a  CloudFormation  stack-based  re-
+       source group
+
+       The  following update-group-query example updates the query attached to
+       the specified AWS CloudFormation stack-based resource group.
+
+          aws resource-groups update-group-query \
+              --group-name cbq-CFNstackgroup \
+              --resource-query '{"Type": "CLOUDFORMATION_STACK_1_0", "Query": "{\"ResourceTypeFilters\":[\"AWS::AllSupported\"],\"StackIdentifier\":\"arn:aws:cloudformation:us-west-2:123456789012:stack/MyCFNStack/1415z9z0-z39z-11z8-97z5-500z212zz6fz\"}"}'
+
+       Output:
+
+          {
+              "Group": {
+                  "GroupArn": "arn:aws:resource-groups:us-west-2:123456789012:group/cbq-CFNstackgroup",
+                  "Name": "cbq-CFNstackgroup"
+              },
+              "ResourceQuery": {
+                  "Type": "CLOUDFORMATION_STACK_1_0",
+                  "Query": "{\"ResourceTypeFilters\":[\"AWS::AllSupported\"],\"StackIdentifier\":\"arn:aws:cloudformation:us-west-2:123456789012:stack/MyCFNStack/1415z9z0-z39z-11z8-97z5-500z212zz6fz\"}"
+              }
+          }
+
+       For more information, see Update Groups in the AWS Resource Groups User
+       Guide.
+
+OUTPUT
+       GroupQuery -> (structure)
+          The  updated resource query associated with the resource group after
+          the update.
+
+          GroupName -> (string)
+              The name of the resource group that is associated with the spec-
+              ified resource query.
+
+          ResourceQuery -> (structure)
+              The  resource query that determines which AWS resources are mem-
+              bers of the associated resource group.
+
+              Type -> (string)
+                 The type of the query. You can use the following values:
+
+                 o
+
+                   *
+                   CLOUDFORMATION_STACK_1_0: * Specifies that the  Query  con-
+                   tains an ARN for a CloudFormation stack.
+
+                 o ``TAG_FILTERS_1_0:`` * Specifies that the ``Query`` parame-
+                   ter contains a JSON string that represents a collection  of
+                   simple  tag  filters  for resource types and tags. The JSON
+                   string uses  a  syntax  similar  to  the  ``  `GetResources
+                   <https://docs.aws.amazon.com/resourcegroupstagging/lat-
+                   est/APIReference/API_GetResources.html>`__  ``   operation,
+                   but     uses     only     the    ``    `ResourceTypeFilters
+                   <https://docs.aws.amazon.com/resourcegroupstagging/lat-
+                   est/APIReference/API_GetResources.html#resourcegrouptag-
+                   ging-GetResources-request-ResourceTypeFilters>`__ `` and ``
+                   `TagFilters <https://docs.aws.amazon.com/resourcegroupstag-
+                   ging/latest/APIReference/API_GetResources.html#resource-
+                   grouptagging-GetResources-request-TagFiltersTagFilters>`__
+                   `` fields. If you specify more than one tag key,  only  re-
+                   sources  that match all tag keys, and at least one value of
+                   each specified tag key, are returned in your query. If  you
+                   specify  more  than  one  value  for  a tag key, a resource
+                   matches the filter if it has a tag key value  that  matches
+                   *any  of  the  specified  values. For example, consider the
+                   following sample query for resources that  have  two  tags,
+                   Stage    and    Version    ,    with   two   values   each:
+                   [{"Stage":["Test","Deploy"]},{"Version":["1","2"]}]     The
+                   results of this query could include the following.
+
+                   o An   EC2  instance  that  has  the  following  two  tags:
+                     {"Stage":"Deploy"} , and {"Version":"2"}
+
+                   o An  S3  bucket  that  has   the   following   two   tags:
+                     {"Stage":"Test"} , and {"Version":"1"}
+
+                 The  query  would  not include the following items in the re-
+                 sults, however.
+
+                     o An EC2  instance  that  has  only  the  following  tag:
+                       {"Stage":"Deploy"}  . The instance does not have all of
+                       the tag keys specified in the filter, so it is excluded
+                       from the results.
+
+                     o An  RDS  database  that  has  the  following  two tags:
+                       {"Stage":"Archived"} and {"Version":"4"}   The database
+                       has  all of the tag keys, but none of those keys has an
+                       associated value that matches at least one of the spec-
+                       ified values in the filter.
+
+              Query -> (string)
+                 The query that defines a group or a search.
+
+
+
+                                                          UPDATE-GROUP-QUERY()

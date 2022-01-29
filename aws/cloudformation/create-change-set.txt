@@ -1,0 +1,508 @@
+CREATE-CHANGE-SET()                                        CREATE-CHANGE-SET()
+
+
+
+NAME
+       create-change-set -
+
+DESCRIPTION
+       Creates  a  list of changes that will be applied to a stack so that you
+       can review the changes before executing them. You can create  a  change
+       set  for a stack that doesn't exist or an existing stack. If you create
+       a change set for a stack that doesn't exist, the change set  shows  all
+       of  the  resources  that  CloudFormation  will  create. If you create a
+       change set for an existing stack, CloudFormation compares  the  stack's
+       information  with the information that you submit in the change set and
+       lists the differences. Use change sets to  understand  which  resources
+       CloudFormation  will create or change, and how it will change resources
+       in an existing stack, before you create or update a stack.
+
+       To create a change set for a stack that doesn't exist, for the  Change-
+       SetType  parameter,  specify CREATE . To create a change set for an ex-
+       isting stack, specify UPDATE for the ChangeSetType parameter. To create
+       a change set for an import operation, specify IMPORT for the ChangeSet-
+       Type parameter. After the CreateChangeSet call successfully  completes,
+       CloudFormation  starts  creating the change set. To check the status of
+       the change set or to review it, use the  DescribeChangeSet action.
+
+       When you are satisfied with the changes the change set will make,  exe-
+       cute  the change set by using the  ExecuteChangeSet action. CloudForma-
+       tion doesn't make changes until you execute the change set.
+
+       To create a change set for the entire stack hierachy, set  IncludeNest-
+       edStacks to True .
+
+       See also: AWS API Documentation
+
+       See 'aws help' for descriptions of global parameters.
+
+SYNOPSIS
+            create-change-set
+          --stack-name <value>
+          [--template-body <value>]
+          [--template-url <value>]
+          [--use-previous-template | --no-use-previous-template]
+          [--parameters <value>]
+          [--capabilities <value>]
+          [--resource-types <value>]
+          [--role-arn <value>]
+          [--rollback-configuration <value>]
+          [--notification-arns <value>]
+          [--tags <value>]
+          --change-set-name <value>
+          [--client-token <value>]
+          [--description <value>]
+          [--change-set-type <value>]
+          [--resources-to-import <value>]
+          [--include-nested-stacks | --no-include-nested-stacks]
+          [--cli-input-json | --cli-input-yaml]
+          [--generate-cli-skeleton <value>]
+
+OPTIONS
+       --stack-name (string)
+          The  name or the unique ID of the stack for which you are creating a
+          change set. CloudFormation generates the  change  set  by  comparing
+          this  stack's information with the information that you submit, such
+          as a modified template or different parameter input values.
+
+       --template-body (string)
+          A structure that contains the body of the revised template,  with  a
+          minimum  length  of  1  byte  and  a maximum length of 51,200 bytes.
+          CloudFormation generates the change set by comparing  this  template
+          with the template of the stack that you specified.
+
+          Conditional: You must specify only TemplateBody or TemplateURL .
+
+       --template-url (string)
+          The location of the file that contains the revised template. The URL
+          must point to a template (max size: 460,800 bytes) that  is  located
+          in an S3 bucket or a Systems Manager document. CloudFormation gener-
+          ates the change set by comparing this template with the  stack  that
+          you specified.
+
+          Conditional: You must specify only TemplateBody or TemplateURL .
+
+       --use-previous-template | --no-use-previous-template (boolean)
+          Whether  to  reuse the template that is associated with the stack to
+          create the change set.
+
+       --parameters (list)
+          A list of Parameter structures that specify input parameters for the
+          change set. For more information, see the  Parameter data type.
+
+          (structure)
+              The Parameter data type.
+
+              ParameterKey -> (string)
+                 The key associated with the parameter. If you don't specify a
+                 key and value for a particular parameter, CloudFormation uses
+                 the default value that is specified in your template.
+
+              ParameterValue -> (string)
+                 The input value associated with the parameter.
+
+              UsePreviousValue -> (boolean)
+                 During  a stack update, use the existing parameter value that
+                 the stack is using for a given parameter key. If you  specify
+                 true , do not specify a parameter value.
+
+              ResolvedValue -> (string)
+                 Read-only. Read-only. The value that corresponds to a SSM pa-
+                 rameter  key.  This  field  is  returned  only  for   `   SSM
+                 https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/parameters-section-structure.html#aws-ssm-parameter-types`__
+                 parameter types in the template.
+
+       Shorthand Syntax:
+
+          ParameterKey=string,ParameterValue=string,UsePreviousValue=boolean,ResolvedValue=string ...
+
+       JSON Syntax:
+
+          [
+            {
+              "ParameterKey": "string",
+              "ParameterValue": "string",
+              "UsePreviousValue": true|false,
+              "ResolvedValue": "string"
+            }
+            ...
+          ]
+
+       --capabilities (list)
+          In some cases, you must explicitly acknowledge that your stack  tem-
+          plate  contains  certain capabilities in order for CloudFormation to
+          create the stack.
+
+          o CAPABILITY_IAM and  CAPABILITY_NAMED_IAM    Some  stack  templates
+            might include resources that can affect permissions in your Amazon
+            Web Services account; for example, by creating  new  Identity  and
+            Access  Management (IAM) users. For those stacks, you must explic-
+            itly acknowledge this by specifying one of these capabilities. The
+            following IAM resources require you to specify either the CAPABIL-
+            ITY_IAM or CAPABILITY_NAMED_IAM capability.
+
+            o If you have IAM resources, you can specify either capability.
+
+            o If you have IAM resources with custom names,  you  must  specify
+              CAPABILITY_NAMED_IAM .
+
+            o If  you  don't specify either of these capabilities, CloudForma-
+              tion returns an InsufficientCapabilities error.
+
+          If your stack template contains these resources, we  recommend  that
+          you  review all permissions associated with them and edit their per-
+          missions if necessary.
+
+              o AWS::IAM::AccessKey
+
+              o AWS::IAM::Group
+
+              o AWS::IAM::InstanceProfile
+
+              o AWS::IAM::Policy
+
+              o AWS::IAM::Role
+
+              o AWS::IAM::User
+
+              o AWS::IAM::UserToGroupAddition
+
+          For more information, see Acknowledging IAM Resources in CloudForma-
+          tion Templates .
+
+          o CAPABILITY_AUTO_EXPAND   Some template contain macros. Macros per-
+            form custom processing on templates; this can include  simple  ac-
+            tions  like  find-and-replace operations, all the way to extensive
+            transformations of entire templates. Because of this, users  typi-
+            cally  create  a  change  set from the processed template, so that
+            they can review the changes resulting from the macros before actu-
+            ally  creating  the  stack. If your stack template contains one or
+            more macros, and you choose to create a stack  directly  from  the
+            processed  template, without first reviewing the resulting changes
+            in a change set, you must acknowledge this  capability.  This  in-
+            cludes  the AWS::Include and AWS::Serverless transforms, which are
+            macros hosted by CloudFormation.
+
+          NOTE:
+                 This capacity does not apply to  creating  change  sets,  and
+                 specifying it when creating change sets has no effect. If you
+                 want to create a stack from a stack  template  that  contains
+                 macros and nested stacks, you must create or update the stack
+                 directly from the template using the  CreateStack or   Updat-
+                 eStack action, and specifying this capability.
+
+              For  more information on macros, see Using CloudFormation Macros
+              to Perform Custom Processing on Templates .
+
+          (string)
+
+       Syntax:
+
+          "string" "string" ...
+
+          Where valid values are:
+            CAPABILITY_IAM
+            CAPABILITY_NAMED_IAM
+            CAPABILITY_AUTO_EXPAND
+
+       --resource-types (list)
+          The template resource types that you have permissions to  work  with
+          if  you  execute  this  change  set,  such  as  AWS::EC2::Instance ,
+          AWS::EC2::* , or Custom::MyCustomInstance .
+
+          If the list of resource types doesn't include a resource  type  that
+          you're  updating, the stack update fails. By default, CloudFormation
+          grants permissions to all resource types. Identity and  Access  Man-
+          agement (IAM) uses this parameter for condition keys in IAM policies
+          for CloudFormation. For more  information,  see  Controlling  Access
+          with  Identity  and  Access  Management  in  the CloudFormation User
+          Guide.
+
+          (string)
+
+       Syntax:
+
+          "string" "string" ...
+
+       --role-arn (string)
+          The Amazon Resource Name (ARN) of an Identity and Access  Management
+          (IAM)  role  that  CloudFormation  assumes when executing the change
+          set. CloudFormation uses the role's credentials  to  make  calls  on
+          your behalf. CloudFormation uses this role for all future operations
+          on the stack. As long as users have permission  to  operate  on  the
+          stack,  CloudFormation  uses  this role even if the users don't have
+          permission to pass it. Ensure that the role grants least privilege.
+
+          If you don't specify a value, CloudFormation uses the role that  was
+          previously  associated  with  the  stack.  If  no role is available,
+          CloudFormation uses a temporary session that is generated from  your
+          user credentials.
+
+       --rollback-configuration (structure)
+          The  rollback  triggers  for  CloudFormation to monitor during stack
+          creation and updating operations, and for the  specified  monitoring
+          period afterwards.
+
+          RollbackTriggers -> (list)
+              The triggers to monitor during stack creation or update actions.
+
+              By default, CloudFormation saves the rollback triggers specified
+              for a stack and applies them to any subsequent update operations
+              for  the  stack, unless you specify otherwise. If you do specify
+              rollback triggers for this parameter, those triggers replace any
+              list of triggers previously specified for the stack. This means:
+
+              o To  use  the  rollback  triggers previously specified for this
+                stack, if any, don't specify this parameter.
+
+              o To specify new or updated rollback triggers, you must  specify
+                all the triggers that you want used for this stack, even trig-
+                gers you've specifed before (for example,  when  creating  the
+                stack  or  during  a previous stack update). Any triggers that
+                you don't include in the  updated  list  of  triggers  are  no
+                longer applied to the stack.
+
+              o To  remove  all currently specified triggers, specify an empty
+                list for this parameter.
+
+              If a specified trigger is missing, the  entire  stack  operation
+              fails and is rolled back.
+
+              (structure)
+                 A  rollback  trigger  CloudFormation monitors during creation
+                 and updating of stacks. If any of the alarms you specify goes
+                 to ALARM state during the stack operation or within the spec-
+                 ified monitoring period afterwards, CloudFormation rolls back
+                 the entire stack operation.
+
+                 Arn -> (string)
+                     The Amazon Resource Name (ARN) of the rollback trigger.
+
+                     If a specified trigger is missing, the entire stack oper-
+                     ation fails and is rolled back.
+
+                 Type -> (string)
+                     The resource type of the rollback trigger. Specify either
+                     AWS::CloudWatch::Alarm or AWS::CloudWatch::CompositeAlarm
+                     resource types.
+
+          MonitoringTimeInMinutes -> (integer)
+              The amount of time,  in  minutes,  during  which  CloudFormation
+              should  monitor  all  the rollback triggers after the stack cre-
+              ation or update operation deploys all necessary resources.
+
+              The default is 0 minutes.
+
+              If you specify a monitoring period but do not specify any  roll-
+              back  triggers,  CloudFormation still waits the specified period
+              of time before cleaning up old  resources  after  update  opera-
+              tions.  You can use this monitoring period to perform any manual
+              stack validation desired, and manually cancel the stack creation
+              or update (using CancelUpdateStack , for example) as necessary.
+
+              If  you specify 0 for this parameter, CloudFormation still moni-
+              tors the specified rollback triggers during stack  creation  and
+              update  operations.  Then, for update operations, it begins dis-
+              posing of old resources  immediately  once  the  operation  com-
+              pletes.
+
+       Shorthand Syntax:
+
+          RollbackTriggers=[{Arn=string,Type=string},{Arn=string,Type=string}],MonitoringTimeInMinutes=integer
+
+       JSON Syntax:
+
+          {
+            "RollbackTriggers": [
+              {
+                "Arn": "string",
+                "Type": "string"
+              }
+              ...
+            ],
+            "MonitoringTimeInMinutes": integer
+          }
+
+       --notification-arns (list)
+          The  Amazon Resource Names (ARNs) of Amazon Simple Notification Ser-
+          vice (Amazon SNS) topics that  CloudFormation  associates  with  the
+          stack.  To  remove  all  associated  notification topics, specify an
+          empty list.
+
+          (string)
+
+       Syntax:
+
+          "string" "string" ...
+
+       --tags (list)
+          Key-value pairs to associate with this  stack.  CloudFormation  also
+          propagates  these  tags to resources in the stack. You can specify a
+          maximum of 50 tags.
+
+          (structure)
+              The Tag type enables you to specify a key-value pair that can be
+              used to store information about an CloudFormation stack.
+
+              Key -> (string)
+                 Required  . A string used to identify this tag. You can spec-
+                 ify a maximum of 128 characters for a tag key. Tags owned  by
+                 Amazon  Web  Services (Amazon Web Services) have the reserved
+                 prefix: aws: .
+
+              Value -> (string)
+                 Required . A string containing the value for  this  tag.  You
+                 can specify a maximum of 256 characters for a tag value.
+
+       Shorthand Syntax:
+
+          Key=string,Value=string ...
+
+       JSON Syntax:
+
+          [
+            {
+              "Key": "string",
+              "Value": "string"
+            }
+            ...
+          ]
+
+       --change-set-name (string)
+          The name of the change set. The name must be unique among all change
+          sets that are associated with the specified stack.
+
+          A change set name can  contain  only  alphanumeric,  case  sensitive
+          characters  and  hyphens. It must start with an alphabetic character
+          and cannot exceed 128 characters.
+
+       --client-token (string)
+          A unique identifier for this CreateChangeSet request.  Specify  this
+          token  if  you  plan  to retry requests so that CloudFormation knows
+          that you're not attempting to create another  change  set  with  the
+          same  name.  You might retry CreateChangeSet requests to ensure that
+          CloudFormation successfully received them.
+
+       --description (string)
+          A description to help you identify this change set.
+
+       --change-set-type (string)
+          The type of change set operation. To create a change set for  a  new
+          stack,  specify  CREATE  .  To  create  a change set for an existing
+          stack, specify UPDATE . To create a change set for an import  opera-
+          tion, specify IMPORT .
+
+          If you create a change set for a new stack, CloudFormation creates a
+          stack with a unique stack ID, but  no  template  or  resources.  The
+          stack      will      be      in     the     `     REVIEW_IN_PROGRESS
+          https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-describing-stacks.html#d0e11995`__
+          state until you execute the change set.
+
+          By  default, CloudFormation specifies UPDATE . You can't use the UP-
+          DATE type to create a change set for a new stack or the CREATE  type
+          to create a change set for an existing stack.
+
+          Possible values:
+
+          o CREATE
+
+          o UPDATE
+
+          o IMPORT
+
+       --resources-to-import (list)
+          The resources to import into your stack.
+
+          (structure)
+              Describes the target resource of an import operation.
+
+              ResourceType -> (string)
+                 The  type  of  resource  to  import  into your stack, such as
+                 AWS::S3::Bucket . For a list of supported resource types, see
+                 Resources  that  support import operations in the CloudForma-
+                 tion User Guide.
+
+              LogicalResourceId -> (string)
+                 The logical ID of the target resource  as  specified  in  the
+                 template.
+
+              ResourceIdentifier -> (map)
+                 A key-value pair that identifies the target resource. The key
+                 is  an  identifier  property  (for  example,  BucketName  for
+                 AWS::S3::Bucket  resources) and the value is the actual prop-
+                 erty value (for example, MyS3Bucket ).
+
+                 key -> (string)
+
+                 value -> (string)
+
+       Shorthand Syntax:
+
+          ResourceType=string,LogicalResourceId=string,ResourceIdentifier={KeyName1=string,KeyName2=string} ...
+
+       JSON Syntax:
+
+          [
+            {
+              "ResourceType": "string",
+              "LogicalResourceId": "string",
+              "ResourceIdentifier": {"string": "string"
+                ...}
+            }
+            ...
+          ]
+
+       --include-nested-stacks | --no-include-nested-stacks (boolean)
+          Creates a change set for the all nested stacks specified in the tem-
+          plate.  The default behavior of this action is set to False . To in-
+          clude nested sets in a change set, specify True .
+
+       --cli-input-json | --cli-input-yaml (string) Reads arguments  from  the
+       JSON  string  provided.  The JSON string follows the format provided by
+       --generate-cli-skeleton. If other arguments are provided on the command
+       line,  those  values  will override the JSON-provided values. It is not
+       possible to pass arbitrary binary values using a JSON-provided value as
+       the  string  will  be  taken literally. This may not be specified along
+       with --cli-input-yaml.
+
+       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
+       output without sending an API request. If provided with no value or the
+       value input, prints a sample input JSON that can be used as an argument
+       for --cli-input-json. Similarly, if provided yaml-input it will print a
+       sample input YAML that can be used with --cli-input-yaml.  If  provided
+       with  the  value  output, it validates the command inputs and returns a
+       sample output JSON for that command.
+
+       See 'aws help' for descriptions of global parameters.
+
+EXAMPLES
+       To create a change set
+
+       The following create-change-set example creates a change set  with  the
+       CAPABILITY_IAM capability. The file template.yaml is an AWS CloudForma-
+       tion template in the current folder that defines a stack that  includes
+       IAM resources.
+
+          aws cloudformation create-change-set \
+              --stack-name my-application \
+              --change-set-name my-change-set \
+              --template-body file://template.yaml \
+              --capabilities CAPABILITY_IAM
+
+       Output:
+
+          {
+              "Id": "arn:aws:cloudformation:us-west-2:123456789012:changeSet/my-change-set/bc9555ba-a949-xmpl-bfb8-f41d04ec5784",
+              "StackId": "arn:aws:cloudformation:us-west-2:123456789012:stack/my-application/d0a825a0-e4cd-xmpl-b9fb-061c69e99204"
+          }
+
+OUTPUT
+       Id -> (string)
+          The Amazon Resource Name (ARN) of the change set.
+
+       StackId -> (string)
+          The unique ID of the stack.
+
+
+
+                                                           CREATE-CHANGE-SET()

@@ -1,0 +1,222 @@
+PUT-KEY-POLICY()                                              PUT-KEY-POLICY()
+
+
+
+NAME
+       put-key-policy -
+
+DESCRIPTION
+       Attaches a key policy to the specified KMS key.
+
+       For  more  information  about key policies, see Key Policies in the Key
+       Management Service Developer Guide . For help writing and formatting  a
+       JSON  policy document, see the IAM JSON Policy Reference in the * Iden-
+       tity and Access Management User Guide * . For examples of adding a  key
+       policy  in  multiple programming languages, see Setting a key policy in
+       the Key Management Service Developer Guide .
+          Cross-account use : No. You cannot perform this operation on  a  KMS
+          key in a different Amazon Web Services account.
+
+          Required permissions : kms:PutKeyPolicy (key policy)
+
+          Related operations :  GetKeyPolicy
+
+       See also: AWS API Documentation
+
+       See 'aws help' for descriptions of global parameters.
+
+SYNOPSIS
+            put-key-policy
+          --key-id <value>
+          --policy-name <value>
+          --policy <value>
+          [--bypass-policy-lockout-safety-check | --no-bypass-policy-lockout-safety-check]
+          [--cli-input-json | --cli-input-yaml]
+          [--generate-cli-skeleton <value>]
+
+OPTIONS
+       --key-id (string)
+          Sets the key policy on the specified KMS key.
+
+          Specify the key ID or key ARN of the KMS key.
+
+          For example:
+
+          o Key ID: 1234abcd-12ab-34cd-56ef-1234567890ab
+
+          o Key                                                           ARN:
+            arn:aws:kms:us-east-2:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab
+
+          To  get  the key ID and key ARN for a KMS key, use  ListKeys or  De-
+          scribeKey .
+
+       --policy-name (string)
+          The name of the key policy. The only valid value is default .
+
+       --policy (string)
+          The key policy to attach to the KMS key.
+
+          The key policy must meet the following criteria:
+
+          o If you don't set BypassPolicyLockoutSafetyCheck to true,  the  key
+            policy  must  allow  the principal that is making the PutKeyPolicy
+            request to make a subsequent PutKeyPolicy request on the KMS  key.
+            This  reduces  the risk that the KMS key becomes unmanageable. For
+            more information, refer to the scenario in the Default Key  Policy
+            section of the Key Management Service Developer Guide .
+
+          o Each  statement in the key policy must contain one or more princi-
+            pals. The principals in the key policy must exist and  be  visible
+            to  KMS.  When you create a new Amazon Web Services principal (for
+            example, an IAM user or role), you might need to enforce  a  delay
+            before including the new principal in a key policy because the new
+            principal might not be immediately visible to KMS. For more infor-
+            mation, see Changes that I make are not always immediately visible
+            in the Amazon Web Services Identity  and  Access  Management  User
+            Guide .
+
+          The  key  policy  cannot exceed 32 kilobytes (32768 bytes). For more
+          information, see Resource Quotas in the Key Management  Service  De-
+          veloper Guide .
+
+       --bypass-policy-lockout-safety-check     |     --no-bypass-policy-lock-
+       out-safety-check (boolean)
+          A flag to indicate whether to bypass the key policy  lockout  safety
+          check.
+
+          WARNING:
+              Setting  this  value to true increases the risk that the KMS key
+              becomes unmanageable. Do not set this value to true  indiscrimi-
+              nately.
+
+              For  more  information, refer to the scenario in the Default Key
+              Policy section in the Key Management Service Developer Guide .
+
+          Use this parameter only when you intend  to  prevent  the  principal
+          that is making the request from making a subsequent PutKeyPolicy re-
+          quest on the KMS key.
+
+          The default value is false.
+
+       --cli-input-json | --cli-input-yaml (string) Reads arguments  from  the
+       JSON  string  provided.  The JSON string follows the format provided by
+       --generate-cli-skeleton. If other arguments are provided on the command
+       line,  those  values  will override the JSON-provided values. It is not
+       possible to pass arbitrary binary values using a JSON-provided value as
+       the  string  will  be  taken literally. This may not be specified along
+       with --cli-input-yaml.
+
+       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
+       output without sending an API request. If provided with no value or the
+       value input, prints a sample input JSON that can be used as an argument
+       for --cli-input-json. Similarly, if provided yaml-input it will print a
+       sample input YAML that can be used with --cli-input-yaml.  If  provided
+       with  the  value  output, it validates the command inputs and returns a
+       sample output JSON for that command.
+
+       See 'aws help' for descriptions of global parameters.
+
+EXAMPLES
+       To change the key policy for a customer master key (CMK)
+
+       The following put-key-policy example changes the key policy for a  cus-
+       tomer managed CMK.
+
+       To begin, create a key policy and save it in a local JSON file. In this
+       example, the file is key_policy.json. You can also specify the key pol-
+       icy as a string value of the policy parameter.
+
+       The first statement in this key policy gives the AWS account permission
+       to use IAM policies to control access to the CMK. The second  statement
+       gives  the  test-user  user  permission  to  run  the  describe-key and
+       list-keys commands on the CMK.
+
+       Contents of key_policy.json:
+
+          {
+              "Version" : "2012-10-17",
+              "Id" : "key-default-1",
+              "Statement" : [
+                  {
+                      "Sid" : "Enable IAM User Permissions",
+                      "Effect" : "Allow",
+                      "Principal" : {
+                          "AWS" : "arn:aws:iam::111122223333:root"
+                      },
+                      "Action" : "kms:",
+                      "Resource" : "*"
+                  },
+                  {
+                      "Sid" : "Allow Use of Key",
+                      "Effect" : "Allow",
+                      "Principal" : {
+                          "AWS" : "arn:aws:iam::111122223333:user/test-user"
+                      },
+                      "Action" : [
+                          "kms:DescribeKey",
+                          "kms:ListKeys"
+                      ],
+                      "Resource" : "*"
+                  }
+              ]
+          }
+
+       To identify the CMK, this example uses the key ID, but you can also usa
+       key ARN. To specify the key policy, the command uses the policy parame-
+       ter. To indicate that the policy is in a file,  it  uses  the  required
+       file://  prefix.  This prefix is required to identify files on all sup-
+       ported operating systems. Finally, the command uses the policy-name pa-
+       rameter  with  a  value  of  default.  This parameter is required, even
+       though default is the only valid value.
+
+          aws kms put-key-policy \
+              --policy-name default \
+              --key-id 1234abcd-12ab-34cd-56ef-1234567890ab \
+              --policy file://key_policy.json
+
+       This command does not produce any output. To verify  that  the  command
+       was  effective,  use  the get-key-policy command. The following example
+       command gets the key policy for the same CMK. The output parameter with
+       a value of text returns a text format that is easy to read.
+
+          aws kms get-key-policy \
+              --policy-name default \
+              --key-id 1234abcd-12ab-34cd-56ef-1234567890ab \
+              --output text
+
+       Output:
+
+          {
+              "Version" : "2012-10-17",
+              "Id" : "key-default-1",
+              "Statement" : [
+                  {
+                      "Sid" : "Enable IAM User Permissions",
+                      "Effect" : "Allow",
+                      "Principal" : {
+                          "AWS" : "arn:aws:iam::111122223333:root"
+                      },
+                      "Action" : "kms:",
+                      "Resource" : "*"
+                      },
+                      {
+                      "Sid" : "Allow Use of Key",
+                      "Effect" : "Allow",
+                      "Principal" : {
+                          "AWS" : "arn:aws:iam::111122223333:user/test-user"
+                      },
+                      "Action" : [ "kms:Describe", "kms:List" ],
+                      "Resource" : "*"
+                  }
+              ]
+          }
+
+       For  more information, see Changing a Key Policy in the AWS Key Manage-
+       ment Service Developer Guide.
+
+OUTPUT
+       None
+
+
+
+                                                              PUT-KEY-POLICY()

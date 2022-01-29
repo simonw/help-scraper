@@ -1,0 +1,178 @@
+GET-SAMPLING-TARGETS()                                  GET-SAMPLING-TARGETS()
+
+
+
+NAME
+       get-sampling-targets -
+
+DESCRIPTION
+       Requests a sampling quota for rules that the service is using to sample
+       requests.
+
+       See also: AWS API Documentation
+
+       See 'aws help' for descriptions of global parameters.
+
+SYNOPSIS
+            get-sampling-targets
+          --sampling-statistics-documents <value>
+          [--cli-input-json | --cli-input-yaml]
+          [--generate-cli-skeleton <value>]
+
+OPTIONS
+       --sampling-statistics-documents (list)
+          Information about rules that the service  is  using  to  sample  re-
+          quests.
+
+          (structure)
+              Request  sampling  results for a single rule from a service. Re-
+              sults are for the last 10 seconds unless the  service  has  been
+              assigned  a  longer  reporting interval after a previous call to
+              GetSamplingTargets .
+
+              RuleName -> (string)
+                 The name of the sampling rule.
+
+              ClientID -> (string)
+                 A unique identifier for the service in hexadecimal.
+
+              Timestamp -> (timestamp)
+                 The current time.
+
+              RequestCount -> (integer)
+                 The number of requests that matched the rule.
+
+              SampledCount -> (integer)
+                 The number of requests recorded.
+
+              BorrowCount -> (integer)
+                 The number  of  requests  recorded  with  borrowed  reservoir
+                 quota.
+
+       Shorthand Syntax:
+
+          RuleName=string,ClientID=string,Timestamp=timestamp,RequestCount=integer,SampledCount=integer,BorrowCount=integer ...
+
+       JSON Syntax:
+
+          [
+            {
+              "RuleName": "string",
+              "ClientID": "string",
+              "Timestamp": timestamp,
+              "RequestCount": integer,
+              "SampledCount": integer,
+              "BorrowCount": integer
+            }
+            ...
+          ]
+
+       --cli-input-json  |  --cli-input-yaml (string) Reads arguments from the
+       JSON string provided. The JSON string follows the  format  provided  by
+       --generate-cli-skeleton. If other arguments are provided on the command
+       line, those values will override the JSON-provided values.  It  is  not
+       possible to pass arbitrary binary values using a JSON-provided value as
+       the string will be taken literally. This may  not  be  specified  along
+       with --cli-input-yaml.
+
+       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
+       output without sending an API request. If provided with no value or the
+       value input, prints a sample input JSON that can be used as an argument
+       for --cli-input-json. Similarly, if provided yaml-input it will print a
+       sample  input  YAML that can be used with --cli-input-yaml. If provided
+       with the value output, it validates the command inputs  and  returns  a
+       sample output JSON for that command.
+
+       See 'aws help' for descriptions of global parameters.
+
+EXAMPLES
+       To request a sampling quota
+
+       The  following  get-sampling-targets  example requests a sampling quota
+       for rules that the service is using to sample  requests.  The  response
+       from  AWS  X-Ray includes a quota that can be used instead of borrowing
+       from the reservoir.
+
+          aws xray get-sampling-targets \
+              --sampling-statistics-documents '[ { "RuleName": "base-scorekeep", "ClientID": "ABCDEF1234567890ABCDEF10", "Timestamp": "2018-07-07T00:20:06, "RequestCount": 110, "SampledCount": 20, "BorrowCount": 10 }, { "RuleName": "polling-scorekeep", 31, "BorrowCount": 0 } ]'
+
+       Output:
+
+          {
+              "SamplingTargetDocuments": [
+                  {
+                      "RuleName": "base-scorekeep",
+                      "FixedRate": 0.1,
+                      "ReservoirQuota": 2,
+                      "ReservoirQuotaTTL": 1530923107.0,
+                      "Interval": 10
+                  },
+                  {
+                      "RuleName": "polling-scorekeep",
+                      "FixedRate": 0.003,
+                      "ReservoirQuota": 0,
+                      "ReservoirQuotaTTL": 1530923107.0,
+                      "Interval": 10
+                  }
+              ],
+              "LastRuleModification": 1530920505.0,
+              "UnprocessedStatistics": []
+          }
+
+       For more information, see Using Sampling Rules with the  X-Ray  API  in
+       the AWS X-Ray Developer Guide.
+
+OUTPUT
+       SamplingTargetDocuments -> (list)
+          Updated rules that the service should use to sample requests.
+
+          (structure)
+              Temporary  changes to a sampling rule configuration. To meet the
+              global sampling target for a rule, X-Ray calculates a new reser-
+              voir  for  each  service based on the recent sampling results of
+              all services that called GetSamplingTargets .
+
+              RuleName -> (string)
+                 The name of the sampling rule.
+
+              FixedRate -> (double)
+                 The percentage of matching requests to instrument, after  the
+                 reservoir is exhausted.
+
+              ReservoirQuota -> (integer)
+                 The  number  of  requests per second that X-Ray allocated for
+                 this service.
+
+              ReservoirQuotaTTL -> (timestamp)
+                 When the reservoir quota expires.
+
+              Interval -> (integer)
+                 The number of seconds for the service to wait before  getting
+                 sampling targets again.
+
+       LastRuleModification -> (timestamp)
+          The last time a user changed the sampling rule configuration. If the
+          sampling rule configuration changed since the service last retrieved
+          it,  the service should call GetSamplingRules to get the latest ver-
+          sion.
+
+       UnprocessedStatistics -> (list)
+          Information about SamplingStatisticsDocument that  X-Ray  could  not
+          process.
+
+          (structure)
+              Sampling statistics from a call to GetSamplingTargets that X-Ray
+              could not process.
+
+              RuleName -> (string)
+                 The name of the sampling rule.
+
+              ErrorCode -> (string)
+                 The error code.
+
+              Message -> (string)
+                 The error message.
+
+
+
+                                                        GET-SAMPLING-TARGETS()

@@ -1,0 +1,262 @@
+UPDATE-ENDPOINT()                                            UPDATE-ENDPOINT()
+
+
+
+NAME
+       update-endpoint -
+
+DESCRIPTION
+       Deploys  the  new  EndpointConfig specified in the request, switches to
+       using newly created endpoint, and then  deletes  resources  provisioned
+       for  the endpoint using the previous EndpointConfig (there is no avail-
+       ability loss).
+
+       When Amazon SageMaker receives the request, it sets the endpoint status
+       to Updating . After updating the endpoint, it sets the status to InSer-
+       vice . To check the status of an endpoint,  use  the   DescribeEndpoint
+       API.
+
+       NOTE:
+          You  must not delete an EndpointConfig in use by an endpoint that is
+          live or while the UpdateEndpoint or  CreateEndpoint  operations  are
+          being  performed  on  the  endpoint. To update an endpoint, you must
+          create a new EndpointConfig .
+
+          If you delete the EndpointConfig of an endpoint that  is  active  or
+          being  created  or updated you may lose visibility into the instance
+          type the endpoint is using. The endpoint must be deleted in order to
+          stop incurring charges.
+
+       See also: AWS API Documentation
+
+       See 'aws help' for descriptions of global parameters.
+
+SYNOPSIS
+            update-endpoint
+          --endpoint-name <value>
+          --endpoint-config-name <value>
+          [--retain-all-variant-properties | --no-retain-all-variant-properties]
+          [--exclude-retained-variant-properties <value>]
+          [--deployment-config <value>]
+          [--retain-deployment-config | --no-retain-deployment-config]
+          [--cli-input-json | --cli-input-yaml]
+          [--generate-cli-skeleton <value>]
+
+OPTIONS
+       --endpoint-name (string)
+          The name of the endpoint whose configuration you want to update.
+
+       --endpoint-config-name (string)
+          The name of the new endpoint configuration.
+
+       --retain-all-variant-properties   |  --no-retain-all-variant-properties
+       (boolean)
+          When updating endpoint resources, enables or disables the  retention
+          of  variant  properties  , such as the instance count or the variant
+          weight. To retain the variant properties of an endpoint when  updat-
+          ing  it, set RetainAllVariantProperties to true . To use the variant
+          properties specified in a new EndpointConfig call when  updating  an
+          endpoint,  set  RetainAllVariantProperties to false . The default is
+          false .
+
+       --exclude-retained-variant-properties (list)
+          When you are updating  endpoint  resources  with   UpdateEndpointIn-
+          put$RetainAllVariantProperties  ,  whose  value is set to true , Ex-
+          cludeRetainedVariantProperties specifies the list of type   Variant-
+          Property to override with the values provided by EndpointConfig . If
+          you don't specify a value for ExcludeAllVariantProperties , no vari-
+          ant properties are overridden.
+
+          (structure)
+              Specifies a production variant property type for an Endpoint.
+
+              If  you  are  updating  an  endpoint with the  UpdateEndpointIn-
+              put$RetainAllVariantProperties option set to true , the Variant-
+              Property objects listed in  UpdateEndpointInput$ExcludeRetained-
+              VariantProperties override the existing  variant  properties  of
+              the endpoint.
+
+              VariantPropertyType -> (string)
+                 The type of variant property. The supported values are:
+
+                 o DesiredInstanceCount  :  Overrides the existing variant in-
+                   stance counts using the  ProductionVariant$InitialInstance-
+                   Count  values in the  CreateEndpointConfigInput$Production-
+                   Variants .
+
+                 o DesiredWeight : Overrides the existing variant weights  us-
+                   ing  the   ProductionVariant$InitialVariantWeight values in
+                   the  CreateEndpointConfigInput$ProductionVariants .
+
+                 o DataCaptureConfig : (Not currently supported.)
+
+       Shorthand Syntax:
+
+          VariantPropertyType=string ...
+
+       JSON Syntax:
+
+          [
+            {
+              "VariantPropertyType": "DesiredInstanceCount"|"DesiredWeight"|"DataCaptureConfig"
+            }
+            ...
+          ]
+
+       --deployment-config (structure)
+          The deployment configuration for an endpoint, which contains the de-
+          sired deployment strategy and rollback configurations.
+
+          BlueGreenUpdatePolicy -> (structure)
+              Update policy for a blue/green deployment. If this update policy
+              is specified, SageMaker creates a new fleet during  the  deploy-
+              ment while maintaining the old fleet. SageMaker flips traffic to
+              the new fleet according to the specified traffic routing config-
+              uration. Only one update policy should be used in the deployment
+              configuration. If no update policy is specified, SageMaker  uses
+              a blue/green deployment strategy with all at once traffic shift-
+              ing by default.
+
+              TrafficRoutingConfiguration -> (structure)
+                 Defines the traffic routing strategy to  shift  traffic  from
+                 the old fleet to the new fleet during an endpoint deployment.
+
+                 Type -> (string)
+                     Traffic routing strategy type.
+
+                     o ALL_AT_ONCE  : Endpoint traffic shifts to the new fleet
+                       in a single step.
+
+                     o CANARY : Endpoint traffic shifts to the  new  fleet  in
+                       two  steps.  The  first  step is the canary, which is a
+                       small portion of the traffic. The second  step  is  the
+                       remainder of the traffic.
+
+                     o LINEAR  : Endpoint traffic shifts to the new fleet in n
+                       steps of a configurable size.
+
+                 WaitIntervalInSeconds -> (integer)
+                     The waiting time (in seconds) between  incremental  steps
+                     to turn on traffic on the new endpoint fleet.
+
+                 CanarySize -> (structure)
+                     Batch  size  for the first step to turn on traffic on the
+                     new endpoint fleet. Value must be less than or  equal  to
+                     50% of the variant's total instance count.
+
+                     Type -> (string)
+                        Specifies the endpoint capacity type.
+
+                        o INSTANCE_COUNT : The endpoint activates based on the
+                          number of instances.
+
+                        o CAPACITY_PERCENT : The endpoint activates  based  on
+                          the specified percentage of capacity.
+
+                     Value -> (integer)
+                        Defines  the  capacity size, either as a number of in-
+                        stances or a capacity percentage.
+
+                 LinearStepSize -> (structure)
+                     Batch size for each step to turn on traffic  on  the  new
+                     endpoint fleet. Value must be 10-50% of the variant's to-
+                     tal instance count.
+
+                     Type -> (string)
+                        Specifies the endpoint capacity type.
+
+                        o INSTANCE_COUNT : The endpoint activates based on the
+                          number of instances.
+
+                        o CAPACITY_PERCENT  :  The endpoint activates based on
+                          the specified percentage of capacity.
+
+                     Value -> (integer)
+                        Defines the capacity size, either as a number  of  in-
+                        stances or a capacity percentage.
+
+              TerminationWaitInSeconds -> (integer)
+                 Additional waiting time in seconds after the completion of an
+                 endpoint  deployment  before  terminating  the  old  endpoint
+                 fleet. Default is 0.
+
+              MaximumExecutionTimeoutInSeconds -> (integer)
+                 Maximum  execution  timeout for the deployment. Note that the
+                 timeout value should be larger than the  total  waiting  time
+                 specified  in TerminationWaitInSeconds and WaitIntervalInSec-
+                 onds .
+
+          AutoRollbackConfiguration -> (structure)
+              Automatic rollback configuration for handling  endpoint  deploy-
+              ment failures and recovery.
+
+              Alarms -> (list)
+                 List of CloudWatch alarms in your account that are configured
+                 to monitor metrics on an endpoint. If any alarms are  tripped
+                 during a deployment, SageMaker rolls back the deployment.
+
+                 (structure)
+                     An  Amazon CloudWatch alarm configured to monitor metrics
+                     on an endpoint.
+
+                     AlarmName -> (string)
+                        The name of a CloudWatch alarm in your account.
+
+       JSON Syntax:
+
+          {
+            "BlueGreenUpdatePolicy": {
+              "TrafficRoutingConfiguration": {
+                "Type": "ALL_AT_ONCE"|"CANARY"|"LINEAR",
+                "WaitIntervalInSeconds": integer,
+                "CanarySize": {
+                  "Type": "INSTANCE_COUNT"|"CAPACITY_PERCENT",
+                  "Value": integer
+                },
+                "LinearStepSize": {
+                  "Type": "INSTANCE_COUNT"|"CAPACITY_PERCENT",
+                  "Value": integer
+                }
+              },
+              "TerminationWaitInSeconds": integer,
+              "MaximumExecutionTimeoutInSeconds": integer
+            },
+            "AutoRollbackConfiguration": {
+              "Alarms": [
+                {
+                  "AlarmName": "string"
+                }
+                ...
+              ]
+            }
+          }
+
+       --retain-deployment-config | --no-retain-deployment-config (boolean)
+          Specifies whether to reuse the last  deployment  configuration.  The
+          default value is false (the configuration is not reused).
+
+       --cli-input-json  |  --cli-input-yaml (string) Reads arguments from the
+       JSON string provided. The JSON string follows the  format  provided  by
+       --generate-cli-skeleton. If other arguments are provided on the command
+       line, those values will override the JSON-provided values.  It  is  not
+       possible to pass arbitrary binary values using a JSON-provided value as
+       the string will be taken literally. This may  not  be  specified  along
+       with --cli-input-yaml.
+
+       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
+       output without sending an API request. If provided with no value or the
+       value input, prints a sample input JSON that can be used as an argument
+       for --cli-input-json. Similarly, if provided yaml-input it will print a
+       sample  input  YAML that can be used with --cli-input-yaml. If provided
+       with the value output, it validates the command inputs  and  returns  a
+       sample output JSON for that command.
+
+       See 'aws help' for descriptions of global parameters.
+
+OUTPUT
+       EndpointArn -> (string)
+          The Amazon Resource Name (ARN) of the endpoint.
+
+
+
+                                                             UPDATE-ENDPOINT()

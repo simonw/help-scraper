@@ -1,0 +1,189 @@
+GET-ACCURACY-METRICS()                                  GET-ACCURACY-METRICS()
+
+
+
+NAME
+       get-accuracy-metrics -
+
+DESCRIPTION
+       Provides metrics on the accuracy of the models that were trained by the
+       CreatePredictor operation. Use metrics to see how well the  model  per-
+       formed  and  to decide whether to use the predictor to generate a fore-
+       cast. For more information, see Predictor Metrics .
+
+       This operation generates metrics for  each  backtest  window  that  was
+       evaluated. The number of backtest windows (NumberOfBacktestWindows ) is
+       specified using the  EvaluationParameters object, which  is  optionally
+       included  in  the  CreatePredictor  request. If NumberOfBacktestWindows
+       isn't specified, the number defaults to one.
+
+       The parameters of the filling method determine which  items  contribute
+       to  the metrics. If you want all items to contribute, specify zero . If
+       you want only those items that have complete data in  the  range  being
+       evaluated  to contribute, specify nan . For more information, see  Fea-
+       turizationMethod .
+
+       NOTE:
+          Before you can get accuracy metrics, the  Status  of  the  predictor
+          must  be ACTIVE , signifying that training has completed. To get the
+          status, use the  DescribePredictor operation.
+
+       See also: AWS API Documentation
+
+       See 'aws help' for descriptions of global parameters.
+
+SYNOPSIS
+            get-accuracy-metrics
+          --predictor-arn <value>
+          [--cli-input-json | --cli-input-yaml]
+          [--generate-cli-skeleton <value>]
+
+OPTIONS
+       --predictor-arn (string)
+          The Amazon Resource Name (ARN) of the predictor to get metrics for.
+
+       --cli-input-json | --cli-input-yaml (string) Reads arguments  from  the
+       JSON  string  provided.  The JSON string follows the format provided by
+       --generate-cli-skeleton. If other arguments are provided on the command
+       line,  those  values  will override the JSON-provided values. It is not
+       possible to pass arbitrary binary values using a JSON-provided value as
+       the  string  will  be  taken literally. This may not be specified along
+       with --cli-input-yaml.
+
+       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
+       output without sending an API request. If provided with no value or the
+       value input, prints a sample input JSON that can be used as an argument
+       for --cli-input-json. Similarly, if provided yaml-input it will print a
+       sample input YAML that can be used with --cli-input-yaml.  If  provided
+       with  the  value  output, it validates the command inputs and returns a
+       sample output JSON for that command.
+
+       See 'aws help' for descriptions of global parameters.
+
+OUTPUT
+       PredictorEvaluationResults -> (list)
+          An array of results from evaluating the predictor.
+
+          (structure)
+              The results of evaluating an algorithm. Returned as part of  the
+              GetAccuracyMetrics response.
+
+              AlgorithmArn -> (string)
+                 The  Amazon  Resource  Name  (ARN)  of the algorithm that was
+                 evaluated.
+
+              TestWindows -> (list)
+                 The array of test windows used for evaluating the  algorithm.
+                 The  NumberOfBacktestWindows  from  the  EvaluationParameters
+                 object determines the number of windows in the array.
+
+                 (structure)
+                     The metrics for a time range within the  evaluation  por-
+                     tion  of  a  dataset. This object is part of the  Evalua-
+                     tionResult object.
+
+                     The TestWindowStart and TestWindowEnd parameters are  de-
+                     termined  by  the  BackTestWindowOffset  parameter of the
+                     EvaluationParameters object.
+
+                     TestWindowStart -> (timestamp)
+                        The timestamp that defines the start of the window.
+
+                     TestWindowEnd -> (timestamp)
+                        The timestamp that defines the end of the window.
+
+                     ItemCount -> (integer)
+                        The number of data points within the window.
+
+                     EvaluationType -> (string)
+                        The type of evaluation.
+
+                        o SUMMARY - The average metrics across all windows.
+
+                        o COMPUTED - The metrics for the specified window.
+
+                     Metrics -> (structure)
+                        Provides metrics used to evaluate the performance of a
+                        predictor.
+
+                        RMSE -> (double)
+                            The root-mean-square error (RMSE).
+
+                        WeightedQuantileLosses -> (list)
+                            An  array  of  weighted quantile losses. Quantiles
+                            divide a probability distribution into regions  of
+                            equal  probability.  The distribution in this case
+                            is the loss function.
+
+                            (structure)
+                               The weighted loss value for  a  quantile.  This
+                               object is part of the  Metrics object.
+
+                               Quantile -> (double)
+                                   The  quantile. Quantiles divide a probabil-
+                                   ity  distribution  into  regions  of  equal
+                                   probability.  For example, if the distribu-
+                                   tion was divided into 5  regions  of  equal
+                                   probability,  the  quantiles  would be 0.2,
+                                   0.4, 0.6, and 0.8.
+
+                               LossValue -> (double)
+                                   The difference between the predicted  value
+                                   and  the  actual  value  over the quantile,
+                                   weighted (normalized) by  dividing  by  the
+                                   sum over all quantiles.
+
+                        ErrorMetrics -> (list)
+                            Provides  detailed error metrics for each forecast
+                            type.  Metrics  include   root-mean   square-error
+                            (RMSE),  mean  absolute  percentage  error (MAPE),
+                            mean absolute scaled error  (MASE),  and  weighted
+                            average percentage error (WAPE).
+
+                            (structure)
+                               Provides detailed error metrics to evaluate the
+                               performance of a predictor. This object is part
+                               of the  Metrics object.
+
+                               ForecastType -> (string)
+                                   The  Forecast  type  used  to compute WAPE,
+                                   MAPE, MASE, and RMSE.
+
+                               WAPE -> (double)
+                                   The  weighted  absolute  percentage   error
+                                   (WAPE).
+
+                               RMSE -> (double)
+                                   The root-mean-square error (RMSE).
+
+                               MASE -> (double)
+                                   The Mean Absolute Scaled Error (MASE)
+
+                               MAPE -> (double)
+                                   The Mean Absolute Percentage Error (MAPE)
+
+                        AverageWeightedQuantileLoss -> (double)
+                            The average value of all weighted quantile losses.
+
+       IsAutoPredictor -> (boolean)
+          Whether the predictor was created with  CreateAutoPredictor .
+
+       AutoMLOverrideStrategy -> (string)
+
+          NOTE:
+              The  LatencyOptimized AutoML override strategy is only available
+              in private beta. Contact AWS Support or your account manager  to
+              learn more about access privileges.
+
+          The AutoML strategy used to train the predictor. Unless LatencyOpti-
+          mized is specified, the AutoML strategy  optimizes  predictor  accu-
+          racy.
+
+          This parameter is only valid for predictors trained using AutoML.
+
+       OptimizationMetric -> (string)
+          The accuracy metric used to optimize the predictor.
+
+
+
+                                                        GET-ACCURACY-METRICS()
