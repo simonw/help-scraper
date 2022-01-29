@@ -40,7 +40,7 @@ def fetch_and_save(bits):
 
 if __name__ == "__main__":
     # Start with aws help
-    to_do = [("aws", "fsx")]
+    to_do = [("aws",)]
     done = set()
     while to_do:
         next_bits = to_do.pop()
