@@ -1,6 +1,7 @@
 import pathlib
 import re
 import subprocess
+import sys
 
 
 backspace_re = re.compile(r"(.)\x08")
@@ -29,7 +30,8 @@ def fetch_and_save(bits):
         filename = bits[-1] + ".txt"
         dir = pathlib.Path("/".join(bits[:-1]))
     dir.mkdir(parents=True, exist_ok=True)
-    proc = subprocess.run(list(bits) + ["help"], capture_output=True)
+    args = [sys.executable, "-m", "awscli"] + list(bits[1:]) + ["help"]
+    proc = subprocess.run(args, capture_output=True)
     if proc.returncode != 0:
         return None
     s = proc.stdout.decode("utf-8")
