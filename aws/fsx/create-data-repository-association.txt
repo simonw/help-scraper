@@ -1,0 +1,382 @@
+CREATE-DATA-REPOSITORY-ASSOCIATION()      CREATE-DATA-REPOSITORY-ASSOCIATION()
+
+
+
+NAME
+       create-data-repository-association -
+
+DESCRIPTION
+       Creates  an  Amazon FSx for Lustre data repository association (DRA). A
+       data repository association is a link between a directory on  the  file
+       system  and  an Amazon S3 bucket or prefix. You can have a maximum of 8
+       data repository associations on a file system. Data repository associa-
+       tions are supported only for file systems with the Persistent_2 deploy-
+       ment type.
+
+       Each data repository association must have a  unique  Amazon  FSx  file
+       system  directory  and a unique S3 bucket or prefix associated with it.
+       You can configure a data repository association  for  automatic  import
+       only, for automatic export only, or for both. To learn more about link-
+       ing a data repository to your file system, see Linking your file system
+       to an S3 bucket .
+
+       See also: AWS API Documentation
+
+       See 'aws help' for descriptions of global parameters.
+
+SYNOPSIS
+            create-data-repository-association
+          --file-system-id <value>
+          --file-system-path <value>
+          --data-repository-path <value>
+          [--batch-import-meta-data-on-create | --no-batch-import-meta-data-on-create]
+          [--imported-file-chunk-size <value>]
+          [--s3 <value>]
+          [--client-request-token <value>]
+          [--tags <value>]
+          [--cli-input-json | --cli-input-yaml]
+          [--generate-cli-skeleton <value>]
+
+OPTIONS
+       --file-system-id (string)
+          The globally unique ID of the file system, assigned by Amazon FSx.
+
+       --file-system-path (string)
+          A  path  on  the  file  system that points to a high-level directory
+          (such as /ns1/ ) or subdirectory (such as /ns1/subdir/ )  that  will
+          be mapped 1-1 with DataRepositoryPath . The leading forward slash in
+          the name is required. Two data repository associations  cannot  have
+          overlapping  file system paths. For example, if a data repository is
+          associated with file system path /ns1/ , then you  cannot  link  an-
+          other data repository with file system path /ns1/ns2 .
+
+          This path specifies where in your file system files will be exported
+          from or imported to. This file system directory  can  be  linked  to
+          only  one  Amazon S3 bucket, and no other S3 bucket can be linked to
+          the directory.
+
+       --data-repository-path (string)
+          The path to the Amazon S3 data repository that will be linked to the
+          file  system.  The  path can be an S3 bucket or prefix in the format
+          s3://myBucket/myPrefix/ . This path specifies where in the  S3  data
+          repository files will be imported from or exported to.
+
+       --batch-import-meta-data-on-create           |           --no-batch-im-
+       port-meta-data-on-create (boolean)
+          Set to true to run an import data repository task to import metadata
+          from  the  data repository to the file system after the data reposi-
+          tory association is created. Default is false .
+
+       --imported-file-chunk-size (integer)
+          For files imported from a data repository, this value determines the
+          stripe  count and maximum amount of data per file (in MiB) stored on
+          a single physical disk. The maximum number of disks  that  a  single
+          file  can  be striped across is limited by the total number of disks
+          that make up the file system.
+
+          The default chunk size is 1,024 MiB (1 GiB) and can go  as  high  as
+          512,000  MiB  (500  GiB). Amazon S3 objects have a maximum size of 5
+          TB.
+
+       --s3 (structure)
+          The configuration for an Amazon S3 data repository linked to an Ama-
+          zon  FSx  Lustre file system with a data repository association. The
+          configuration defines which file events (new,  changed,  or  deleted
+          files  or  directories)  are  automatically imported from the linked
+          data repository to the file system or  automatically  exported  from
+          the file system to the data repository.
+
+          AutoImportPolicy -> (structure)
+              Specifies  the  type  of updated objects (new, changed, deleted)
+              that will be automatically imported from the linked S3 bucket to
+              your file system.
+
+              Events -> (list)
+                 The AutoImportPolicy can have the following event values:
+
+                 o NEW  -  Amazon  FSx automatically imports metadata of files
+                   added to the linked S3 bucket that do not  currently  exist
+                   in the FSx file system.
+
+                 o CHANGED  -  Amazon  FSx automatically updates file metadata
+                   and invalidates existing file content on the file system as
+                   files change in the data repository.
+
+                 o DELETED  -  Amazon  FSx  automatically deletes files on the
+                   file system as corresponding files are deleted in the  data
+                   repository.
+
+                 You  can  define  any combination of event types for your Au-
+                 toImportPolicy .
+
+                 (string)
+
+          AutoExportPolicy -> (structure)
+              Specifies the type of updated objects  (new,  changed,  deleted)
+              that will be automatically exported from your file system to the
+              linked S3 bucket.
+
+              Events -> (list)
+                 The AutoExportPolicy can have the following event values:
+
+                 o NEW - Amazon FSx automatically exports new files and direc-
+                   tories to the data repository as they are added to the file
+                   system.
+
+                 o CHANGED - Amazon FSx automatically exports changes to files
+                   and directories on the file system to the data repository.
+
+                 o DELETED  -  Files and directories are automatically deleted
+                   on the data repository when they are deleted  on  the  file
+                   system.
+
+                 You  can define any combination of event types for your Auto-
+                 ExportPolicy .
+
+                 (string)
+
+       Shorthand Syntax:
+
+          AutoImportPolicy={Events=[string,string]},AutoExportPolicy={Events=[string,string]}
+
+       JSON Syntax:
+
+          {
+            "AutoImportPolicy": {
+              "Events": ["NEW"|"CHANGED"|"DELETED", ...]
+            },
+            "AutoExportPolicy": {
+              "Events": ["NEW"|"CHANGED"|"DELETED", ...]
+            }
+          }
+
+       --client-request-token (string)
+          (Optional) An idempotency token for resource creation, in  a  string
+          of  up to 64 ASCII characters. This token is automatically filled on
+          your behalf when you use the Command Line Interface (CLI) or an Ama-
+          zon Web Services SDK.
+
+       --tags (list)
+          A list of Tag values, with a maximum of 50 elements.
+
+          (structure)
+              Specifies a key-value pair for a resource tag.
+
+              Key -> (string)
+                 A  value that specifies the TagKey , the name of the tag. Tag
+                 keys must be unique for the resource to which  they  are  at-
+                 tached.
+
+              Value -> (string)
+                 A  value  that specifies the TagValue , the value assigned to
+                 the corresponding tag key. Tag values can be null  and  don't
+                 have  to  be unique in a tag set. For example, you can have a
+                 key-value pair in a tag set of finances : April and  also  of
+                 payroll : April .
+
+       Shorthand Syntax:
+
+          Key=string,Value=string ...
+
+       JSON Syntax:
+
+          [
+            {
+              "Key": "string",
+              "Value": "string"
+            }
+            ...
+          ]
+
+       --cli-input-json  |  --cli-input-yaml (string) Reads arguments from the
+       JSON string provided. The JSON string follows the  format  provided  by
+       --generate-cli-skeleton. If other arguments are provided on the command
+       line, those values will override the JSON-provided values.  It  is  not
+       possible to pass arbitrary binary values using a JSON-provided value as
+       the string will be taken literally. This may  not  be  specified  along
+       with --cli-input-yaml.
+
+       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
+       output without sending an API request. If provided with no value or the
+       value input, prints a sample input JSON that can be used as an argument
+       for --cli-input-json. Similarly, if provided yaml-input it will print a
+       sample  input  YAML that can be used with --cli-input-yaml. If provided
+       with the value output, it validates the command inputs  and  returns  a
+       sample output JSON for that command.
+
+       See 'aws help' for descriptions of global parameters.
+
+OUTPUT
+       Association -> (structure)
+          The  response  object returned after the data repository association
+          is created.
+
+          AssociationId -> (string)
+              The system-generated, unique ID of the data repository  associa-
+              tion.
+
+          ResourceARN -> (string)
+              The  Amazon  Resource  Name  (ARN)  for  a  given resource. ARNs
+              uniquely identify Amazon Web Services resources. We  require  an
+              ARN when you need to specify a resource unambiguously across all
+              of Amazon Web Services. For more  information,  see  Amazon  Re-
+              source Names (ARNs) in the Amazon Web Services General Reference
+              .
+
+          FileSystemId -> (string)
+              The globally unique ID of the file system,  assigned  by  Amazon
+              FSx.
+
+          Lifecycle -> (string)
+              Describes  the state of a data repository association. The life-
+              cycle can have the following values:
+
+              o CREATING - The data repository  association  between  the  FSx
+                file  system  and the S3 data repository is being created. The
+                data repository is unavailable.
+
+              o AVAILABLE - The data repository association is  available  for
+                use.
+
+              o MISCONFIGURED - Amazon FSx cannot automatically import updates
+                from the S3 bucket or automatically export updates to  the  S3
+                bucket  until the data repository association configuration is
+                corrected.
+
+              o UPDATING - The data repository  association  is  undergoing  a
+                customer initiated update that might affect its availability.
+
+              o DELETING  -  The  data  repository association is undergoing a
+                customer initiated deletion.
+
+              o FAILED - The data repository  association  is  in  a  terminal
+                state that cannot be recovered.
+
+          FailureDetails -> (structure)
+              Provides  detailed information about the data respository if its
+              Lifecycle is set to MISCONFIGURED or FAILED .
+
+              Message -> (string)
+                 A detailed error message.
+
+          FileSystemPath -> (string)
+              A path on the file system that points to a high-level  directory
+              (such  as  /ns1/  ) or subdirectory (such as /ns1/subdir/ ) that
+              will be mapped 1-1 with DataRepositoryPath . The leading forward
+              slash  in the name is required. Two data repository associations
+              cannot have overlapping file system paths.  For  example,  if  a
+              data repository is associated with file system path /ns1/ , then
+              you cannot link another data repository with  file  system  path
+              /ns1/ns2 .
+
+              This  path specifies where in your file system files will be ex-
+              ported from or imported to. This file system  directory  can  be
+              linked  to only one Amazon S3 bucket, and no other S3 bucket can
+              be linked to the directory.
+
+          DataRepositoryPath -> (string)
+              The path to the Amazon S3 data repository that will be linked to
+              the  file  system. The path can be an S3 bucket or prefix in the
+              format s3://myBucket/myPrefix/ . This path  specifies  where  in
+              the  S3  data repository files will be imported from or exported
+              to.
+
+          BatchImportMetaDataOnCreate -> (boolean)
+              A boolean flag indicating whether an import data repository task
+              to import metadata should run after the data repository associa-
+              tion is created. The task runs if this flag is set to true .
+
+          ImportedFileChunkSize -> (integer)
+              For files imported from a data repository, this value determines
+              the  stripe  count  and maximum amount of data per file (in MiB)
+              stored on a single physical disk. The maximum  number  of  disks
+              that a single file can be striped across is limited by the total
+              number of disks that make up the file system.
+
+              The default chunk size is 1,024 MiB (1 GiB) and can go  as  high
+              as  512,000 MiB (500 GiB). Amazon S3 objects have a maximum size
+              of 5 TB.
+
+          S3 -> (structure)
+              The configuration for an Amazon S3 data repository linked to  an
+              Amazon  FSx  Lustre  file system with a data repository associa-
+              tion. The configuration defines which file events (new, changed,
+              or deleted files or directories) are automatically imported from
+              the linked data repository to the file system  or  automatically
+              exported from the file system to the data repository.
+
+              AutoImportPolicy -> (structure)
+                 Specifies the type of updated objects (new, changed, deleted)
+                 that will be automatically imported from the linked S3 bucket
+                 to your file system.
+
+                 Events -> (list)
+                     The AutoImportPolicy can have the following event values:
+
+                     o NEW  -  Amazon  FSx  automatically  imports metadata of
+                       files added to the linked S3 bucket that  do  not  cur-
+                       rently exist in the FSx file system.
+
+                     o CHANGED  -  Amazon FSx automatically updates file meta-
+                       data and invalidates existing file content on the  file
+                       system as files change in the data repository.
+
+                     o DELETED - Amazon FSx automatically deletes files on the
+                       file system as corresponding files are deleted  in  the
+                       data repository.
+
+                     You  can  define  any combination of event types for your
+                     AutoImportPolicy .
+
+                     (string)
+
+              AutoExportPolicy -> (structure)
+                 Specifies the type of updated objects (new, changed, deleted)
+                 that  will be automatically exported from your file system to
+                 the linked S3 bucket.
+
+                 Events -> (list)
+                     The AutoExportPolicy can have the following event values:
+
+                     o NEW - Amazon FSx automatically exports  new  files  and
+                       directories to the data repository as they are added to
+                       the file system.
+
+                     o CHANGED - Amazon FSx automatically exports  changes  to
+                       files  and  directories  on the file system to the data
+                       repository.
+
+                     o DELETED  -  Files  and  directories  are  automatically
+                       deleted on the data repository when they are deleted on
+                       the file system.
+
+                     You can define any combination of event  types  for  your
+                     AutoExportPolicy .
+
+                     (string)
+
+          Tags -> (list)
+              A list of Tag values, with a maximum of 50 elements.
+
+              (structure)
+                 Specifies a key-value pair for a resource tag.
+
+                 Key -> (string)
+                     A  value that specifies the TagKey , the name of the tag.
+                     Tag keys must be unique for the resource  to  which  they
+                     are attached.
+
+                 Value -> (string)
+                     A  value that specifies the TagValue , the value assigned
+                     to the corresponding tag key. Tag values can be null  and
+                     don't  have  to  be unique in a tag set. For example, you
+                     can have a key-value pair in a  tag  set  of  finances  :
+                     April and also of payroll : April .
+
+          CreationTime -> (timestamp)
+              The  time  that  the  resource  was  created,  in seconds (since
+              1970-01-01T00:00:00Z), also known as Unix time.
+
+
+
+                                          CREATE-DATA-REPOSITORY-ASSOCIATION()
