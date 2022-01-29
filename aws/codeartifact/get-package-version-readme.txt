@@ -27,7 +27,7 @@ SYNOPSIS
           [--namespace <value>]
           --package <value>
           --package-version <value>
-          [--cli-input-json | --cli-input-yaml]
+          [--cli-input-json <value>]
           [--generate-cli-skeleton <value>]
 
 OPTIONS
@@ -81,28 +81,25 @@ OPTIONS
        --package-version (string)
           A string that contains the package version (for example, 3.5.2 ).
 
-       --cli-input-json | --cli-input-yaml (string) Reads arguments  from  the
-       JSON  string  provided.  The JSON string follows the format provided by
-       --generate-cli-skeleton. If other arguments are provided on the command
-       line,  those  values  will override the JSON-provided values. It is not
+       --cli-input-json (string) Performs service operation based on the  JSON
+       string  provided. The JSON string follows the format provided by --gen-
+       erate-cli-skeleton. If other arguments  are  provided  on  the  command
+       line,  the CLI values will override the JSON-provided values. It is not
        possible to pass arbitrary binary values using a JSON-provided value as
-       the  string  will  be  taken literally. This may not be specified along
-       with --cli-input-yaml.
+       the string will be taken literally.
 
-       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
+       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
        output without sending an API request. If provided with no value or the
        value input, prints a sample input JSON that can be used as an argument
-       for --cli-input-json. Similarly, if provided yaml-input it will print a
-       sample input YAML that can be used with --cli-input-yaml.  If  provided
-       with  the  value  output, it validates the command inputs and returns a
-       sample output JSON for that command.
+       for --cli-input-json. If provided with the value output,  it  validates
+       the command inputs and returns a sample output JSON for that command.
 
        See 'aws help' for descriptions of global parameters.
 
 EXAMPLES
        To get a package version's readme file
 
-       The following get-package-version-readme example retrieves  the  readme
+       The  following  get-package-version-readme example retrieves the readme
        file for version 4.0.0 of an npm package named test-package.
 
           aws codeartifact get-package-version-readme \
@@ -122,7 +119,7 @@ EXAMPLES
               "versionRevision": "Ciqe5/9yicvkJT13b5/LdLpCyE6fqA7poa9qp+FilPs="
           }
 
-       For  more  information, see View package version readme file in the AWS
+       For more information, see View package version readme file in  the  AWS
        CodeArtifact User Guide.
 
 OUTPUT
@@ -137,14 +134,14 @@ OUTPUT
           o maven
 
        namespace -> (string)
-          The  namespace  of the package. The package component that specifies
+          The namespace of the package. The package component  that  specifies
           its namespace depends on its type. For example:
 
           o The namespace of a Maven package is its groupId .
 
           o The namespace of an npm package is its scope .
 
-          o A Python package does not contain a  corresponding  component,  so
+          o A  Python  package  does not contain a corresponding component, so
             Python packages do not have a namespace.
 
        package -> (string)

@@ -45,7 +45,6 @@ SYNOPSIS
           [--force-glacier-transfer]
           [--request-payer <value>]
           [--metadata <value>]
-          [--copy-props <value>]
           [--metadata-directive <value>]
           [--size-only]
           [--exact-timestamps]
@@ -213,7 +212,9 @@ OPTIONS
        --metadata  (map)  A  map  of metadata to store with the objects in S3.
        This will be applied to every object which is part of this request.  In
        a  sync,  this means that files which haven't changed won't receive the
-       new metadata. key -> (string)
+       new metadata. When copying between two s3 locations,  the  metadata-di-
+       rective  argument  will  default  to  'REPLACE' unless otherwise speci-
+       fied.key -> (string)
           value -> (string)
 
        Shorthand Syntax:
@@ -225,40 +226,20 @@ OPTIONS
           {"string": "string"
             ...}
 
-       --copy-props (string) Determines which properties are copied  from  the
-       source  S3  object.  This  parameter  only applies for S3 to S3 copies.
-       Valid values are:
-
-          o none - Do not copy any of the properties from the  source  S3  ob-
-            ject.
-
-          o metadata-directive  -  Copies  the  following  properties from the
-            source S3 object: content-type,  content-language,  content-encod-
-            ing, content-disposition, cache-control, --expires, and metadata
-
-          o default  -  The  default value. Copies tags and properties covered
-            under the metadata-directive value from the source S3 object.
-
-          In order to copy the appropriate properties  for  multipart  copies,
-          some  of the options may require additional API calls if a multipart
-          copy is involved. Specifically:
-
-          o metadata-directive may require additional HeadObject API calls.
-
-          o default may require additional HeadObject,  GetObjectTagging,  and
-            PutObjectTagging  API  calls. Note this list of API calls may grow
-            in the future in order to ensure multipart copies preserve the ex-
-            act properties a CopyObject API call would preserve.
-
-          If you want to guarantee no additional API calls are made other than
-          than the ones needed to perform the actual copy, set this option  to
-          none.
-
-       --metadata-directive  (string) Sets the x-amz-metadata-directive header
-       for CopyObject operations. It is recommended to  use  the  --copy-props
-       parameter instead to control copying of metadata properties. If --meta-
-       data-directive is set, the --copy-props parameter will be disabled  and
-       will have no affect on the transfer.
+       --metadata-directive (string) Specifies whether the metadata is  copied
+       from  the source object or replaced with metadata provided when copying
+       S3 objects. Note that if the object is copied over in parts, the source
+       object's  metadata  will  not  be  copied over, no matter the value for
+       --metadata-directive, and instead the desired metadata values  must  be
+       specified  as parameters on the command line. Valid values are COPY and
+       REPLACE. If this parameter is not specified, COPY will be used  by  de-
+       fault.  If  REPLACE is used, the copied object will only have the meta-
+       data values that were specified by the CLI command. Note  that  if  you
+       are using any of the following parameters: --content-type, content-lan-
+       guage, --content-encoding, --content-disposition,  --cache-control,  or
+       --expires,  you  will  need to specify --metadata-directive REPLACE for
+       non-multipart copies if you want the copied objects to have the  speci-
+       fied metadata values.
 
        --size-only (boolean) Makes the size of each key the only criteria used
        to decide whether to sync from source to destination.
