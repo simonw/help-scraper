@@ -2,6 +2,8 @@
 
 Record a history of `--help` for various commands
 
+See [Help scraping: track changes to CLI tools by recording their --help using Git](https://simonwillison.net/2022/Feb/2/help-scraping/) for the background of this project.
+
 This repository installs tools and records the output of their `--help` commands, to track changes made to them over time.
 
 - [flyctl/](flyctl/) - the [flyctl](https://github.com/superfly/flyctl/) management tool by [Fly.io](https://fly.io/)
