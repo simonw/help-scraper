@@ -1,5 +1,7 @@
 # help-scraper
 
+[![Scrape latest help](https://github.com/simonw/help-scraper/actions/workflows/scrape.yml/badge.svg)](https://github.com/simonw/help-scraper/actions/workflows/scrape.yml)
+
 Record a history of `--help` for various commands
 
 See [Help scraping: track changes to CLI tools by recording their --help using Git](https://simonwillison.net/2022/Feb/2/help-scraping/) for the background of this project.
