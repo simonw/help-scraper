@@ -12,5 +12,5 @@ This repository installs tools and records the output of their `--help` commands
 
 The repo also tracks changes made to some GraphQL schemas:
 
-- [flyctl/fly.graphql](flyctl/fly.graphql) for `https://api.fly.io/graphql`
-- [github/github.graphql](github/github.graphql) for `https://api.github.com/graphql`
+- [flyctl/fly.graphql](flyctl/fly.graphql) ([history](https://github.com/simonw/help-scraper/commits/main/flyctl/fly.graphql)) for `https://api.fly.io/graphql`
+- [github/github.graphql](github/github.graphql) ([history](https://github.com/simonw/help-scraper/commits/main/github/github.graphql)) for `https://api.github.com/graphql`
