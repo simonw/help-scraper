@@ -9,7 +9,10 @@ DESCRIPTION
        Enables  the  specified  LoggingConfiguration , to start logging from a
        web ACL, according to the configuration provided.
 
-       You can access information about all traffic that  WAF  inspects  using
+       NOTE:
+          You can define one logging destination per web ACL.
+
+       You can access information about the traffic that  WAF  inspects  using
        the following steps:
 
        o Create  your  logging  destination.  You can use an Amazon CloudWatch
@@ -28,11 +31,14 @@ DESCRIPTION
        zon S3 bucket, WAF creates a bucket policy. For an Amazon Kinesis  Data
        Firehose, WAF creates a service-linked role.
 
+       For  additional  information about web ACL logging, see Logging web ACL
+       traffic information in the WAF Developer Guide .
+
        NOTE:
-          This  operation  completely replaces the mutable specifications that
-          you already have for the logging configuration with  the  ones  that
-          you  provide  to this call. To modify the logging configuration, re-
-          trieve it by calling  GetLoggingConfiguration , update the  settings
+          This operation completely replaces the mutable  specifications  that
+          you  already  have  for the logging configuration with the ones that
+          you provide to this call. To modify the logging  configuration,  re-
+          trieve  it by calling  GetLoggingConfiguration , update the settings
           as needed, and then provide the complete logging configuration spec-
           ification to this call.
 
@@ -49,360 +55,15 @@ SYNOPSIS
 OPTIONS
        --logging-configuration (structure)
           ResourceArn -> (string)
-              The Amazon Resource Name (ARN) of the web ACL that you  want  to
-              associate with LogDestinationConfigs .
-
-          LogDestinationConfigs -> (list)
-              The  Amazon  Resource  Names  (ARNs) of the logging destinations
-              that you want to associate with the web ACL.
-
-              (string)
-
-          RedactedFields -> (list)
-              The parts of the request that you want to keep out of the  logs.
-              For  example,  if  you redact the SingleHeader field, the HEADER
-              field in the logs will be xxx .
-
-              NOTE:
-                 You can specify only the following fields for redaction: Uri-
-                 Path , QueryString , SingleHeader , Method , and JsonBody .
-
-              (structure)
-                 The  part  of a web request that you want WAF to inspect. In-
-                 clude the single FieldToMatch type that you want to  inspect,
-                 with  additional  specifications  as needed, according to the
-                 type. You specify a single request component in  FieldToMatch
-                 for  each  rule  statement  that requires it. To inspect more
-                 than one component of a web request, create a  separate  rule
-                 statement for each component.
-
-                 JSON specification for a QueryString field to match:
-                     "FieldToMatch": { "QueryString": {} }
-
-                 Example JSON for a Method field to match specification:
-                     "FieldToMatch": { "Method": { "Name": "DELETE" } }
-
-                 SingleHeader -> (structure)
-                     Inspect  a  single header. Provide the name of the header
-                     to inspect, for example, User-Agent  or  Referer  .  This
-                     setting isn't case sensitive.
-
-                     Example JSON: "SingleHeader": { "Name": "haystack" }
-
-                     Name -> (string)
-                        The name of the query header to inspect.
-
-                 SingleQueryArgument -> (structure)
-                     Inspect  a single query argument. Provide the name of the
-                     query argument to inspect, such as UserName  or  SalesRe-
-                     gion . The name can be up to 30 characters long and isn't
-                     case sensitive.
-
-                     This is used only to indicate the web  request  component
-                     for WAF to inspect, in the  FieldToMatch specification.
-
-                     Example  JSON:  "SingleQueryArgument": { "Name": "myArgu-
-                     ment" }
-
-                     Name -> (string)
-                        The name of the query argument to inspect.
-
-                 AllQueryArguments -> (structure)
-                     Inspect all query arguments.
-
-                 UriPath -> (structure)
-                     Inspect the request URI path. This is the part of  a  web
-                     request  that  identifies  a  resource, for example, /im-
-                     ages/daily-ad.jpg .
-
-                 QueryString -> (structure)
-                     Inspect the query string. This is the part of a URL  that
-                     appears after a ? character, if any.
-
-                 Body -> (structure)
-                     Inspect  the request body as plain text. The request body
-                     immediately follows the request headers. This is the part
-                     of  a  request that contains any additional data that you
-                     want to send to your web server as the HTTP request body,
-                     such as data from a form.
-
-                     Note that only the first 8 KB (8192 bytes) of the request
-                     body are forwarded to WAF for inspection by the  underly-
-                     ing  host service. If you don't need to inspect more than
-                     8 KB, you can guarantee that you don't  allow  additional
-                     bytes  in by combining a statement that inspects the body
-                     of the web request, such as  ByteMatchStatement or   Reg-
-                     exPatternSetReferenceStatement   ,   with   a    SizeCon-
-                     straintStatement that enforces an 8 KB size limit on  the
-                     body  of  the request. WAF doesn't support inspecting the
-                     entire contents of web requests whose bodies exceed the 8
-                     KB limit.
-
-                 Method -> (structure)
-                     Inspect the HTTP method. The method indicates the type of
-                     operation that the request is asking the origin  to  per-
-                     form.
-
-                 JsonBody -> (structure)
-                     Inspect  the request body as JSON. The request body imme-
-                     diately follows the request headers. This is the part  of
-                     a request that contains any additional data that you want
-                     to send to your web server as the HTTP request body, such
-                     as data from a form.
-
-                     Note that only the first 8 KB (8192 bytes) of the request
-                     body are forwarded to WAF for inspection by the  underly-
-                     ing  host service. If you don't need to inspect more than
-                     8 KB, you can guarantee that you don't  allow  additional
-                     bytes  in by combining a statement that inspects the body
-                     of the web request, such as  ByteMatchStatement or   Reg-
-                     exPatternSetReferenceStatement   ,   with   a    SizeCon-
-                     straintStatement that enforces an 8 KB size limit on  the
-                     body  of  the request. WAF doesn't support inspecting the
-                     entire contents of web requests whose bodies exceed the 8
-                     KB limit.
-
-                     MatchPattern -> (structure)
-                        The  patterns  to  look  for in the JSON body. WAF in-
-                        spects the results of these  pattern  matches  against
-                        the rule inspection criteria.
-
-                        All -> (structure)
-                            Match  all of the elements. See also MatchScope in
-                            JsonBody .
-
-                            You must specify either this setting  or  the  In-
-                            cludedPaths setting, but not both.
-
-                        IncludedPaths -> (list)
-                            Match  only  the specified include paths. See also
-                            MatchScope in  JsonBody .
-
-                            Provide the include paths using JSON Pointer  syn-
-                            tax.       For      example,      "IncludedPaths":
-                            ["/dogs/0/name", "/dogs/1/name"] . For information
-                            about  this  syntax,  see the Internet Engineering
-                            Task Force (IETF) documentation JavaScript  Object
-                            Notation (JSON) Pointer .
-
-                            You  must  specify  either this setting or the All
-                            setting, but not both.
-
-                            NOTE:
-                               Don't use this option to include all paths. In-
-                               stead, use the All setting.
-
-                            (string)
-
-                     MatchScope -> (string)
-                        The  parts  of  the  JSON  to  match against using the
-                        MatchPattern .  If  you  specify  All  ,  WAF  matches
-                        against keys and values.
-
-                     InvalidFallbackBehavior -> (string)
-                        What WAF should do if it fails to completely parse the
-                        JSON body. The options are the following:
-
-                        o EVALUATE_AS_STRING - Inspect the body as plain text.
-                          WAF  applies the text transformations and inspection
-                          criteria that you defined for the JSON inspection to
-                          the body text string.
-
-                        o MATCH  -  Treat the web request as matching the rule
-                          statement. WAF applies the rule action  to  the  re-
-                          quest.
-
-                        o NO_MATCH - Treat the web request as not matching the
-                          rule statement.
-
-                        If you don't provide  this  setting,  WAF  parses  and
-                        evaluates  the  content  only  up to the first parsing
-                        failure that it encounters.
-
-                        WAF does its best to parse the entire JSON  body,  but
-                        might  be  forced  to stop for reasons such as invalid
-                        characters, duplicate keys, truncation, and  any  con-
-                        tent whose root node isn't an object or an array.
-
-                        WAF  parses  the JSON in the following examples as two
-                        valid key, value pairs:
-
-                        o Missing comma: {"key1":"value1""key2":"value2"}
-
-                        o Missing colon: {"key1":"value1","key2""value2"}
-
-                        o Extra colons: {"key1"::"value1","key2""value2"}
-
-          ManagedByFirewallManager -> (boolean)
-              Indicates whether the logging configuration was created by Fire-
-              wall  Manager,  as part of an WAF policy configuration. If true,
-              only Firewall Manager can modify or delete the configuration.
-
-          LoggingFilter -> (structure)
-              Filtering that specifies which web requests are kept in the logs
-              and  which are dropped. You can filter on the rule action and on
-              the web request labels that were applied by matching rules  dur-
-              ing web ACL evaluation.
-
-              Filters -> (list)
-                 The filters that you want to apply to the logs.
-
-                 (structure)
-                     A single logging filter, used in  LoggingFilter .
-
-                     Behavior -> (string)
-                        How  to  handle  logs that satisfy the filter's condi-
-                        tions and requirement.
-
-                     Requirement -> (string)
-                        Logic to apply to the filtering  conditions.  You  can
-                        specify  that,  in  order to satisfy the filter, a log
-                        must match all conditions or must match at  least  one
-                        condition.
-
-                     Conditions -> (list)
-                        Match conditions for the filter.
-
-                        (structure)
-                            A single match condition for a  Filter .
-
-                            ActionCondition -> (structure)
-                               A single action condition.
-
-                               Action -> (string)
-                                   The  action  setting that a log record must
-                                   contain in order to meet the condition.
-
-                            LabelNameCondition -> (structure)
-                               A single label name condition.
-
-                               LabelName -> (string)
-                                   The label name that a log record must  con-
-                                   tain  in  order to meet the condition. This
-                                   must be a fully qualified label name. Fully
-                                   qualified  labels  have  a prefix, optional
-                                   namespaces,  and  label  name.  The  prefix
-                                   identifies  the  rule group or web ACL con-
-                                   text of the rule that added the label.
-
-              DefaultBehavior -> (string)
-                 Default handling for logs that don't match any of the  speci-
-                 fied filtering conditions.
-
-       JSON Syntax:
-
-          {
-            "ResourceArn": "string",
-            "LogDestinationConfigs": ["string", ...],
-            "RedactedFields": [
-              {
-                "SingleHeader": {
-                  "Name": "string"
-                },
-                "SingleQueryArgument": {
-                  "Name": "string"
-                },
-                "AllQueryArguments": {
-
-                },
-                "UriPath": {
-
-                },
-                "QueryString": {
-
-                },
-                "Body": {
-
-                },
-                "Method": {
-
-                },
-                "JsonBody": {
-                  "MatchPattern": {
-                    "All": {
-
-                    },
-                    "IncludedPaths": ["string", ...]
-                  },
-                  "MatchScope": "ALL"|"KEY"|"VALUE",
-                  "InvalidFallbackBehavior": "MATCH"|"NO_MATCH"|"EVALUATE_AS_STRING"
-                }
-              }
-              ...
-            ],
-            "ManagedByFirewallManager": true|false,
-            "LoggingFilter": {
-              "Filters": [
-                {
-                  "Behavior": "KEEP"|"DROP",
-                  "Requirement": "MEETS_ALL"|"MEETS_ANY",
-                  "Conditions": [
-                    {
-                      "ActionCondition": {
-                        "Action": "ALLOW"|"BLOCK"|"COUNT"|"CAPTCHA"|"EXCLUDED_AS_COUNT"
-                      },
-                      "LabelNameCondition": {
-                        "LabelName": "string"
-                      }
-                    }
-                    ...
-                  ]
-                }
-                ...
-              ],
-              "DefaultBehavior": "KEEP"|"DROP"
-            }
-          }
-
-       --cli-input-json  (string) Performs service operation based on the JSON
-       string provided. The JSON string follows the format provided by  --gen-
-       erate-cli-skeleton.  If  other  arguments  are  provided on the command
-       line, the CLI values will override the JSON-provided values. It is  not
-       possible to pass arbitrary binary values using a JSON-provided value as
-       the string will be taken literally.
-
-       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
-       output without sending an API request. If provided with no value or the
-       value input, prints a sample input JSON that can be used as an argument
-       for  --cli-input-json.  If provided with the value output, it validates
-       the command inputs and returns a sample output JSON for that command.
-
-       See 'aws help' for descriptions of global parameters.
-
-EXAMPLES
-       To add a logging configuration to a web ACL
-
-       The following put-logging-configuration adds the  Amazon  Kinesis  Data
-       Firehose  logging  configuration  aws-waf-logs-custom-transformation to
-       the specified web ACL, with no fields redacted from the logs.
-
-          aws wafv2 put-logging-configuration \
-              --logging-configuration ResourceArn=arn:aws:wafv2:us-west-2:123456789012:regional/webacl/test-cli/a1b2c3d4-5678-90ab-cdef-EXAMPLE11111,LogDestinationConfigs=arn:aws:firehose:us-west-2:123456789012:deliverystream/aws-waf-logs-custom-transformation \
-                      --region us-west-2
-
-       Output:
-
-          {
-              "LoggingConfiguration":{
-                  "ResourceArn":"arn:aws:wafv2:us-west-2:123456789012:regional/webacl/test-cli/a1b2c3d4-5678-90ab-cdef-EXAMPLE11111",
-                  "LogDestinationConfigs":[
-                      "arn:aws:firehose:us-west-2:123456789012:deliverystream/aws-waf-logs-custom-transformation"
-                  ]
-              }
-          }
-
-       For more information, see Logging Web ACL Traffic  Information  in  the
-       AWS WAF, AWS Firewall Manager, and AWS Shield Advanced Developer Guide.
-
-OUTPUT
-       LoggingConfiguration -> (structure)
-          ResourceArn -> (string)
               The  Amazon  Resource Name (ARN) of the web ACL that you want to
               associate with LogDestinationConfigs .
 
           LogDestinationConfigs -> (list)
-              The Amazon Resource Names (ARNs)  of  the  logging  destinations
-              that you want to associate with the web ACL.
+              The logging destination configuration that you want to associate
+              with the web ACL.
+
+              NOTE:
+                 You can associate one logging destination to a web ACL.
 
               (string)
 
@@ -635,6 +296,357 @@ OUTPUT
 
               DefaultBehavior -> (string)
                  Default  handling for logs that don't match any of the speci-
+                 fied filtering conditions.
+
+       JSON Syntax:
+
+          {
+            "ResourceArn": "string",
+            "LogDestinationConfigs": ["string", ...],
+            "RedactedFields": [
+              {
+                "SingleHeader": {
+                  "Name": "string"
+                },
+                "SingleQueryArgument": {
+                  "Name": "string"
+                },
+                "AllQueryArguments": {
+
+                },
+                "UriPath": {
+
+                },
+                "QueryString": {
+
+                },
+                "Body": {
+
+                },
+                "Method": {
+
+                },
+                "JsonBody": {
+                  "MatchPattern": {
+                    "All": {
+
+                    },
+                    "IncludedPaths": ["string", ...]
+                  },
+                  "MatchScope": "ALL"|"KEY"|"VALUE",
+                  "InvalidFallbackBehavior": "MATCH"|"NO_MATCH"|"EVALUATE_AS_STRING"
+                }
+              }
+              ...
+            ],
+            "ManagedByFirewallManager": true|false,
+            "LoggingFilter": {
+              "Filters": [
+                {
+                  "Behavior": "KEEP"|"DROP",
+                  "Requirement": "MEETS_ALL"|"MEETS_ANY",
+                  "Conditions": [
+                    {
+                      "ActionCondition": {
+                        "Action": "ALLOW"|"BLOCK"|"COUNT"|"CAPTCHA"|"EXCLUDED_AS_COUNT"
+                      },
+                      "LabelNameCondition": {
+                        "LabelName": "string"
+                      }
+                    }
+                    ...
+                  ]
+                }
+                ...
+              ],
+              "DefaultBehavior": "KEEP"|"DROP"
+            }
+          }
+
+       --cli-input-json (string) Performs service operation based on the  JSON
+       string  provided. The JSON string follows the format provided by --gen-
+       erate-cli-skeleton. If other arguments  are  provided  on  the  command
+       line,  the CLI values will override the JSON-provided values. It is not
+       possible to pass arbitrary binary values using a JSON-provided value as
+       the string will be taken literally.
+
+       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
+       output without sending an API request. If provided with no value or the
+       value input, prints a sample input JSON that can be used as an argument
+       for --cli-input-json. If provided with the value output,  it  validates
+       the command inputs and returns a sample output JSON for that command.
+
+       See 'aws help' for descriptions of global parameters.
+
+EXAMPLES
+       To add a logging configuration to a web ACL
+
+       The  following  put-logging-configuration  adds the Amazon Kinesis Data
+       Firehose logging  configuration  aws-waf-logs-custom-transformation  to
+       the specified web ACL, with no fields redacted from the logs.
+
+          aws wafv2 put-logging-configuration \
+              --logging-configuration ResourceArn=arn:aws:wafv2:us-west-2:123456789012:regional/webacl/test-cli/a1b2c3d4-5678-90ab-cdef-EXAMPLE11111,LogDestinationConfigs=arn:aws:firehose:us-west-2:123456789012:deliverystream/aws-waf-logs-custom-transformation \
+                      --region us-west-2
+
+       Output:
+
+          {
+              "LoggingConfiguration":{
+                  "ResourceArn":"arn:aws:wafv2:us-west-2:123456789012:regional/webacl/test-cli/a1b2c3d4-5678-90ab-cdef-EXAMPLE11111",
+                  "LogDestinationConfigs":[
+                      "arn:aws:firehose:us-west-2:123456789012:deliverystream/aws-waf-logs-custom-transformation"
+                  ]
+              }
+          }
+
+       For  more  information,  see Logging Web ACL Traffic Information in the
+       AWS WAF, AWS Firewall Manager, and AWS Shield Advanced Developer Guide.
+
+OUTPUT
+       LoggingConfiguration -> (structure)
+          ResourceArn -> (string)
+              The Amazon Resource Name (ARN) of the web ACL that you  want  to
+              associate with LogDestinationConfigs .
+
+          LogDestinationConfigs -> (list)
+              The logging destination configuration that you want to associate
+              with the web ACL.
+
+              NOTE:
+                 You can associate one logging destination to a web ACL.
+
+              (string)
+
+          RedactedFields -> (list)
+              The parts of the request that you want to keep out of the  logs.
+              For  example,  if  you redact the SingleHeader field, the HEADER
+              field in the logs will be xxx .
+
+              NOTE:
+                 You can specify only the following fields for redaction: Uri-
+                 Path , QueryString , SingleHeader , Method , and JsonBody .
+
+              (structure)
+                 The  part  of a web request that you want WAF to inspect. In-
+                 clude the single FieldToMatch type that you want to  inspect,
+                 with  additional  specifications  as needed, according to the
+                 type. You specify a single request component in  FieldToMatch
+                 for  each  rule  statement  that requires it. To inspect more
+                 than one component of a web request, create a  separate  rule
+                 statement for each component.
+
+                 JSON specification for a QueryString field to match:
+                     "FieldToMatch": { "QueryString": {} }
+
+                 Example JSON for a Method field to match specification:
+                     "FieldToMatch": { "Method": { "Name": "DELETE" } }
+
+                 SingleHeader -> (structure)
+                     Inspect  a  single header. Provide the name of the header
+                     to inspect, for example, User-Agent  or  Referer  .  This
+                     setting isn't case sensitive.
+
+                     Example JSON: "SingleHeader": { "Name": "haystack" }
+
+                     Name -> (string)
+                        The name of the query header to inspect.
+
+                 SingleQueryArgument -> (structure)
+                     Inspect  a single query argument. Provide the name of the
+                     query argument to inspect, such as UserName  or  SalesRe-
+                     gion . The name can be up to 30 characters long and isn't
+                     case sensitive.
+
+                     This is used only to indicate the web  request  component
+                     for WAF to inspect, in the  FieldToMatch specification.
+
+                     Example  JSON:  "SingleQueryArgument": { "Name": "myArgu-
+                     ment" }
+
+                     Name -> (string)
+                        The name of the query argument to inspect.
+
+                 AllQueryArguments -> (structure)
+                     Inspect all query arguments.
+
+                 UriPath -> (structure)
+                     Inspect the request URI path. This is the part of  a  web
+                     request  that  identifies  a  resource, for example, /im-
+                     ages/daily-ad.jpg .
+
+                 QueryString -> (structure)
+                     Inspect the query string. This is the part of a URL  that
+                     appears after a ? character, if any.
+
+                 Body -> (structure)
+                     Inspect  the request body as plain text. The request body
+                     immediately follows the request headers. This is the part
+                     of  a  request that contains any additional data that you
+                     want to send to your web server as the HTTP request body,
+                     such as data from a form.
+
+                     Note that only the first 8 KB (8192 bytes) of the request
+                     body are forwarded to WAF for inspection by the  underly-
+                     ing  host service. If you don't need to inspect more than
+                     8 KB, you can guarantee that you don't  allow  additional
+                     bytes  in by combining a statement that inspects the body
+                     of the web request, such as  ByteMatchStatement or   Reg-
+                     exPatternSetReferenceStatement   ,   with   a    SizeCon-
+                     straintStatement that enforces an 8 KB size limit on  the
+                     body  of  the request. WAF doesn't support inspecting the
+                     entire contents of web requests whose bodies exceed the 8
+                     KB limit.
+
+                 Method -> (structure)
+                     Inspect the HTTP method. The method indicates the type of
+                     operation that the request is asking the origin  to  per-
+                     form.
+
+                 JsonBody -> (structure)
+                     Inspect  the request body as JSON. The request body imme-
+                     diately follows the request headers. This is the part  of
+                     a request that contains any additional data that you want
+                     to send to your web server as the HTTP request body, such
+                     as data from a form.
+
+                     Note that only the first 8 KB (8192 bytes) of the request
+                     body are forwarded to WAF for inspection by the  underly-
+                     ing  host service. If you don't need to inspect more than
+                     8 KB, you can guarantee that you don't  allow  additional
+                     bytes  in by combining a statement that inspects the body
+                     of the web request, such as  ByteMatchStatement or   Reg-
+                     exPatternSetReferenceStatement   ,   with   a    SizeCon-
+                     straintStatement that enforces an 8 KB size limit on  the
+                     body  of  the request. WAF doesn't support inspecting the
+                     entire contents of web requests whose bodies exceed the 8
+                     KB limit.
+
+                     MatchPattern -> (structure)
+                        The  patterns  to  look  for in the JSON body. WAF in-
+                        spects the results of these  pattern  matches  against
+                        the rule inspection criteria.
+
+                        All -> (structure)
+                            Match  all of the elements. See also MatchScope in
+                            JsonBody .
+
+                            You must specify either this setting  or  the  In-
+                            cludedPaths setting, but not both.
+
+                        IncludedPaths -> (list)
+                            Match  only  the specified include paths. See also
+                            MatchScope in  JsonBody .
+
+                            Provide the include paths using JSON Pointer  syn-
+                            tax.       For      example,      "IncludedPaths":
+                            ["/dogs/0/name", "/dogs/1/name"] . For information
+                            about  this  syntax,  see the Internet Engineering
+                            Task Force (IETF) documentation JavaScript  Object
+                            Notation (JSON) Pointer .
+
+                            You  must  specify  either this setting or the All
+                            setting, but not both.
+
+                            NOTE:
+                               Don't use this option to include all paths. In-
+                               stead, use the All setting.
+
+                            (string)
+
+                     MatchScope -> (string)
+                        The  parts  of  the  JSON  to  match against using the
+                        MatchPattern .  If  you  specify  All  ,  WAF  matches
+                        against keys and values.
+
+                     InvalidFallbackBehavior -> (string)
+                        What WAF should do if it fails to completely parse the
+                        JSON body. The options are the following:
+
+                        o EVALUATE_AS_STRING - Inspect the body as plain text.
+                          WAF  applies the text transformations and inspection
+                          criteria that you defined for the JSON inspection to
+                          the body text string.
+
+                        o MATCH  -  Treat the web request as matching the rule
+                          statement. WAF applies the rule action  to  the  re-
+                          quest.
+
+                        o NO_MATCH - Treat the web request as not matching the
+                          rule statement.
+
+                        If you don't provide  this  setting,  WAF  parses  and
+                        evaluates  the  content  only  up to the first parsing
+                        failure that it encounters.
+
+                        WAF does its best to parse the entire JSON  body,  but
+                        might  be  forced  to stop for reasons such as invalid
+                        characters, duplicate keys, truncation, and  any  con-
+                        tent whose root node isn't an object or an array.
+
+                        WAF  parses  the JSON in the following examples as two
+                        valid key, value pairs:
+
+                        o Missing comma: {"key1":"value1""key2":"value2"}
+
+                        o Missing colon: {"key1":"value1","key2""value2"}
+
+                        o Extra colons: {"key1"::"value1","key2""value2"}
+
+          ManagedByFirewallManager -> (boolean)
+              Indicates whether the logging configuration was created by Fire-
+              wall  Manager,  as part of an WAF policy configuration. If true,
+              only Firewall Manager can modify or delete the configuration.
+
+          LoggingFilter -> (structure)
+              Filtering that specifies which web requests are kept in the logs
+              and  which are dropped. You can filter on the rule action and on
+              the web request labels that were applied by matching rules  dur-
+              ing web ACL evaluation.
+
+              Filters -> (list)
+                 The filters that you want to apply to the logs.
+
+                 (structure)
+                     A single logging filter, used in  LoggingFilter .
+
+                     Behavior -> (string)
+                        How  to  handle  logs that satisfy the filter's condi-
+                        tions and requirement.
+
+                     Requirement -> (string)
+                        Logic to apply to the filtering  conditions.  You  can
+                        specify  that,  in  order to satisfy the filter, a log
+                        must match all conditions or must match at  least  one
+                        condition.
+
+                     Conditions -> (list)
+                        Match conditions for the filter.
+
+                        (structure)
+                            A single match condition for a  Filter .
+
+                            ActionCondition -> (structure)
+                               A single action condition.
+
+                               Action -> (string)
+                                   The  action  setting that a log record must
+                                   contain in order to meet the condition.
+
+                            LabelNameCondition -> (structure)
+                               A single label name condition.
+
+                               LabelName -> (string)
+                                   The label name that a log record must  con-
+                                   tain  in  order to meet the condition. This
+                                   must be a fully qualified label name. Fully
+                                   qualified  labels  have  a prefix, optional
+                                   namespaces,  and  label  name.  The  prefix
+                                   identifies  the  rule group or web ACL con-
+                                   text of the rule that added the label.
+
+              DefaultBehavior -> (string)
+                 Default handling for logs that don't match any of the  speci-
                  fied filtering conditions.
 
 
