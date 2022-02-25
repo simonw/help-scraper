@@ -19,10 +19,13 @@ DESCRIPTION
        and set its value to the NextPartNumberMarker field value from the pre-
        vious response.
 
-       For more information on multipart uploads, see Uploading Objects  Using
+       If the upload was created using a checksum algorithm, you will need  to
+       have permission to the kms:Decrypt action for the request to succeed.
+
+       For  more information on multipart uploads, see Uploading Objects Using
        Multipart Upload .
 
-       For  information  on  permissions  required to use the multipart upload
+       For information on permissions required to  use  the  multipart  upload
        API, see Multipart Upload and Permissions .
 
        The following operations are related to ListParts :
@@ -35,17 +38,19 @@ DESCRIPTION
 
        o AbortMultipartUpload
 
+       o GetObjectAttributes
+
        o ListMultipartUploads
 
        See also: AWS API Documentation
 
        See 'aws help' for descriptions of global parameters.
 
-       list-parts is a paginated operation. Multiple API calls may  be  issued
-       in  order  to  retrieve the entire data set of results. You can disable
-       pagination by providing the --no-paginate argument.  When using  --out-
-       put  text and the --query argument on a paginated response, the --query
-       argument must extract data from the results of the following query  ex-
+       list-parts  is  a paginated operation. Multiple API calls may be issued
+       in order to retrieve the entire data set of results.  You  can  disable
+       pagination  by providing the --no-paginate argument.  When using --out-
+       put text and the --query argument on a paginated response, the  --query
+       argument  must extract data from the results of the following query ex-
        pressions: Parts
 
 SYNOPSIS
@@ -55,6 +60,9 @@ SYNOPSIS
           --upload-id <value>
           [--request-payer <value>]
           [--expected-bucket-owner <value>]
+          [--sse-customer-algorithm <value>]
+          [--sse-customer-key <value>]
+          [--sse-customer-key-md5 <value>]
           [--cli-input-json <value>]
           [--starting-token <value>]
           [--page-size <value>]
@@ -65,35 +73,35 @@ OPTIONS
        --bucket (string)
           The name of the bucket to which the parts are being uploaded.
 
-          When  using  this  action  with an access point, you must direct re-
+          When using this action with an access point,  you  must  direct  re-
           quests to the access point hostname. The access point hostname takes
-          the  form  AccessPointName -AccountId .s3-accesspoint.*Region* .ama-
-          zonaws.com. When using this action with an access point through  the
-          Amazon  Web Services SDKs, you provide the access point ARN in place
-          of the bucket name. For more information about  access  point  ARNs,
+          the form AccessPointName -AccountId  .s3-accesspoint.*Region*  .ama-
+          zonaws.com.  When using this action with an access point through the
+          Amazon Web Services SDKs, you provide the access point ARN in  place
+          of  the  bucket  name. For more information about access point ARNs,
           see Using access points in the Amazon S3 User Guide .
 
-          When  using  this action with Amazon S3 on Outposts, you must direct
+          When using this action with Amazon S3 on Outposts, you  must  direct
           requests to the S3 on Outposts hostname. The S3 on Outposts hostname
-          takes  the  form  AccessPointName  -AccountId  .*outpostID* .s3-out-
-          posts.*Region* .amazonaws.com. When using this action  using  S3  on
-          Outposts  through the Amazon Web Services SDKs, you provide the Out-
-          posts bucket ARN in place of the bucket name. For  more  information
-          about S3 on Outposts ARNs, see Using S3 on Outposts in the Amazon S3
-          User Guide .
+          takes the form `` AccessPointName -AccountId  .*outpostID*  .s3-out-
+          posts.*Region*  .amazonaws.com`` . When using this action with S3 on
+          Outposts through the Amazon Web Services SDKs, you provide the  Out-
+          posts  bucket  ARN in place of the bucket name. For more information
+          about S3 on Outposts ARNs, see Using Amazon S3 on  Outposts  in  the
+          Amazon S3 User Guide .
 
        --key (string)
           Object key for which the multipart upload was initiated.
 
        --upload-id (string)
-          Upload ID identifying the multipart upload  whose  parts  are  being
+          Upload  ID  identifying  the  multipart upload whose parts are being
           listed.
 
        --request-payer (string)
-          Confirms  that the requester knows that they will be charged for the
-          request. Bucket owners need not specify this parameter in their  re-
-          quests.  For  information  about  downloading objects from requester
-          pays buckets, see Downloading Objects in Requestor Pays  Buckets  in
+          Confirms that the requester knows that they will be charged for  the
+          request.  Bucket owners need not specify this parameter in their re-
+          quests. For information about  downloading  objects  from  Requester
+          Pays  buckets,  see Downloading Objects in Requester Pays Buckets in
           the Amazon S3 User Guide .
 
           Possible values:
@@ -101,9 +109,27 @@ OPTIONS
           o requester
 
        --expected-bucket-owner (string)
-          The  account ID of the expected bucket owner. If the bucket is owned
-          by a different account, the request will fail with an HTTP 403  (Ac-
-          cess Denied) error.
+          The account ID of the expected bucket owner. If the bucket is  owned
+          by  a different account, the request fails with the HTTP status code
+          403 Forbidden (access denied).
+
+       --sse-customer-algorithm (string)
+          The server-side encryption (SSE) algorithm used to encrypt  the  ob-
+          ject.  This parameter is needed only when the object was created us-
+          ing a checksum algorithm. For more information, see Protecting  data
+          using SSE-C keys in the Amazon S3 User Guide .
+
+       --sse-customer-key (string)
+          The  server-side encryption (SSE) customer managed key. This parame-
+          ter is needed only when the object was created using a checksum  al-
+          gorithm.  For more information, see Protecting data using SSE-C keys
+          in the Amazon S3 User Guide .
+
+       --sse-customer-key-md5 (string)
+          The MD5 server-side encryption (SSE) customer managed key. This  pa-
+          rameter  is needed only when the object was created using a checksum
+          algorithm. For more information, see  Protecting  data  using  SSE-C
+          keys in the Amazon S3 User Guide .
 
        --cli-input-json  (string) Performs service operation based on the JSON
        string provided. The JSON string follows the format provided by  --gen-
@@ -257,6 +283,36 @@ OUTPUT
               Size -> (integer)
                  Size in bytes of the uploaded part data.
 
+              ChecksumCRC32 -> (string)
+                 This  header  can be used as a data integrity check to verify
+                 that the data received is the same data that  was  originally
+                 sent.  This header specifies the base64-encoded, 32-bit CRC32
+                 checksum of the object. For more  information,  see  Checking
+                 object integrity in the Amazon S3 User Guide .
+
+              ChecksumCRC32C -> (string)
+                 The  base64-encoded,  32-bit  CRC32C  checksum of the object.
+                 This will only be present if it was uploaded with the object.
+                 With  multipart  uploads, this may not be a checksum value of
+                 the object. For more information about how checksums are cal-
+                 culated with multipart uploads, see Checking object integrity
+                 in the Amazon S3 User Guide .
+
+              ChecksumSHA1 -> (string)
+                 The base64-encoded, 160-bit SHA-1 digest of the object.  This
+                 will only be present if it was uploaded with the object. With
+                 multipart uploads, this may not be a checksum  value  of  the
+                 object.  For  more information about how checksums are calcu-
+                 lated with multipart uploads, see Checking  object  integrity
+                 in the Amazon S3 User Guide .
+
+              ChecksumSHA256 -> (string)
+                 This  header  can be used as a data integrity check to verify
+                 that the data received is the same data that  was  originally
+                 sent.  This  header  specifies  the  base64-encoded,  256-bit
+                 SHA-256 digest of  the  object.  For  more  information,  see
+                 Checking object integrity in the Amazon S3 User Guide .
+
        Initiator -> (structure)
           Container  element  that  identifies who initiated the multipart up-
           load. If the initiator is an Amazon Web Services account, this  ele-
@@ -290,6 +346,9 @@ OUTPUT
        RequestCharged -> (string)
           If present, indicates that the requester  was  successfully  charged
           for the request.
+
+       ChecksumAlgorithm -> (string)
+          The algorithm that was used to create a checksum of the object.
 
 
 
