@@ -1,0 +1,275 @@
+RESTORE-TABLE()                                                RESTORE-TABLE()
+
+
+
+NAME
+       restore-table -
+
+DESCRIPTION
+       Restores  the specified table to the specified point in time within the
+       earliest_restorable_timestamp and the current time. For  more  informa-
+       tion  about restore points, see Time window for PITR continuous backups
+       in the Amazon Keyspaces Developer Guide .
+
+       Any number of users can execute up to 4 concurrent restores  (any  type
+       of restore) in a given account.
+
+       When  you  restore  using  point in time recovery, Amazon Keyspaces re-
+       stores your source table's schema and data to the state  based  on  the
+       selected timestamp (day:hour:minute:second) to a new table. The Time to
+       Live (TTL) settings are also restored to the state  based  on  the  se-
+       lected timestamp.
+
+       In addition to the table's schema, data, and TTL settings, RestoreTable
+       restores the capacity mode, encryption, and point-in-time recovery set-
+       tings  from  the  source  table. Unlike the table's schema data and TTL
+       settings, which are restored based on  the  selected  timestamp,  these
+       settings  are  always  restored based on the table's settings as of the
+       current time or when the table was deleted.
+
+       You can also overwrite these settings during restore:
+
+       o Read/write capacity mode
+
+       o Provisioned throughput capacity settings
+
+       o Point-in-time (PITR) settings
+
+       o Tags
+
+       For more information, see PITR restore settings in the Amazon Keyspaces
+       Developer Guide .
+
+       The  following  settings  are not restored, and you must configure them
+       manually for the new table.
+
+       o Automatic scaling policies (for tables that use provisioned  capacity
+         mode)
+
+       o Identity and Access Management (IAM) policies
+
+       o Amazon CloudWatch metrics and alarms
+
+       See also: AWS API Documentation
+
+       See 'aws help' for descriptions of global parameters.
+
+SYNOPSIS
+            restore-table
+          --source-keyspace-name <value>
+          --source-table-name <value>
+          --target-keyspace-name <value>
+          --target-table-name <value>
+          [--restore-timestamp <value>]
+          [--capacity-specification-override <value>]
+          [--encryption-specification-override <value>]
+          [--point-in-time-recovery-override <value>]
+          [--tags-override <value>]
+          [--cli-input-json <value>]
+          [--generate-cli-skeleton <value>]
+
+OPTIONS
+       --source-keyspace-name (string)
+          The keyspace name of the source table.
+
+       --source-table-name (string)
+          The name of the source table.
+
+       --target-keyspace-name (string)
+          The name of the target keyspace.
+
+       --target-table-name (string)
+          The name of the target table.
+
+       --restore-timestamp (timestamp)
+          The restore timestamp in ISO 8601 format.
+
+       --capacity-specification-override (structure)
+          Specifies the read/write throughput capacity mode for the target ta-
+          ble. The options are:
+
+          o throughputMode:PAY_PER_REQUEST and
+
+          o throughputMode:PROVISIONED . The  provisioned  capacity  mode  re-
+            quires readCapacityUnits and writeCapacityUnits as inputs.
+
+          The default is throughput_mode:PAY_PER_REQUEST .
+
+          For  more  information,  see Read/write capacity modes in the Amazon
+          Keyspaces Developer Guide .
+
+          throughputMode -> (string)
+              The read/write throughput capacity mode for a table. The options
+              are:
+
+              o throughputMode:PAY_PER_REQUEST and
+
+              o throughputMode:PROVISIONED . The provisioned capacity mode re-
+                quires readCapacityUnits and writeCapacityUnits as inputs.
+
+              The default is throughput_mode:PAY_PER_REQUEST .
+
+              For more information, see Read/write capacity modes in the  Ama-
+              zon Keyspaces Developer Guide .
+
+          readCapacityUnits -> (long)
+              The throughput capacity specified for read operations defined in
+              read capacity units  (RCUs) .
+
+          writeCapacityUnits -> (long)
+              The throughput capacity specified for write  operations  defined
+              in write capacity units  (WCUs) .
+
+       Shorthand Syntax:
+
+          throughputMode=string,readCapacityUnits=long,writeCapacityUnits=long
+
+       JSON Syntax:
+
+          {
+            "throughputMode": "PAY_PER_REQUEST"|"PROVISIONED",
+            "readCapacityUnits": long,
+            "writeCapacityUnits": long
+          }
+
+       --encryption-specification-override (structure)
+          Specifies  the  encryption  settings  for  the target table. You can
+          choose one of the following KMS key (KMS key):
+              <ul> <li> <p> <code>type:AWS_OWNED_KMS_KEY</code> - This key  is
+              owned  by  Amazon Keyspaces. </p> </li> <li> <p> <code>type:CUS-
+              TOMER_MANAGED_KMS_KEY</code> - This key is stored  in  your  ac-
+              count and is created, owned, and managed by you. This option re-
+              quires the <code>kms_key_identifier</code> of  the  KMS  key  in
+              Amazon  Resource  Name  (ARN)  format as input. </p> </li> </ul>
+              <p>The  default  is  <code>type:AWS_OWNED_KMS_KEY</code>.   </p>
+              <p>For  more  information,  see  <a  href="https://docs.aws.ama-
+              zon.com/keyspaces/latest/devguide/EncryptionAtRest.html">Encryp-
+              tion   at   rest</a>   in   the  <i>Amazon  Keyspaces  Developer
+              Guide</i>.</p> type -> (string)
+                 The encryption option specified for the table. You can choose
+                 one of the following KMS keys (KMS keys):
+
+                 o type:AWS_OWNED_KMS_KEY  -  This  key  is  owned  by  Amazon
+                   Keyspaces.
+
+                 o type:CUSTOMER_MANAGED_KMS_KEY - This key is stored in  your
+                   account and is created, owned, and managed by you. This op-
+                   tion requires the kms_key_identifier of the KMS key in Ama-
+                   zon Resource Name (ARN) format as input.
+
+                 The default is type:AWS_OWNED_KMS_KEY .
+
+                 For  more  information,  see Encryption at rest in the Amazon
+                 Keyspaces Developer Guide .
+
+          kmsKeyIdentifier -> (string)
+              The Amazon Resource Name (ARN) of the customer managed KMS  key,
+              for example kms_key_identifier:ARN .
+
+       Shorthand Syntax:
+
+          type=string,kmsKeyIdentifier=string
+
+       JSON Syntax:
+
+          {
+            "type": "CUSTOMER_MANAGED_KMS_KEY"|"AWS_OWNED_KMS_KEY",
+            "kmsKeyIdentifier": "string"
+          }
+
+       --point-in-time-recovery-override (structure)
+          Specifies the pointInTimeRecovery settings for the target table. The
+          options are:
+
+          o ENABLED
+
+          o DISABLED
+
+          If it's not specified, the default is DISABLED .
+
+          For more information,  see  Point-in-time  recovery  in  the  Amazon
+          Keyspaces Developer Guide .
+
+          status -> (string)
+              The options are:
+
+              o ENABLED
+
+              o DISABLED
+
+       Shorthand Syntax:
+
+          status=string
+
+       JSON Syntax:
+
+          {
+            "status": "ENABLED"|"DISABLED"
+          }
+
+       --tags-override (list)
+          A list of key-value pair tags to be attached to the restored table.
+
+          For more information, see Adding tags and labels to Amazon Keyspaces
+          resources in the Amazon Keyspaces Developer Guide .
+
+          (structure)
+              Describes a tag. A tag is a key-value pair. You can add up to 50
+              tags to a single Amazon Keyspaces resource.
+
+              Amazon  Web Services-assigned tag names and values are automati-
+              cally assigned the aws: prefix, which the  user  cannot  assign.
+              Amazon  Web Services-assigned tag names do not count towards the
+              tag limit of 50. User-assigned tag names have the  prefix  user:
+              in  the Cost Allocation Report. You cannot backdate the applica-
+              tion of a tag.
+
+              For more information, see  Adding  tags  and  labels  to  Amazon
+              Keyspaces resources in the Amazon Keyspaces Developer Guide .
+
+              key -> (string)
+                 The  key of the tag. Tag keys are case sensitive. Each Amazon
+                 Keyspaces resource can only have up to one tag with the  same
+                 key. If you try to add an existing tag (same key), the exist-
+                 ing tag value will be updated to the new value.
+
+              value -> (string)
+                 The value of the tag. Tag values are case-sensitive  and  can
+                 be null.
+
+       Shorthand Syntax:
+
+          key=string,value=string ...
+
+       JSON Syntax:
+
+          [
+            {
+              "key": "string",
+              "value": "string"
+            }
+            ...
+          ]
+
+       --cli-input-json  (string) Performs service operation based on the JSON
+       string provided. The JSON string follows the format provided by  --gen-
+       erate-cli-skeleton.  If  other  arguments  are  provided on the command
+       line, the CLI values will override the JSON-provided values. It is  not
+       possible to pass arbitrary binary values using a JSON-provided value as
+       the string will be taken literally.
+
+       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
+       output without sending an API request. If provided with no value or the
+       value input, prints a sample input JSON that can be used as an argument
+       for  --cli-input-json.  If provided with the value output, it validates
+       the command inputs and returns a sample output JSON for that command.
+
+       See 'aws help' for descriptions of global parameters.
+
+OUTPUT
+       restoredTableARN -> (string)
+          The Amazon Resource Name (ARN) of the restored table.
+
+
+
+                                                               RESTORE-TABLE()
