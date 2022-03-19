@@ -1,13 +1,15 @@
 import subprocess
-
+import sys
 
 if __name__ == "__main__":
-    help = subprocess.run("sqlite3", capture_output=True, input=b".help").stdout.decode(
+    # Usage: python3 sqlite3_help.py /path/to/sqlite3
+    bin = sys.argv[-1]
+    help = subprocess.run(bin, capture_output=True, input=b".help").stdout.decode(
         "utf-8"
     )
     # Get the version
     version = (
-        subprocess.run(["sqlite3", "--version"], capture_output=True)
+        subprocess.run([bin, "--version"], capture_output=True)
         .stdout.decode("utf-8")
         .strip()
     )
@@ -16,7 +18,7 @@ if __name__ == "__main__":
     for command in commands:
         filename = command.lstrip(".") + ".txt"
         command_help = subprocess.run(
-            "sqlite3",
+            bin,
             capture_output=True,
             input=".help {}".format(command).encode("utf-8"),
         ).stdout.decode("utf-8")

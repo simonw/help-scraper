@@ -34,9 +34,19 @@ jobs:
         timestamp=$(date -u)
         git commit -m "sqlite-utils: ${timestamp}" || exit 0
         git push
+    - name: Compile latest SQLite
+      run: |-
+        cd /tmp
+        git clone https://github.com/sqlite/sqlite
+        mkdir /tmp/bld
+        cd /tmp/bld
+        ../sqlite/configure
+        make sqlite3.c
+        gcc shell.c sqlite3.c -lpthread -ldl
+        ./a.out --version
     - name: Scrape sqlite3 help
       run: |-
-        python sqlite3_help.py > sqlite3-help.md
+        python sqlite3_help.py /tmp/bld/a.out > sqlite3-help.md
     - name: Commit and push if it changed
       run: |-
         git add -A
