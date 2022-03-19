@@ -1,4 +1,7 @@
 # sqlite3 .help
+
+Version: `3.31.1 2020-01-27 19:55:54 3bfa9cc97da10598521b342961df8f5f68c7388fa117345eeb516eaa837balt1`
+
 ```
 .archive ...             Manage SQL archives
    Each command must have exactly one of the following options:
