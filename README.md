@@ -11,6 +11,7 @@ This repository installs tools and records the output of their `--help` commands
 - [flyctl/](flyctl/) - the [flyctl](https://github.com/superfly/flyctl/) management tool by [Fly.io](https://fly.io/)
 - [aws/](aws/) - the Amazon Web Services [CLI interface](https://aws.amazon.com/cli/)
 - [vercel/](vercel/) - the `vercel` management tool by [Vercel](https://vercel.com/)
+- [sqlite3-help.md](sqlite3-help.md) - the output of `.help` in the `sqlite3` CLI tool
 
 The repo also tracks changes made to some GraphQL schemas:
 
