@@ -20,7 +20,7 @@ if __name__ == "__main__":
         command_help = subprocess.run(
             bin,
             capture_output=True,
-            input=".help {}".format(command).encode("utf-8"),
+            input=".help {}".format(command.lstrip(".")).encode("utf-8"),
         ).stdout.decode("utf-8")
         details.append(command_help.strip())
     print("# sqlite3 .help\n\nVersion: `{}`\n\n```".format(version))
