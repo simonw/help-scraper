@@ -9,7 +9,6 @@ Version: `3.39.0 2022-03-19 15:19:35 d8b65a2dab97392ff81bcc33ff707b4e626a10d84a2
    Options:
        --append            Use the appendvfs
        --async             Write to FILE without journal and fsync()
-.save ?OPTIONS? FILE     Write database to FILE (an alias for .backup ...)
 
 .bail on|off             Stop after hitting an error.  Default OFF
 
@@ -48,11 +47,6 @@ Version: `3.39.0 2022-03-19 15:19:35 d8b65a2dab97392ff81bcc33ff707b4e626a10d84a2
 
 .excel                   Display the output of next command in spreadsheet
    --bom                   Put a UTF8 byte-order mark on intermediate file
-.once ?OPTIONS? ?FILE?   Output for the next SQL command only to FILE
-     If FILE begins with '|' then open as a pipe
-       --bom  Put a UTF8 byte-order mark at the beginning
-       -e     Send output to the system text editor
-       -x     Send output as CSV to a spreadsheet (same as ".excel")
 
 .exit ?CODE?             Exit this program with return-code CODE
 
@@ -101,20 +95,6 @@ Version: `3.39.0 2022-03-19 15:19:35 d8b65a2dab97392ff81bcc33ff707b4e626a10d84a2
 
 .log FILE|off            Turn logging on or off.  FILE can be stderr/stdout
 
-.import FILE TABLE       Import data from FILE into TABLE
-   Options:
-     --ascii               Use \037 and \036 as column and row separators
-     --csv                 Use , and \n as column and row separators
-     --skip N              Skip the first N rows of input
-     --schema S            Target table to be S.TABLE
-     -v                    "Verbose" - increase auxiliary output
-   Notes:
-     *  If TABLE does not exist, it is created.  The first row of input
-        determines the column names.
-     *  If neither --csv or --ascii are used, the input mode is derived
-        from the ".mode" output mode
-     *  If FILE begins with "|" then it is a command that generates the
-        input text.
 .mode MODE ?OPTIONS?     Set output mode
    MODE is one of:
      ascii       Columns/rows delimited by 0x1F and 0x1E
@@ -232,7 +212,6 @@ Version: `3.39.0 2022-03-19 15:19:35 d8b65a2dab97392ff81bcc33ff707b4e626a10d84a2
 
 .tables ?TABLE?          List names of tables matching LIKE pattern TABLE
 
-.check GLOB              Fail if output since .testcase does not match
 .testcase NAME           Begin redirecting output to 'testcase-out.txt'
 
 .testctrl CMD ...        Run various sqlite3_test_control() operations
@@ -260,30 +239,5 @@ Version: `3.39.0 2022-03-19 15:19:35 d8b65a2dab97392ff81bcc33ff707b4e626a10d84a2
 
 .vfsname ?AUX?           Print the name of the VFS stack
 
-.mode MODE ?OPTIONS?     Set output mode
-   MODE is one of:
-     ascii       Columns/rows delimited by 0x1F and 0x1E
-     box         Tables using unicode box-drawing characters
-     csv         Comma-separated values
-     column      Output in columns.  (See .width)
-     html        HTML <table> code
-     insert      SQL insert statements for TABLE
-     json        Results in a JSON array
-     line        One value per line
-     list        Values delimited by "|"
-     markdown    Markdown table format
-     qbox        Shorthand for "box --width 60 --quote"
-     quote       Escape answers as for SQL
-     table       ASCII-art table
-     tabs        Tab-separated values
-     tcl         TCL list elements
-   OPTIONS: (for columnar modes or insert mode):
-     --wrap N       Wrap output lines to no longer than N characters
-     --wordwrap B   Wrap or not at word boundaries per B (on/off)
-     --ww           Shorthand for "--wordwrap 1"
-     --quote        Quote output text as SQL literals
-     --noquote      Do not quote output text
-     TABLE          The name of SQL table used for "insert" mode
 .width NUM1 NUM2 ...     Set minimum column widths for columnar output
-     Negative values right-justify
 ```
