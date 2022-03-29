@@ -1,6 +1,6 @@
 # sqlite3 .help
 
-Version: `3.39.0 2022-03-28 13:22:54 949133231f8f751aa86518d0d3f6f03d7827fec085bfef3929fa3d57369d0216`
+Version: `3.39.0 2022-03-29 13:16:32 d0966d1bdd474e27cb048884d340184f0e81a4fab65eb6b74682b20630caddf8`
 
 ```
 .auth ON|OFF             Show authorizer callbacks
