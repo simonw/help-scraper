@@ -21,3 +21,4 @@ The repo also tracks changes made to some GraphQL schemas:
 ## More help scrapers
 
 - Jason Hall has a help scraper for the `gcloud` CLI tool at https://github.com/imjasonh/gcloud-help
+- Michael Warkentin has a help scraper for the `sentry-cli` CLI tool at https://github.com/mwarkentin/sentry-cli-help
