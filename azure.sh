@@ -1,5 +1,5 @@
 #!/bin/bash
-#pip install azure-cli
+pip install azure-cli
 mkdir -p azure
 az --help > azure/azure-help.txt
 az version > azure/azure-version.txt
