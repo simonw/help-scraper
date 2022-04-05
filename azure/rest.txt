@@ -1,0 +1,79 @@
+
+Command
+    az rest : Invoke a custom request.
+        This command automatically authenticates using the logged-in credential: If Authorization
+        header is not set, it attaches header `Authorization: Bearer <token>`, where `<token>` is
+        retrieved from AAD. The target resource of the token is derived from --url if --url starts
+        with an endpoint from `az cloud show --query endpoints`. You may also use --resource for a
+        custom resource.
+        If Content-Type header is not set and --body is a valid JSON string, Content-Type header
+        will default to application/json.
+
+Arguments
+    --uri --url -u         [Required] : Request URL. If it doesn't start with a host, CLI assumes it
+                                        as an Azure resource ID and prefixes it with the ARM
+                                        endpoint of the current cloud shown by `az cloud show
+                                        --query endpoints.resourceManager`. Common token
+                                        {subscriptionId} will be replaced with the current
+                                        subscription ID specified by `az account set`.
+    --body -b                         : Request body. Use @{file} to load from a file. For quoting
+                                        issues in different terminals, see
+                                        https://github.com/Azure/azure-
+                                        cli/blob/dev/doc/use_cli_effectively.md#quoting-issues.
+    --headers                         : Space-separated headers in KEY=VALUE format or JSON string.
+                                        Use @{file} to load from a file.
+    --method -m                       : HTTP request method.  Allowed values: delete, get, head,
+                                        options, patch, post, put.  Default: get.
+    --output-file                     : Save response payload to a file.
+    --resource                        : Resource url for which CLI should acquire a token from AAD
+                                        in order to access the service. The token will be placed in
+                                        the Authorization header. By default, CLI can figure this
+                                        out based on --url argument, unless you use ones not in the
+                                        list of "az cloud show --query endpoints".
+    --skip-authorization-header       : Do not auto-append Authorization header.
+    --uri-parameters --url-parameters : Query parameters in the URL. Space-separated queries in
+                                        KEY=VALUE format or JSON string. Use @{file} to load from a
+                                        file.
+
+Global Arguments
+    --debug                           : Increase logging verbosity to show all debug logs.
+    --help -h                         : Show this help message and exit.
+    --only-show-errors                : Only show errors, suppressing warnings.
+    --output -o                       : Output format.  Allowed values: json, jsonc, none, table,
+                                        tsv, yaml, yamlc.  Default: json.
+    --query                           : JMESPath query string. See http://jmespath.org/ for more
+                                        information and examples.
+    --subscription                    : Name or ID of subscription. You can configure the default
+                                        subscription using `az account set -s NAME_OR_ID`.
+    --verbose                         : Increase logging verbosity. Use --debug for full debug logs.
+
+Examples
+    Get Audit log through Microsoft Graph
+        az rest --method get --url https://graph.microsoft.com/beta/auditLogs/directoryAudits
+
+
+    Update a Azure Active Directory Graph User's display name
+        az rest --method patch --url
+        "https://graph.microsoft.com/v1.0/users/johndoe@azuresdkteam.onmicrosoft.com" --body
+        "{\"displayName\": \"jondoe2\"}"
+
+
+    Get a virtual machine
+        az rest --method get --uri /subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName
+        }/providers/Microsoft.Compute/virtualMachines/{vmName}?api-version=2019-03-01
+
+
+    Create a public IP address from body.json file
+        az rest --method put --url https://management.azure.com/subscriptions/{subscriptionId}/resou
+        rceGroups/{resourceGroupName}/providers/Microsoft.Network/publicIPAddresses/{publicIpAddress
+        Name}?api-version=2019-09-01 --body @body.json
+
+
+    List the top three resources (Bash)
+        az rest --method get --url
+        https://management.azure.com/subscriptions/{subscriptionId}/resources?api-version=2019-07-01
+        --url-parameters \$top=3
+
+
+To search AI knowledge base for examples, use: az find "az rest"
+
