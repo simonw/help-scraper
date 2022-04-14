@@ -27,6 +27,12 @@ DESCRIPTION
        o Stream  metrics  from only the metric namespaces that you list in In-
          cludeFilters .
 
+       By default, a metric stream always sends the MAX , MIN , SUM , and SAM-
+       PLECOUNT  statistics  for each metric that is streamed. You can use the
+       StatisticsConfigurations parameter to have the metric stream also  send
+       extended statistics in the stream. Streaming extended statistics incurs
+       additional costs. For more information, see Amazon CloudWatch Pricing .
+
        When you use PutMetricStream to create a new metric stream, the  stream
        is  created  in  the running state. If you use it to update an existing
        stream, the state of the stream is not changed.
@@ -44,6 +50,7 @@ SYNOPSIS
           --role-arn <value>
           --output-format <value>
           [--tags <value>]
+          [--statistics-configurations <value>]
           [--cli-input-json <value>]
           [--generate-cli-skeleton <value>]
 
@@ -178,17 +185,95 @@ OPTIONS
             ...
           ]
 
-       --cli-input-json (string) Performs service operation based on the  JSON
-       string  provided. The JSON string follows the format provided by --gen-
-       erate-cli-skeleton. If other arguments  are  provided  on  the  command
-       line,  the CLI values will override the JSON-provided values. It is not
+       --statistics-configurations (list)
+          By default, a metric stream always sends the MAX , MIN , SUM  ,  and
+          SAMPLECOUNT statistics for each metric that is streamed. You can use
+          this parameter to have the metric stream also send extended  statis-
+          tics in the stream. This array can have up to 100 members.
+
+          For  each  entry  in this array, you specify one or more metrics and
+          the list of extended statistics to stream for those metrics. The ex-
+          tended statistics that you can stream depend on the stream's Output-
+          Format . If the OutputFormat is json , you can stream  any  extended
+          statistic that is supported by CloudWatch, listed in CloudWatch sta-
+          tistics definitions . If the OutputFormat is opentelemetry0.7 ,  you
+          can stream percentile statistics (p*??* ).
+
+          (structure)
+              By  default,  a metric stream always sends the MAX , MIN , SUM ,
+              and SAMPLECOUNT statistics for each  metric  that  is  streamed.
+              This structure contains information for one metric that includes
+              extended statistics in the stream. For  more  information  about
+              extended  statistics,  see CloudWatch, listed in CloudWatch sta-
+              tistics definitions .
+
+              IncludeMetrics -> (list)
+                 An array of metric name and namespace pairs that  stream  the
+                 extended  statistics  listed  in the value of the Additional-
+                 Statistics parameter. There can be as many as  100  pairs  in
+                 the array.
+
+                 All  metrics  that  match  the combination of metric name and
+                 namespace will be streamed with the extended  statistics,  no
+                 matter their dimensions.
+
+                 (structure)
+                     This  object contains the information for one metric that
+                     is to streamed with extended statistics.
+
+                     Namespace -> (string)
+                        The metric namespace for the metric.
+
+                     MetricName -> (string)
+                        The name of the metric.
+
+              AdditionalStatistics -> (list)
+                 The list of extended statistics that are to be  streamed  for
+                 the metrics listed in the IncludeMetrics array in this struc-
+                 ture. This list can include as many as 20 statistics.
+
+                 If the OutputFormat for the stream is opentelemetry0.7 ,  the
+                 only  valid values are p*??* `` percentile statistics such as
+                 ``p90 , p99 and so on.
+
+                 If the OutputFormat for the stream is json , the valid values
+                 are include the abbreviations for all of the extended statis-
+                 tics listed in CloudWatch statistics definitions . For  exam-
+                 ple, this includes tm98,  wm90 , PR(:300) , and so on.
+
+                 (string)
+
+       Shorthand Syntax:
+
+          IncludeMetrics=[{Namespace=string,MetricName=string},{Namespace=string,MetricName=string}],AdditionalStatistics=string,string ...
+
+       JSON Syntax:
+
+          [
+            {
+              "IncludeMetrics": [
+                {
+                  "Namespace": "string",
+                  "MetricName": "string"
+                }
+                ...
+              ],
+              "AdditionalStatistics": ["string", ...]
+            }
+            ...
+          ]
+
+       --cli-input-json  (string) Performs service operation based on the JSON
+       string provided. The JSON string follows the format provided by  --gen-
+       erate-cli-skeleton.  If  other  arguments  are  provided on the command
+       line, the CLI values will override the JSON-provided values. It is  not
        possible to pass arbitrary binary values using a JSON-provided value as
        the string will be taken literally.
 
-       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
+       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
        output without sending an API request. If provided with no value or the
        value input, prints a sample input JSON that can be used as an argument
-       for --cli-input-json. If provided with the value output,  it  validates
+       for  --cli-input-json.  If provided with the value output, it validates
        the command inputs and returns a sample output JSON for that command.
 
        See 'aws help' for descriptions of global parameters.
