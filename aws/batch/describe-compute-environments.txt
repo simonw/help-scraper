@@ -10,7 +10,7 @@ DESCRIPTION
 
        If  you're  using an unmanaged compute environment, you can use the De-
        scribeComputeEnvironment operation to determine the ecsClusterArn  that
-       you should launch your Amazon ECS container instances into.
+       you launch your Amazon ECS container instances into.
 
        See also: AWS API Documentation
 
@@ -166,7 +166,7 @@ OUTPUT
 
               type -> (string)
                  The  type  of the compute environment: MANAGED or UNMANAGED .
-                 For more information, see Compute Environments in  the  Batch
+                 For more information, see Compute environments in  the  Batch
                  User Guide .
 
               state -> (string)
@@ -196,17 +196,17 @@ OUTPUT
 
               computeResources -> (structure)
                  The  compute  resources  defined for the compute environment.
-                 For more information, see Compute Environments in  the  Batch
+                 For more information, see Compute environments in  the  Batch
                  User Guide .
 
                  type -> (string)
                      The  type  of compute environment: EC2 , SPOT , FARGATE ,
-                     or FARGATE_SPOT . For more information, see Compute Envi-
+                     or FARGATE_SPOT . For more information, see Compute envi-
                      ronments in the Batch User Guide .
 
                      If  you choose SPOT , you must also specify an Amazon EC2
                      Spot Fleet role with the spotIamFleetRole parameter.  For
-                     more  information,  see Amazon EC2 Spot Fleet role in the
+                     more  information,  see Amazon EC2 spot fleet role in the
                      Batch User Guide .
 
                  allocationStrategy -> (string)
@@ -214,7 +214,7 @@ OUTPUT
                      if not enough instances of the best fitting instance type
                      can be allocated. This might be because  of  availability
                      of  the instance type in the Region or Amazon EC2 service
-                     limits . For more information, see Allocation  Strategies
+                     limits . For more information, see Allocation  strategies
                      in the Batch User Guide .
 
                      NOTE:
@@ -233,7 +233,11 @@ OUTPUT
                      the  currently  running jobs have completed. This alloca-
                      tion strategy keeps costs lower but can limit scaling. If
                      you  are  using  Spot  Fleets with BEST_FIT then the Spot
-                     Fleet IAM Role must be specified.
+                     Fleet IAM Role must be specified. Compute resources  that
+                     use  a  BEST_FIT allocation strategy don't support infra-
+                     structure updates and can't update some  parameters.  For
+                     more  information,  see  Updating compute environments in
+                     the Batch User Guide .
                         BEST_FIT_PROGRESSIVE
 
                      Batch will select  additional  instance  types  that  are
@@ -341,7 +345,7 @@ OUTPUT
                      The VPC subnets where the compute resources are launched.
                      These subnets must be within the same VPC.  Fargate  com-
                      pute resources can contain up to 16 subnets. For more in-
-                     formation, see VPCs and Subnets in the  Amazon  VPC  User
+                     formation, see VPCs and subnets in the  Amazon  VPC  User
                      Guide .
 
                      (string)
@@ -375,8 +379,8 @@ OUTPUT
                      stance profile. For example, `` ecsInstanceRole `` or
                      ``
                      arn:aws:iam::<aws_account_id>    :instance-profile/ecsIn-
-                     stanceRole `` . For more information, see Amazon ECS  In-
-                     stance Role in the Batch User Guide .
+                     stanceRole `` . For more information, see Amazon ECS  in-
+                     stance role in the Batch User Guide .
 
                      System Message: WARNING/2 (<string>:, line 552)
                             Inline literal start-string without end-string.
@@ -415,7 +419,7 @@ OUTPUT
                      multi-node parallel job on  a  logical  grouping  of  in-
                      stances  within a single Availability Zone with high net-
                      work flow potential. For more information, see  Placement
-                     Groups in the Amazon EC2 User Guide for Linux Instances .
+                     groups in the Amazon EC2 User Guide for Linux Instances .
 
                      NOTE:
                         This  parameter isn't applicable to jobs that are run-
@@ -441,7 +445,7 @@ OUTPUT
                      Fleet IAM role applied to  a  SPOT  compute  environment.
                      This  role  is required if the allocation strategy set to
                      BEST_FIT or if the allocation strategy  isn't  specified.
-                     For  more  information, see Amazon EC2 Spot Fleet Role in
+                     For  more  information, see Amazon EC2 spot fleet role in
                      the Batch User Guide .
 
                      NOTE:
@@ -454,7 +458,7 @@ OUTPUT
                         zonEC2SpotFleetTaggingRole  managed policy. The previ-
                         ously recommended AmazonEC2SpotFleetRole managed  pol-
                         icy  doesn't have the required permissions to tag Spot
-                        Instances. For more information,  see  Spot  Instances
+                        Instances. For more information,  see  Spot  instances
                         not tagged on creation in the Batch User Guide .
 
                  launchTemplate -> (structure)
@@ -464,7 +468,7 @@ OUTPUT
                      same parameters in the launch template. You must  specify
                      either  the launch template ID or launch template name in
                      the request, but not  both.  For  more  information,  see
-                     Launch Template Support in the Batch User Guide .
+                     Launch template support in the Batch User Guide .
 
                      NOTE:
                         This  parameter isn't applicable to jobs that are run-
@@ -485,15 +489,21 @@ OUTPUT
                         the default version of the launch template is used.
 
                         WARNING:
-                            After  the  compute  environment  is  created, the
-                            launch template version that's used isn't changed,
-                            even  if  the  $Default or $Latest version for the
-                            launch template is updated. To use  a  new  launch
-                            template  version,  create  a new compute environ-
-                            ment, add the new compute environment to  the  ex-
-                            isting  job queue, remove the old compute environ-
-                            ment from the job queue, and delete the  old  com-
-                            pute environment.
+                            If the AMI ID that's used in a compute environment
+                            is from the launch template, the AMI isn't changed
+                            when the compute environment is updated. It's only
+                            changed if the updateToLatestImageVersion  parame-
+                            ter  for  the compute environment is set to true .
+                            During an infrastructure update, if either $Latest
+                            or  $Default  is specified, Batch re-evaluates the
+                            launch template version, and it might use  a  dif-
+                            ferent version of the launch template. This is the
+                            case even if the launch template  isn't  specified
+                            in  the  update.  When updating a compute environ-
+                            ment, changing the launch template requires an in-
+                            frastructure  update  of  the compute environment.
+                            For more information, see Updating  compute  envi-
+                            ronments in the Batch User Guide .
 
                         Default: $Default .
 
@@ -523,28 +533,47 @@ OUTPUT
                             The  image type to match with the instance type to
                             select an AMI. If  the  imageIdOverride  parameter
                             isn't  specified,  then  a recent Amazon ECS-opti-
-                            mized Amazon Linux 2 AMI (ECS_AL2 ) is used.
+                            mized Amazon Linux 2 AMI (ECS_AL2 ) is used. If  a
+                            new image type is specified in an update, but nei-
+                            ther an imageId nor a imageIdOverride parameter is
+                            specified,  then  the  latest Amazon ECS optimized
+                            AMI for that image type that's supported by  Batch
+                            is used.
                                    ECS_AL2
 
-                               Amazon Linux 2  Default  for  all  non-GPU  in-
+                               Amazon  Linux  2   Default  for all non-GPU in-
                                stance families.
                                    ECS_AL2_NVIDIA
 
-                               Amazon  Linux  2  (GPU) Default for all GPU in-
-                               stance families (for example P4 and  G4  )  and
-                               can  be  used  for  all non Amazon Web Services
+                               Amazon Linux 2 (GPU) Default for  all  GPU  in-
+                               stance  families  (for  example P4 and G4 ) and
+                               can be used for all  non  Amazon  Web  Services
                                Graviton-based instance types.
                                    ECS_AL1
 
-                               Amazon Linux . Amazon  Linux  is  reaching  the
-                               end-of-life  of  standard support. For more in-
+                               Amazon  Linux  .  Amazon  Linux is reaching the
+                               end-of-life of standard support. For  more  in-
                                formation, see Amazon Linux AMI .
 
                         imageIdOverride -> (string)
                             The AMI ID used for instances launched in the com-
-                            pute  environment  that match the image type. This
-                            setting overrides the imageId set in  the  comput-
+                            pute environment that match the image  type.  This
+                            setting  overrides  the imageId set in the comput-
                             eResource object.
+
+                            NOTE:
+                               The AMI that you choose for a compute  environ-
+                               ment  must  match  the  architecture of the in-
+                               stance types that you intend to  use  for  that
+                               compute  environment. For example, if your com-
+                               pute environment uses A1  instance  types,  the
+                               compute  resource AMI that you choose must sup-
+                               port ARM instances. Amazon ECS vends  both  x86
+                               and  ARM  versions  of the Amazon ECS-optimized
+                               Amazon Linux 2 AMI. For more  information,  see
+                               Amazon  ECS-optimized Amazon Linux 2 AMI in the
+                               Amazon  Elastic  Container  Service   Developer
+                               Guide .
 
               serviceRole -> (string)
                  The service role associated with the compute environment that
@@ -552,11 +581,27 @@ OUTPUT
                  tions on your behalf. For more information, see Batch service
                  IAM role in the Batch User Guide .
 
+              updatePolicy -> (structure)
+                 Specifies the infrastructure update policy  for  the  compute
+                 environment.  For  more  information about infrastructure up-
+                 dates, see Updating compute environments in  the  Batch  User
+                 Guide .
+
+                 terminateJobsOnUpdate -> (boolean)
+                     Specifies  whether jobs are automatically terminated when
+                     the computer environment infrastructure is  updated.  The
+                     default value is false .
+
+                 jobExecutionTimeoutMinutes -> (long)
+                     Specifies  the  job timeout, in minutes, when the compute
+                     environment infrastructure is updated. The default  value
+                     is 30.
+
        nextToken -> (string)
-          The nextToken value to include in a  future  DescribeComputeEnviron-
+          The  nextToken  value to include in a future DescribeComputeEnviron-
           ments request. When the results of a DescribeComputeEnvironments re-
-          quest exceed maxResults , this value can be  used  to  retrieve  the
-          next  page of results. This value is null when there are no more re-
+          quest  exceed  maxResults  ,  this value can be used to retrieve the
+          next page of results. This value is null when there are no more  re-
           sults to return.
 
 
