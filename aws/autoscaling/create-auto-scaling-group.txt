@@ -60,6 +60,7 @@ SYNOPSIS
           [--max-instance-lifetime <value>]
           [--context <value>]
           [--desired-capacity-type <value>]
+          [--default-instance-warmup <value>]
           [--cli-input-json <value>]
           [--generate-cli-skeleton <value>]
 
@@ -766,12 +767,14 @@ OPTIONS
           minimum size of the group.
 
        --default-cooldown (integer)
-          The amount of time, in seconds, after a scaling  activity  completes
-          before  another scaling activity can start. The default value is 300
-          . This setting applies when using simple scaling policies,  but  not
-          when using other scaling policies or scheduled scaling. For more in-
-          formation, see Scaling cooldowns for Amazon EC2 Auto Scaling in  the
-          Amazon EC2 Auto Scaling User Guide .
+              Only needed if you use simple scaling policies.
+
+          The amount of time, in seconds, between one scaling activity  ending
+          and  another  one  starting due to simple scaling policies. For more
+          information, see Scaling cooldowns for Amazon EC2  Auto  Scaling  in
+          the Amazon EC2 Auto Scaling User Guide .
+
+          Default: 300 seconds
 
        --availability-zones (list)
           A  list  of  Availability  Zones where instances in the Auto Scaling
@@ -823,35 +826,39 @@ OPTIONS
        --health-check-grace-period (integer)
           The amount of time, in seconds, that Amazon EC2 Auto  Scaling  waits
           before  checking  the health status of an EC2 instance that has come
-          into service and marking it unhealthy due to a failed health  check.
-          The  default  value  is  0  . For more information, see Health check
-          grace period in the Amazon EC2 Auto Scaling User Guide .
+          into service and marking it unhealthy due to a failed  Elastic  Load
+          Balancing  or  custom health check. This is useful if your instances
+          do not immediately pass these health checks after they enter the In-
+          Service  state.  For more information, see Health check grace period
+          in the Amazon EC2 Auto Scaling User Guide .
 
-          Required if you are adding an ELB health check.
+          Default: 0 seconds
 
        --placement-group (string)
           The name of an existing placement group into which  to  launch  your
-          instances,  if  any.  A placement group is a logical grouping of in-
-          stances within a single Availability Zone. You cannot specify multi-
-          ple  Availability Zones and a placement group. For more information,
-          see Placement Groups in the Amazon EC2  User  Guide  for  Linux  In-
-          stances .
+          instances.  For more information, see Placement groups in the Amazon
+          EC2 User Guide for Linux Instances .
+
+          NOTE:
+              A cluster placement group is a  logical  grouping  of  instances
+              within  a  single Availability Zone. You cannot specify multiple
+              Availability Zones and a cluster placement group.
 
        --vpc-zone-identifier (string)
-          A  comma-separated  list  of  subnet IDs for a virtual private cloud
-          (VPC) where instances in the Auto Scaling group can be  created.  If
-          you  specify  VPCZoneIdentifier with AvailabilityZones , the subnets
-          that you specify for this parameter must reside in those  Availabil-
+          A comma-separated list of subnet IDs for  a  virtual  private  cloud
+          (VPC)  where  instances in the Auto Scaling group can be created. If
+          you specify VPCZoneIdentifier with AvailabilityZones ,  the  subnets
+          that  you specify for this parameter must reside in those Availabil-
           ity Zones.
 
-          Conditional:  If your account supports EC2-Classic and VPC, this pa-
+          Conditional: If your account supports EC2-Classic and VPC, this  pa-
           rameter is required to launch instances into a VPC.
 
        --termination-policies (list)
-          A policy or a list of policies that are used to select the  instance
+          A  policy or a list of policies that are used to select the instance
           to terminate. These policies are executed in the order that you list
-          them. For more information, see Controlling which Auto  Scaling  in-
-          stances  terminate  during  scale  in in the Amazon EC2 Auto Scaling
+          them.  For  more information, see Controlling which Auto Scaling in-
+          stances terminate during scale in in the  Amazon  EC2  Auto  Scaling
           User Guide .
 
           (string)
@@ -864,29 +871,29 @@ OPTIONS
        tected-from-scale-in (boolean)
           Indicates whether newly launched instances are protected from termi-
           nation by Amazon EC2 Auto Scaling when scaling in. For more informa-
-          tion  about  preventing  instances from terminating on scale in, see
-          Using instance scale-in protection in the Amazon  EC2  Auto  Scaling
+          tion about preventing instances from terminating on  scale  in,  see
+          Using  instance  scale-in  protection in the Amazon EC2 Auto Scaling
           User Guide .
 
        --capacity-rebalance | --no-capacity-rebalance (boolean)
           Indicates whether Capacity Rebalancing is enabled. Otherwise, Capac-
-          ity Rebalancing is disabled. When you turn on Capacity  Rebalancing,
-          Amazon  EC2 Auto Scaling attempts to launch a Spot Instance whenever
-          Amazon EC2 notifies that a Spot Instance is at an elevated  risk  of
-          interruption.  After launching a new instance, it then terminates an
-          old instance. For more information, see Amazon EC2 Auto Scaling  Ca-
+          ity  Rebalancing is disabled. When you turn on Capacity Rebalancing,
+          Amazon EC2 Auto Scaling attempts to launch a Spot Instance  whenever
+          Amazon  EC2  notifies that a Spot Instance is at an elevated risk of
+          interruption. After launching a new instance, it then terminates  an
+          old  instance. For more information, see Amazon EC2 Auto Scaling Ca-
           pacity Rebalancing in the Amazon EC2 Auto Scaling User Guide .
 
        --lifecycle-hook-specification-list (list)
-          One  or more lifecycle hooks for the group, which specify actions to
-          perform when Amazon EC2 Auto  Scaling  launches  or  terminates  in-
+          One or more lifecycle hooks for the group, which specify actions  to
+          perform  when  Amazon  EC2  Auto  Scaling launches or terminates in-
           stances.
 
           (structure)
-              Describes  information  used  to specify a lifecycle hook for an
+              Describes information used to specify a lifecycle  hook  for  an
               Auto Scaling group.
 
-              For more information, see  Amazon  EC2  Auto  Scaling  lifecycle
+              For  more  information,  see  Amazon  EC2 Auto Scaling lifecycle
               hooks in the Amazon EC2 Auto Scaling User Guide .
 
               LifecycleHookName -> (string)
@@ -906,23 +913,23 @@ OPTIONS
                  get.
 
               HeartbeatTimeout -> (integer)
-                 The maximum time, in seconds,  that  can  elapse  before  the
+                 The  maximum  time,  in  seconds,  that can elapse before the
                  lifecycle hook times out.
 
                  If the lifecycle hook times out, Amazon EC2 Auto Scaling per-
-                 forms the action that you specified in the DefaultResult  pa-
-                 rameter.  You  can prevent the lifecycle hook from timing out
+                 forms  the action that you specified in the DefaultResult pa-
+                 rameter. You can prevent the lifecycle hook from  timing  out
                  by calling  RecordLifecycleActionHeartbeat .
 
               DefaultResult -> (string)
-                 Defines the action the Auto Scaling group  should  take  when
-                 the  lifecycle hook timeout elapses or if an unexpected fail-
-                 ure occurs. The valid values are CONTINUE and ABANDON  .  The
+                 Defines  the  action  the Auto Scaling group should take when
+                 the lifecycle hook timeout elapses or if an unexpected  fail-
+                 ure  occurs.  The valid values are CONTINUE and ABANDON . The
                  default value is ABANDON .
 
               NotificationTargetARN -> (string)
-                 The  ARN of the target that Amazon EC2 Auto Scaling sends no-
-                 tifications to when an instance is in  the  transition  state
+                 The ARN of the target that Amazon EC2 Auto Scaling sends  no-
+                 tifications  to  when  an instance is in the transition state
                  for the lifecycle hook. The notification target can be either
                  an SQS queue or an SNS topic.
 
@@ -930,7 +937,7 @@ OPTIONS
                  The ARN of the IAM role that allows the Auto Scaling group to
                  publish to the specified notification target.
 
-                 Valid  only if the notification target is an Amazon SNS topic
+                 Valid only if the notification target is an Amazon SNS  topic
                  or an Amazon SQS queue. Required for new lifecycle hooks, but
                  optional when updating existing hooks.
 
@@ -954,13 +961,13 @@ OPTIONS
           ]
 
        --tags (list)
-          One  or more tags. You can tag your Auto Scaling group and propagate
+          One or more tags. You can tag your Auto Scaling group and  propagate
           the tags to the Amazon EC2 instances it launches. Tags are not prop-
-          agated  to  Amazon  EBS  volumes. To add tags to Amazon EBS volumes,
+          agated to Amazon EBS volumes. To add tags  to  Amazon  EBS  volumes,
           specify the tags in a launch template but use caution. If the launch
           template specifies an instance tag with a key that is also specified
-          for the Auto Scaling group, Amazon EC2 Auto  Scaling  overrides  the
-          value  of  that  instance  tag  with the value specified by the Auto
+          for  the  Auto  Scaling group, Amazon EC2 Auto Scaling overrides the
+          value of that instance tag with the  value  specified  by  the  Auto
           Scaling group. For more information, see Tagging Auto Scaling groups
           and instances in the Amazon EC2 Auto Scaling User Guide .
 
@@ -971,7 +978,7 @@ OPTIONS
                  The name of the Auto Scaling group.
 
               ResourceType -> (string)
-                 The  type of resource. The only supported value is auto-scal-
+                 The type of resource. The only supported value is  auto-scal-
                  ing-group .
 
               Key -> (string)
@@ -981,7 +988,7 @@ OPTIONS
                  The tag value.
 
               PropagateAtLaunch -> (boolean)
-                 Determines whether the tag is added to new instances as  they
+                 Determines  whether the tag is added to new instances as they
                  are launched in the group.
 
        Shorthand Syntax:
@@ -1002,17 +1009,17 @@ OPTIONS
           ]
 
        --service-linked-role-arn (string)
-          The  Amazon  Resource Name (ARN) of the service-linked role that the
-          Auto Scaling group uses to call other Amazon Web  Services  on  your
-          behalf.  By  default,  Amazon EC2 Auto Scaling uses a service-linked
-          role named AWSServiceRoleForAutoScaling , which  it  creates  if  it
-          does  not  exist.  For more information, see Service-linked roles in
+          The Amazon Resource Name (ARN) of the service-linked role  that  the
+          Auto  Scaling  group  uses to call other Amazon Web Services on your
+          behalf. By default, Amazon EC2 Auto Scaling  uses  a  service-linked
+          role  named  AWSServiceRoleForAutoScaling  ,  which it creates if it
+          does not exist. For more information, see  Service-linked  roles  in
           the Amazon EC2 Auto Scaling User Guide .
 
        --max-instance-lifetime (integer)
-          The maximum amount of time, in seconds, that an instance can  be  in
+          The  maximum  amount of time, in seconds, that an instance can be in
           service. The default is null. If specified, the value must be either
-          0 or a number equal to or greater than 86,400 seconds (1  day).  For
+          0  or  a number equal to or greater than 86,400 seconds (1 day). For
           more information, see Replacing Auto Scaling instances based on max-
           imum instance lifetime in the Amazon EC2 Auto Scaling User Guide .
 
@@ -1020,28 +1027,52 @@ OPTIONS
           Reserved.
 
        --desired-capacity-type (string)
-          The unit of measurement for the value specified for  desired  capac-
+          The  unit  of measurement for the value specified for desired capac-
           ity. Amazon EC2 Auto Scaling supports DesiredCapacityType for attri-
-          bute-based instance type selection only. For more  information,  see
-          Creating  an  Auto Scaling group using attribute-based instance type
+          bute-based  instance  type selection only. For more information, see
+          Creating an Auto Scaling group using attribute-based  instance  type
           selection in the Amazon EC2 Auto Scaling User Guide .
 
-          By default, Amazon EC2 Auto Scaling specifies units ,  which  trans-
+          By  default,  Amazon EC2 Auto Scaling specifies units , which trans-
           lates into number of instances.
 
           Valid values: units | vcpu | memory-mib
 
-       --cli-input-json  (string) Performs service operation based on the JSON
-       string provided. The JSON string follows the format provided by  --gen-
-       erate-cli-skeleton.  If  other  arguments  are  provided on the command
-       line, the CLI values will override the JSON-provided values. It is  not
+       --default-instance-warmup (integer)
+          The amount of time, in seconds, until a newly launched instance  can
+          contribute  to the Amazon CloudWatch metrics. This delay lets an in-
+          stance finish initializing before Amazon EC2 Auto Scaling aggregates
+          instance  metrics,  resulting  in more reliable usage data. Set this
+          value equal to the amount of time that it takes  for  resource  con-
+          sumption  to  become  stable after an instance reaches the InService
+          state. For more information, see Set the default instance warmup for
+          an Auto Scaling group in the Amazon EC2 Auto Scaling User Guide .
+
+          WARNING:
+              To manage your warm-up settings at the group level, we recommend
+              that you set the default instance warmup, even if its  value  is
+              set  to 0 seconds . This also optimizes the performance of scal-
+              ing policies that scale continuously, such  as  target  tracking
+              and step scaling policies.
+
+              If  you  need to remove a value that you previously set, include
+              the property but specify -1 for the value. However, we  strongly
+              recommend  keeping the default instance warmup enabled by speci-
+              fying a minimum value of 0 .
+
+          Default: None
+
+       --cli-input-json (string) Performs service operation based on the  JSON
+       string  provided. The JSON string follows the format provided by --gen-
+       erate-cli-skeleton. If other arguments  are  provided  on  the  command
+       line,  the CLI values will override the JSON-provided values. It is not
        possible to pass arbitrary binary values using a JSON-provided value as
        the string will be taken literally.
 
-       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
+       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
        output without sending an API request. If provided with no value or the
        value input, prints a sample input JSON that can be used as an argument
-       for  --cli-input-json.  If provided with the value output, it validates
+       for --cli-input-json. If provided with the value output,  it  validates
        the command inputs and returns a sample output JSON for that command.
 
        See 'aws help' for descriptions of global parameters.
@@ -1050,8 +1081,8 @@ EXAMPLES
        Example 1: To create an Auto Scaling group
 
        The following create-auto-scaling-group example creates an Auto Scaling
-       group  in  subnets  in multiple Availability Zones within a Region. The
-       instances launch with the default version of the specified launch  tem-
+       group in subnets in multiple Availability Zones within  a  Region.  The
+       instances  launch with the default version of the specified launch tem-
        plate. Note that defaults are used for most other settings, such as the
        termination policies and health check configuration.
 
@@ -1064,17 +1095,17 @@ EXAMPLES
 
        This command produces no output.
 
-       For more information, see Auto Scaling groups in the  Amazon  EC2  Auto
+       For  more  information,  see Auto Scaling groups in the Amazon EC2 Auto
        Scaling User Guide.
 
-       Example  2:  To  attach an Application Load Balancer, Network Load Bal-
+       Example 2: To attach an Application Load Balancer,  Network  Load  Bal-
        ancer, or Gateway Load Balancer
 
-       This example specifies the ARN of a target group for  a  load  balancer
+       This  example  specifies  the ARN of a target group for a load balancer
        that supports the expected traffic. The health check type specifies ELB
-       so that when Elastic Load Balancing reports an instance  as  unhealthy,
-       the  Auto  Scaling group replaces it. The command also defines a health
-       check grace period of 600 seconds. The grace period helps prevent  pre-
+       so  that  when Elastic Load Balancing reports an instance as unhealthy,
+       the Auto Scaling group replaces it. The command also defines  a  health
+       check  grace period of 600 seconds. The grace period helps prevent pre-
        mature termination of newly launched instances.
 
           aws autoscaling create-auto-scaling-group \
@@ -1089,15 +1120,15 @@ EXAMPLES
 
        This command produces no output.
 
-       For  more  information,  see Elastic Load Balancing and Amazon EC2 Auto
+       For more information, see Elastic Load Balancing and  Amazon  EC2  Auto
        Scaling in the Amazon EC2 Auto Scaling User Guide.
 
-       Example 3: To specify a placement group and use the latest  version  of
+       Example  3:  To specify a placement group and use the latest version of
        the launch template
 
-       This  example launches instances into a placement group within a single
-       Availability Zone. This can be useful for low-latency groups  with  HPC
-       workloads.  This example also specifies the minimum size, maximum size,
+       This example launches instances into a placement group within a  single
+       Availability  Zone.  This can be useful for low-latency groups with HPC
+       workloads. This example also specifies the minimum size, maximum  size,
        and desired capacity of the group.
 
           aws autoscaling create-auto-scaling-group \
@@ -1114,15 +1145,15 @@ EXAMPLES
        For more information, see Placement groups in the Amazon EC2 User Guide
        for Linux Instances.
 
-       Example  4:  To  specify a single instance Auto Scaling group and use a
+       Example 4: To specify a single instance Auto Scaling group  and  use  a
        specific version of the launch template
 
        This example creates an Auto Scaling group with minimum and maximum ca-
-       pacity  set to 1 to enforce that one instance will be running. The com-
-       mand also specifies v1 of a launch template in which the ID of  an  ex-
-       isting  ENI is specified. When you use a launch template that specifies
+       pacity set to 1 to enforce that one instance will be running. The  com-
+       mand  also  specifies v1 of a launch template in which the ID of an ex-
+       isting ENI is specified. When you use a launch template that  specifies
        an existing ENI for eth0, you must specify an Availability Zone for the
-       Auto  Scaling  group  that  matches the network interface, without also
+       Auto Scaling group that matches the  network  interface,  without  also
        specifying a subnet ID in the request.
 
           aws autoscaling create-auto-scaling-group \
@@ -1134,14 +1165,14 @@ EXAMPLES
 
        This command produces no output.
 
-       For more information, see Auto Scaling groups in the  Amazon  EC2  Auto
+       For  more  information,  see Auto Scaling groups in the Amazon EC2 Auto
        Scaling User Guide.
 
        Example 5: To specify a different termination policy
 
        This example creates an Auto Scaling group using a launch configuration
-       and sets the termination  policy  to  terminate  the  oldest  instances
-       first.  The  command also applies a tag to the group and its instances,
+       and  sets  the  termination  policy  to  terminate the oldest instances
+       first. The command also applies a tag to the group and  its  instances,
        with a key of Role and a value of WebServer.
 
           aws autoscaling create-auto-scaling-group \
@@ -1160,7 +1191,7 @@ EXAMPLES
 
        Example 6: To specify a launch lifecycle hook
 
-       This  example  creates an Auto Scaling group with a lifecycle hook that
+       This example creates an Auto Scaling group with a lifecycle  hook  that
        supports a custom action at instance launch.
 
           aws autoscaling create-auto-scaling-group \
@@ -1196,12 +1227,12 @@ EXAMPLES
 
        This command produces no output.
 
-       For more information, see Amazon EC2 Auto Scaling  lifecycle  hooks  in
+       For  more  information,  see Amazon EC2 Auto Scaling lifecycle hooks in
        the Amazon EC2 Auto Scaling User Guide.
 
        Example 7: To specify a termination lifecycle hook
 
-       This  example  creates an Auto Scaling group with a lifecycle hook that
+       This example creates an Auto Scaling group with a lifecycle  hook  that
        supports a custom action at instance termination.
 
           aws autoscaling create-auto-scaling-group \
@@ -1230,13 +1261,13 @@ EXAMPLES
 
        This command produces no output.
 
-       For more information, see Amazon EC2 Auto Scaling  lifecycle  hooks  in
+       For  more  information,  see Amazon EC2 Auto Scaling lifecycle hooks in
        the Amazon EC2 Auto Scaling User Guide.
 
        Example 8: To specify a custom termination policy
 
-       This  example  creates  an  Auto  Scaling group that specifies a custom
-       Lambda function termination policy that tells Amazon EC2  Auto  Scaling
+       This example creates an Auto Scaling  group  that  specifies  a  custom
+       Lambda  function  termination policy that tells Amazon EC2 Auto Scaling
        which instances are safe to terminate on scale in.
 
           aws autoscaling create-auto-scaling-group \
@@ -1249,7 +1280,7 @@ EXAMPLES
 
        This command produces no output.
 
-       For  more  information,  see  Creating a custom termination policy with
+       For more information, see Creating a  custom  termination  policy  with
        Lambda in the Amazon EC2 Auto Scaling User Guide.
 
 OUTPUT

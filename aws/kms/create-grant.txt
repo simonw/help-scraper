@@ -17,7 +17,7 @@ DESCRIPTION
        without changing your key policies or IAM policies.
 
        For detailed information about grants, including grant terminology, see
-       Using grants in the * Key Management Service Developer Guide  *  .  For
+       Grants in KMS in the * Key Management Service Developer Guide *  .  For
        examples  of  working with grants in several programming languages, see
        Programming grants .
 
@@ -38,8 +38,8 @@ DESCRIPTION
          ListGrants or  ListRetirableGrants operations.
 
        The KMS key that you use for this operation must be in a compatible key
-       state.  For  details,  see Key state: Effect on your KMS key in the Key
-       Management Service Developer Guide .
+       state.  For  details,  see Key states of KMS keys in the Key Management
+       Service Developer Guide .
           Cross-account use : Yes. To perform this operation on a KMS key in a
           different  Amazon  Web  Services account, specify the key ARN in the
           value of the KeyId parameter.
@@ -122,12 +122,13 @@ OPTIONS
        --operations (list)
           A list of operations that the grant permits.
 
-          The operation must be supported on the KMS  key.  For  example,  you
-          cannot  create a grant for a symmetric KMS key that allows the  Sign
-          operation, or a grant for an asymmetric  KMS  key  that  allows  the
-          GenerateDataKey operation. If you try, KMS returns a ValidationError
-          exception. For details, see Grant operations in the  Key  Management
-          Service Developer Guide .
+          This list must include only  operations  that  are  permitted  in  a
+          grant. Also, the operation must be supported on the KMS key. For ex-
+          ample, you cannot create a grant for a symmetric encryption KMS  key
+          that  allows  the   Sign operation, or a grant for an asymmetric KMS
+          key that allows the  GenerateDataKey operation. If you try, KMS  re-
+          turns a ValidationError exception. For details, see Grant operations
+          in the Key Management Service Developer Guide .
 
           (string)
 
@@ -150,36 +151,46 @@ OPTIONS
             DescribeKey
             GenerateDataKeyPair
             GenerateDataKeyPairWithoutPlaintext
+            GenerateMac
+            VerifyMac
 
        --constraints (structure)
           Specifies a grant constraint.
 
           KMS supports the EncryptionContextEquals and EncryptionContextSubset
           grant constraints. Each constraint value can include up to 8 encryp-
-          tion  context pairs. The encryption context value in each constraint
-          cannot exceed 384 characters.
-
-          These grant constraints allow the permissions in the grant only when
-          the  encryption  context in the request matches (EncryptionContextE-
-          quals ) or includes (EncryptionContextSubset ) the  encryption  con-
-          text  specified  in this structure. For information about grant con-
+          tion context pairs. The encryption context value in each  constraint
+          cannot  exceed  384  characters.  For  information  about grant con-
           straints, see Using grant constraints in the Key Management  Service
           Developer Guide . For more information about encryption context, see
-          Encryption Context in the * Key Management Service Developer Guide *
+          Encryption context in the * Key Management Service Developer Guide *
           .
 
-          The encryption context grant constraints are supported only on oper-
-          ations that include an encryption context. You cannot use an encryp-
-          tion  context  grant  constraint  for  cryptographic operations with
-          asymmetric KMS keys or  for  management  operations,  such  as   De-
-          scribeKey or  RetireGrant .
+          The  encryption  context  grant constraints allow the permissions in
+          the grant only when the encryption context in  the  request  matches
+          (EncryptionContextEquals  )  or  includes (EncryptionContextSubset )
+          the encryption context specified in this structure.
+
+          The encryption context grant constraints are supported only on grant
+          operations  that  include  an  EncryptionContext  parameter, such as
+          cryptographic operations on symmetric encryption  KMS  keys.  Grants
+          with grant constraints can include the  DescribeKey and  RetireGrant
+          operations, but the constraint doesn't apply to these operations. If
+          a  grant with a grant constraint includes the CreateGrant operation,
+          the constraint requires that any grants created with the CreateGrant
+          permission  have  an  equally  strict or stricter encryption context
+          constraint.
+
+          You cannot use an encryption context grant  constraint  for  crypto-
+          graphic  operations with asymmetric KMS keys or HMAC KMS keys. These
+          keys don't support an encryption context.
 
           EncryptionContextSubset -> (map)
-              A  list  of key-value pairs that must be included in the encryp-
-              tion context of the cryptographic operation request.  The  grant
+              A list of key-value pairs that must be included in  the  encryp-
+              tion  context  of the cryptographic operation request. The grant
               allows the cryptographic operation only when the encryption con-
-              text in the request includes the key-value  pairs  specified  in
-              this  constraint,  although  it can include additional key-value
+              text  in  the  request includes the key-value pairs specified in
+              this constraint, although it can  include  additional  key-value
               pairs.
 
               key -> (string)
@@ -189,7 +200,7 @@ OPTIONS
           EncryptionContextEquals -> (map)
               A list of key-value pairs that must match the encryption context
               in the cryptographic operation request. The grant allows the op-
-              eration only when the encryption context in the request  is  the
+              eration  only  when the encryption context in the request is the
               same as the encryption context specified in this constraint.
 
               key -> (string)
@@ -212,8 +223,8 @@ OPTIONS
        --grant-tokens (list)
           A list of grant tokens.
 
-          Use  a grant token when your permission to call this operation comes
-          from a new grant that has not yet achieved  eventual  consistency  .
+          Use a grant token when your permission to call this operation  comes
+          from  a  new  grant that has not yet achieved eventual consistency .
           For more information, see Grant token and Using a grant token in the
           Key Management Service Developer Guide .
 
@@ -224,32 +235,32 @@ OPTIONS
           "string" "string" ...
 
        --name (string)
-          A friendly name for the grant. Use this value to prevent  the  unin-
+          A  friendly  name for the grant. Use this value to prevent the unin-
           tended creation of duplicate grants when retrying this request.
 
-          When  this value is absent, all CreateGrant requests result in a new
-          grant with a unique GrantId even if all the supplied parameters  are
-          identical.  This  can result in unintended duplicates when you retry
+          When this value is absent, all CreateGrant requests result in a  new
+          grant  with a unique GrantId even if all the supplied parameters are
+          identical. This can result in unintended duplicates when  you  retry
           the CreateGrant request.
 
           When this value is present, you can retry a CreateGrant request with
-          identical  parameters;  if  the  grant  already exists, the original
-          GrantId is returned without creating a new grant. Note that the  re-
-          turned  grant  token  is unique with every CreateGrant request, even
-          when a duplicate GrantId is returned. All grant tokens for the  same
+          identical parameters; if the  grant  already  exists,  the  original
+          GrantId  is returned without creating a new grant. Note that the re-
+          turned grant token is unique with every  CreateGrant  request,  even
+          when  a duplicate GrantId is returned. All grant tokens for the same
           grant ID can be used interchangeably.
 
-       --cli-input-json  (string) Performs service operation based on the JSON
-       string provided. The JSON string follows the format provided by  --gen-
-       erate-cli-skeleton.  If  other  arguments  are  provided on the command
-       line, the CLI values will override the JSON-provided values. It is  not
+       --cli-input-json (string) Performs service operation based on the  JSON
+       string  provided. The JSON string follows the format provided by --gen-
+       erate-cli-skeleton. If other arguments  are  provided  on  the  command
+       line,  the CLI values will override the JSON-provided values. It is not
        possible to pass arbitrary binary values using a JSON-provided value as
        the string will be taken literally.
 
-       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
+       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
        output without sending an API request. If provided with no value or the
        value input, prints a sample input JSON that can be used as an argument
-       for  --cli-input-json.  If provided with the value output, it validates
+       for --cli-input-json. If provided with the value output,  it  validates
        the command inputs and returns a sample output JSON for that command.
 
        See 'aws help' for descriptions of global parameters.
@@ -257,12 +268,12 @@ OPTIONS
 EXAMPLES
        To create a grant
 
-       The following create-grant example creates a grant that allows the  ex-
-       ampleUser    user    to    use    the    decrypt    command    on   the
-       1234abcd-12ab-34cd-56ef-1234567890ab example CMK. The retiring  princi-
-       pal  is  the adminRole role. The grant uses the EncryptionContextSubset
+       The  following create-grant example creates a grant that allows the ex-
+       ampleUser   user    to    use    the    decrypt    command    on    the
+       1234abcd-12ab-34cd-56ef-1234567890ab  example CMK. The retiring princi-
+       pal is the adminRole role. The grant uses  the  EncryptionContextSubset
        grant constraint to allow this permission only when the encryption con-
-       text  in  the decrypt request includes the "Department": "IT" key-value
+       text in the decrypt request includes the "Department":  "IT"  key-value
        pair.
 
           aws kms create-grant \
@@ -273,7 +284,7 @@ EXAMPLES
               --retiring-principal arn:aws:iam::123456789012:role/adminRole
 
        The output of this command includes the ID of the new grant and a grant
-       token.  You can use the ID and token to identify the grant to other AWS
+       token. You can use the ID and token to identify the grant to other  AWS
        KMS CLI commands, including retire-grant and revoke-grant.
 
           {
@@ -281,25 +292,25 @@ EXAMPLES
               "GrantToken": "<grant token here>"
           }
 
-       To view detailed information about the grant, use the list-grants  com-
+       To  view detailed information about the grant, use the list-grants com-
        mand.
 
-       For  more  information, see Using Grants in the AWS Key Management Ser-
+       For more information, see Using Grants in the AWS Key  Management  Ser-
        vice Developer Guide.
 
 OUTPUT
        GrantToken -> (string)
           The grant token.
 
-          Use a grant token when your permission to call this operation  comes
-          from  a  new  grant that has not yet achieved eventual consistency .
+          Use  a grant token when your permission to call this operation comes
+          from a new grant that has not yet achieved  eventual  consistency  .
           For more information, see Grant token and Using a grant token in the
           Key Management Service Developer Guide .
 
        GrantId -> (string)
           The unique identifier for the grant.
 
-          You  can  use  the GrantId in a  ListGrants ,  RetireGrant , or  Re-
+          You can use the GrantId in a  ListGrants ,  RetireGrant  ,  or   Re-
           vokeGrant operation.
 
 

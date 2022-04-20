@@ -14,8 +14,8 @@ DESCRIPTION
        phertext.
 
        The ReEncrypt operation can decrypt ciphertext that  was  encrypted  by
-       using  an  KMS KMS key in an KMS operation, such as  Encrypt or  Gener-
-       ateDataKey . It can also decrypt ciphertext that was encrypted by using
+       using  a  KMS  key  in an KMS operation, such as  Encrypt or  Generate-
+       DataKey . It can also decrypt ciphertext that was  encrypted  by  using
        the  public  key  of  an asymmetric KMS key outside of KMS. However, it
        cannot decrypt ciphertext produced by  other  libraries,  such  as  the
        Amazon  Web Services Encryption SDK or Amazon S3 client-side encryption
@@ -30,40 +30,40 @@ DESCRIPTION
          crypted the ciphertext. You must also supply the encryption algorithm
          that was used. This information is required to decrypt the data.
 
-       o If  your  ciphertext  was  encrypted  under  a symmetric KMS key, the
-         SourceKeyId parameter is optional. KMS can get this information  from
-         metadata  that it adds to the symmetric ciphertext blob. This feature
-         adds durability to your implementation by  ensuring  that  authorized
-         users  can decrypt ciphertext decades after it was encrypted, even if
-         they've lost track of the key ID. However, specifying the source  KMS
-         key  is  always  recommended  as  a  best  practice. When you use the
-         SourceKeyId parameter to specify a KMS key, KMS uses only the KMS key
-         you  specify.  If  the ciphertext was encrypted under a different KMS
-         key, the ReEncrypt operation fails. This practice  ensures  that  you
-         use the KMS key that you intend.
+       o If  your  ciphertext  was  encrypted under a symmetric encryption KMS
+         key, the SourceKeyId parameter is optional. KMS can get this informa-
+         tion  from  metadata  that  it adds to the symmetric ciphertext blob.
+         This feature adds durability to your implementation by ensuring  that
+         authorized  users  can  decrypt  ciphertext  decades after it was en-
+         crypted, even if they've lost track of the key ID. However,  specify-
+         ing the source KMS key is always recommended as a best practice. When
+         you use the SourceKeyId parameter to specify a KMS key, KMS uses only
+         the KMS key you specify. If the ciphertext was encrypted under a dif-
+         ferent KMS key, the ReEncrypt operation fails. This practice  ensures
+         that you use the KMS key that you intend.
 
        o To  reencrypt  the  data, you must use the DestinationKeyId parameter
          specify the KMS key that re-encrypts the data after it is  decrypted.
-         You  can select a symmetric or asymmetric KMS key. If the destination
-         KMS key is an asymmetric KMS key, you must also provide  the  encryp-
-         tion algorithm. The algorithm that you choose must be compatible with
-         the KMS key.
+         If  the  destination  KMS key is an asymmetric KMS key, you must also
+         provide the encryption algorithm. The algorithm that you choose  must
+         be compatible with the KMS key.
 
        WARNING:
-          When you use an asymmetric KMS key to encrypt or reencrypt data,  be
+          When  you use an asymmetric KMS key to encrypt or reencrypt data, be
           sure to record the KMS key and encryption algorithm that you choose.
-          You will be required to provide the same KMS key and encryption  al-
-          gorithm  when  you decrypt the data. If the KMS key and algorithm do
+          You  will be required to provide the same KMS key and encryption al-
+          gorithm when you decrypt the data. If the KMS key and  algorithm  do
           not match the values used to encrypt the data, the decrypt operation
-          fails.  You are not required to supply the key ID and encryption al-
-          gorithm when you decrypt with symmetric KMS keys because KMS  stores
-          this  information  in the ciphertext blob. KMS cannot store metadata
-          in ciphertext generated with asymmetric keys.  The  standard  format
-          for asymmetric key ciphertext does not include configurable fields.
+          fails. You are not required to supply the key ID and encryption  al-
+          gorithm  when you decrypt with symmetric encryption KMS keys because
+          KMS stores this information in the ciphertext blob. KMS cannot store
+          metadata  in ciphertext generated with asymmetric keys. The standard
+          format for asymmetric key ciphertext does not  include  configurable
+          fields.
 
        The KMS key that you use for this operation must be in a compatible key
-       state. For details, see Key state: Effect on your KMS key  in  the  Key
-       Management Service Developer Guide .
+       state. For details, see Key states of KMS keys in  the  Key  Management
+       Service Developer Guide .
           Cross-account  use : Yes. The source KMS key and destination KMS key
           can be in different Amazon Web Services accounts. Either or both KMS
           keys can be in a different account than the caller. To specify a KMS
@@ -118,13 +118,15 @@ OPTIONS
           phertext.
 
           An  encryption context is a collection of non-secret key-value pairs
-          that represents additional authenticated data. When you use  an  en-
+          that represent additional authenticated data. When you  use  an  en-
           cryption  context to encrypt data, you must specify the same (an ex-
           act case-sensitive match) encryption context to decrypt the data. An
-          encryption  context is optional when encrypting with a symmetric KMS
-          key, but it is highly recommended.
+          encryption  context  is  supported only on operations with symmetric
+          encryption KMS keys. On operations  with  symmetric  encryption  KMS
+          keys,  an  encryption context is optional, but it is strongly recom-
+          mended.
 
-          For more information, see Encryption Context in the  Key  Management
+          For more information, see Encryption context in the  Key  Management
           Service Developer Guide .
 
           key -> (string)
@@ -142,14 +144,18 @@ OPTIONS
 
        --source-key-id (string)
           Specifies  the  KMS  key that KMS will use to decrypt the ciphertext
-          before it is re-encrypted. Enter a key ID of the KMS  key  that  was
-          used to encrypt the ciphertext.
+          before it is re-encrypted.
 
-          This  parameter  is  required only when the ciphertext was encrypted
-          under an asymmetric KMS key. If you used a symmetric  KMS  key,  KMS
-          can  get the KMS key from metadata that it adds to the symmetric ci-
-          phertext blob. However, it is always recommended as a best practice.
-          This practice ensures that you use the KMS key that you intend.
+          Enter a key ID of the KMS key that was used to encrypt  the  cipher-
+          text.  If  you identify a different KMS key, the ReEncrypt operation
+          throws an IncorrectKeyException .
+
+          This parameter is required only when the  ciphertext  was  encrypted
+          under  an asymmetric KMS key. If you used a symmetric encryption KMS
+          key, KMS can get the KMS key from metadata that it adds to the  sym-
+          metric  ciphertext blob. However, it is always recommended as a best
+          practice. This practice ensures that you use the KMS  key  that  you
+          intend.
 
           To  specify a KMS key, use its key ID, key ARN, alias name, or alias
           ARN. When using an alias name, prefix it with "alias/" . To  specify
@@ -172,9 +178,9 @@ OPTIONS
 
        --destination-key-id (string)
           A  unique  identifier  for the KMS key that is used to reencrypt the
-          data. Specify a symmetric or asymmetric  KMS  key  with  a  KeyUsage
-          value  of ENCRYPT_DECRYPT . To find the KeyUsage value of a KMS key,
-          use the  DescribeKey operation.
+          data. Specify a symmetric encryption KMS key or  an  asymmetric  KMS
+          key  with a KeyUsage value of ENCRYPT_DECRYPT . To find the KeyUsage
+          value of a KMS key, use the  DescribeKey operation.
 
           To specify a KMS key, use its key ID, key ARN, alias name, or  alias
           ARN.  When using an alias name, prefix it with "alias/" . To specify
@@ -200,17 +206,19 @@ OPTIONS
           data.
 
           A  destination encryption context is valid only when the destination
-          KMS key is a symmetric KMS key. The standard ciphertext  format  for
-          asymmetric KMS keys does not include fields for metadata.
+          KMS key is a symmetric encryption KMS key. The  standard  ciphertext
+          format for asymmetric KMS keys does not include fields for metadata.
 
           An  encryption context is a collection of non-secret key-value pairs
-          that represents additional authenticated data. When you use  an  en-
+          that represent additional authenticated data. When you  use  an  en-
           cryption  context to encrypt data, you must specify the same (an ex-
           act case-sensitive match) encryption context to decrypt the data. An
-          encryption  context is optional when encrypting with a symmetric KMS
-          key, but it is highly recommended.
+          encryption  context  is  supported only on operations with symmetric
+          encryption KMS keys. On operations  with  symmetric  encryption  KMS
+          keys,  an  encryption context is optional, but it is strongly recom-
+          mended.
 
-          For more information, see Encryption Context in the  Key  Management
+          For more information, see Encryption context in the  Key  Management
           Service Developer Guide .
 
           key -> (string)
@@ -229,12 +237,13 @@ OPTIONS
        --source-encryption-algorithm (string)
           Specifies  the encryption algorithm that KMS will use to decrypt the
           ciphertext before it is  reencrypted.  The  default  value,  SYMMET-
-          RIC_DEFAULT , represents the algorithm used for symmetric KMS keys.
+          RIC_DEFAULT , represents the algorithm used for symmetric encryption
+          KMS keys.
 
-          Specify  the same algorithm that was used to encrypt the ciphertext.
+          Specify the same algorithm that was used to encrypt the  ciphertext.
           If you specify a different algorithm, the decrypt attempt fails.
 
-          This parameter is required only when the  ciphertext  was  encrypted
+          This  parameter  is  required only when the ciphertext was encrypted
           under an asymmetric KMS key.
 
           Possible values:
@@ -248,7 +257,8 @@ OPTIONS
        --destination-encryption-algorithm (string)
           Specifies the encryption algorithm that KMS will use to reecrypt the
           data after it has decrypted it. The default value, SYMMETRIC_DEFAULT
-          , represents the encryption algorithm used for symmetric KMS keys.
+          , represents the encryption algorithm used for symmetric  encryption
+          KMS keys.
 
           This  parameter  is required only when the destination KMS key is an
           asymmetric KMS key.

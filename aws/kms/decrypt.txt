@@ -20,29 +20,29 @@ DESCRIPTION
        o GenerateDataKeyPairWithoutPlaintext
 
        You can use this operation to decrypt ciphertext that was encrypted un-
-       der  a symmetric or asymmetric KMS key. When the KMS key is asymmetric,
-       you must specify the KMS key and the encryption algorithm that was used
-       to encrypt the ciphertext. For information about symmetric and asymmet-
-       ric KMS keys, see Using Symmetric and Asymmetric KMS keys  in  the  Key
+       der a symmetric encryption KMS key or an asymmetric encryption KMS key.
+       When the KMS key is asymmetric, you must specify the KMS  key  and  the
+       encryption  algorithm  that was used to encrypt the ciphertext. For in-
+       formation about asymmetric KMS keys, see Asymmetric KMS keys in the Key
        Management Service Developer Guide .
 
        The  Decrypt operation also decrypts ciphertext that was encrypted out-
        side of KMS by the public key in an KMS asymmetric KMS key. However, it
-       cannot  decrypt  ciphertext  produced  by  other libraries, such as the
-       Amazon Web Services Encryption SDK or Amazon S3 client-side  encryption
-       .  These libraries return a ciphertext format that is incompatible with
-       KMS.
+       cannot  decrypt  symmetric ciphertext produced by other libraries, such
+       as the Amazon Web Services Encryption SDK or Amazon S3 client-side  en-
+       cryption . These libraries return a ciphertext format that is incompat-
+       ible with KMS.
 
-       If the ciphertext was encrypted under a symmetric KMS  key,  the  KeyId
-       parameter  is optional. KMS can get this information from metadata that
-       it adds to the symmetric ciphertext blob. This feature adds  durability
-       to  your  implementation  by ensuring that authorized users can decrypt
-       ciphertext decades after it was encrypted, even if they've  lost  track
-       of the key ID. However, specifying the KMS key is always recommended as
-       a best practice. When you use the KeyId parameter to specify a KMS key,
-       KMS  only uses the KMS key you specify. If the ciphertext was encrypted
-       under a different KMS key, the Decrypt operation fails.  This  practice
-       ensures that you use the KMS key that you intend.
+       If the ciphertext was encrypted under a symmetric encryption  KMS  key,
+       the  KeyId  parameter  is  optional.  KMS can get this information from
+       metadata that it adds to the symmetric ciphertext  blob.  This  feature
+       adds  durability  to  your  implementation  by ensuring that authorized
+       users can decrypt ciphertext decades after it was  encrypted,  even  if
+       they've  lost  track  of the key ID. However, specifying the KMS key is
+       always recommended as a best practice. When you use the KeyId parameter
+       to specify a KMS key, KMS only uses the KMS key you specify. If the ci-
+       phertext was encrypted under a different KMS key, the Decrypt operation
+       fails. This practice ensures that you use the KMS key that you intend.
 
        Whenever  possible,  use  key policies to give users permission to call
        the Decrypt operation on a particular KMS key,  instead  of  using  IAM
@@ -61,8 +61,8 @@ DESCRIPTION
        Guide .
 
        The KMS key that you use for this operation must be in a compatible key
-       state. For details, see Key state: Effect on your KMS key  in  the  Key
-       Management Service Developer Guide .
+       state. For details, see Key states of KMS keys in  the  Key  Management
+       Service Developer Guide .
           Cross-account use : Yes. To perform this operation with a KMS key in
           a different Amazon Web Services account,  specify  the  key  ARN  or
           alias ARN in the value of the KeyId parameter.
@@ -100,17 +100,20 @@ OPTIONS
        --encryption-context (map)
           Specifies the encryption context to use when decrypting the data. An
           encryption context is valid only for cryptographic operations with a
-          symmetric  KMS  key.  The  standard asymmetric encryption algorithms
-          that KMS uses do not support an encryption context.
+          symmetric encryption KMS key. The standard asymmetric encryption al-
+          gorithms and HMAC algorithms that KMS uses do not support an encryp-
+          tion context.
 
-          An encryption context is a collection of non-secret key-value  pairs
-          that  represents  additional authenticated data. When you use an en-
-          cryption context to encrypt data, you must specify the same (an  ex-
+          An  encryption context is a collection of non-secret key-value pairs
+          that represent additional authenticated data. When you  use  an  en-
+          cryption  context to encrypt data, you must specify the same (an ex-
           act case-sensitive match) encryption context to decrypt the data. An
-          encryption context is optional when encrypting with a symmetric  KMS
-          key, but it is highly recommended.
+          encryption  context  is  supported only on operations with symmetric
+          encryption KMS keys. On operations  with  symmetric  encryption  KMS
+          keys,  an  encryption context is optional, but it is strongly recom-
+          mended.
 
-          For  more  information, see Encryption Context in the Key Management
+          For more information, see Encryption context in the  Key  Management
           Service Developer Guide .
 
           key -> (string)
@@ -129,8 +132,8 @@ OPTIONS
        --grant-tokens (list)
           A list of grant tokens.
 
-          Use a grant token when your permission to call this operation  comes
-          from  a  new  grant that has not yet achieved eventual consistency .
+          Use  a grant token when your permission to call this operation comes
+          from a new grant that has not yet achieved  eventual  consistency  .
           For more information, see Grant token and Using a grant token in the
           Key Management Service Developer Guide .
 
@@ -141,18 +144,22 @@ OPTIONS
           "string" "string" ...
 
        --key-id (string)
-          Specifies the KMS key that KMS uses to decrypt the ciphertext. Enter
-          a key ID of the KMS key that was used to encrypt the ciphertext.
+          Specifies the KMS key that KMS uses to decrypt the ciphertext.
+
+          Enter a key ID of the KMS key that was used to encrypt  the  cipher-
+          text.  If  you  identify  a different KMS key, the Decrypt operation
+          throws an IncorrectKeyException .
 
           This parameter is required only when the  ciphertext  was  encrypted
-          under  an  asymmetric  KMS key. If you used a symmetric KMS key, KMS
-          can get the KMS key from metadata that it adds to the symmetric  ci-
-          phertext blob. However, it is always recommended as a best practice.
-          This practice ensures that you use the KMS key that you intend.
+          under  an asymmetric KMS key. If you used a symmetric encryption KMS
+          key, KMS can get the KMS key from metadata that it adds to the  sym-
+          metric  ciphertext blob. However, it is always recommended as a best
+          practice. This practice ensures that you use the KMS  key  that  you
+          intend.
 
-          To specify a KMS key, use its key ID, key ARN, alias name, or  alias
-          ARN.  When using an alias name, prefix it with "alias/" . To specify
-          a KMS key in a different Amazon Web Services account, you  must  use
+          To  specify a KMS key, use its key ID, key ARN, alias name, or alias
+          ARN. When using an alias name, prefix it with "alias/" . To  specify
+          a  KMS  key in a different Amazon Web Services account, you must use
           the key ARN or alias ARN.
 
           For example:
@@ -166,19 +173,19 @@ OPTIONS
 
           o Alias ARN: arn:aws:kms:us-east-2:111122223333:alias/ExampleAlias
 
-          To  get  the key ID and key ARN for a KMS key, use  ListKeys or  De-
+          To get the key ID and key ARN for a KMS key, use  ListKeys  or   De-
           scribeKey . To get the alias name and alias ARN, use  ListAliases .
 
        --encryption-algorithm (string)
-          Specifies the encryption algorithm that will be used to decrypt  the
-          ciphertext.  Specify the same algorithm that was used to encrypt the
-          data. If you specify a different algorithm,  the  Decrypt  operation
+          Specifies  the encryption algorithm that will be used to decrypt the
+          ciphertext. Specify the same algorithm that was used to encrypt  the
+          data.  If  you  specify a different algorithm, the Decrypt operation
           fails.
 
-          This  parameter  is  required only when the ciphertext was encrypted
-          under an asymmetric KMS key. The default value, SYMMETRIC_DEFAULT  ,
-          represents  the only supported algorithm that is valid for symmetric
-          KMS keys.
+          This parameter is required only when the  ciphertext  was  encrypted
+          under  an asymmetric KMS key. The default value, SYMMETRIC_DEFAULT ,
+          represents the only supported algorithm that is valid for  symmetric
+          encryption KMS keys.
 
           Possible values:
 
@@ -188,61 +195,61 @@ OPTIONS
 
           o RSAES_OAEP_SHA_256
 
-       --cli-input-json (string) Performs service operation based on the  JSON
-       string  provided. The JSON string follows the format provided by --gen-
-       erate-cli-skeleton. If other arguments  are  provided  on  the  command
-       line,  the CLI values will override the JSON-provided values. It is not
+       --cli-input-json  (string) Performs service operation based on the JSON
+       string provided. The JSON string follows the format provided by  --gen-
+       erate-cli-skeleton.  If  other  arguments  are  provided on the command
+       line, the CLI values will override the JSON-provided values. It is  not
        possible to pass arbitrary binary values using a JSON-provided value as
        the string will be taken literally.
 
-       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
+       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
        output without sending an API request. If provided with no value or the
        value input, prints a sample input JSON that can be used as an argument
-       for --cli-input-json. If provided with the value output,  it  validates
+       for  --cli-input-json.  If provided with the value output, it validates
        the command inputs and returns a sample output JSON for that command.
 
        See 'aws help' for descriptions of global parameters.
 
 EXAMPLES
-       Example  1: To decrypt an encrypted message with a symmetric CMK (Linux
+       Example 1: To decrypt an encrypted message with a symmetric CMK  (Linux
        and macOS)
 
-       The following decrypt command example demonstrates the recommended  way
-       to  decrypt  data  with  the AWS CLI. This version shows how to decrypt
+       The  following decrypt command example demonstrates the recommended way
+       to decrypt data with the AWS CLI. This version  shows  how  to  decrypt
        data under a symmetric customer master key (CMK).
 
        o Provide the ciphertext in a file.
-            In the value of the --ciphertext-blob parameter, use the  fileb://
-            prefix,  which  tells the CLI to read the data from a binary file.
+            In  the value of the --ciphertext-blob parameter, use the fileb://
+            prefix, which tells the CLI to read the data from a  binary  file.
             If the file is not in the current directory, type the full path to
-            file.  For more information about reading AWS CLI parameter values
-            from  a  file,  see  Loading  AWS  CLI  parameters  from  a   file
+            file. For more information about reading AWS CLI parameter  values
+            from   a  file,  see  Loading  AWS  CLI  parameters  from  a  file
             <https://docs.aws.amazon.com/cli/latest/userguide/cli-usage-param-
-            eters-file.html> in the AWS Command Line Interface User Guide  and
-            Best   Practices   for   Local   File  Parameters<https://aws.ama-
+            eters-file.html>  in the AWS Command Line Interface User Guide and
+            Best  Practices   for   Local   File   Parameters<https://aws.ama-
             zon.com/blogs/developer/best-practices-for-local-file-parameters/>
             in the AWS Command Line Tool Blog.
 
        o Specify the CMK to decrypt the ciphertext.
-            The  --key-id  parameter is not required when decrypting with sym-
-            metric CMKs. AWS KMS can get the CMK that was used to encrypt  the
-            data  from  the metadata in the ciphertext blob. But it's always a
-            best practice to specify the CMK you are using. This practice  en-
-            sures  that you use the CMK that you intend, and prevents you from
-            inadvertently decrypting a ciphertext  using  a  CMK  you  do  not
+            The --key-id parameter is not required when decrypting  with  sym-
+            metric  CMKs. AWS KMS can get the CMK that was used to encrypt the
+            data from the metadata in the ciphertext blob. But it's  always  a
+            best  practice to specify the CMK you are using. This practice en-
+            sures that you use the CMK that you intend, and prevents you  from
+            inadvertently  decrypting  a  ciphertext  using  a  CMK you do not
             trust.
 
        o Request the plaintext output as a text value.
-            The  --query  parameter tells the CLI to get only the value of the
-            Plaintext field from the output. The  --output  parameter  returns
+            The --query parameter tells the CLI to get only the value  of  the
+            Plaintext  field  from  the output. The --output parameter returns
             the output as text.
 
        o Base64-decode the plaintext and save it in a file.
             The  following example pipes (|) the value of the Plaintext param-
-            eter to the Base64 utility, which decodes it. Then,  it  redirects
+            eter  to  the Base64 utility, which decodes it. Then, it redirects
             (>) the decoded output to the ExamplePlaintext file.
 
-       Before  running  this  command, replace the example key ID with a valid
+       Before running this command, replace the example key ID  with  a  valid
        key ID from your AWS account.
 
           aws kms decrypt \
@@ -258,14 +265,14 @@ EXAMPLES
        For more information, see Decrypt in the AWS Key Management Service API
        Reference.
 
-       Example 2: To decrypt an encrypted message with a symmetric  CMK  (Win-
+       Example  2:  To decrypt an encrypted message with a symmetric CMK (Win-
        dows command prompt)
 
-       The  following  example  is the same as the previous one except that it
-       uses the certutil utility to Base64-decode  the  plaintext  data.  This
+       The following example is the same as the previous one  except  that  it
+       uses  the  certutil  utility  to Base64-decode the plaintext data. This
        procedure requires two commands, as shown in the following examples.
 
-       Before  running  this  command, replace the example key ID with a valid
+       Before running this command, replace the example key ID  with  a  valid
        key ID from your AWS account.
 
           aws kms decrypt ^
@@ -289,12 +296,12 @@ EXAMPLES
 
 OUTPUT
        KeyId -> (string)
-          The  Amazon Resource Name (key ARN ) of the KMS key that was used to
+          The Amazon Resource Name (key ARN ) of the KMS key that was used  to
           decrypt the ciphertext.
 
        Plaintext -> (blob)
-          Decrypted plaintext data. When you use the HTTP API  or  the  Amazon
-          Web  Services CLI, the value is Base64-encoded. Otherwise, it is not
+          Decrypted  plaintext  data.  When you use the HTTP API or the Amazon
+          Web Services CLI, the value is Base64-encoded. Otherwise, it is  not
           Base64-encoded.
 
        EncryptionAlgorithm -> (string)
