@@ -13,8 +13,8 @@ DESCRIPTION
           transactionID parameter, changes that result from the call are  com-
           mitted automatically.
 
-       The  response size limit is 1 MB. If the call returns more than 1 MB of
-       response data, the call is terminated.
+       If  the  binary  response data from the database is more than 1 MB, the
+       call is terminated.
 
        See also: AWS API Documentation
 
@@ -24,6 +24,7 @@ SYNOPSIS
             execute-statement
           [--continue-after-timeout | --no-continue-after-timeout]
           [--database <value>]
+          [--format-records-as <value>]
           [--include-result-metadata | --no-include-result-metadata]
           [--parameters <value>]
           --resource-arn <value>
@@ -50,6 +51,22 @@ OPTIONS
        --database (string)
           The name of the database.
 
+       --format-records-as (string)
+          A  value that indicates whether to format the result set as a single
+          JSON string. This parameter only applies to SELECT statements and is
+          ignored  for  other types of statements. Allowed values are NONE and
+          JSON . The default value is NONE . The result  is  returned  in  the
+          formattedRecords field.
+
+          For  usage  information  about  the JSON format for result sets, see
+          Using the Data API in the Amazon Aurora User Guide .
+
+          Possible values:
+
+          o NONE
+
+          o JSON
+
        --include-result-metadata | --no-include-result-metadata (boolean)
           A value that indicates whether to include metadata in the results.
 
@@ -66,28 +83,28 @@ OPTIONS
                  The name of the parameter.
 
               typeHint -> (string)
-                 A  hint  that specifies the correct object type for data type
+                 A hint that specifies the correct object type for  data  type
                  mapping. Possible values are as follows:
 
-                 o DATE - The corresponding String parameter value is sent  as
+                 o DATE  - The corresponding String parameter value is sent as
                    an object of DATE type to the database. The accepted format
                    is YYYY-MM-DD .
 
-                 o DECIMAL - The corresponding String parameter value is  sent
+                 o DECIMAL  - The corresponding String parameter value is sent
                    as an object of DECIMAL type to the database.
 
-                 o JSON  - The corresponding String parameter value is sent as
+                 o JSON - The corresponding String parameter value is sent  as
                    an object of JSON type to the database.
 
-                 o TIME - The corresponding String parameter value is sent  as
+                 o TIME  - The corresponding String parameter value is sent as
                    an object of TIME type to the database. The accepted format
                    is HH:MM:SS[.FFF] .
 
-                 o TIMESTAMP - The corresponding  String  parameter  value  is
-                   sent  as  an  object of TIMESTAMP type to the database. The
+                 o TIMESTAMP  -  The  corresponding  String parameter value is
+                   sent as an object of TIMESTAMP type to  the  database.  The
                    accepted format is YYYY-MM-DD HH:MM:SS[.FFF] .
 
-                 o UUID - The corresponding String parameter value is sent  as
+                 o UUID  - The corresponding String parameter value is sent as
                    an object of UUID type to the database.
 
               value -> (structure)
@@ -113,12 +130,12 @@ OPTIONS
                                (boolean)
 
                             doubleValues -> (list)
-                               An array of integers.
+                               An array of floating-point numbers.
 
                                (double)
 
                             longValues -> (list)
-                               An array of floating point numbers.
+                               An array of integers.
 
                                (long)
 
@@ -133,12 +150,12 @@ OPTIONS
                         (boolean)
 
                      doubleValues -> (list)
-                        An array of integers.
+                        An array of floating-point numbers.
 
                         (double)
 
                      longValues -> (list)
-                        An array of floating point numbers.
+                        An array of integers.
 
                         (long)
 
@@ -209,25 +226,32 @@ OPTIONS
           Options that control how the result set is returned.
 
           decimalReturnType -> (string)
-              A  value  that  indicates  how a field of DECIMAL type is repre-
+              A value that indicates how a field of  DECIMAL  type  is  repre-
               sented in the response. The value of STRING , the default, spec-
-              ifies  that it is converted to a String value. The value of DOU-
-              BLE_OR_LONG specifies that it is converted to a  Long  value  if
+              ifies that it is converted to a String value. The value of  DOU-
+              BLE_OR_LONG  specifies  that  it is converted to a Long value if
               its scale is 0, or to a Double value otherwise.
 
               WARNING:
-                 Conversion  to  Double  or Long can result in roundoff errors
+                 Conversion to Double or Long can result  in  roundoff  errors
                  due to precision loss. We recommend converting to String, es-
                  pecially when working with currency values.
 
+          longReturnType -> (string)
+              A value that indicates how a field of LONG type is  represented.
+              Allowed values are LONG and STRING . The default is LONG . Spec-
+              ify STRING if the length or precision of  numeric  values  might
+              cause truncation or rounding errors.
+
        Shorthand Syntax:
 
-          decimalReturnType=string
+          decimalReturnType=string,longReturnType=string
 
        JSON Syntax:
 
           {
-            "decimalReturnType": "STRING"|"DOUBLE_OR_LONG"
+            "decimalReturnType": "STRING"|"DOUBLE_OR_LONG",
+            "longReturnType": "STRING"|"LONG"
           }
 
        --schema (string)
@@ -307,7 +331,8 @@ EXAMPLES
 
 OUTPUT
        columnMetadata -> (list)
-          Metadata for the columns included in the results.
+          Metadata for the columns included in  the  results.  This  field  is
+          blank if the formatRecordsAs parameter is set to JSON .
 
           (structure)
               Contains the metadata for a column.
@@ -323,7 +348,7 @@ OUTPUT
                  A value that indicates whether the column is case-sensitive.
 
               isCurrency -> (boolean)
-                 A  value  that indicates whether the column contains currency
+                 A value that indicates whether the column  contains  currency
                  values.
 
               isSigned -> (boolean)
@@ -345,7 +370,7 @@ OUTPUT
                  The scale value of a decimal number column.
 
               schemaName -> (string)
-                 The name of the schema that owns the table that includes  the
+                 The  name of the schema that owns the table that includes the
                  column.
 
               tableName -> (string)
@@ -357,11 +382,20 @@ OUTPUT
               typeName -> (string)
                  The database-specific data type of the column.
 
+       formattedRecords -> (string)
+          A string value that represents the result set of a SELECT  statement
+          in  JSON format. This value is only present when the formatRecordsAs
+          parameter is set to JSON .
+
+          The size limit for this field is currently 10 MB. If  the  JSON-for-
+          matted  string representing the result set requires more than 10 MB,
+          the call returns an error.
+
        generatedFields -> (list)
-          Values for fields generated during the request.
-              <note>  <p>The <code>generatedFields</code> data isn't supported
+          Values for fields generated during a DML request.
+              <note> <p>The <code>generatedFields</code> data isn't  supported
               by Aurora PostgreSQL. To get the values of generated fields, use
-              the  <code>RETURNING</code> clause. For more information, see <a
+              the <code>RETURNING</code> clause. For more information, see  <a
               href="https://www.postgresql.org/docs/10/dml-returning.html">Re-
               turning Data From Modified Rows</a> in the PostgreSQL documenta-
               tion.</p> </note>
@@ -389,12 +423,12 @@ OUTPUT
                             (boolean)
 
                         doubleValues -> (list)
-                            An array of integers.
+                            An array of floating-point numbers.
 
                             (double)
 
                         longValues -> (list)
-                            An array of floating point numbers.
+                            An array of integers.
 
                             (long)
 
@@ -409,12 +443,12 @@ OUTPUT
                      (boolean)
 
                  doubleValues -> (list)
-                     An array of integers.
+                     An array of floating-point numbers.
 
                      (double)
 
                  longValues -> (list)
-                     An array of floating point numbers.
+                     An array of integers.
 
                      (long)
 
@@ -445,7 +479,8 @@ OUTPUT
           The number of records updated by the request.
 
        records -> (list)
-          The records returned by the SQL statement.
+          The  records  returned  by the SQL statement. This field is blank if
+          the formatRecordsAs parameter is set to JSON .
 
           (list)
               (structure)
@@ -471,12 +506,12 @@ OUTPUT
                                (boolean)
 
                             doubleValues -> (list)
-                               An array of integers.
+                               An array of floating-point numbers.
 
                                (double)
 
                             longValues -> (list)
-                               An array of floating point numbers.
+                               An array of integers.
 
                                (long)
 
@@ -491,12 +526,12 @@ OUTPUT
                         (boolean)
 
                      doubleValues -> (list)
-                        An array of integers.
+                        An array of floating-point numbers.
 
                         (double)
 
                      longValues -> (list)
-                        An array of floating point numbers.
+                        An array of integers.
 
                         (long)
 
