@@ -176,15 +176,15 @@ OUTPUT
                      Body .
 
                  (structure)
-                     The  part  of a web request that you want WAF to inspect.
+                     The part of the web request that you want WAF to inspect.
                      Include the single FieldToMatch type that you want to in-
                      spect,  with additional specifications as needed, accord-
                      ing to the type. You specify a single  request  component
                      in FieldToMatch for each rule statement that requires it.
-                     To inspect more than one component of a web request, cre-
-                     ate a separate rule statement for each component.
+                     To inspect more than one component of  the  web  request,
+                     create a separate rule statement for each component.
 
-                     JSON specification for a QueryString field to match:
+                     Example JSON for a QueryString field to match:
                         "FieldToMatch": { "QueryString": {} }
 
                      Example JSON for a Method field to match specification:
@@ -197,18 +197,17 @@ OUTPUT
 
                         Example JSON: "SingleHeader": { "Name": "haystack" }
 
+                        Alternately,  you  can  filter and inspect all headers
+                        with the Headers  FieldToMatch setting.
+
                         Name -> (string)
                             The name of the query header to inspect.
 
                      SingleQueryArgument -> (structure)
-                        Inspect  a  single query argument. Provide the name of
-                        the query argument to inspect,  such  as  UserName  or
+                        Inspect a single query argument. Provide the  name  of
+                        the  query  argument  to  inspect, such as UserName or
                         SalesRegion . The name can be up to 30 characters long
                         and isn't case sensitive.
-
-                        This is used only to indicate the web  request  compo-
-                        nent for WAF to inspect, in the  FieldToMatch specifi-
-                        cation.
 
                         Example   JSON:   "SingleQueryArgument":   {   "Name":
                         "myArgument" }
@@ -220,32 +219,54 @@ OUTPUT
                         Inspect all query arguments.
 
                      UriPath -> (structure)
-                        Inspect  the  request  URI path. This is the part of a
-                        web request that identifies a resource,  for  example,
+                        Inspect the request URI path. This is the part of  the
+                        web  request  that identifies a resource, for example,
                         /images/daily-ad.jpg .
 
                      QueryString -> (structure)
-                        Inspect  the  query  string. This is the part of a URL
+                        Inspect the query string. This is the part  of  a  URL
                         that appears after a ? character, if any.
 
                      Body -> (structure)
-                        Inspect the request body as plain  text.  The  request
-                        body  immediately follows the request headers. This is
-                        the part of a request  that  contains  any  additional
-                        data  that  you want to send to your web server as the
+                        Inspect  the  request  body as plain text. The request
+                        body immediately follows the request headers. This  is
+                        the  part  of  a  request that contains any additional
+                        data that you want to send to your web server  as  the
                         HTTP request body, such as data from a form.
 
-                        Note that only the first 8 KB (8192 bytes) of the  re-
-                        quest  body are forwarded to WAF for inspection by the
-                        underlying host service. If you don't need to  inspect
-                        more than 8 KB, you can guarantee that you don't allow
-                        additional bytes in by combining a statement that  in-
-                        spects  the  body  of the web request, such as  ByteM-
-                        atchStatement or  RegexPatternSetReferenceStatement  ,
-                        with  a  SizeConstraintStatement that enforces an 8 KB
-                        size limit on the body of  the  request.  WAF  doesn't
-                        support inspecting the entire contents of web requests
-                        whose bodies exceed the 8 KB limit.
+                        Only  the  first 8 KB (8192 bytes) of the request body
+                        are forwarded to WAF for inspection by the  underlying
+                        host  service.  For  information  about  how to handle
+                        oversized request bodies, see the Body object configu-
+                        ration.
+
+                        OversizeHandling -> (string)
+                            What  WAF should do if the body is larger than WAF
+                            can inspect. WAF does not support  inspecting  the
+                            entire  contents of the body of a web request when
+                            the body exceeds 8 KB (8192 bytes). Only the first
+                            8  KB  of the request body are forwarded to WAF by
+                            the underlying host service.
+
+                            The options for oversize handling are the  follow-
+                            ing:
+
+                            o CONTINUE  - Inspect the body normally, according
+                              to the rule inspection criteria.
+
+                            o MATCH - Treat the web request  as  matching  the
+                              rule  statement.  WAF applies the rule action to
+                              the request.
+
+                            o NO_MATCH - Treat the web request as not matching
+                              the rule statement.
+
+                            You can combine the MATCH or NO_MATCH settings for
+                            oversize handling with your rule and web  ACL  ac-
+                            tion settings, so that you block any request whose
+                            body is over 8 KB.
+
+                            Default: CONTINUE
 
                      Method -> (structure)
                         Inspect the HTTP method. The method indicates the type
@@ -259,17 +280,11 @@ OUTPUT
                         that  you  want to send to your web server as the HTTP
                         request body, such as data from a form.
 
-                        Note that only the first 8 KB (8192 bytes) of the  re-
-                        quest  body are forwarded to WAF for inspection by the
-                        underlying host service. If you don't need to  inspect
-                        more than 8 KB, you can guarantee that you don't allow
-                        additional bytes in by combining a statement that  in-
-                        spects  the  body  of the web request, such as  ByteM-
-                        atchStatement or  RegexPatternSetReferenceStatement  ,
-                        with  a  SizeConstraintStatement that enforces an 8 KB
-                        size limit on the body of  the  request.  WAF  doesn't
-                        support inspecting the entire contents of web requests
-                        whose bodies exceed the 8 KB limit.
+                        Only the first 8 KB (8192 bytes) of the  request  body
+                        are  forwarded to WAF for inspection by the underlying
+                        host service. For  information  about  how  to  handle
+                        oversized request bodies, see the JsonBody object con-
+                        figuration.
 
                         MatchPattern -> (structure)
                             The patterns to look for in the JSON body. WAF in-
@@ -342,6 +357,167 @@ OUTPUT
                             o Missing colon: {"key1":"value1","key2""value2"}
 
                             o Extra colons: {"key1"::"value1","key2""value2"}
+
+                        OversizeHandling -> (string)
+                            What WAF should do if the body is larger than  WAF
+                            can  inspect.  WAF does not support inspecting the
+                            entire contents of the body of a web request  when
+                            the body exceeds 8 KB (8192 bytes). Only the first
+                            8 KB of the request body are forwarded to  WAF  by
+                            the underlying host service.
+
+                            The  options for oversize handling are the follow-
+                            ing:
+
+                            o CONTINUE - Inspect the body normally,  according
+                              to the rule inspection criteria.
+
+                            o MATCH  -  Treat  the web request as matching the
+                              rule statement. WAF applies the rule  action  to
+                              the request.
+
+                            o NO_MATCH - Treat the web request as not matching
+                              the rule statement.
+
+                            You can combine the MATCH or NO_MATCH settings for
+                            oversize  handling  with your rule and web ACL ac-
+                            tion settings, so that you block any request whose
+                            body is over 8 KB.
+
+                            Default: CONTINUE
+
+                     Headers -> (structure)
+                        Inspect  the request headers. You must configure scope
+                        and pattern matching filters in the Headers object, to
+                        define  the  set  of  headers  to and the parts of the
+                        headers that WAF inspects.
+
+                        Only the first 8 KB (8192 bytes) of a request's  head-
+                        ers  and  only  the first 200 headers are forwarded to
+                        WAF for inspection by the underlying host service. You
+                        must  configure how to handle any oversize header con-
+                        tent in the Headers object. WAF  applies  the  pattern
+                        matching  filters to the headers that it receives from
+                        the underlying host service.
+
+                        MatchPattern -> (structure)
+                            The filter to use to identify the subset of  head-
+                            ers to inspect in a web request.
+
+                            You must specify exactly one setting: either All ,
+                            IncludedHeaders , or ExcludedHeaders .
+
+                            Example JSON: "HeaderMatchPattern":  {  "Excluded-
+                            Headers": {"KeyToExclude1", "KeyToExclude2"} }
+
+                            All -> (structure)
+                               Inspect all headers.
+
+                            IncludedHeaders -> (list)
+                               Inspect  only  the headers that have a key that
+                               matches one of the strings specified here.
+
+                               (string)
+
+                            ExcludedHeaders -> (list)
+                               Inspect only the headers whose keys don't match
+                               any of the strings specified here.
+
+                               (string)
+
+                        MatchScope -> (string)
+                            The  parts  of  the headers to match with the rule
+                            inspection criteria. If you specify All , WAF  in-
+                            spects both keys and values.
+
+                        OversizeHandling -> (string)
+                            What  WAF  should do if the headers of the request
+                            are larger than WAF can inspect. WAF does not sup-
+                            port  inspecting  the  entire  contents of request
+                            headers when they exceed 8 KB (8192 bytes) or  200
+                            total  headers.  The  underlying host service for-
+                            wards a maximum of 200 headers and at most 8 KB of
+                            header contents to WAF.
+
+                            The  options for oversize handling are the follow-
+                            ing:
+
+                            o CONTINUE - Inspect the headers normally, accord-
+                              ing to the rule inspection criteria.
+
+                            o MATCH  -  Treat  the web request as matching the
+                              rule statement. WAF applies the rule  action  to
+                              the request.
+
+                            o NO_MATCH - Treat the web request as not matching
+                              the rule statement.
+
+                     Cookies -> (structure)
+                        Inspect the request cookies. You must configure  scope
+                        and pattern matching filters in the Cookies object, to
+                        define the set of cookies and the parts of the cookies
+                        that WAF inspects.
+
+                        Only  the first 8 KB (8192 bytes) of a request's cook-
+                        ies and only the first 200 cookies  are  forwarded  to
+                        WAF for inspection by the underlying host service. You
+                        must configure how to handle any oversize cookie  con-
+                        tent  in  the  Cookies object. WAF applies the pattern
+                        matching filters to the cookies that it receives  from
+                        the underlying host service.
+
+                        MatchPattern -> (structure)
+                            The  filter to use to identify the subset of cook-
+                            ies to inspect in a web request.
+
+                            You must specify exactly one setting: either All ,
+                            IncludedCookies , or ExcludedCookies .
+
+                            Example  JSON:  "CookieMatchPattern": { "Included-
+                            Cookies": {"KeyToInclude1", "KeyToInclude2", "Key-
+                            ToInclude3"} }
+
+                            All -> (structure)
+                               Inspect all cookies.
+
+                            IncludedCookies -> (list)
+                               Inspect  only  the cookies that have a key that
+                               matches one of the strings specified here.
+
+                               (string)
+
+                            ExcludedCookies -> (list)
+                               Inspect only the cookies whose keys don't match
+                               any of the strings specified here.
+
+                               (string)
+
+                        MatchScope -> (string)
+                            The  parts of the cookies to inspect with the rule
+                            inspection criteria. If you specify All , WAF  in-
+                            spects both keys and values.
+
+                        OversizeHandling -> (string)
+                            What  WAF  should do if the cookies of the request
+                            are larger than WAF can inspect. WAF does not sup-
+                            port  inspecting  the  entire  contents of request
+                            cookies when they exceed 8 KB (8192 bytes) or  200
+                            total  cookies.  The  underlying host service for-
+                            wards a maximum of 200 cookies and at most 8 KB of
+                            cookie contents to WAF.
+
+                            The  options for oversize handling are the follow-
+                            ing:
+
+                            o CONTINUE - Inspect the cookies normally, accord-
+                              ing to the rule inspection criteria.
+
+                            o MATCH  -  Treat  the web request as matching the
+                              rule statement. WAF applies the rule  action  to
+                              the request.
+
+                            o NO_MATCH - Treat the web request as not matching
+                              the rule statement.
 
               ManagedByFirewallManager -> (boolean)
                  Indicates whether the logging configuration  was  created  by
