@@ -11,7 +11,7 @@ if __name__ == "__main__":
     version = (
         subprocess.run([bin, "--version"], capture_output=True)
         .stdout.decode("utf-8")
-        .strip()
+        .strip().split()[0]
     )
     commands = [line.split()[0] for line in help.split("\n") if line.startswith(".")]
     details = []
