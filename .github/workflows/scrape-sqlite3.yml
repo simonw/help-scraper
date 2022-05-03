@@ -1,0 +1,43 @@
+name: Scrape just SQLite
+
+on:
+  workflow_dispatch:
+
+jobs:
+  scheduled:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out this repo
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    - name: Configure Python with pip cache
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.10'
+        cache: 'pip'
+    - name: Install Python dependencies
+      run: pip install -U -r requirements.txt
+    - name: Configure Git for commits
+      run: |-
+        git config user.name "Automated"
+        git config user.email "actions@users.noreply.github.com"
+    - name: Compile latest SQLite
+      run: |-
+        cd /tmp
+        git clone --depth 1 https://github.com/sqlite/sqlite
+        mkdir /tmp/bld
+        cd /tmp/bld
+        ../sqlite/configure
+        make sqlite3.c
+        gcc shell.c sqlite3.c -lpthread -ldl
+        ./a.out --version
+    - name: Scrape sqlite3 help
+      run: |-
+        python sqlite3_help.py /tmp/bld/a.out > sqlite3-help.md
+    - name: Commit and push if it changed
+      run: |-
+        git add -A
+        timestamp=$(date -u)
+        git commit -m "sqlite3: ${timestamp}" || exit 0
+        git push
