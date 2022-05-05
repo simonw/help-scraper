@@ -14,10 +14,15 @@ DESCRIPTION
 
        See 'aws help' for descriptions of global parameters.
 
+       list-backup-jobs  is  a  paginated operation. Multiple API calls may be
+       issued in order to retrieve the entire data set  of  results.  You  can
+       disable pagination by providing the --no-paginate argument.  When using
+       --output text and the --query argument on  a  paginated  response,  the
+       --query  argument  must  extract data from the results of the following
+       query expressions: BackupJobs
+
 SYNOPSIS
             list-backup-jobs
-          [--next-token <value>]
-          [--max-results <value>]
           [--by-resource-arn <value>]
           [--by-state <value>]
           [--by-backup-vault-name <value>]
@@ -25,19 +30,15 @@ SYNOPSIS
           [--by-created-after <value>]
           [--by-resource-type <value>]
           [--by-account-id <value>]
+          [--by-complete-after <value>]
+          [--by-complete-before <value>]
           [--cli-input-json <value>]
+          [--starting-token <value>]
+          [--page-size <value>]
+          [--max-items <value>]
           [--generate-cli-skeleton <value>]
 
 OPTIONS
-       --next-token (string)
-          The  next item following a partial list of returned items. For exam-
-          ple, if a request is made to  return  maxResults  number  of  items,
-          NextToken  allows  you to return more items in your list starting at
-          the location pointed to by the next token.
-
-       --max-results (integer)
-          The maximum number of items to be returned.
-
        --by-resource-arn (string)
           Returns only backup jobs that match the  specified  resource  Amazon
           Resource Name (ARN).
@@ -111,6 +112,14 @@ OPTIONS
           If  used from an Organizations management account, passing * returns
           all jobs across the organization.
 
+       --by-complete-after (timestamp)
+          Returns only backup jobs completed after a date  expressed  in  Unix
+          format and Coordinated Universal Time (UTC).
+
+       --by-complete-before (timestamp)
+          Returns  only  backup jobs completed before a date expressed in Unix
+          format and Coordinated Universal Time (UTC).
+
        --cli-input-json (string) Performs service operation based on the  JSON
        string  provided. The JSON string follows the format provided by --gen-
        erate-cli-skeleton. If other arguments  are  provided  on  the  command
@@ -118,10 +127,38 @@ OPTIONS
        possible to pass arbitrary binary values using a JSON-provided value as
        the string will be taken literally.
 
-       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
+       --starting-token (string)
+          A  token to specify where to start paginating. This is the NextToken
+          from a previously truncated response.
+
+          For usage examples, see Pagination in the AWS Command Line Interface
+          User Guide .
+
+       --page-size (integer)
+          The  size of each page to get in the AWS service call. This does not
+          affect the number of items returned in the command's output. Setting
+          a  smaller  page  size results in more calls to the AWS service, re-
+          trieving fewer items in each call. This can  help  prevent  the  AWS
+          service calls from timing out.
+
+          For usage examples, see Pagination in the AWS Command Line Interface
+          User Guide .
+
+       --max-items (integer)
+          The total number of items to return in the command's output. If  the
+          total  number of items available is more than the value specified, a
+          NextToken is provided in the command's output. To resume pagination,
+          provide the NextToken value in the starting-token argument of a sub-
+          sequent command. Do not use the NextToken response element  directly
+          outside of the AWS CLI.
+
+          For usage examples, see Pagination in the AWS Command Line Interface
+          User Guide .
+
+       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
        output without sending an API request. If provided with no value or the
        value input, prints a sample input JSON that can be used as an argument
-       for --cli-input-json. If provided with the value output,  it  validates
+       for  --cli-input-json.  If provided with the value output, it validates
        the command inputs and returns a sample output JSON for that command.
 
        See 'aws help' for descriptions of global parameters.
@@ -129,7 +166,7 @@ OPTIONS
 EXAMPLES
        Example 1: To list all backup jobs
 
-       The  following  list-backup-jobs  example  returns  metadata about your
+       The following list-backup-jobs  example  returns  metadata  about  your
        backup jobs in your AWS account.
 
           aws backup list-backup-jobs
@@ -206,7 +243,7 @@ EXAMPLES
 
 OUTPUT
        BackupJobs -> (list)
-          An  array  of  structures containing metadata about your backup jobs
+          An array of structures containing metadata about  your  backup  jobs
           returned in JSON format.
 
           (structure)
@@ -216,23 +253,23 @@ OUTPUT
                  The account ID that owns the backup job.
 
               BackupJobId -> (string)
-                 Uniquely identifies a request to Backup  to  back  up  a  re-
+                 Uniquely  identifies  a  request  to  Backup to back up a re-
                  source.
 
               BackupVaultName -> (string)
-                 The  name  of  a  logical container where backups are stored.
-                 Backup vaults are identified by names that are unique to  the
-                 account  used  to create them and the Amazon Web Services Re-
-                 gion where they are created. They consist of  lowercase  let-
+                 The name of a logical container  where  backups  are  stored.
+                 Backup  vaults are identified by names that are unique to the
+                 account used to create them and the Amazon Web  Services  Re-
+                 gion  where  they are created. They consist of lowercase let-
                  ters, numbers, and hyphens.
 
               BackupVaultArn -> (string)
-                 An  Amazon  Resource  Name  (ARN)  that uniquely identifies a
-                 backup            vault;             for             example,
+                 An Amazon Resource Name  (ARN)  that  uniquely  identifies  a
+                 backup             vault;             for            example,
                  arn:aws:backup:us-east-1:123456789012:vault:aBackupVault .
 
               RecoveryPointArn -> (string)
-                 An  ARN  that uniquely identifies a recovery point; for exam-
+                 An ARN that uniquely identifies a recovery point;  for  exam-
                  ple,             arn:aws:backup:us-east-1:123456789012:recov-
                  ery-point:1EB3B5E7-9EB0-435A-A80B-108B488B0D45 .
 
@@ -242,27 +279,27 @@ OUTPUT
 
               CreationDate -> (timestamp)
                  The date and time a backup job is created, in Unix format and
-                 Coordinated  Universal  Time (UTC). The value of CreationDate
-                 is  accurate  to  milliseconds.  For   example,   the   value
-                 1516925490.087    represents   Friday,   January   26,   2018
+                 Coordinated Universal Time (UTC). The value  of  CreationDate
+                 is   accurate   to   milliseconds.  For  example,  the  value
+                 1516925490.087   represents   Friday,   January   26,    2018
                  12:11:30.087 AM.
 
               CompletionDate -> (timestamp)
-                 The date and time a job to create a backup job is  completed,
-                 in  Unix  format  and  Coordinated  Universal Time (UTC). The
-                 value of CompletionDate is accurate to milliseconds. For  ex-
-                 ample,  the  value  1516925490.087 represents Friday, January
+                 The  date and time a job to create a backup job is completed,
+                 in Unix format and  Coordinated  Universal  Time  (UTC).  The
+                 value  of CompletionDate is accurate to milliseconds. For ex-
+                 ample, the value 1516925490.087  represents  Friday,  January
                  26, 2018 12:11:30.087 AM.
 
               State -> (string)
                  The current state of a resource recovery point.
 
               StatusMessage -> (string)
-                 A detailed message explaining the status of the job  to  back
+                 A  detailed  message explaining the status of the job to back
                  up a resource.
 
               PercentDone -> (string)
-                 Contains  an  estimated  percentage  complete of a job at the
+                 Contains an estimated percentage complete of  a  job  at  the
                  time the job status was queried.
 
               BackupSizeInBytes -> (long)
@@ -271,29 +308,29 @@ OUTPUT
               IamRoleArn -> (string)
                  Specifies the IAM role ARN used to create the target recovery
                  point. IAM roles other than the default role must include ei-
-                 ther AWSBackup or AwsBackup in the role  name.  For  example,
-                 arn:aws:iam::123456789012:role/AWSBackupRDSAccess    .   Role
-                 names without  those  strings  lack  permissions  to  perform
+                 ther  AWSBackup  or  AwsBackup in the role name. For example,
+                 arn:aws:iam::123456789012:role/AWSBackupRDSAccess   .    Role
+                 names  without  those  strings  lack  permissions  to perform
                  backup jobs.
 
               CreatedBy -> (structure)
-                 Contains  identifying  information  about  the  creation of a
-                 backup job, including  the  BackupPlanArn  ,  BackupPlanId  ,
-                 BackupPlanVersion  , and BackupRuleId of the backup plan used
+                 Contains identifying information  about  the  creation  of  a
+                 backup  job,  including  the  BackupPlanArn  , BackupPlanId ,
+                 BackupPlanVersion , and BackupRuleId of the backup plan  used
                  to create it.
 
                  BackupPlanId -> (string)
                      Uniquely identifies a backup plan.
 
                  BackupPlanArn -> (string)
-                     An Amazon Resource Name (ARN) that uniquely identifies  a
-                     backup            plan;            for           example,
+                     An  Amazon Resource Name (ARN) that uniquely identifies a
+                     backup           plan;            for            example,
                      arn:aws:backup:us-east-1:123456789012:plan:8F81F553-3A74-4A3F-B93D-B3360DC80C50
                      .
 
                  BackupPlanVersion -> (string)
-                     Version  IDs  are  unique,  randomly  generated, Unicode,
-                     UTF-8 encoded strings that are at most 1,024 bytes  long.
+                     Version IDs  are  unique,  randomly  generated,  Unicode,
+                     UTF-8  encoded strings that are at most 1,024 bytes long.
                      They cannot be edited.
 
                  BackupRuleId -> (string)
@@ -301,31 +338,31 @@ OUTPUT
                      a selection of resources.
 
               ExpectedCompletionDate -> (timestamp)
-                 The date and time a job to back up resources is  expected  to
-                 be  completed,  in Unix format and Coordinated Universal Time
-                 (UTC). The value of  ExpectedCompletionDate  is  accurate  to
-                 milliseconds.  For  example,  the value 1516925490.087 repre-
+                 The  date  and time a job to back up resources is expected to
+                 be completed, in Unix format and Coordinated  Universal  Time
+                 (UTC).  The  value  of  ExpectedCompletionDate is accurate to
+                 milliseconds. For example, the  value  1516925490.087  repre-
                  sents Friday, January 26, 2018 12:11:30.087 AM.
 
               StartBy -> (timestamp)
-                 Specifies the time in Unix format and  Coordinated  Universal
-                 Time  (UTC)  when  a  backup job must be started before it is
-                 canceled. The value is calculated by adding the start  window
-                 to  the scheduled time. So if the scheduled time were 6:00 PM
-                 and the start window is 2 hours, the StartBy  time  would  be
-                 8:00  PM on the date specified. The value of StartBy is accu-
-                 rate to milliseconds. For example, the  value  1516925490.087
+                 Specifies  the  time in Unix format and Coordinated Universal
+                 Time (UTC) when a backup job must be  started  before  it  is
+                 canceled.  The value is calculated by adding the start window
+                 to the scheduled time. So if the scheduled time were 6:00  PM
+                 and  the  start  window is 2 hours, the StartBy time would be
+                 8:00 PM on the date specified. The value of StartBy is  accu-
+                 rate  to  milliseconds. For example, the value 1516925490.087
                  represents Friday, January 26, 2018 12:11:30.087 AM.
 
               ResourceType -> (string)
                  The type of Amazon Web Services resource to be backed up; for
                  example, an Amazon Elastic Block Store (Amazon EBS) volume or
-                 an  Amazon Relational Database Service (Amazon RDS) database.
-                 For Windows Volume Shadow Copy  Service  (VSS)  backups,  the
+                 an Amazon Relational Database Service (Amazon RDS)  database.
+                 For  Windows  Volume  Shadow  Copy Service (VSS) backups, the
                  only supported resource type is Amazon EC2.
 
               BytesTransferred -> (long)
-                 The  size  in bytes transferred to a backup vault at the time
+                 The size in bytes transferred to a backup vault at  the  time
                  that the job status was queried.
 
               BackupOptions -> (map)
@@ -333,10 +370,10 @@ OUTPUT
                  tion is only available for Windows Volume Shadow Copy Service
                  (VSS) backup jobs.
 
-                 Valid values: Set to  "WindowsVSS":"enabled"  to  enable  the
+                 Valid  values:  Set  to  "WindowsVSS":"enabled" to enable the
                  WindowsVSS backup option and create a Windows VSS backup. Set
                  to "WindowsVSS":"disabled" to create a regular backup. If you
-                 specify  an invalid option, you get an InvalidParameterValue-
+                 specify an invalid option, you get an  InvalidParameterValue-
                  Exception exception.
 
                  key -> (string)
@@ -347,9 +384,9 @@ OUTPUT
                  Represents the type of backup for a backup job.
 
        NextToken -> (string)
-          The next item following a partial list of returned items. For  exam-
-          ple,  if  a  request  is  made to return maxResults number of items,
-          NextToken allows you to return more items in your list  starting  at
+          The  next item following a partial list of returned items. For exam-
+          ple, if a request is made to  return  maxResults  number  of  items,
+          NextToken  allows  you to return more items in your list starting at
           the location pointed to by the next token.
 
 
