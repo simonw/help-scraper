@@ -9,11 +9,30 @@ DESCRIPTION
        Gets  a  Boolean value that indicates whether automatic rotation of the
        key material is enabled for the specified KMS key.
 
-       You cannot enable automatic rotation of asymmetric KMS keys , HMAC  KMS
-       keys  ,  KMS  keys with imported key material , or KMS keys in a custom
-       key store . To enable or disable automatic rotation of a set of related
-       multi-Region  keys , set the property on the primary key. The key rota-
-       tion status for these KMS keys is always false .
+       When you enable automatic rotation for customer managed KMS keys ,  KMS
+       rotates  the  key  material  of the KMS key one year (approximately 365
+       days) from the enable date and every year thereafter. You  can  monitor
+       rotation of the key material for your KMS keys in CloudTrail and Amazon
+       CloudWatch.
+
+       Automatic key rotation is supported only on  symmetric  encryption  KMS
+       keys  .  You  cannot enable or disable automatic rotation of asymmetric
+       KMS keys , HMAC KMS keys , KMS keys with imported key material , or KMS
+       keys  in a custom key store . The key rotation status of these KMS keys
+       is always false . To enable or disable automatic rotation of a  set  of
+       related multi-Region keys , set the property on the primary key..
+
+       You  can  enable ( EnableKeyRotation ) and disable automatic rotation (
+       DisableKeyRotation ) of the key material in customer managed KMS  keys.
+       Key  material  rotation  of Amazon Web Services managed KMS keys is not
+       configurable. KMS always rotates the key material in  Amazon  Web  Ser-
+       vices  managed  KMS keys every year. The key rotation status for Amazon
+       Web Services managed KMS keys is always true .
+
+       NOTE:
+          In May 2022, KMS changed the rotation schedule for Amazon  Web  Ser-
+          vices  managed  keys  from  every three years to every year. For de-
+          tails, see  EnableKeyRotation .
 
        The KMS key that you use for this operation must be in a compatible key
        state.  For  details,  see Key states of KMS keys in the Key Management
@@ -21,13 +40,18 @@ DESCRIPTION
 
        o Disabled: The key rotation status does not change when you disable  a
          KMS  key. However, while the KMS key is disabled, KMS does not rotate
-         the key material.
+         the key material. When you re-enable the KMS key,  rotation  resumes.
+         If  the key material in the re-enabled KMS key hasn't been rotated in
+         one year, KMS rotates it immediately, and every year  thereafter.  If
+         it's  been  less than a year since the key material in the re-enabled
+         KMS key was rotated, the KMS key resumes its prior rotation schedule.
 
        o Pending deletion: While a KMS key is pending deletion, its key  rota-
          tion status is false and KMS does not rotate the key material. If you
-         cancel the deletion, the original key rotation status is restored.
+         cancel the deletion, the original key rotation status returns to true
+         .
           Cross-account use : Yes. To perform this operation on a KMS key in a
-          different  Amazon  Web  Services account, specify the key ARN in the
+          different Amazon Web Services account, specify the key  ARN  in  the
           value of the KeyId parameter.
 
           Required permissions : kms:GetKeyRotationStatus (key policy)
@@ -52,8 +76,8 @@ OPTIONS
        --key-id (string)
           Gets the rotation status for the specified KMS key.
 
-          Specify the key ID or key ARN of the KMS key. To specify a  KMS  key
-          in  a  different  Amazon  Web Services account, you must use the key
+          Specify  the  key ID or key ARN of the KMS key. To specify a KMS key
+          in a different Amazon Web Services account, you  must  use  the  key
           ARN.
 
           For example:
@@ -63,37 +87,37 @@ OPTIONS
           o Key                                                           ARN:
             arn:aws:kms:us-east-2:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab
 
-          To get the key ID and key ARN for a KMS key, use  ListKeys  or   De-
+          To  get  the key ID and key ARN for a KMS key, use  ListKeys or  De-
           scribeKey .
 
-       --cli-input-json  (string) Performs service operation based on the JSON
-       string provided. The JSON string follows the format provided by  --gen-
-       erate-cli-skeleton.  If  other  arguments  are  provided on the command
-       line, the CLI values will override the JSON-provided values. It is  not
+       --cli-input-json (string) Performs service operation based on the  JSON
+       string  provided. The JSON string follows the format provided by --gen-
+       erate-cli-skeleton. If other arguments  are  provided  on  the  command
+       line,  the CLI values will override the JSON-provided values. It is not
        possible to pass arbitrary binary values using a JSON-provided value as
        the string will be taken literally.
 
-       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
+       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
        output without sending an API request. If provided with no value or the
        value input, prints a sample input JSON that can be used as an argument
-       for  --cli-input-json.  If provided with the value output, it validates
+       for --cli-input-json. If provided with the value output,  it  validates
        the command inputs and returns a sample output JSON for that command.
 
        See 'aws help' for descriptions of global parameters.
 
 EXAMPLES
-       To determine whether a customer master key (CMK) is  automatically  ro-
+       To  determine  whether a customer master key (CMK) is automatically ro-
        tated.
 
-       The  following get-key-rotation-status example determines whether a CMK
-       is automatically rotated. You can use this command on customer  managed
-       CMKs  and AWS managed CMKs. However, all AWS managed CMKs are automati-
+       The following get-key-rotation-status example determines whether a  CMK
+       is  automatically rotated. You can use this command on customer managed
+       CMKs and AWS managed CMKs. However, all AWS managed CMKs are  automati-
        cally rotated every three years.
 
-       To specify the CMK, use the key-id parameter. This example uses  a  key
+       To  specify  the CMK, use the key-id parameter. This example uses a key
        ARN value, but you can use a key ID or key ARN in this command.
 
-       Before  running  this command, replace the example key ARN with a valid
+       Before running this command, replace the example key ARN with  a  valid
        one.
 
           aws kms get-key-rotation-status \
@@ -105,7 +129,7 @@ EXAMPLES
               "KeyRotationEnabled": true
           }
 
-       For more information, see Rotating Keys in the AWS Key Management  Ser-
+       For  more information, see Rotating Keys in the AWS Key Management Ser-
        vice Developer Guide.
 
 OUTPUT
