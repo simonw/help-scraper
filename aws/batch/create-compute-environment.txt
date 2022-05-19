@@ -38,13 +38,15 @@ DESCRIPTION
        oper Guide .
 
        NOTE:
-          Batch  doesn't  upgrade  the AMIs in a compute environment after the
-          environment is created. For example, it doesn't update the AMIs when
-          a newer version of the Amazon ECS optimized AMI is available. There-
-          fore, you're responsible for managing  the  guest  operating  system
-          (including  its updates and security patches) and any additional ap-
-          plication software or utilities that you install on the compute  re-
-          sources. To use a new AMI for your Batch jobs, complete these steps:
+          Batch  doesn't  automatically upgrade the AMIs in a compute environ-
+          ment after it's created. For example, it  also  doesn't  update  the
+          AMIs  in your compute environment when a newer version of the Amazon
+          ECS optimized AMI is available. You're responsible for  the  manage-
+          ment  of  the  guest operating system. This includes any updates and
+          security patches. You're also responsible for any additional  appli-
+          cation  software  or  utilities  that you install on the compute re-
+          sources. There are two ways to use a new AMI for  your  Batch  jobs.
+          The original method is to complete these steps:
 
           o Create a new compute environment with the new AMI.
 
@@ -53,6 +55,44 @@ DESCRIPTION
           o Remove the earlier compute environment from your job queue.
 
           o Delete the earlier compute environment.
+
+          In April 2022, Batch added enhanced support for updating compute en-
+          vironments. For more information, see Updating compute  environments
+          .  To  use  the  enhanced updating of compute environments to update
+          AMIs, follow these rules:
+
+          o Either do not set the service role (serviceRole ) parameter or set
+            it to the AWSBatchServiceRole service-linked role.
+
+          o Set  the  allocation  strategy  (allocationStrategy ) parameter to
+            BEST_FIT_PROGRESSIVE or SPOT_CAPACITY_OPTIMIZED .
+
+          o Set the update to latest image version (updateToLatestImageVersion
+            ) parameter to true .
+
+          o Do  not  specify  an  AMI  ID  in  imageId , imageIdOverride (in `
+            ec2Configuration
+            https://docs.aws.amazon.com/batch/latest/APIReference/API_Ec2Configuration.html`__
+            ), or in the launch template (launchTemplate ). In that case Batch
+            will select the latest Amazon ECS optimized AMI supported by Batch
+            at the time the infrastructure update is initiated.  Alternatively
+            you  can  specify the AMI ID in the imageId or imageIdOverride pa-
+            rameters, or the launch template identified by the  LaunchTemplate
+            properties.  Changing  any of these properties will trigger an in-
+            frastructure update. If the AMI ID is specified in the launch tem-
+            plate,  it  can  not be replaced by specifying an AMI ID in either
+            the imageId or imageIdOverride parameters. It can only be replaced
+            by  specifying  a different launch template, or if the launch tem-
+            plate version is set to $Default or $Latest , by setting either  a
+            new  default  version  for the launch template (if $Default )or by
+            adding a new version to the launch template (if $Latest ).
+
+          If these rules are followed, any update that triggers an infrastruc-
+          ture  update will cause the AMI ID to be re-selected. If the version
+          setting in the launch template (launchTemplate ) is set  to  $Latest
+          or  $Default  , the latest or default version of the launch template
+          will be evaluated up at the time of the infrastructure update,  even
+          if the launchTemplate was not updated.
 
        See also: AWS API Documentation
 
@@ -295,7 +335,7 @@ OPTIONS
               ``  .  For more information, see Amazon ECS instance role in the
               Batch User Guide .
 
-              System Message: WARNING/2 (<string>:, line 408)
+              System Message: WARNING/2 (<string>:, line 428)
                      Inline literal start-string without end-string.
 
                      NOTE:
@@ -308,11 +348,11 @@ OPTIONS
               form  of  "String1": "String2", where String1 is the tag key and
               String2 is the tag valuefor example, { "Name": "Batch Instance -
               C4OnDemand"  }  . This is helpful for recognizing your Batch in-
-              stances in the Amazon EC2 console. These tags can't  be  updated
-              or removed after the compute environment is created. Any changes
-              to these tags require that you create a new compute  environment
-              and  remove  the old compute environment. These tags aren't seen
-              when using the Batch ListTagsForResource API operation.
+              stances in the Amazon EC2 console. Updating these tags  requires
+              an  infrastructure  update  to the compute environment. For more
+              information, see Updating compute environments in the Batch User
+              Guide . These tags aren't seen when using the Batch ListTagsFor-
+              Resource API operation.
 
               NOTE:
                  This parameter isn't applicable to jobs that are  running  on
