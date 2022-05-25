@@ -54,23 +54,50 @@ OPTIONS
           user pool client being created.
 
        --refresh-token-validity (integer)
-          The  time limit, in days, after which the refresh token is no longer
-          valid and can't be used.
+          The  refresh  token  time limit. After this limit expires, your user
+          can't use their refresh token. To specify the time unit for Refresh-
+          TokenValidity  as seconds , minutes , hours , or days , set a Token-
+          ValidityUnits value in your API request.
+
+          For example, when you set RefreshTokenValidity as 10 and TokenValid-
+          ityUnits  as days , your user can refresh their session and retrieve
+          new access and ID tokens for 10 days.
+
+          The default time unit for RefreshTokenValidity in an API request  is
+          days.  You  can't  set  RefreshTokenValidity to 0. If you do, Amazon
+          Cognito overrides the value with the default value of 30 days. Valid
+          range is displayed below in seconds.
 
        --access-token-validity (integer)
-          The time limit, between 5 minutes and 1 day, after which the  access
-          token is no longer valid and can't be used. If you supply a TokenVa-
-          lidityUnits value, you will override the default time unit.
+          The  access  token  time  limit. After this limit expires, your user
+          can't use their access token. To specify the time unit for AccessTo-
+          kenValidity  as seconds , minutes , hours , or days , set a TokenVa-
+          lidityUnits value in your API request.
+
+          For example, when you set AccessTokenValidity to 10 and TokenValidi-
+          tyUnits  to hours , your user can authorize access with their access
+          token for 10 hours.
+
+          The default time unit for AccessTokenValidity in an API  request  is
+          hours. Valid range is displayed below in seconds.
 
        --id-token-validity (integer)
-          The time limit, between 5 minutes and 1 day, after which the  access
-          token is no longer valid and can't be used. If you supply a TokenVa-
-          lidityUnits value, you will override the default time unit.
+          The  ID  token time limit. After this limit expires, your user can't
+          use their ID token. To specify the time unit for IdTokenValidity  as
+          seconds , minutes , hours , or days , set a TokenValidityUnits value
+          in your API request.
+
+          For example, when you set IdTokenValidity as 10 and  TokenValidityU-
+          nits  as hours , your user can authenticate their session with their
+          ID token for 10 hours.
+
+          The default time unit for AccessTokenValidity in an API  request  is
+          hours. Valid range is displayed below in seconds.
 
        --token-validity-units (structure)
-          The units in which the validity times are represented.  Default  for
-          RefreshToken  is  days,  and  default  for  ID and access tokens are
-          hours.
+          The  units  in which the validity times are represented. The default
+          unit for RefreshToken is days, and default for ID and access  tokens
+          are hours.
 
           AccessToken -> (string)
               A time unit in seconds, minutes, hours, or days for the value in
@@ -108,14 +135,13 @@ OPTIONS
        --write-attributes (list)
           The user pool attributes that the app client can write to.
 
-          If  your  app  client  allows  users  to sign in through an identity
-          provider, this array must  include  all  attributes  that  you  have
-          mapped  to  identity  provider  attributes.  Amazon  Cognito updates
-          mapped attributes when users sign in to your application through  an
-          identity  provider. If your app client does not have write access to
-          a mapped attribute, Amazon Cognito throws an error when it tries  to
-          update  the attribute. For more information, see Specifying Identity
-          Provider Attribute Mappings for Your user pool .
+          If your app client allows users to sign in through an IdP, this  ar-
+          ray  must  include  all  attributes  that you have mapped to IdP at-
+          tributes. Amazon Cognito updates mapped attributes when  users  sign
+          in  to  your application through an IdP. If your app client does not
+          have write access to a mapped attribute, Amazon  Cognito  throws  an
+          error  when  it tries to update the attribute. For more information,
+          see Specifying IdP Attribute Mappings for Your user pool .
 
           (string)
 
@@ -151,6 +177,10 @@ OPTIONS
 
           o ALLOW_REFRESH_TOKEN_AUTH : Enable authflow to refresh tokens.
 
+          If you don't specify a value for ExplicitAuthFlows , your app client
+          activates  the ALLOW_USER_SRP_AUTH and ALLOW_CUSTOM_AUTH authentica-
+          tion flows.
+
           (string)
 
        Syntax:
@@ -168,9 +198,9 @@ OPTIONS
             ALLOW_REFRESH_TOKEN_AUTH
 
        --supported-identity-providers (list)
-          A list of provider names for the identity providers  that  are  sup-
-          ported  on this client. The following are supported: COGNITO , Face-
-          book , Google and LoginWithAmazon .
+          A list of provider names for the IdPs that this client supports. The
+          following  are supported: COGNITO , Facebook , Google  LoginWithAma-
+          zon , and the names of your own SAML and OIDC providers.
 
           (string)
 
@@ -179,8 +209,7 @@ OPTIONS
           "string" "string" ...
 
        --callback-urls (list)
-          A  list  of  allowed  redirect  (callback)  URLs  for  the  identity
-          providers.
+          A list of allowed redirect (callback) URLs for the IdPs.
 
           A redirect URI must:
 
@@ -192,7 +221,7 @@ OPTIONS
 
           See OAuth 2.0 - Redirection Endpoint .
 
-          Amazon  Cognito requires HTTPS over HTTP except for http://localhost
+          Amazon Cognito requires HTTPS over HTTP except for  http://localhost
           for testing purposes only.
 
           App callback URLs such as myapp://example are also supported.
@@ -204,7 +233,7 @@ OPTIONS
           "string" "string" ...
 
        --logout-urls (list)
-          A list of allowed logout URLs for the identity providers.
+          A list of allowed logout URLs for the IdPs.
 
           (string)
 
@@ -225,26 +254,28 @@ OPTIONS
 
           See OAuth 2.0 - Redirection Endpoint .
 
-          Amazon Cognito requires HTTPS over HTTP except for  http://localhost
+          Amazon  Cognito requires HTTPS over HTTP except for http://localhost
           for testing purposes only.
 
           App callback URLs such as myapp://example are also supported.
 
        --allowed-o-auth-flows (list)
           The allowed OAuth flows.
+              code
 
-          Set  to code to initiate a code grant flow, which provides an autho-
-          rization code as the response. This code can be exchanged for access
-          tokens with the token endpoint.
+          Use a code grant flow, which provides an authorization code  as  the
+          response.  This  code  can  be  exchanged for access tokens with the
+          /oauth2/token endpoint.
+              implicit
 
-          Set to implicit to specify that the client should get the access to-
-          ken (and, optionally, ID token, based on scopes) directly.
+          Issue the access token (and, optionally, ID token, based on  scopes)
+          directly to your user.
+              client_credentials
 
-          Set to client_credentials to specify that the client should get  the
-          access  token  (and, optionally, ID token, based on scopes) from the
-          token endpoint using a combination of client and client_secret.
-
-          (string)
+          Issue the access token from the /oauth2/token endpoint directly to a
+          non-person user using a combination of the client ID and client  se-
+          cret.
+              (string)
 
        Syntax:
 
@@ -256,9 +287,9 @@ OPTIONS
             client_credentials
 
        --allowed-o-auth-scopes (list)
-          The allowed OAuth scopes. Possible values  provided  by  OAuth  are:
-          phone  ,  email , openid , and profile . Possible values provided by
-          Amazon Web  Services  are:  aws.cognito.signin.user.admin  .  Custom
+          The  allowed  OAuth  scopes.  Possible  values provided by OAuth are
+          phone , email , openid , and profile . Possible values  provided  by
+          Amazon  Web  Services  are  aws.cognito.signin.user.admin  .  Custom
           scopes created in Resource Servers are also supported.
 
           (string)
@@ -267,43 +298,43 @@ OPTIONS
 
           "string" "string" ...
 
-       --allowed-o-auth-flows-user-pool-client            |           --no-al-
+       --allowed-o-auth-flows-user-pool-client           |            --no-al-
        lowed-o-auth-flows-user-pool-client (boolean)
-          Set to true if the client is allowed to follow  the  OAuth  protocol
+          Set  to  true  if the client is allowed to follow the OAuth protocol
           when interacting with Amazon Cognito user pools.
 
        --analytics-configuration (structure)
-          The  user  pool  analytics  configuration for collecting metrics and
+          The user pool analytics configuration  for  collecting  metrics  and
           sending them to your Amazon Pinpoint campaign.
 
           NOTE:
-              In Amazon Web  Services  Regions  where  Amazon  Pinpoint  isn't
+              In  Amazon  Web  Services  Regions  where  Amazon Pinpoint isn't
               available, user pools only support sending events to Amazon Pin-
-              point projects in Amazon Web Services Region us-east-1.  In  Re-
-              gions  where  Amazon  Pinpoint  is available, user pools support
-              sending events to Amazon Pinpoint projects within that same  Re-
+              point  projects  in Amazon Web Services Region us-east-1. In Re-
+              gions where Amazon Pinpoint is  available,  user  pools  support
+              sending  events to Amazon Pinpoint projects within that same Re-
               gion.
 
           ApplicationId -> (string)
               The application ID for an Amazon Pinpoint application.
 
           ApplicationArn -> (string)
-              The  Amazon  Resource  Name (ARN) of an Amazon Pinpoint project.
-              You can use the Amazon Pinpoint project to  integrate  with  the
-              chosen  user pool Client. Amazon Cognito publishes events to the
-              Amazon Pinpointproject declared by the app ARN.
+              The Amazon Resource Name (ARN) of an  Amazon  Pinpoint  project.
+              You  can  use  the Amazon Pinpoint project to integrate with the
+              chosen user pool Client. Amazon Cognito publishes events to  the
+              Amazon Pinpoint project that the app ARN declares.
 
           RoleArn -> (string)
-              The ARN of an Identity and Access Management  role  that  autho-
-              rizes  Amazon  Cognito to publish events to Amazon Pinpoint ana-
+              The  ARN  of  an Identity and Access Management role that autho-
+              rizes Amazon Cognito to publish events to Amazon  Pinpoint  ana-
               lytics.
 
           ExternalId -> (string)
               The external ID.
 
           UserDataShared -> (boolean)
-              If UserDataShared is true , Amazon  Cognito  will  include  user
-              data in the events it publishes to Amazon Pinpoint analytics.
+              If UserDataShared is true , Amazon Cognito includes user data in
+              the events that it publishes to Amazon Pinpoint analytics.
 
        Shorthand Syntax:
 
@@ -320,21 +351,21 @@ OPTIONS
           }
 
        --prevent-user-existence-errors (string)
-          Errors  and  responses  that  you want Amazon Cognito APIs to return
-          during authentication, account confirmation, and  password  recovery
-          when  the  user  doesn't exist in the user pool. When set to ENABLED
+          Errors and responses that you want Amazon  Cognito  APIs  to  return
+          during  authentication,  account confirmation, and password recovery
+          when the user doesn't exist in the user pool. When  set  to  ENABLED
           and the user doesn't exist, authentication returns an error indicat-
           ing either the username or password was incorrect. Account confirma-
-          tion and password recovery return a response indicating a  code  was
+          tion  and  password recovery return a response indicating a code was
           sent to a simulated destination. When set to LEGACY , those APIs re-
-          turn a UserNotFoundException exception if the user doesn't exist  in
+          turn  a UserNotFoundException exception if the user doesn't exist in
           the user pool.
 
           Valid values include:
 
           o ENABLED - This prevents user existence-related errors.
 
-          o LEGACY  -  This  represents  the  early behavior of Amazon Cognito
+          o LEGACY - This represents the  early  behavior  of  Amazon  Cognito
             where user existence related errors aren't prevented.
 
           Possible values:
@@ -344,23 +375,23 @@ OPTIONS
           o ENABLED
 
        --enable-token-revocation | --no-enable-token-revocation (boolean)
-          Activates or deactivates  token  revocation.  For  more  information
+          Activates  or  deactivates  token  revocation.  For more information
           about revoking tokens, see RevokeToken .
 
-          If  you  don't include this parameter, token revocation is automati-
+          If you don't include this parameter, token revocation  is  automati-
           cally activated for the new user pool client.
 
-       --cli-input-json (string) Performs service operation based on the  JSON
-       string  provided. The JSON string follows the format provided by --gen-
-       erate-cli-skeleton. If other arguments  are  provided  on  the  command
-       line,  the CLI values will override the JSON-provided values. It is not
+       --cli-input-json  (string) Performs service operation based on the JSON
+       string provided. The JSON string follows the format provided by  --gen-
+       erate-cli-skeleton.  If  other  arguments  are  provided on the command
+       line, the CLI values will override the JSON-provided values. It is  not
        possible to pass arbitrary binary values using a JSON-provided value as
        the string will be taken literally.
 
-       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
+       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
        output without sending an API request. If provided with no value or the
        value input, prints a sample input JSON that can be used as an argument
-       for --cli-input-json. If provided with the value output,  it  validates
+       for  --cli-input-json.  If provided with the value output, it validates
        the command inputs and returns a sample output JSON for that command.
 
        See 'aws help' for descriptions of global parameters.
@@ -368,7 +399,7 @@ OPTIONS
 EXAMPLES
        To create a user pool client
 
-       This  example  creates  a new user pool client with two explicit autho-
+       This example creates a new user pool client with  two  explicit  autho-
        rization flows: USER_PASSWORD_AUTH and ADMIN_NO_SRP_AUTH.
 
        Command:
@@ -416,22 +447,49 @@ OUTPUT
               The date the user pool client was created.
 
           RefreshTokenValidity -> (integer)
-              The time limit, in days, after which the  refresh  token  is  no
-              longer valid and can't be used.
+              The  refresh  token  time  limit. After this limit expires, your
+              user can't use their refresh token. To specify the time unit for
+              RefreshTokenValidity  as  seconds  , minutes , hours , or days ,
+              set a TokenValidityUnits value in your API request.
+
+              For example, when you set RefreshTokenValidity as 10 and  Token-
+              ValidityUnits  as days , your user can refresh their session and
+              retrieve new access and ID tokens for 10 days.
+
+              The default time unit for RefreshTokenValidity in an API request
+              is  days.  You  can't  set RefreshTokenValidity to 0. If you do,
+              Amazon Cognito overrides the value with the default value of  30
+              days. Valid range is displayed below in seconds.
 
           AccessTokenValidity -> (integer)
-              The  time  limit, specified by tokenValidityUnits, defaulting to
-              hours, after which the access token is no longer valid and can't
-              be used.
+              The access token time limit. After this limit expires, your user
+              can't use their access token. To specify the time unit  for  Ac-
+              cessTokenValidity as seconds , minutes , hours , or days , set a
+              TokenValidityUnits value in your API request.
+
+              For example, when you set AccessTokenValidity to 10 and TokenVa-
+              lidityUnits to hours , your user can authorize access with their
+              access token for 10 hours.
+
+              The default time unit for AccessTokenValidity in an API  request
+              is hours. Valid range is displayed below in seconds.
 
           IdTokenValidity -> (integer)
-              The  time  limit  specified by tokenValidityUnits, defaulting to
-              hours, after which the refresh token  is  no  longer  valid  and
-              can't be used.
+              The  ID  token  time  limit. After this limit expires, your user
+              can't use their ID token. To specify the time unit for  IdToken-
+              Validity as seconds , minutes , hours , or days , set a TokenVa-
+              lidityUnits value in your API request.
+
+              For example, when you set IdTokenValidity as 10 and TokenValidi-
+              tyUnits as hours , your user can authenticate their session with
+              their ID token for 10 hours.
+
+              The default time unit for AccessTokenValidity in an API  request
+              is hours. Valid range is displayed below in seconds.
 
           TokenValidityUnits -> (structure)
-              The time units used to specify the token validity times of their
-              respective token.
+              The  time units used to specify the token validity times of each
+              token type: ID, access, and refresh.
 
               AccessToken -> (string)
                  A time unit in seconds, minutes, hours, or days for the value
@@ -486,14 +544,14 @@ OUTPUT
               (string)
 
           SupportedIdentityProviders -> (list)
-              A list of provider names for the  identity  providers  that  are
-              supported on this client.
+              A list of provider names for the IdPs that this client supports.
+              The following are supported: COGNITO , Facebook , Google  Login-
+              WithAmazon , and the names of your own SAML and OIDC providers.
 
               (string)
 
           CallbackURLs -> (list)
-              A  list  of  allowed  redirect  (callback) URLs for the identity
-              providers.
+              A list of allowed redirect (callback) URLs for the IdPs.
 
               A redirect URI must:
 
@@ -513,7 +571,7 @@ OUTPUT
               (string)
 
           LogoutURLs -> (list)
-              A list of allowed logout URLs for the identity providers.
+              A list of allowed logout URLs for the IdPs.
 
               (string)
 
@@ -537,26 +595,29 @@ OUTPUT
 
           AllowedOAuthFlows -> (list)
               The allowed OAuth flows.
+                 code
 
-              Set to code to initiate a code grant flow, which provides an au-
-              thorization code as the response. This code can be exchanged for
-              access tokens with the token endpoint.
+              Use a code grant flow, which provides an authorization  code  as
+              the  response. This code can be exchanged for access tokens with
+              the /oauth2/token endpoint.
+                 implicit
 
-              Set to implicit to specify that the client should get the access
-              token (and, optionally, ID token, based on scopes) directly.
+              Issue the access token (and,  optionally,  ID  token,  based  on
+              scopes) directly to your user.
+                 client_credentials
 
-              Set  to client_credentials to specify that the client should get
-              the access token (and, optionally, ID token,  based  on  scopes)
-              from  the  token  endpoint  using  a  combination  of client and
-              client_secret.
+              Issue  the access token from the /oauth2/token endpoint directly
+              to a non-person user using a combination of the  client  ID  and
+              client secret.
 
               (string)
 
           AllowedOAuthScopes -> (list)
-              The allowed OAuth scopes. Possible values provided by OAuth are:
-              phone  , email , openid , and profile . Possible values provided
-              by Amazon Web Services are: aws.cognito.signin.user.admin . Cus-
-              tom scopes created in Resource Servers are also supported.
+              The  OAuth scopes that your app client supports. Possible values
+              that OAuth provides are phone , email , openid , and  profile  .
+              Possible  values  that Amazon Web Services provides are aws.cog-
+              nito.signin.user.admin . Amazon  Cognito  also  supports  custom
+              scopes that you create in Resource Servers.
 
               (string)
 
@@ -580,7 +641,7 @@ OUTPUT
                  The Amazon Resource Name (ARN) of an Amazon Pinpoint project.
                  You can use the Amazon Pinpoint project to integrate with the
                  chosen  user  pool Client. Amazon Cognito publishes events to
-                 the Amazon Pinpointproject declared by the app ARN.
+                 the Amazon Pinpoint project that the app ARN declares.
 
               RoleArn -> (string)
                  The ARN of an Identity and Access Management role that autho-
@@ -591,8 +652,8 @@ OUTPUT
                  The external ID.
 
               UserDataShared -> (boolean)
-                 If UserDataShared is true , Amazon Cognito will include  user
-                 data in the events it publishes to Amazon Pinpoint analytics.
+                 If UserDataShared is true , Amazon Cognito includes user data
+                 in the events that it publishes to Amazon Pinpoint analytics.
 
           PreventUserExistenceErrors -> (string)
               Errors and responses that you want Amazon Cognito APIs to return
@@ -609,8 +670,8 @@ OUTPUT
 
               o ENABLED - This prevents user existence-related errors.
 
-              o LEGACY  -  This  represents  the old behavior of Cognito where
-                user existence related errors aren't prevented.
+              o LEGACY  -  This  represents the old behavior of Amazon Cognito
+                where user existence related errors aren't prevented.
 
           EnableTokenRevocation -> (boolean)
               Indicates whether token revocation is  activated  for  the  user
