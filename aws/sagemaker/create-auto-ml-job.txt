@@ -41,17 +41,18 @@ OPTIONS
        --input-data-config (list)
           An array of channel objects that describes the input  data  and  its
           location. Each channel is a named input source. Similar to InputDat-
-          aConfig supported by . Format(s)  supported:  CSV.  Minimum  of  500
-          rows.
+          aConfig supported by . Format(s) supported: CSV, Parquet. A  minimum
+          of  500  rows  is  required for the training dataset. There is not a
+          minimum number of rows required for the validation dataset.
 
           (structure)
-              A  channel  is a named input source that training algorithms can
-              consume. The validation dataset size is limited to less  than  2
+              A channel is a named input source that training  algorithms  can
+              consume.  The  validation dataset size is limited to less than 2
               GB. The training dataset size must be less than 100 GB. For more
               information, see .
 
               NOTE:
-                 A validation dataset must contain the  same  headers  as  the
+                 A  validation  dataset  must  contain the same headers as the
                  training dataset.
 
               DataSource -> (structure)
@@ -61,7 +62,7 @@ OPTIONS
                      The Amazon S3 location of the input data.
 
                      NOTE:
-                        The  input  data  must be in CSV format and contain at
+                        The input data must be in CSV format  and  contain  at
                         least 500 rows.
 
                      S3DataType -> (string)
@@ -74,18 +75,22 @@ OPTIONS
                  You can use Gzip or None . The default value is None .
 
               TargetAttributeName -> (string)
-                 The name of the target variable in supervised learning,  usu-
+                 The  name of the target variable in supervised learning, usu-
                  ally represented by 'y'.
 
               ContentType -> (string)
-                 The  content  type of the data from the input source. You can
-                 use text/csv;header=present or  x-application/vnd.amazon+par-
+                 The content type of the data from the input source.  You  can
+                 use  text/csv;header=present or x-application/vnd.amazon+par-
                  quet . The default value is text/csv;header=present .
 
               ChannelType -> (string)
-                 The  channel  type  (optional) is an enum string. The default
+                 The channel type (optional) is an enum  string.  The  default
                  value is training . Channels for training and validation must
-                 share the same ContentType and TargetAttributeName .
+                 share the same ContentType and TargetAttributeName . For  in-
+                 formation  on  specifying  training  and  validation  channel
+                 types, see ` How to specify training and validation  datasets
+                 https://docs.aws.amazon.com/sagemaker/latest/dg/autopilot-datasets-problem-types.html#autopilot-data-sources-training-or-validation`__
+                 .
 
        Shorthand Syntax:
 
@@ -110,8 +115,8 @@ OPTIONS
           ]
 
        --output-data-config (structure)
-          Provides  information about encryption and the Amazon S3 output path
-          needed to store artifacts from an AutoML job.  Format(s)  supported:
+          Provides information about encryption and the Amazon S3 output  path
+          needed  to  store artifacts from an AutoML job. Format(s) supported:
           CSV.
 
           KmsKeyId -> (string)
@@ -132,10 +137,9 @@ OPTIONS
           }
 
        --problem-type (string)
-          Defines  the  type  of  supervised learning available for the candi-
-          dates. Options include: BinaryClassification , MulticlassClassifica-
-          tion  ,  and Regression . For more information, see Amazon SageMaker
-          Autopilot problem types and algorithm support .
+          Defines the type of supervised learning  available  for  the  candi-
+          dates.  For more information, see Amazon SageMaker Autopilot problem
+          types and algorithm support .
 
           Possible values:
 
@@ -243,8 +247,7 @@ OPTIONS
           }
 
        --auto-ml-job-config (structure)
-          Contains  CompletionCriteria and SecurityConfig settings for the Au-
-          toML job.
+          A collection of settings used to configure an AutoML job.
 
           CompletionCriteria -> (structure)
               How long an AutoML job is allowed to run, or how many candidates
@@ -254,46 +257,46 @@ OPTIONS
                  The maximum number of times a training job is allowed to run.
 
               MaxRuntimePerTrainingJobInSeconds -> (integer)
-                 The  maximum  time, in seconds, that each training job is al-
+                 The maximum time, in seconds, that each training job  is  al-
                  lowed to run as part of a hyperparameter tuning job. For more
                  information, see the used by the action.
 
               MaxAutoMLJobRuntimeInSeconds -> (integer)
-                 The  maximum  runtime,  in seconds, an AutoML job has to com-
+                 The maximum runtime, in seconds, an AutoML job  has  to  com-
                  plete.
 
-                 If an AutoML job exceeds the  maximum  runtime,  the  job  is
+                 If  an  AutoML  job  exceeds  the maximum runtime, the job is
                  stopped automatically and its processing is ended gracefully.
-                 The AutoML job identifies the best model whose  training  was
-                 completed  and marks it as the best-performing model. Any un-
-                 finished steps of the job, such as  automatic  one-click  Au-
+                 The  AutoML  job identifies the best model whose training was
+                 completed and marks it as the best-performing model. Any  un-
+                 finished  steps  of  the job, such as automatic one-click Au-
                  topilot model deployment, will not be completed.
 
           SecurityConfig -> (structure)
-              The  security configuration for traffic encryption or Amazon VPC
+              The security configuration for traffic encryption or Amazon  VPC
               settings.
 
               VolumeKmsKeyId -> (string)
                  The key used to encrypt stored data.
 
               EnableInterContainerTrafficEncryption -> (boolean)
-                 Whether to use traffic encryption between the container  lay-
+                 Whether  to use traffic encryption between the container lay-
                  ers.
 
               VpcConfig -> (structure)
                  The VPC configuration.
 
                  SecurityGroupIds -> (list)
-                     The  VPC  security  group  IDs,  in the form sg-xxxxxxxx.
+                     The VPC security group  IDs,  in  the  form  sg-xxxxxxxx.
                      Specify the security groups for the VPC that is specified
                      in the Subnets field.
 
                      (string)
 
                  Subnets -> (list)
-                     The  ID  of  the  subnets in the VPC to which you want to
+                     The ID of the subnets in the VPC to  which  you  want  to
                      connect your training job or model. For information about
-                     the   availability   of   specific  instance  types,  see
+                     the  availability  of  specific   instance   types,   see
                      Supported Instance Types and Availability Zones .
 
                      (string)
@@ -304,10 +307,27 @@ OPTIONS
               Type: AutoMLDataSplitConfig
 
               ValidationFraction -> (float)
-                 The validation fraction (optional) is a float that  specifies
-                 the  portion  of  the training dataset to be used for valida-
-                 tion. The default value is 0.2, and values can range  from  0
-                 to 1. We recommend setting this value to be less than 0.5.
+                 The  validation fraction (optional) is a float that specifies
+                 the portion of the training dataset to be  used  for  valida-
+                 tion.  The  default  value is 0.2, and values must be greater
+                 than 0 and less than 1. We recommend setting this value to be
+                 less than 0.5.
+
+          CandidateGenerationConfig -> (structure)
+              The  configuration  for generating a candidate for an AutoML job
+              (optional).
+
+              FeatureSpecificationS3Uri -> (string)
+                 A URL to the Amazon S3 data source containing  selected  fea-
+                 tures from the input data source to run an Autopilot job (op-
+                 tional). This file should be in json format as shown below:
+                     { "FeatureAttributeNames":["col1", "col2", ...] } .
+
+                 The key  name  FeatureAttributeNames  is  fixed.  The  values
+                 listed  in ["col1", "col2", ...] is case sensitive and should
+                 be a list of strings containing unique values that are a sub-
+                 set  of  the column names in the input data. The list of col-
+                 umns provided must not include the target column.
 
        JSON Syntax:
 
@@ -327,6 +347,9 @@ OPTIONS
             },
             "DataSplitConfig": {
               "ValidationFraction": float
+            },
+            "CandidateGenerationConfig": {
+              "FeatureSpecificationS3Uri": "string"
             }
           }
 
@@ -335,26 +358,26 @@ OPTIONS
 
        --generate-candidate-definitions-only | --no-generate-candidate-defini-
        tions-only (boolean)
-          Generates possible candidates without training the models. A  candi-
-          date  is  a combination of data preprocessors, algorithms, and algo-
+          Generates  possible candidates without training the models. A candi-
+          date is a combination of data preprocessors, algorithms,  and  algo-
           rithm parameter settings.
 
        --tags (list)
-          Each tag consists of a key and an optional value. Tag keys  must  be
+          Each  tag  consists of a key and an optional value. Tag keys must be
           unique per resource.
 
           (structure)
-              A  tag object that consists of a key and an optional value, used
+              A tag object that consists of a key and an optional value,  used
               to manage metadata for SageMaker Amazon Web Services resources.
 
-              You can add tags to notebook instances, training jobs,  hyperpa-
-              rameter  tuning  jobs,  batch  transform  jobs, models, labeling
-              jobs, work teams, endpoint configurations,  and  endpoints.  For
+              You  can add tags to notebook instances, training jobs, hyperpa-
+              rameter tuning jobs,  batch  transform  jobs,  models,  labeling
+              jobs,  work  teams,  endpoint configurations, and endpoints. For
               more information on adding tags to SageMaker resources, see  Ad-
               dTags .
 
-              For more information on adding metadata to your Amazon Web  Ser-
-              vices  resources  with  tagging, see Tagging Amazon Web Services
+              For  more information on adding metadata to your Amazon Web Ser-
+              vices resources with tagging, see Tagging  Amazon  Web  Services
               resources . For advice on best practices for managing Amazon Web
               Services resources with tagging, see Tagging Best Practices: Im-
               plement an Effective Amazon Web Services Resource Tagging Strat-
@@ -381,25 +404,25 @@ OPTIONS
           ]
 
        --model-deploy-config (structure)
-          Specifies  how  to  generate  the  endpoint  name  for  an automatic
+          Specifies how  to  generate  the  endpoint  name  for  an  automatic
           one-click Autopilot model deployment.
 
           AutoGenerateEndpointName -> (boolean)
-              Set to True to automatically generate an  endpoint  name  for  a
-              one-click  Autopilot  model  deployment; set to False otherwise.
+              Set  to  True  to  automatically generate an endpoint name for a
+              one-click Autopilot model deployment; set  to  False  otherwise.
               The default value is False .
 
               NOTE:
-                 If you set AutoGenerateEndpointName to True , do not  specify
+                 If  you set AutoGenerateEndpointName to True , do not specify
                  the EndpointName ; otherwise a 400 error is thrown.
 
           EndpointName -> (string)
-              Specifies  the  endpoint  name  to use for a one-click Autopilot
+              Specifies the endpoint name to use  for  a  one-click  Autopilot
               model deployment if the endpoint name is not generated automati-
               cally.
 
               NOTE:
-                 Specify  the  EndpointName if and only if you set AutoGenera-
+                 Specify the EndpointName if and only if you  set  AutoGenera-
                  teEndpointName to False ; otherwise a 400 error is thrown.
 
        Shorthand Syntax:
@@ -413,17 +436,17 @@ OPTIONS
             "EndpointName": "string"
           }
 
-       --cli-input-json (string) Performs service operation based on the  JSON
-       string  provided. The JSON string follows the format provided by --gen-
-       erate-cli-skeleton. If other arguments  are  provided  on  the  command
-       line,  the CLI values will override the JSON-provided values. It is not
+       --cli-input-json  (string) Performs service operation based on the JSON
+       string provided. The JSON string follows the format provided by  --gen-
+       erate-cli-skeleton.  If  other  arguments  are  provided on the command
+       line, the CLI values will override the JSON-provided values. It is  not
        possible to pass arbitrary binary values using a JSON-provided value as
        the string will be taken literally.
 
-       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
+       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
        output without sending an API request. If provided with no value or the
        value input, prints a sample input JSON that can be used as an argument
-       for --cli-input-json. If provided with the value output,  it  validates
+       for  --cli-input-json.  If provided with the value output, it validates
        the command inputs and returns a sample output JSON for that command.
 
        See 'aws help' for descriptions of global parameters.
