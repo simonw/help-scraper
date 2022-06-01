@@ -6,14 +6,49 @@ NAME
        start-call-analytics-job -
 
 DESCRIPTION
-       Starts  an asynchronous analytics job that not only transcribes the au-
-       dio recording of a caller and agent, but also  returns  additional  in-
-       sights.  These  insights  include  how  quickly or loudly the caller or
-       agent was speaking. To retrieve additional insights with your analytics
-       jobs, create categories. A category is a way to classify analytics jobs
-       based on attributes, such as a customer's  sentiment  or  a  particular
-       phrase being used during the call. For more information, see the opera-
-       tion.
+       Transcribes  the audio from a customer service call and applies any ad-
+       ditional Request Parameters you choose to include in your request.
+
+       In addition to many of the standard transcription features,  Call  Ana-
+       lytics  provides  you  with  call  characteristics, call summarization,
+       speaker sentiment, and optional redaction of your text  transcript  and
+       your audio file. You can also apply custom categories to flag specified
+       conditions. To learn more about these features and insights,  refer  to
+       Analyzing call center audio with Call Analytics .
+
+       If  you  want  to apply categories to your Call Analytics job, you must
+       create them before submitting your job request.  Categories  cannot  be
+       retroactively applied to a job. To create a new category, use the oper-
+       ation. To learn more about Call Analytics categories, see Creating cat-
+       egories .
+
+       To make a StartCallAnalyticsJob request, you must first upload your me-
+       dia file into an Amazon S3 bucket; you can then specify the  Amazon  S3
+       location of the file using the Media parameter.
+
+       You must include the following parameters in your StartCallAnalyticsJob
+       request:
+
+       o region : The Amazon Web Services Region where you are making your re-
+         quest.  For a list of Amazon Web Services Regions supported with Ama-
+         zon Transcribe, refer to Amazon Transcribe endpoints and quotas .
+
+       o CallAnalyticsJobName : A custom name you create for  your  transcrip-
+         tion job that is unique within your Amazon Web Services account.
+
+       o DataAccessRoleArn  :  The  Amazon  Resource Name (ARN) of an IAM role
+         that has permissions to access the Amazon  S3  bucket  that  contains
+         your input files.
+
+       o Media (MediaFileUri or RedactedMediaFileUri ): The Amazon S3 location
+         of your media file.
+
+       NOTE:
+          With Call Analytics, you can redact the audio contained in your  me-
+          dia file by including RedactedMediaFileUri , instead of MediaFileUri
+          , to specify the location of your input  audio.  If  you  choose  to
+          redact  your audio, you can find your redacted media at the location
+          specified in the RedactedMediaFileUri field of your response.
 
        See also: AWS API Documentation
 
@@ -25,7 +60,7 @@ SYNOPSIS
           --media <value>
           [--output-location <value>]
           [--output-encryption-kms-key-id <value>]
-          --data-access-role-arn <value>
+          [--data-access-role-arn <value>]
           [--settings <value>]
           [--channel-definitions <value>]
           [--cli-input-json <value>]
@@ -33,32 +68,44 @@ SYNOPSIS
 
 OPTIONS
        --call-analytics-job-name (string)
-          The name of the call analytics job. You can't use the string "."  or
-          ".."  by  themselves  as  the job name. The name must also be unique
-          within an Amazon Web Services account. If you try to create  a  call
-          analytics  job  with the same name as a previous call analytics job,
-          you get a ConflictException error.
+          A unique name, chosen by you, for your Call Analytics job.
+
+          This name is case sensitive, cannot  contain  spaces,  and  must  be
+          unique within an Amazon Web Services account. If you try to create a
+          new job with the same name as an existing job, you get a ConflictEx-
+          ception error.
 
        --media (structure)
-          Describes the input media file in a transcription request.
+          Describes  the  Amazon S3 location of the media file you want to use
+          in your request.
 
           MediaFileUri -> (string)
-              The S3 object location of the input media file. The URI must  be
-              in the same region as the API endpoint that you are calling. The
-              general form is:
-                 s3://DOC-EXAMPLE-BUCKET/keyprefix/objectkey
-
+              The Amazon S3 location of the media file you want to transcribe.
               For example:
-                 s3://DOC-EXAMPLE-BUCKET/example.flac
 
-                 s3://DOC-EXAMPLE-BUCKET/mediafiles/example.flac
+              o s3://DOC-EXAMPLE-BUCKET/my-media-file.flac
 
-              For more information about S3 object names, see Object  Keys  in
-              the Amazon S3 Developer Guide .
+              o s3://DOC-EXAMPLE-BUCKET/media-files/my-media-file.flac
+
+              Note  that  the  Amazon S3 bucket that contains your input media
+              must be located in the same Amazon  Web  Services  Region  where
+              you're making your transcription request.
 
           RedactedMediaFileUri -> (string)
-              The S3 object location for your redacted output media file. This
-              is only supported for call analytics jobs.
+              The Amazon S3 location of the media file you want to redact. For
+              example:
+
+              o s3://DOC-EXAMPLE-BUCKET/my-media-file.flac
+
+              o s3://DOC-EXAMPLE-BUCKET/media-files/my-media-file.flac
+
+              Note that the Amazon S3 bucket that contains  your  input  media
+              must  be  located  in  the same Amazon Web Services Region where
+              you're making your transcription request.
+
+              WARNING:
+                 RedactedMediaFileUri is only  supported  for  Call  Analytics
+                 (StartCallAnalyticsJob ) transcription requests.
 
        Shorthand Syntax:
 
@@ -72,168 +119,263 @@ OPTIONS
           }
 
        --output-location (string)
-          The Amazon S3 location where the output of the call analytics job is
-          stored.  You  can  provide the following location types to store the
-          output of call analytics job:
+          The Amazon S3 location where you want your Call Analytics transcrip-
+          tion output stored. You can use any  of  the  following  formats  to
+          specify the output location:
 
-          o s3://DOC-EXAMPLE-BUCKET1 If you specify  a  bucket,  Amazon  Tran-
-            scribe saves the output of the analytics job as a JSON file at the
-            root level of the bucket.
+          o s3://DOC-EXAMPLE-BUCKET
 
-          o s3://DOC-EXAMPLE-BUCKET1/folder/ f  you  specify  a  path,  Amazon
-            Transcribe saves the output of the analytics job as s3://DOC-EXAM-
-            PLE-BUCKET1/folder/your-transcription-job-name.json. If you  spec-
-            ify a folder, you must provide a trailing slash.
+          o s3://DOC-EXAMPLE-BUCKET/my-output-folder/
 
-          o s3://DOC-EXAMPLE-BUCKET1/folder/filename.json.  If  you  provide a
-            path that has the filename specified, Amazon Transcribe saves  the
-            output    of    the    analytics    job    as    s3://DOC-EXAMPLE-
-            BUCKET1/folder/filename.json.
+          o s3://DOC-EXAMPLE-BUCKET/my-output-folder/my-call-analyt-
+            ics-job.json
 
-          You can specify an Amazon Web Services Key Management Service  (KMS)
-          key  to  encrypt the output of our analytics job using the OutputEn-
-          cryptionKMSKeyId parameter. If you don't specify a KMS  key,  Amazon
-          Transcribe uses the default Amazon S3 key for server-side encryption
-          of the analytics job output that is placed in your S3 bucket.
+          Unless you specify a file name (option 3), the name of  your  output
+          file  has  a  default  value that matches the name you specified for
+          your transcription job using the CallAnalyticsJobName parameter.
+
+          You can specify a KMS key to encrypt your output using the OutputEn-
+          cryptionKMSKeyId  parameter.  If you don't specify a KMS key, Amazon
+          Transcribe uses the default Amazon S3 key  for  server-side  encryp-
+          tion.
+
+          If you don't specify OutputLocation , your transcript is placed in a
+          service-managed Amazon S3 bucket and you are provided with a URI  to
+          access your transcript.
 
        --output-encryption-kms-key-id (string)
-          The Amazon Resource Name (ARN) of the Amazon Web Services  Key  Man-
-          agement Service key used to encrypt the output of the call analytics
-          job. The user calling the operation must have permission to use  the
-          specified KMS key.
+          The KMS key you want to use to encrypt your Call Analytics output.
 
-          You  use  either of the following to identify an Amazon Web Services
-          KMS key in the current account:
+          If  using  a key located in the current Amazon Web Services account,
+          you can specify your KMS key in one of four ways:
 
-          o KMS Key ID: "1234abcd-12ab-34cd-56ef-1234567890ab"
+          o Use    the     KMS     key     ID     itself.     For     example,
+            1234abcd-12ab-34cd-56ef-1234567890ab .
 
-          o KMS Key Alias: "alias/ExampleAlias"
+          o Use an alias for the KMS key ID. For example, alias/ExampleAlias .
 
-          You can use either of the following to identify a  KMS  key  in  the
-          current account or another account:
+          o Use  the  Amazon Resource Name (ARN) for the KMS key ID. For exam-
+            ple,                                        arn:aws:kms:region:ac-
+            count-ID:key/1234abcd-12ab-34cd-56ef-1234567890ab .
 
-          o Amazon  Resource Name (ARN) of a KMS key in the current account or
-            another            account:            "arn:aws:kms:region:account
-            ID:key/1234abcd-12ab-34cd-56ef1234567890ab"
+          o Use  the  ARN  for the KMS key alias. For example, arn:aws:kms:re-
+            gion:account-ID:alias/ExampleAlias .
 
-          o ARN  of a KMS Key Alias: "arn:aws:kms:region:accountID:alias/Exam-
-            pleAlias"
+          If using a key located in a different Amazon  Web  Services  account
+          than  the  current Amazon Web Services account, you can specify your
+          KMS key in one of two ways:
 
-          If you don't specify an encryption key, the output of the call  ana-
-          lytics job is encrypted with the default Amazon S3 key (SSE-S3).
+          o Use the ARN for the  KMS  key  ID.  For  example,  arn:aws:kms:re-
+            gion:account-ID:key/1234abcd-12ab-34cd-56ef-1234567890ab .
+
+          o Use  the  ARN  for the KMS key alias. For example, arn:aws:kms:re-
+            gion:account-ID:alias/ExampleAlias .
+
+          If you don't specify an encryption key,  your  output  is  encrypted
+          with the default Amazon S3 key (SSE-S3).
 
           If you specify a KMS key to encrypt your output, you must also spec-
-          ify an output location in the OutputLocation parameter.
+          ify an output location using the OutputLocation parameter.
+
+          Note that the user making the request must have  permission  to  use
+          the specified KMS key.
 
        --data-access-role-arn (string)
-          The Amazon Resource Name (ARN) of a role that has access to  the  S3
-          bucket  that  contains  your  input files. Amazon Transcribe assumes
-          this role to read queued audio files. If you have specified an  out-
-          put  S3 bucket for your transcription results, this role should have
-          access to the output bucket as well.
+          The  Amazon  Resource Name (ARN) of an IAM role that has permissions
+          to access the Amazon S3 bucket that contains your  input  files.  If
+          the  role you specify doesnt have the appropriate permissions to ac-
+          cess the specified Amazon S3 location, your request fails.
+
+          IAM   role   ARNs    have    the    format    arn:partition:iam::ac-
+          count:role/role-name-with-path         .         For        example:
+          arn:aws:iam::111122223333:role/Admin .
+
+          For more information, see IAM ARNs .
 
        --settings (structure)
-          A Settings object that provides optional settings for a call analyt-
-          ics job.
+          Specify additional optional settings in your request, including con-
+          tent  redaction; allows you to apply custom language models, vocabu-
+          lary filters, and custom vocabularies to your Call Analytics job.
 
           VocabularyName -> (string)
-              The name of a vocabulary to use when processing the call analyt-
-              ics job.
+              The name of the custom vocabulary you want to  include  in  your
+              Call  Analytics transcription request. Vocabulary names are case
+              sensitive.
 
           VocabularyFilterName -> (string)
-              The name of the vocabulary filter to use when running a call an-
-              alytics job. The filter that you specify must have the same lan-
-              guage code as the analytics job.
+              The name of the custom vocabulary filter you want to include  in
+              your  Call  Analytics  transcription  request. Vocabulary filter
+              names are case sensitive.
+
+              Note that if you include VocabularyFilterName in  your  request,
+              you must also include VocabularyFilterMethod .
 
           VocabularyFilterMethod -> (string)
-              Set to mask to remove filtered text from the transcript and  re-
-              place it with three asterisks ("
-              **
+              Specify  how  you  want  your  vocabulary filter applied to your
+              transcript.
 
-              *
-              ")  as  placeholder  text. Set to remove to remove filtered text
-              from the transcript without using placeholder text. Set  to  tag
-              to  mark  the  word in the transcription output that matches the
-              vocabulary filter. When you set the filter method to tag  ,  the
-              words matching your vocabulary filter are not masked or removed.
+              To replace words with *** , choose mask .
 
-              System Message: WARNING/2 (<string>:, line 219)
-                     Inline strong start-string without end-string.
+              To delete words, choose remove .
 
-              System Message: WARNING/2 (<string>:, line 219)
-                     Inline emphasis start-string without end-string.
+              To flag words without changing them, choose tag .
 
           LanguageModelName -> (string)
-              The structure used to describe a custom language model.
+              The name of the custom language model you want to use when  pro-
+              cessing  your Call Analytics job. Note that language model names
+              are case sensitive.
+
+              The language of the specified language model must match the lan-
+              guage  code  you  specify  in your transcription request. If the
+              languages don't match, the language model isn't  applied.  There
+              are no errors or warnings associated with a language mismatch.
 
           ContentRedaction -> (structure)
-              Settings for content redaction within a transcription job.
+              Allows  you  to redact or flag specified personally identifiable
+              information (PII) in your transcript. If you  use  ContentRedac-
+              tion  , you must also include the sub-parameters: PiiEntityTypes
+              , RedactionOutput , and RedactionType .
 
               RedactionType -> (string)
-                 Request  parameter  that defines the entities to be redacted.
-                 The only accepted value is PII .
+                 Specify the category of information you want to  redact;  PII
+                 (personally  identifiable  information)  is  the  only  valid
+                 value. You can use PiiEntityTypes to choose  which  types  of
+                 PII you want to redact.
 
               RedactionOutput -> (string)
-                 The output transcript file stored in either  the  default  S3
-                 bucket or in a bucket you specify.
+                 Specify  if  you  want  only a redacted transcript, or if you
+                 want a redacted and an unredacted transcript.
 
-                 When  you  choose redacted Amazon Transcribe outputs only the
+                 When you choose redacted Amazon  Transcribe  creates  only  a
                  redacted transcript.
 
-                 When you  choose  redacted_and_unredacted  Amazon  Transcribe
-                 outputs both the redacted and unredacted transcripts.
+                 When  you  choose  redacted_and_unredacted  Amazon Transcribe
+                 creates a redacted and an unredacted transcript (as two sepa-
+                 rate files).
 
               PiiEntityTypes -> (list)
-                 The  types  of  personally identifiable information (PII) you
-                 want to redact in your transcript.
+                 Specify  which  types  of personally identifiable information
+                 (PII) you want to redact in your transcript. You can  include
+                 as many types as you'd like, or you can select ALL .
 
                  (string)
 
           LanguageOptions -> (list)
-              When you run a call analytics job, you can specify the  language
-              spoken  in the audio, or you can have Amazon Transcribe identify
-              the language for you.
+              You  can  specify  two or more language codes that represent the
+              languages you think may be present in your media; including more
+              than  five  is  not recommended. If you're unsure what languages
+              are present, do not include this parameter.
 
-              To specify a language, specify an array with one language  code.
-              If  you  don't know the language, you can leave this field blank
-              and Amazon Transcribe will use machine learning to identify  the
-              language for you. To improve the ability of Amazon Transcribe to
-              correctly identify the language, you can provide an array of the
-              languages  that  can be present in the audio. Refer to Supported
-              languages for additional information.
+              Including language options can improve the accuracy of  language
+              identification.
+
+              For  a list of languages supported with Call Analytics, refer to
+              the Supported languages table.
 
               (string)
 
           LanguageIdSettings -> (map)
-              The language identification settings associated with  your  call
-              analytics  job.  These settings include VocabularyName , Vocabu-
-              laryFilterName , and LanguageModelName .
+              If using automatic language identification  (IdentifyLanguage  )
+              in your request and you want to apply a custom language model, a
+              custom vocabulary, or a custom vocabulary filter,  include  Lan-
+              guageIdSettings with the relevant sub-parameters (VocabularyName
+              , LanguageModelName , and VocabularyFilterName ).
+
+              You can specify two or more language codes  that  represent  the
+              languages you think may be present in your media; including more
+              than five is not recommended. Each language code you include can
+              have an associated custom language model, custom vocabulary, and
+              custom vocabulary filter. The languages you specify  must  match
+              the  languages  of  the specified custom language models, custom
+              vocabularies, and custom vocabulary filters.
+
+              To include language options using IdentifyLanguage  without  in-
+              cluding  a custom language model, a custom vocabulary, or a cus-
+              tom vocabulary filter, use LanguageOptions instead of LanguageI-
+              dSettings  . Including language options can improve the accuracy
+              of automatic language identification.
+
+              If you want to include a custom language model with your request
+              but  do  not  want to use automatic language identification, use
+              instead the parameter with the LanguageModelName sub-parameter.
+
+              If you want to include a custom vocabulary or a  custom  vocabu-
+              lary  filter  (or both) with your request but do not want to use
+              automatic language identification,  use  instead  the  parameter
+              with   the  VocabularyName  or  VocabularyFilterName  (or  both)
+              sub-parameter.
 
               key -> (string)
 
               value -> (structure)
-                 Language-specific settings that can be  specified  when  lan-
-                 guage identification is enabled.
+                 If using automatic language identification  (IdentifyLanguage
+                 )  in  your  request  and you want to apply a custom language
+                 model, a custom vocabulary, or a  custom  vocabulary  filter,
+                 include  LanguageIdSettings  with the relevant sub-parameters
+                 (VocabularyName , LanguageModelName ,  and  VocabularyFilter-
+                 Name ).
+
+                 You can specify two or more language codes that represent the
+                 languages you think may be present in your  media;  including
+                 more than five is not recommended. Each language code you in-
+                 clude can have an associated custom  language  model,  custom
+                 vocabulary,  and  custom vocabulary filter. The languages you
+                 specify must match the languages of the specified custom lan-
+                 guage models, custom vocabularies, and custom vocabulary fil-
+                 ters.
+
+                 To include language options using  IdentifyLanguage   without
+                 including  a custom language model, a custom vocabulary, or a
+                 custom vocabulary filter, use LanguageOptions instead of Lan-
+                 guageIdSettings  . Including language options can improve the
+                 accuracy of automatic language identification.
+
+                 If you want to include a custom language model with your  re-
+                 quest  but  do not want to use automatic language identifica-
+                 tion, use instead the parameter  with  the  LanguageModelName
+                 sub-parameter.
+
+                 If you want to include a custom vocabulary or a custom vocab-
+                 ulary filter (or both) with your request but do not  want  to
+                 use automatic language identification, use instead the param-
+                 eter with  the  VocabularyName  or  VocabularyFilterName  (or
+                 both) sub-parameter.
 
                  VocabularyName -> (string)
-                     The  name of the vocabulary you want to use when process-
-                     ing your transcription job. The  vocabulary  you  specify
-                     must  have  the  same language codes as the transcription
-                     job; if the languages don't match, the  vocabulary  isn't
-                     applied.
+                     The  name  of  the custom vocabulary you want to use when
+                     processing your transcription job. Vocabulary  names  are
+                     case sensitive.
+
+                     The  language  of the specified vocabulary must match the
+                     language code you specify in your transcription  request.
+                     If  the  languages  don't match, the vocabulary isn't ap-
+                     plied. There are no errors or warnings associated with  a
+                     language mismatch.
 
                  VocabularyFilterName -> (string)
-                     The  name  of  the vocabulary filter you want to use when
-                     transcribing your audio. The filter you specify must have
-                     the  same language codes as the transcription job; if the
-                     languages don't match, the vocabulary filter isn't be ap-
-                     plied.
+                     The  name of the custom vocabulary filter you want to use
+                     when processing your transcription job. Vocabulary filter
+                     names are case sensitive.
+
+                     The  language  of  the  specified  vocabulary filter must
+                     match the language code you specify in your transcription
+                     request.  If  the  languages  don't match, the vocabulary
+                     filter isn't applied. There are no errors or warnings as-
+                     sociated with a language mismatch.
+
+                     Note that if you include VocabularyFilterName in your re-
+                     quest, you must also include VocabularyFilterMethod .
 
                  LanguageModelName -> (string)
-                     The name of the language model you want to use when tran-
-                     scribing your audio. The model you specify must have  the
-                     same language codes as the transcription job; if the lan-
-                     guages don't match, the language model isn't be applied.
+                     The name of the custom language model  you  want  to  use
+                     when  processing  your  transcription job. Note that lan-
+                     guage model names are case sensitive.
+
+                     The language of the specified language model  must  match
+                     the  language  code you specify in your transcription re-
+                     quest. If the languages don't match, the  language  model
+                     isn't applied. There are no errors or warnings associated
+                     with a language mismatch.
 
        Shorthand Syntax:
 
@@ -261,23 +403,24 @@ OPTIONS
           }
 
        --channel-definitions (list)
-          When you start a call analytics job, you must  pass  an  array  that
-          maps the agent and the customer to specific audio channels. The val-
-          ues you can assign to a channel are 0 and 1. The agent and the  cus-
-          tomer  must  each have their own channel. You can't assign more than
-          one channel to an agent or customer.
+          Allows you to specify which speaker is on which channel.  For  exam-
+          ple,  if your agent is the first participant to speak, you would set
+          ChannelId to 0 (to indicate the first channel)  and  ParticipantRole
+          to AGENT (to indicate that it's the agent speaking).
 
           (structure)
-              For a call analytics job, an object  that  indicates  the  audio
-              channel that belongs to the agent and the audio channel that be-
-              longs to the customer.
+              Allows you to specify which speaker is on which channel. For ex-
+              ample, if your agent is the  first  participant  to  speak,  you
+              would  set  ChannelId  to  0 (to indicate the first channel) and
+              ParticipantRole to AGENT (to indicate that it's the agent speak-
+              ing).
 
               ChannelId -> (integer)
-                 A value that indicates the audio channel.
+                 Specify the audio channel you want to define.
 
               ParticipantRole -> (string)
-                 Indicates whether the person speaking on the audio channel is
-                 the agent or customer.
+                 Specify the speaker you want to define. Omitting this parame-
+                 ter is equivalent to specifying both participants.
 
        Shorthand Syntax:
 
@@ -293,273 +436,430 @@ OPTIONS
             ...
           ]
 
-       --cli-input-json  (string) Performs service operation based on the JSON
-       string provided. The JSON string follows the format provided by  --gen-
-       erate-cli-skeleton.  If  other  arguments  are  provided on the command
-       line, the CLI values will override the JSON-provided values. It is  not
+       --cli-input-json (string) Performs service operation based on the  JSON
+       string  provided. The JSON string follows the format provided by --gen-
+       erate-cli-skeleton. If other arguments  are  provided  on  the  command
+       line,  the CLI values will override the JSON-provided values. It is not
        possible to pass arbitrary binary values using a JSON-provided value as
        the string will be taken literally.
 
-       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
+       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
        output without sending an API request. If provided with no value or the
        value input, prints a sample input JSON that can be used as an argument
-       for  --cli-input-json.  If provided with the value output, it validates
+       for --cli-input-json. If provided with the value output,  it  validates
        the command inputs and returns a sample output JSON for that command.
 
        See 'aws help' for descriptions of global parameters.
 
 OUTPUT
        CallAnalyticsJob -> (structure)
-          An object containing the details of the asynchronous call  analytics
-          job.
+          Provides  detailed information about the current Call Analytics job,
+          including job status and, if applicable, failure reason.
 
           CallAnalyticsJobName -> (string)
-              The name of the call analytics job.
+              The name of the Call Analytics job. Job names are case sensitive
+              and must be unique within an Amazon Web Services account.
 
           CallAnalyticsJobStatus -> (string)
-              The status of the analytics job.
+              Provides the status of the specified Call Analytics job.
+
+              If  the  status  is  COMPLETED , the job is finished and you can
+              find the results at the location specified in  TranscriptFileUri
+              (or  RedactedTranscriptFileUri  ,  if  you  requested transcript
+              redaction). If the status is FAILED , FailureReason provides de-
+              tails on why your transcription job failed.
 
           LanguageCode -> (string)
-              If  you  know  the  language spoken between the customer and the
-              agent, specify a language code for this field.
+              The  language code used to create your Call Analytics job. For a
+              list of supported languages and their associated language codes,
+              refer to the Supported languages table.
 
-              If you don't know the language, you can leave this field  blank,
-              and Amazon Transcribe will use machine learning to automatically
-              identify the language. To improve the accuracy of language iden-
-              tification,  you  can  provide  an array containing the possible
-              language codes for the language spoken in your audio.  Refer  to
-              Supported languages for additional information.
+              If  you  don't  know the language spoken in your media file, you
+              can omit this field  and  let  Amazon  Transcribe  automatically
+              identify  the language of your media. To improve the accuracy of
+              language identification, you can include several language  codes
+              and  Amazon  Transcribe chooses the closest match for your tran-
+              scription.
 
           MediaSampleRateHertz -> (integer)
-              The sample rate, in Hertz, of the input audio.
+              The sample rate, in Hertz, of the audio track in your input  me-
+              dia file.
 
           MediaFormat -> (string)
-              The  format  of  the  input audio file. Note: for call analytics
-              jobs, only the following media formats are supported: MP3,  MP4,
-              WAV, FLAC, OGG, and WebM.
+              The format of the input media file.
 
           Media -> (structure)
-              Describes the input media file in a transcription request.
+              Describes  the  Amazon S3 location of the media file you want to
+              use in your request.
 
               MediaFileUri -> (string)
-                 The  S3 object location of the input media file. The URI must
-                 be in the same region as the API endpoint that you are  call-
-                 ing. The general form is:
-                     s3://DOC-EXAMPLE-BUCKET/keyprefix/objectkey
+                 The Amazon S3 location of the media file you  want  to  tran-
+                 scribe. For example:
 
-                 For example:
-                     s3://DOC-EXAMPLE-BUCKET/example.flac
+                 o s3://DOC-EXAMPLE-BUCKET/my-media-file.flac
 
-                     s3://DOC-EXAMPLE-BUCKET/mediafiles/example.flac
+                 o s3://DOC-EXAMPLE-BUCKET/media-files/my-media-file.flac
 
-                 For  more  information about S3 object names, see Object Keys
-                 in the Amazon S3 Developer Guide .
+                 Note that the Amazon S3 bucket that contains your input media
+                 must be located in the same Amazon Web Services Region  where
+                 you're making your transcription request.
 
               RedactedMediaFileUri -> (string)
-                 The S3 object location for your redacted output  media  file.
-                 This is only supported for call analytics jobs.
+                 The  Amazon S3 location of the media file you want to redact.
+                 For example:
+
+                 o s3://DOC-EXAMPLE-BUCKET/my-media-file.flac
+
+                 o s3://DOC-EXAMPLE-BUCKET/media-files/my-media-file.flac
+
+                 Note that the Amazon S3 bucket that contains your input media
+                 must  be located in the same Amazon Web Services Region where
+                 you're making your transcription request.
+
+                 WARNING:
+                     RedactedMediaFileUri is only supported for Call Analytics
+                     (StartCallAnalyticsJob ) transcription requests.
 
           Transcript -> (structure)
-              Identifies the location of a transcription.
+              Provides  you  with the Amazon S3 URI you can use to access your
+              transcript.
 
               TranscriptFileUri -> (string)
-                 The S3 object location of the transcript.
+                 The Amazon S3 location of your transcript. You can  use  this
+                 URI to access or download your transcript.
 
-                 Use this URI to access the transcript. If you specified an S3
-                 bucket in the OutputBucketName field  when  you  created  the
-                 job,  this  is  the URI of that bucket. If you chose to store
-                 the transcript in Amazon Transcribe, this is a shareable  URL
-                 that provides secure access to that location.
+                 If  you  included  OutputBucketName in your transcription job
+                 request, this is the URI of that bucket. If you also included
+                 OutputKey in your request, your output is located in the path
+                 you specified in your request.
+
+                 If you didn't include OutputBucketName in your  transcription
+                 job  request,  your transcript is stored in a service-managed
+                 bucket, and TranscriptFileUri provides you with  a  temporary
+                 URI you can use for secure access to your transcript.
+
+                 NOTE:
+                     Temporary  URIs for service-managed Amazon S3 buckets are
+                     only valid for 15 minutes. If you get an AccesDenied  er-
+                     ror,  you  can  get a new temporary URI by running a Get-
+                     TranscriptionJob or ListTranscriptionJob request.
 
               RedactedTranscriptFileUri -> (string)
-                 The S3 object location of the redacted transcript.
+                 The Amazon S3 location of your redacted transcript.  You  can
+                 use this URI to access or download your transcript.
 
-                 Use this URI to access the redacted transcript. If you speci-
-                 fied an S3 bucket in the OutputBucketName field when you cre-
-                 ated the job, this is the URI of that bucket. If you chose to
-                 store the transcript in Amazon Transcribe, this is  a  share-
-                 able URL that provides secure access to that location.
+                 If  you  included  OutputBucketName in your transcription job
+                 request, this is the URI of that bucket. If you also included
+                 OutputKey in your request, your output is located in the path
+                 you specified in your request.
+
+                 If you didn't include OutputBucketName in your  transcription
+                 job  request,  your transcript is stored in a service-managed
+                 bucket, and RedactedTranscriptFileUri  provides  you  with  a
+                 temporary  URI  you  can  use for secure access to your tran-
+                 script.
+
+                 NOTE:
+                     Temporary URIs for service-managed Amazon S3 buckets  are
+                     only  valid for 15 minutes. If you get an AccesDenied er-
+                     ror, you can get a new temporary URI by  running  a  Get-
+                     TranscriptionJob or ListTranscriptionJob request.
 
           StartTime -> (timestamp)
-              A  timestamp  that shows when the analytics job started process-
-              ing.
+              The  date  and  time the specified Call Analytics job began pro-
+              cessing.
+
+              Timestamps are in the format YYYY-MM-DD'T'HH:MM:SS.SSSSSS-UTC  .
+              For example, 2022-05-04T12:32:58.789000-07:00 represents a tran-
+              scription job that started processing at 12:32 PM UTC-7  on  May
+              4, 2022.
 
           CreationTime -> (timestamp)
-              A timestamp that shows when the analytics job was created.
+              The  date  and time the specified Call Analytics job request was
+              made.
+
+              Timestamps are in the format YYYY-MM-DD'T'HH:MM:SS.SSSSSS-UTC  .
+              For example, 2022-05-04T12:32:58.761000-07:00 represents a tran-
+              scription job that started processing at 12:32 PM UTC-7  on  May
+              4, 2022.
 
           CompletionTime -> (timestamp)
-              A timestamp that shows when the analytics job was completed.
+              The date and time the specified Call Analytics job finished pro-
+              cessing.
+
+              Timestamps are in the format YYYY-MM-DD'T'HH:MM:SS.SSSSSS-UTC  .
+              For example, 2022-05-04T12:33:13.922000-07:00 represents a tran-
+              scription job that started processing at 12:33 PM UTC-7  on  May
+              4, 2022.
 
           FailureReason -> (string)
-              If the AnalyticsJobStatus is FAILED , this field contains infor-
-              mation about why the job failed.
+              If CallAnalyticsJobStatus is FAILED , FailureReason contains in-
+              formation about why the Call Analytics job request failed.
 
-              The FailureReason field can contain one of the following values:
+              The FailureReason field contains one of the following values:
 
-              o Unsupported  media  format : The media format specified in the
-                MediaFormat field of the request isn't valid. See the descrip-
-                tion of the MediaFormat field for a list of valid values.
+              o Unsupported media format . The media format specified in Medi-
+                aFormat  isn't  valid. Refer to MediaFormat for a list of sup-
+                ported formats.
 
-              o The  media  format  provided does not match the detected media
-                format : The media format of the audio file doesn't match  the
-                format  specified  in  the  MediaFormat  field in the request.
-                Check the media format of your media file and  make  sure  the
-                two values match.
+              o The media format provided does not match  the  detected  media
+                format  .  The  media  format specified in MediaFormat doesn't
+                match the format of the input file. Check the media format  of
+                your media file and correct the specified value.
 
-              o Invalid sample rate for audio file : The sample rate specified
-                in the MediaSampleRateHertz of the request  isn't  valid.  The
-                sample rate must be between 8,000 and 48,000 Hertz.
+              o Invalid sample rate for audio file . The sample rate specified
+                in MediaSampleRateHertz isn't valid. The sample rate  must  be
+                between 8,000 and 48,000 Hertz.
 
               o The  sample  rate  provided does not match the detected sample
-                rate : The sample rate in the audio  file  doesn't  match  the
-                sample rate specified in the MediaSampleRateHertz field in the
-                request. Check the sample rate of your  media  file  and  make
-                sure that the two values match.
+                rate .  The  sample  rate  specified  in  MediaSampleRateHertz
+                doesn't  match  the  sample  rate detected in your input media
+                file. Check the sample rate of your media file and correct the
+                specified value.
 
-              o Invalid  file size: file size too large : The size of your au-
-                dio file is larger than what  Amazon  Transcribe  Medical  can
-                process.  For  more  information, see Guidelines and Quotas in
-                the Amazon Transcribe Medical Guide.
+              o Invalid  file size: file size too large . The size of your me-
+                dia file is larger than what Amazon  Transcribe  can  process.
+                For more information, refer to Guidelines and quotas .
 
-              o Invalid number of channels: number of  channels  too  large  :
-                Your audio contains more channels than Amazon Transcribe Medi-
-                cal is configured to process. To request additional  channels,
-                see  Amazon  Transcribe  Medical  Endpoints  and Quotas in the
-                Amazon Web Services General Reference .
+              o Invalid  number  of  channels:  number of channels too large .
+                Your audio contains more channels than  Amazon  Transcribe  is
+                able to process. For more information, refer to Guidelines and
+                quotas .
 
           DataAccessRoleArn -> (string)
-              The Amazon Resource Number (ARN) that you use to access the ana-
-              lytics  job.  ARNs  have  the  format  arn:partition:service:re-
-              gion:account-id:resource-type/resource-id .
+              The Amazon Resource Name (ARN) of an IAM role that  has  permis-
+              sions  to  access  the Amazon S3 bucket that contains your input
+              files. If the role you specify doesnt have the appropriate  per-
+              missions  to  access  the specified Amazon S3 location, your re-
+              quest fails.
+
+              IAM   role   ARNs   have   the   format   arn:partition:iam::ac-
+              count:role/role-name-with-path        .       For       example:
+              arn:aws:iam::111122223333:role/Admin .
+
+              For more information, see IAM ARNs .
 
           IdentifiedLanguageScore -> (float)
-              A value between zero and one that Amazon Transcribe assigned  to
-              the  language that it identified in the source audio. This value
-              appears only when you don't  provide  a  single  language  code.
-              Larger  values indicate that Amazon Transcribe has higher confi-
-              dence in the language that it identified.
+              The confidence score associated with the language identified  in
+              your media file.
+
+              Confidence scores are values between 0 and 1; a larger value in-
+              dicates a higher probability that the identified  language  cor-
+              rectly matches the language spoken in your media.
 
           Settings -> (structure)
-              Provides information about the settings used to run a transcrip-
-              tion job.
+              Allows  additional  optional settings in your request, including
+              content redaction; allows you to apply custom  language  models,
+              vocabulary filters, and custom vocabularies to your Call Analyt-
+              ics job.
 
               VocabularyName -> (string)
-                 The name of a vocabulary to use when processing the call ana-
-                 lytics job.
+                 The name of the custom vocabulary you want to include in your
+                 Call  Analytics  transcription  request. Vocabulary names are
+                 case sensitive.
 
               VocabularyFilterName -> (string)
-                 The name of the vocabulary filter to use when running a  call
-                 analytics job. The filter that you specify must have the same
-                 language code as the analytics job.
+                 The name of the custom vocabulary filter you want to  include
+                 in your Call Analytics transcription request. Vocabulary fil-
+                 ter names are case sensitive.
+
+                 Note that if you include  VocabularyFilterName  in  your  re-
+                 quest, you must also include VocabularyFilterMethod .
 
               VocabularyFilterMethod -> (string)
-                 Set to mask to remove filtered text from the  transcript  and
-                 replace it with three asterisks ("
-                 **
+                 Specify  how  you want your vocabulary filter applied to your
+                 transcript.
 
-                 *
-                 ") as placeholder text. Set to remove to remove filtered text
-                 from the transcript without using placeholder  text.  Set  to
-                 tag to mark the word in the transcription output that matches
-                 the vocabulary filter. When you set the filter method to  tag
-                 , the words matching your vocabulary filter are not masked or
-                 removed.
+                 To replace words with *** , choose mask .
 
-                 System Message: WARNING/2 (<string>:, line 733)
-                        Inline strong start-string without end-string.
+                 To delete words, choose remove .
 
-                 System Message: WARNING/2 (<string>:, line 733)
-                        Inline emphasis start-string without end-string.
+                 To flag words without changing them, choose tag .
 
               LanguageModelName -> (string)
-                 The structure used to describe a custom language model.
+                 The name of the custom language model you want  to  use  when
+                 processing  your Call Analytics job. Note that language model
+                 names are case sensitive.
+
+                 The language of the specified language model must  match  the
+                 language  code  you specify in your transcription request. If
+                 the languages don't match, the language model isn't  applied.
+                 There  are  no  errors or warnings associated with a language
+                 mismatch.
 
               ContentRedaction -> (structure)
-                 Settings for content redaction within a transcription job.
+                 Allows you to redact or flag specified  personally  identifi-
+                 able  information  (PII)  in your transcript. If you use Con-
+                 tentRedaction , you must also include the sub-parameters: Pi-
+                 iEntityTypes , RedactionOutput , and RedactionType .
 
                  RedactionType -> (string)
-                     Request  parameter  that  defines  the  entities  to   be
-                     redacted. The only accepted value is PII .
+                     Specify  the  category of information you want to redact;
+                     PII (personally identifiable  information)  is  the  only
+                     valid  value.  You can use PiiEntityTypes to choose which
+                     types of PII you want to redact.
 
                  RedactionOutput -> (string)
-                     The  output  transcript file stored in either the default
-                     S3 bucket or in a bucket you specify.
+                     Specify if you want only a redacted transcript, or if you
+                     want a redacted and an unredacted transcript.
 
-                     When you choose redacted Amazon Transcribe  outputs  only
-                     the redacted transcript.
+                     When you choose redacted Amazon Transcribe creates only a
+                     redacted transcript.
 
                      When you choose redacted_and_unredacted Amazon Transcribe
-                     outputs both the redacted and unredacted transcripts.
+                     creates  a  redacted and an unredacted transcript (as two
+                     separate files).
 
                  PiiEntityTypes -> (list)
-                     The types of personally  identifiable  information  (PII)
-                     you want to redact in your transcript.
+                     Specify which types of personally  identifiable  informa-
+                     tion (PII) you want to redact in your transcript. You can
+                     include as many types as you'd like, or  you  can  select
+                     ALL .
 
                      (string)
 
               LanguageOptions -> (list)
-                 When  you  run a call analytics job, you can specify the lan-
-                 guage spoken in the audio, or you can have Amazon  Transcribe
-                 identify the language for you.
+                 You can specify two or more language codes that represent the
+                 languages you think may be present in your  media;  including
+                 more than five is not recommended. If you're unsure what lan-
+                 guages are present, do not include this parameter.
 
-                 To  specify  a  language,  specify an array with one language
-                 code. If you don't know the  language,  you  can  leave  this
-                 field  blank  and Amazon Transcribe will use machine learning
-                 to identify the language for you. To improve the  ability  of
-                 Amazon Transcribe to correctly identify the language, you can
-                 provide an array of the languages that can be present in  the
-                 audio.  Refer  to Supported languages for additional informa-
-                 tion.
+                 Including language options can improve the accuracy  of  lan-
+                 guage identification.
+
+                 For  a list of languages supported with Call Analytics, refer
+                 to the Supported languages table.
 
                  (string)
 
               LanguageIdSettings -> (map)
-                 The language identification  settings  associated  with  your
-                 call  analytics  job. These settings include VocabularyName ,
-                 VocabularyFilterName , and LanguageModelName .
+                 If using automatic language identification  (IdentifyLanguage
+                 )  in  your  request  and you want to apply a custom language
+                 model, a custom vocabulary, or a  custom  vocabulary  filter,
+                 include  LanguageIdSettings  with the relevant sub-parameters
+                 (VocabularyName , LanguageModelName ,  and  VocabularyFilter-
+                 Name ).
+
+                 You can specify two or more language codes that represent the
+                 languages you think may be present in your  media;  including
+                 more than five is not recommended. Each language code you in-
+                 clude can have an associated custom  language  model,  custom
+                 vocabulary,  and  custom vocabulary filter. The languages you
+                 specify must match the languages of the specified custom lan-
+                 guage models, custom vocabularies, and custom vocabulary fil-
+                 ters.
+
+                 To include language options using  IdentifyLanguage   without
+                 including  a custom language model, a custom vocabulary, or a
+                 custom vocabulary filter, use LanguageOptions instead of Lan-
+                 guageIdSettings  . Including language options can improve the
+                 accuracy of automatic language identification.
+
+                 If you want to include a custom language model with your  re-
+                 quest  but  do not want to use automatic language identifica-
+                 tion, use instead the parameter  with  the  LanguageModelName
+                 sub-parameter.
+
+                 If you want to include a custom vocabulary or a custom vocab-
+                 ulary filter (or both) with your request but do not  want  to
+                 use automatic language identification, use instead the param-
+                 eter with  the  VocabularyName  or  VocabularyFilterName  (or
+                 both) sub-parameter.
 
                  key -> (string)
 
                  value -> (structure)
-                     Language-specific settings that  can  be  specified  when
-                     language identification is enabled.
+                     If  using automatic language identification (IdentifyLan-
+                     guage ) in your request and you want to  apply  a  custom
+                     language  model, a custom vocabulary, or a custom vocabu-
+                     lary filter, include LanguageIdSettings with the relevant
+                     sub-parameters  (VocabularyName , LanguageModelName , and
+                     VocabularyFilterName ).
+
+                     You can specify two or more language codes that represent
+                     the languages you think may be present in your media; in-
+                     cluding more than five is not recommended. Each  language
+                     code  you  include can have an associated custom language
+                     model, custom vocabulary, and custom  vocabulary  filter.
+                     The languages you specify must match the languages of the
+                     specified custom language  models,  custom  vocabularies,
+                     and custom vocabulary filters.
+
+                     To include language options using IdentifyLanguage  with-
+                     out including a custom language model, a  custom  vocabu-
+                     lary,  or a custom vocabulary filter, use LanguageOptions
+                     instead of LanguageIdSettings .  Including  language  op-
+                     tions  can  improve  the  accuracy  of automatic language
+                     identification.
+
+                     If you want to include a custom language model with  your
+                     request but do not want to use automatic language identi-
+                     fication, use instead the parameter with the LanguageMod-
+                     elName sub-parameter.
+
+                     If  you  want  to include a custom vocabulary or a custom
+                     vocabulary filter (or both) with your request but do  not
+                     want  to  use  automatic language identification, use in-
+                     stead the parameter with the  VocabularyName  or  Vocabu-
+                     laryFilterName (or both) sub-parameter.
 
                      VocabularyName -> (string)
-                        The  name  of the vocabulary you want to use when pro-
-                        cessing your transcription  job.  The  vocabulary  you
-                        specify must have the same language codes as the tran-
-                        scription job; if the languages don't match,  the  vo-
-                        cabulary isn't applied.
+                        The name of the custom vocabulary you want to use when
+                        processing your transcription  job.  Vocabulary  names
+                        are case sensitive.
+
+                        The  language  of  the specified vocabulary must match
+                        the language code you specify  in  your  transcription
+                        request.  If the languages don't match, the vocabulary
+                        isn't applied. There are no errors or warnings associ-
+                        ated with a language mismatch.
 
                      VocabularyFilterName -> (string)
-                        The name of the vocabulary filter you want to use when
-                        transcribing your audio. The filter you  specify  must
-                        have the same language codes as the transcription job;
-                        if the languages don't match,  the  vocabulary  filter
-                        isn't be applied.
+                        The  name  of the custom vocabulary filter you want to
+                        use when processing your transcription job. Vocabulary
+                        filter names are case sensitive.
+
+                        The  language  of the specified vocabulary filter must
+                        match the language code you specify in your transcrip-
+                        tion request. If the languages don't match, the vocab-
+                        ulary filter isn't applied. There  are  no  errors  or
+                        warnings associated with a language mismatch.
+
+                        Note  that if you include VocabularyFilterName in your
+                        request, you must also include  VocabularyFilterMethod
+                        .
 
                      LanguageModelName -> (string)
-                        The  name  of  the language model you want to use when
-                        transcribing your audio. The model  you  specify  must
-                        have the same language codes as the transcription job;
-                        if the languages don't match, the language model isn't
-                        be applied.
+                        The  name of the custom language model you want to use
+                        when processing your transcription job. Note that lan-
+                        guage model names are case sensitive.
+
+                        The  language  of  the  specified  language model must
+                        match the language code you specify in your transcrip-
+                        tion  request.  If the languages don't match, the lan-
+                        guage model isn't applied.  There  are  no  errors  or
+                        warnings associated with a language mismatch.
 
           ChannelDefinitions -> (list)
-              Shows  numeric  values  to  indicate the channel assigned to the
-              agent's audio and the channel assigned to the customer's audio.
+              Allows  you to specify which speaker is on which channel in your
+              Call Analytics job request. For example, if your  agent  is  the
+              first participant to speak, you would set ChannelId to 0 (to in-
+              dicate the first channel) and ParticipantRole to AGENT (to indi-
+              cate that it's the agent speaking).
 
               (structure)
-                 For a call analytics job, an object that indicates the  audio
-                 channel  that belongs to the agent and the audio channel that
-                 belongs to the customer.
+                 Allows  you to specify which speaker is on which channel. For
+                 example, if your agent is the first participant to speak, you
+                 would  set ChannelId to 0 (to indicate the first channel) and
+                 ParticipantRole to AGENT (to indicate  that  it's  the  agent
+                 speaking).
 
                  ChannelId -> (integer)
-                     A value that indicates the audio channel.
+                     Specify the audio channel you want to define.
 
                  ParticipantRole -> (string)
-                     Indicates whether the person speaking on the audio  chan-
-                     nel is the agent or customer.
+                     Specify the speaker you want to define. Omitting this pa-
+                     rameter is equivalent to specifying both participants.
 
 
 
