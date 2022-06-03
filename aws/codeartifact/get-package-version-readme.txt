@@ -6,12 +6,9 @@ NAME
        get-package-version-readme -
 
 DESCRIPTION
-       Gets  the  readme  file  or descriptive text for a package version. For
-       packages that do not contain a readme file, CodeArtifact extracts a de-
-       scription from a metadata file. For example, from the <description> el-
-       ement in the pom.xml file of a Maven package.
+       Gets the readme file or descriptive text for a package version.
 
-       The returned text might contain formatting. For example, it might  con-
+       The  returned text might contain formatting. For example, it might con-
        tain formatting for Markdown or reStructuredText.
 
        See also: AWS API Documentation
@@ -32,26 +29,24 @@ SYNOPSIS
 
 OPTIONS
        --domain (string)
-          The  name  of  the domain that contains the repository that contains
+          The name of the domain that contains the  repository  that  contains
           the package version with the requested readme file.
 
        --domain-owner (string)
-          The 12-digit account number of the AWS account that owns the domain.
-          It does not include dashes or spaces.
+          The  12-digit account number of the Amazon Web Services account that
+          owns the domain. It does not include dashes or spaces.
 
        --repository (string)
-          The  repository  that contains the package with the requested readme
+          The repository that contains the package with the  requested  readme
           file.
 
        --format (string)
           A format that specifies the type of the package version with the re-
-          quested readme file. The valid values are:
+          quested readme file.
 
-          o npm
-
-          o pypi
-
-          o maven
+          NOTE:
+              Although maven is listed as a valid value, CodeArtifact does not
+              support displaying readme files for Maven packages.
 
           Possible values:
 
@@ -124,24 +119,17 @@ EXAMPLES
 
 OUTPUT
        format -> (string)
-          The format of the package with the requested readme file. Valid for-
-          mat types are:
-
-          o npm
-
-          o pypi
-
-          o maven
+          The format of the package with the requested readme file.
 
        namespace -> (string)
-          The namespace of the package. The package component  that  specifies
+          The  namespace  of the package. The package component that specifies
           its namespace depends on its type. For example:
 
           o The namespace of a Maven package is its groupId .
 
           o The namespace of an npm package is its scope .
 
-          o A  Python  package  does not contain a corresponding component, so
+          o A Python package does not contain a  corresponding  component,  so
             Python packages do not have a namespace.
 
        package -> (string)
