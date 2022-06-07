@@ -28,8 +28,6 @@ Version: `3.39.0`
 
 .dbconfig ?op? ?val?     List or change sqlite3_db_config() options
 
-.dbinfo ?DB?             Show status information about the database
-
 .dump ?OBJECTS?          Render database content as SQL
    Options:
      --data-only            Output only INSERT statements
