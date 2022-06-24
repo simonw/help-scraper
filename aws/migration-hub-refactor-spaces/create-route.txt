@@ -12,6 +12,12 @@ DESCRIPTION
        in the application. If an application does not have  any  routes,  then
        the first route must be created as a DEFAULT  RouteType .
 
+       When created, the default route defaults to an active state so state is
+       not a required input. However, like all other state values the state of
+       the  default  route  can  be  updated after creation, but only when all
+       other routes are also inactive. Conversely,  no  route  can  be  active
+       without the default route also being active.
+
        When  you  create  a  route,  Refactor Spaces configures the Amazon API
        Gateway to send traffic to the target service as follows:
 
@@ -27,32 +33,37 @@ DESCRIPTION
          configures  the Lambda function's resource policy to allow the appli-
          cation's API Gateway to invoke the function.
 
-       A one-time health check is performed on the service when the  route  is
-       created.  If  the health check fails, the route transitions to FAILED ,
-       and no traffic is sent to the service.
+       A one-time health check is performed on the  service  when  either  the
+       route is updated from inactive to active, or when it is created with an
+       active state. If the health check  fails,  the  route  transitions  the
+       route   state   to   FAILED   ,   an   error   code   of   SERVICE_END-
+       POINT_HEALTH_CHECK_FAILURE is provided, and no traffic is sent  to  the
+       service.
 
-       For Lambda functions, the Lambda function  state  is  checked.  If  the
-       function  is  not active, the function configuration is updated so that
-       Lambda resources are provisioned. If the Lambda state is Failed ,  then
+       For  Lambda  functions,  the  Lambda  function state is checked. If the
+       function is not active, the function configuration is updated  so  that
+       Lambda  resources are provisioned. If the Lambda state is Failed , then
        the   route   creation   fails.   For   more   information,   see   the
-       GetFunctionConfiguration's State response parameter in the  Lambda  De-
+       GetFunctionConfiguration's  State  response parameter in the Lambda De-
        veloper Guide .
 
-       For  public URLs, a connection is opened to the public endpoint. If the
-       URL is not reachable, the health check fails. For private URLs, a  tar-
-       get group is created and the target group health check is run.
+       For Lambda endpoints, a check is performed to determine that  a  Lambda
+       function  with  the  specified  ARN  exists.  If it does not exist, the
+       health check fails. For public URLs, a connection is opened to the pub-
+       lic endpoint. If the URL is not reachable, the health check fails.
 
-       The HealthCheckProtocol , HealthCheckPort , and HealthCheckPath are the
-       same protocol, port, and path specified in the URL or  health  URL,  if
-       used. All other settings use the default values, as described in Health
-       checks for your target groups . The health check is considered success-
-       ful  if  at  least  one target within the target group transitions to a
-       healthy state.
+       For private URLS, a target group is created on the Elastic Load Balanc-
+       ing and the target group health check is run. The HealthCheckProtocol ,
+       HealthCheckPort  , and HealthCheckPath are the same protocol, port, and
+       path specified in the URL or health URL, if used.  All  other  settings
+       use  the  default values, as described in Health checks for your target
+       groups . The health check is considered successful if at least one tar-
+       get within the target group transitions to a healthy state.
 
-       Services can have HTTP or HTTPS URL endpoints.  For  HTTPS  URLs,  pub-
-       licly-signed  certificates  are supported. Private Certificate Authori-
-       ties (CAs) are permitted only if the CA's domain  is  publicly  resolv-
-       able.
+       Services  can  have  HTTP  or HTTPS URL endpoints. For HTTPS URLs, pub-
+       licly-signed certificates are supported. Private  Certificate  Authori-
+       ties  (CAs)  are permitted only if the CA's domain is also publicly re-
+       solvable.
 
        See also: AWS API Documentation
 
@@ -62,6 +73,7 @@ SYNOPSIS
             create-route
           --application-identifier <value>
           [--client-token <value>]
+          [--default-route <value>]
           --environment-identifier <value>
           --route-type <value>
           --service-identifier <value>
@@ -75,8 +87,25 @@ OPTIONS
           The ID of the application within which the route is being created.
 
        --client-token (string)
-          A  unique,  case-sensitive identifier that you provide to ensure the
+          A unique, case-sensitive identifier that you provide to  ensure  the
           idempotency of the request.
+
+       --default-route (structure)
+          Configuration for the default route type.
+
+          ActivationState -> (string)
+              If  set  to ACTIVE , traffic is forwarded to this routes service
+              after the route is created.
+
+       Shorthand Syntax:
+
+          ActivationState=string
+
+       JSON Syntax:
+
+          {
+            "ActivationState": "ACTIVE"|"INACTIVE"
+          }
 
        --environment-identifier (string)
           The ID of the environment in which the route is created.
@@ -119,7 +148,7 @@ OPTIONS
           The configuration for the URI path route type.
 
           ActivationState -> (string)
-              Indicates whether traffic is forwarded to  this  routes  service
+              If set to ACTIVE , traffic is forwarded to this  routes  service
               after the route is created.
 
           IncludeChildPaths -> (boolean)
@@ -145,7 +174,7 @@ OPTIONS
        JSON Syntax:
 
           {
-            "ActivationState": "ACTIVE",
+            "ActivationState": "ACTIVE"|"INACTIVE",
             "IncludeChildPaths": true|false,
             "Methods": ["DELETE"|"GET"|"HEAD"|"OPTIONS"|"PATCH"|"POST"|"PUT", ...],
             "SourcePath": "string"
@@ -178,7 +207,7 @@ OUTPUT
           source-id  `` . For more information about ARNs, see Amazon Resource
           Names (ARNs) in the Amazon Web Services General Reference .
 
-          System Message: WARNING/2 (<string>:, line 268)
+          System Message: WARNING/2 (<string>:, line 307)
                  Inline literal start-string without end-string.
 
        CreatedByAccountId -> (string)
@@ -204,7 +233,9 @@ OUTPUT
           matches this route is forwarded to this service.
 
        State -> (string)
-          The current state of the route.
+          The  current state of the route. Activation state only allows ACTIVE
+          or INACTIVE as user inputs. FAILED is a route state that  is  system
+          generated.
 
        Tags -> (map)
           The  tags  assigned  to the created route. A tag is a label that you
@@ -216,10 +247,10 @@ OUTPUT
           value -> (string)
 
        UriPathRoute -> (structure)
-          onfiguration for the URI path route type.
+          Configuration for the URI path route type.
 
           ActivationState -> (string)
-              Indicates  whether  traffic  is forwarded to this routes service
+              If  set  to ACTIVE , traffic is forwarded to this routes service
               after the route is created.
 
           IncludeChildPaths -> (boolean)
