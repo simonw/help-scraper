@@ -1,0 +1,566 @@
+CREATE-CANARY()                                                CREATE-CANARY()
+
+
+
+NAME
+       create-canary -
+
+DESCRIPTION
+       Creates  a canary. Canaries are scripts that monitor your endpoints and
+       APIs from the outside-in. Canaries help you check the availability  and
+       latency  of your web services and troubleshoot anomalies by investigat-
+       ing load time data, screenshots of the UI, logs, and metrics.  You  can
+       set up a canary to run continuously or just once.
+
+       Do  not use CreateCanary to modify an existing canary. Use UpdateCanary
+       instead.
+
+       To create canaries, you must  have  the  CloudWatchSyntheticsFullAccess
+       policy.  If  you  are  creating a new IAM role for the canary, you also
+       need the iam:CreateRole  ,  iam:CreatePolicy  and  iam:AttachRolePolicy
+       permissions.  For more information, see Necessary Roles and Permissions
+       .
+
+       Do not include secrets or proprietary information in your canary names.
+       The canary name makes up part of the Amazon Resource Name (ARN) for the
+       canary, and the ARN is included in outbound calls  over  the  internet.
+       For  more  information,  see Security Considerations for Synthetics Ca-
+       naries .
+
+       See also: AWS API Documentation
+
+       See 'aws help' for descriptions of global parameters.
+
+SYNOPSIS
+            create-canary
+          --name <value>
+          --code <value>
+          --artifact-s3-location <value>
+          --execution-role-arn <value>
+          --schedule <value>
+          [--run-config <value>]
+          [--success-retention-period-in-days <value>]
+          [--failure-retention-period-in-days <value>]
+          --runtime-version <value>
+          [--vpc-config <value>]
+          [--tags <value>]
+          [--artifact-config <value>]
+          [--cli-input-json <value>]
+          [--generate-cli-skeleton <value>]
+
+OPTIONS
+       --name (string)
+          The name for this canary. Be sure to give it a descriptive name that
+          distinguishes it from other canaries in your account.
+
+          Do  not  include  secrets  or proprietary information in your canary
+          names. The canary name makes up part of the canary ARN, and the  ARN
+          is  included  in outbound calls over the internet. For more informa-
+          tion, see Security Considerations for Synthetics Canaries .
+
+       --code (structure)
+          A structure that includes the entry  point  from  which  the  canary
+          should  start  running your script. If the script is stored in an S3
+          bucket, the bucket name, key, and version are also included.
+
+          S3Bucket -> (string)
+              If your canary script is located in S3, specify the bucket  name
+              here. Do not include s3:// as the start of the bucket name.
+
+          S3Key -> (string)
+              The  S3  key  of  your script. For more information, see Working
+              with Amazon S3 Objects .
+
+          S3Version -> (string)
+              The S3 version ID of your script.
+
+          ZipFile -> (blob)
+              If you input your canary script directly into the canary instead
+              of  referring  to an S3 location, the value of this parameter is
+              the base64-encoded contents of the .zip file that  contains  the
+              script. It must be smaller than 225 Kb.
+
+              For  large canary scripts, we recommend that you use an S3 loca-
+              tion instead of inputting it directly with this parameter.
+
+          Handler -> (string)
+              The entry point to use for the source code when running the  ca-
+              nary.  For canaries that use the syn-python-selenium-1.0 runtime
+              or a syn-nodejs.puppeteer runtime earlier  than  syn-nodejs.pup-
+              peteer-3.4  , the handler must be specified as `` fileName .han-
+              dler`` . For syn-python-selenium-1.1 ,  syn-nodejs.puppeteer-3.4
+              ,  and  later runtimes, the handler can be specified as `` file-
+              Name .*functionName* `` , or you can specify a folder where  ca-
+              nary scripts reside as `` folder /fileName .*functionName* `` .
+
+       Shorthand Syntax:
+
+          S3Bucket=string,S3Key=string,S3Version=string,ZipFile=blob,Handler=string
+
+       JSON Syntax:
+
+          {
+            "S3Bucket": "string",
+            "S3Key": "string",
+            "S3Version": "string",
+            "ZipFile": blob,
+            "Handler": "string"
+          }
+
+       --artifact-s3-location (string)
+          The location in Amazon S3 where Synthetics stores artifacts from the
+          test runs of this canary. Artifacts include the  log  file,  screen-
+          shots,  and HAR files. The name of the S3 bucket can't include a pe-
+          riod (.).
+
+       --execution-role-arn (string)
+          The ARN of the IAM role to be used to run the canary. This role must
+          already  exist, and must include lambda.amazonaws.com as a principal
+          in the trust policy. The role must also have the  following  permis-
+          sions:
+
+          o s3:PutObject
+
+          o s3:GetBucketLocation
+
+          o s3:ListAllMyBuckets
+
+          o cloudwatch:PutMetricData
+
+          o logs:CreateLogGroup
+
+          o logs:CreateLogStream
+
+          o logs:PutLogEvents
+
+       --schedule (structure)
+          A  structure that contains information about how often the canary is
+          to run and when these test runs are to stop.
+
+          Expression -> (string)
+              A rate expression or a cron expression that  defines  how  often
+              the canary is to run.
+
+              For a rate expression, The syntax is rate(*number unit* ) . unit
+              can be minute , minutes , or hour .
+
+              For example, rate(1 minute)  runs  the  canary  once  a  minute,
+              rate(10 minutes) runs it once every 10 minutes, and rate(1 hour)
+              runs it once every hour. You can  specify  a  frequency  between
+              rate(1 minute) and rate(1 hour) .
+
+              Specifying  rate(0  minute)  or  rate(0 hour) is a special value
+              that causes the canary to run only once when it is started.
+
+              Use cron(*expression* ) to specify a cron expression. You  can't
+              schedule  a  canary to wait for more than a year before running.
+              For information about  the  syntax  for  cron  expressions,  see
+              Scheduling canary runs using cron .
+
+          DurationInSeconds -> (long)
+              How  long, in seconds, for the canary to continue making regular
+              runs according to the schedule in the Expression value.  If  you
+              specify  0,  the canary continues making runs until you stop it.
+              If you omit this field, the default of 0 is used.
+
+       Shorthand Syntax:
+
+          Expression=string,DurationInSeconds=long
+
+       JSON Syntax:
+
+          {
+            "Expression": "string",
+            "DurationInSeconds": long
+          }
+
+       --run-config (structure)
+          A structure that contains the configuration  for  individual  canary
+          runs, such as timeout value and environment variables.
+
+          WARNING:
+              The  environment variables keys and values are not encrypted. Do
+              not store sensitive information in this field.
+
+          TimeoutInSeconds -> (integer)
+              How long the canary is allowed to run before it must  stop.  You
+              can't  set this time to be longer than the frequency of the runs
+              of this canary.
+
+              If you omit this field, the frequency of the canary is  used  as
+              this value, up to a maximum of 14 minutes.
+
+          MemoryInMB -> (integer)
+              The maximum amount of memory available to the canary while it is
+              running, in MB. This value must be a multiple of 64.
+
+          ActiveTracing -> (boolean)
+              Specifies whether this canary is to  use  active  X-Ray  tracing
+              when  it runs. Active tracing enables this canary run to be dis-
+              played in the ServiceLens and X-Ray service maps even if the ca-
+              nary  does  not  hit an endpoint that has X-Ray tracing enabled.
+              Using X-Ray tracing incurs charges. For  more  information,  see
+              Canaries and X-Ray tracing .
+
+              You can enable active tracing only for canaries that use version
+              syn-nodejs-2.0 or later for their canary runtime.
+
+          EnvironmentVariables -> (map)
+              Specifies the keys and values to use for any  environment  vari-
+              ables used in the canary script. Use the following format:
+
+              { "key1" : "value1", "key2" : "value2", ...}
+
+              Keys  must  start  with a letter and be at least two characters.
+              The total size of your environment variables cannot exceed 4 KB.
+              You  can't  specify any Lambda reserved environment variables as
+              the keys for your environment variables.  For  more  information
+              about reserved keys, see Runtime environment variables .
+
+              WARNING:
+                 The  environment variables keys and values are not encrypted.
+                 Do not store sensitive information in this field.
+
+              key -> (string)
+
+              value -> (string)
+
+       Shorthand Syntax:
+
+          TimeoutInSeconds=integer,MemoryInMB=integer,ActiveTracing=boolean,EnvironmentVariables={KeyName1=string,KeyName2=string}
+
+       JSON Syntax:
+
+          {
+            "TimeoutInSeconds": integer,
+            "MemoryInMB": integer,
+            "ActiveTracing": true|false,
+            "EnvironmentVariables": {"string": "string"
+              ...}
+          }
+
+       --success-retention-period-in-days (integer)
+          The number of days to retain data about successful runs of this  ca-
+          nary.  If  you  omit this field, the default of 31 days is used. The
+          valid range is 1 to 455 days.
+
+       --failure-retention-period-in-days (integer)
+          The number of days to retain data about failed runs of this  canary.
+          If  you  omit  this field, the default of 31 days is used. The valid
+          range is 1 to 455 days.
+
+       --runtime-version (string)
+          Specifies the runtime version to use for the canary. For a  list  of
+          valid  runtime versions and more information about runtime versions,
+          see Canary Runtime Versions .
+
+       --vpc-config (structure)
+          If this canary is to test an endpoint in a VPC, this structure  con-
+          tains  information  about  the subnet and security groups of the VPC
+          endpoint. For more information, see Running a Canary in a VPC .
+
+          SubnetIds -> (list)
+              The IDs of the subnets where this canary is to run.
+
+              (string)
+
+          SecurityGroupIds -> (list)
+              The IDs of the security groups for this canary.
+
+              (string)
+
+       Shorthand Syntax:
+
+          SubnetIds=string,string,SecurityGroupIds=string,string
+
+       JSON Syntax:
+
+          {
+            "SubnetIds": ["string", ...],
+            "SecurityGroupIds": ["string", ...]
+          }
+
+       --tags (map)
+          A list of key-value pairs to associate with the canary. You can  as-
+          sociate as many as 50 tags with a canary.
+
+          Tags  can  help  you organize and categorize your resources. You can
+          also use them to scope user permissions, by granting a user  permis-
+          sion  to  access  or change only the resources that have certain tag
+          values.
+
+          key -> (string)
+
+          value -> (string)
+
+       Shorthand Syntax:
+
+          KeyName1=string,KeyName2=string
+
+       JSON Syntax:
+
+          {"string": "string"
+            ...}
+
+       --artifact-config (structure)
+          A structure that contains the configuration  for  canary  artifacts,
+          including the encryption-at-rest settings for artifacts that the ca-
+          nary uploads to Amazon S3.
+
+          S3Encryption -> (structure)
+              A structure that  contains  the  configuration  of  the  encryp-
+              tion-at-rest  settings  for artifacts that the canary uploads to
+              Amazon S3. Artifact encryption functionality is  available  only
+              for canaries that use Synthetics runtime version syn-nodejs-pup-
+              peteer-3.3 or later. For more information, see Encrypting canary
+              artifacts
+
+              EncryptionMode -> (string)
+                 The  encryption  method  to use for artifacts created by this
+                 canary. Specify SSE_S3 to use  server-side  encryption  (SSE)
+                 with  an  Amazon  S3-managed  key.  Specify  SSE-KMS  to  use
+                 server-side encryption with a customer-managed KMS key.
+
+                 If you omit this parameter, an  Amazon  Web  Services-managed
+                 KMS key is used.
+
+              KmsKeyArn -> (string)
+                 The  ARN of the customer-managed KMS key to use, if you spec-
+                 ify SSE-KMS for EncryptionMode
+
+       Shorthand Syntax:
+
+          S3Encryption={EncryptionMode=string,KmsKeyArn=string}
+
+       JSON Syntax:
+
+          {
+            "S3Encryption": {
+              "EncryptionMode": "SSE_S3"|"SSE_KMS",
+              "KmsKeyArn": "string"
+            }
+          }
+
+       --cli-input-json (string) Performs service operation based on the  JSON
+       string  provided. The JSON string follows the format provided by --gen-
+       erate-cli-skeleton. If other arguments  are  provided  on  the  command
+       line,  the CLI values will override the JSON-provided values. It is not
+       possible to pass arbitrary binary values using a JSON-provided value as
+       the string will be taken literally.
+
+       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
+       output without sending an API request. If provided with no value or the
+       value input, prints a sample input JSON that can be used as an argument
+       for --cli-input-json. If provided with the value output,  it  validates
+       the command inputs and returns a sample output JSON for that command.
+
+       See 'aws help' for descriptions of global parameters.
+
+OUTPUT
+       Canary -> (structure)
+          The full details about the canary you have created.
+
+          Id -> (string)
+              The unique ID of this canary.
+
+          Name -> (string)
+              The name of the canary.
+
+          Code -> (structure)
+              This  structure  contains  information about the canary's Lambda
+              handler and where its code is stored by CloudWatch Synthetics.
+
+              SourceLocationArn -> (string)
+                 The ARN of the Lambda layer where Synthetics stores  the  ca-
+                 nary script code.
+
+              Handler -> (string)
+                 The  entry  point to use for the source code when running the
+                 canary.
+
+          ExecutionRoleArn -> (string)
+              The ARN of the IAM role used to run the canary. This  role  must
+              include lambda.amazonaws.com as a principal in the trust policy.
+
+          Schedule -> (structure)
+              A structure that contains information about how often the canary
+              is to run, and when these runs are to stop.
+
+              Expression -> (string)
+                 A rate expression or a cron expression that defines how often
+                 the canary is to run.
+
+                 For  a  rate expression, The syntax is rate(*number unit* ) .
+                 unit can be minute , minutes , or hour .
+
+                 For example, rate(1 minute) runs the canary  once  a  minute,
+                 rate(10  minutes)  runs  it once every 10 minutes, and rate(1
+                 hour) runs it once every hour. You can  specify  a  frequency
+                 between rate(1 minute) and rate(1 hour) .
+
+                 Specifying  rate(0 minute) or rate(0 hour) is a special value
+                 that causes the canary to run only once when it is started.
+
+                 Use cron(*expression* ) to specify a cron expression. For in-
+                 formation   about   the  syntax  for  cron  expressions,  see
+                 Scheduling canary runs using cron .
+
+              DurationInSeconds -> (long)
+                 How long, in seconds, for the canary to continue making regu-
+                 lar runs after it was created. The runs are performed accord-
+                 ing to the schedule in the Expression value.
+
+          RunConfig -> (structure)
+              A structure that contains information about a canary run.
+
+              TimeoutInSeconds -> (integer)
+                 How long the canary is allowed to run before it must stop.
+
+              MemoryInMB -> (integer)
+                 The maximum amount of memory available to the canary while it
+                 is running, in MB. This value must be a multiple of 64.
+
+              ActiveTracing -> (boolean)
+                 Displays whether this canary run used active X-Ray tracing.
+
+          SuccessRetentionPeriodInDays -> (integer)
+              The  number of days to retain data about successful runs of this
+              canary.
+
+          FailureRetentionPeriodInDays -> (integer)
+              The number of days to retain data about failed runs of this  ca-
+              nary.
+
+          Status -> (structure)
+              A structure that contains information about the canary's status.
+
+              State -> (string)
+                 The current state of the canary.
+
+              StateReason -> (string)
+                 If the canary has insufficient permissions to run, this field
+                 provides more details.
+
+              StateReasonCode -> (string)
+                 If the canary cannot run or has failed, this  field  displays
+                 the reason.
+
+          Timeline -> (structure)
+              A  structure that contains information about when the canary was
+              created, modified, and most recently run.
+
+              Created -> (timestamp)
+                 The date and time the canary was created.
+
+              LastModified -> (timestamp)
+                 The date and time the canary was most recently modified.
+
+              LastStarted -> (timestamp)
+                 The date and time that the canary's most recent run started.
+
+              LastStopped -> (timestamp)
+                 The date and time that the canary's most recent run ended.
+
+          ArtifactS3Location -> (string)
+              The location in Amazon S3 where Synthetics stores artifacts from
+              the runs of this canary. Artifacts include the log file, screen-
+              shots, and HAR files.
+
+          EngineArn -> (string)
+              The ARN of the Lambda function that is used as your canary's en-
+              gine.   For  more  information  about  Lambda  ARN  format,  see
+              Resources and Conditions for Lambda Actions .
+
+          RuntimeVersion -> (string)
+              Specifies the runtime version to use for the  canary.  For  more
+              information  about runtime versions, see Canary Runtime Versions
+              .
+
+          VpcConfig -> (structure)
+              If this canary is to test an endpoint in a VPC,  this  structure
+              contains  information  about  the subnets and security groups of
+              the VPC endpoint. For more information, see Running a Canary  in
+              a VPC .
+
+              VpcId -> (string)
+                 The IDs of the VPC where this canary is to run.
+
+              SubnetIds -> (list)
+                 The IDs of the subnets where this canary is to run.
+
+                 (string)
+
+              SecurityGroupIds -> (list)
+                 The IDs of the security groups for this canary.
+
+                 (string)
+
+          VisualReference -> (structure)
+              If  this  canary performs visual monitoring by comparing screen-
+              shots, this structure contains the ID of the canary run  to  use
+              as  the  baseline  for  screenshots,  and the coordinates of any
+              parts of the screen to ignore during the visual monitoring  com-
+              parison.
+
+              BaseScreenshots -> (list)
+                 An  array  of  screenshots  that are used as the baseline for
+                 comparisons during visual monitoring.
+
+                 (structure)
+                     A structure representing a screenshot that is used  as  a
+                     baseline during visual monitoring comparisons made by the
+                     canary.
+
+                     ScreenshotName -> (string)
+                        The name of the  screenshot.  This  is  generated  the
+                        first  time  the  canary is run after the UpdateCanary
+                        operation that specified for this  canary  to  perform
+                        visual monitoring.
+
+                     IgnoreCoordinates -> (list)
+                        Coordinates that define the part of a screen to ignore
+                        during screenshot comparisons. To obtain  the  coordi-
+                        nates  to use here, use the CloudWatch console to draw
+                        the boundaries on the screen.  For  more  information,
+                        see Editing or deleting a canary
+
+                        (string)
+
+              BaseCanaryRunId -> (string)
+                 The  ID  of the canary run that produced the baseline screen-
+                 shots that are used for visual monitoring comparisons by this
+                 canary.
+
+          Tags -> (map)
+              The list of key-value pairs that are associated with the canary.
+
+              key -> (string)
+
+              value -> (string)
+
+          ArtifactConfig -> (structure)
+              A  structure  that  contains  the configuration for canary arti-
+              facts, including the encryption-at-rest settings  for  artifacts
+              that the canary uploads to Amazon S3.
+
+              S3Encryption -> (structure)
+                 A  structure  that  contains  the configuration of encryption
+                 settings for canary artifacts that are stored in Amazon S3.
+
+                 EncryptionMode -> (string)
+                     The encryption method to use  for  artifacts  created  by
+                     this canary. Specify SSE_S3 to use server-side encryption
+                     (SSE) with an Amazon S3-managed key. Specify  SSE-KMS  to
+                     use  server-side  encryption  with a customer-managed KMS
+                     key.
+
+                     If you omit this parameter, an Amazon  Web  Services-man-
+                     aged KMS key is used.
+
+                 KmsKeyArn -> (string)
+                     The  ARN  of  the customer-managed KMS key to use, if you
+                     specify SSE-KMS for EncryptionMode
+
+
+
+                                                               CREATE-CANARY()
