@@ -6,9 +6,12 @@ NAME
        get-package-version-readme -
 
 DESCRIPTION
-       Gets the readme file or descriptive text for a package version.
+       Gets  the  readme  file  or descriptive text for a package version. For
+       packages that do not contain a readme file, CodeArtifact extracts a de-
+       scription from a metadata file. For example, from the <description> el-
+       ement in the pom.xml file of a Maven package.
 
-       The  returned text might contain formatting. For example, it might con-
+       The returned text might contain formatting. For example, it might  con-
        tain formatting for Markdown or reStructuredText.
 
        See also: AWS API Documentation
@@ -29,24 +32,20 @@ SYNOPSIS
 
 OPTIONS
        --domain (string)
-          The name of the domain that contains the  repository  that  contains
+          The  name  of  the domain that contains the repository that contains
           the package version with the requested readme file.
 
        --domain-owner (string)
-          The  12-digit account number of the Amazon Web Services account that
+          The 12-digit account number of the Amazon Web Services account  that
           owns the domain. It does not include dashes or spaces.
 
        --repository (string)
-          The repository that contains the package with the  requested  readme
+          The  repository  that contains the package with the requested readme
           file.
 
        --format (string)
           A format that specifies the type of the package version with the re-
           quested readme file.
-
-          NOTE:
-              Although maven is listed as a valid value, CodeArtifact does not
-              support displaying readme files for Maven packages.
 
           Possible values:
 
@@ -59,15 +58,17 @@ OPTIONS
           o nuget
 
        --namespace (string)
-          The  namespace  of the package. The package component that specifies
-          its namespace depends on its type. For example:
+          The namespace of the package version with the requested readme file.
+          The package version component that specifies its  namespace  depends
+          on its type. For example:
 
-          o The namespace of a Maven package is its groupId .
+          o The namespace of a Maven package version is its groupId .
 
-          o The namespace of an npm package is its scope .
+          o The namespace of an npm package version is its scope .
 
-          o A Python package does not contain a  corresponding  component,  so
-            Python packages do not have a namespace.
+          o Python  and  NuGet package versions do not contain a corresponding
+            component, package versions of those formats do not have  a  name-
+            space.
 
        --package (string)
           The  name  of the package version that contains the requested readme
@@ -122,15 +123,17 @@ OUTPUT
           The format of the package with the requested readme file.
 
        namespace -> (string)
-          The  namespace  of the package. The package component that specifies
-          its namespace depends on its type. For example:
+          The namespace of the package version with the requested readme file.
+          The package version component that specifies its  namespace  depends
+          on its type. For example:
 
-          o The namespace of a Maven package is its groupId .
+          o The namespace of a Maven package version is its groupId .
 
-          o The namespace of an npm package is its scope .
+          o The namespace of an npm package version is its scope .
 
-          o A Python package does not contain a  corresponding  component,  so
-            Python packages do not have a namespace.
+          o Python  and  NuGet package versions do not contain a corresponding
+            component, package versions of those formats do not have  a  name-
+            space.
 
        package -> (string)
           The name of the package that contains the returned readme file.
