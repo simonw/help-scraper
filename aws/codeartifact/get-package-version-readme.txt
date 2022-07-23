@@ -93,9 +93,19 @@ OPTIONS
        See 'aws help' for descriptions of global parameters.
 
 EXAMPLES
+       NOTE:
+          To  use  the following examples, you must have the AWS CLI installed
+          and configured. See the Getting started guide in the  AWS  CLI  User
+          Guide for more information.
+
+          Unless  otherwise  stated,  all  examples  have  unix-like quotation
+          rules. These examples will need to be  adapted  to  your  terminal's
+          quoting rules. See Using quotation marks with strings in the AWS CLI
+          User Guide .
+
        To get a package version's readme file
 
-       The  following  get-package-version-readme example retrieves the readme
+       The following get-package-version-readme example retrieves  the  readme
        file for version 4.0.0 of an npm package named test-package.
 
           aws codeartifact get-package-version-readme \
@@ -115,7 +125,7 @@ EXAMPLES
               "versionRevision": "Ciqe5/9yicvkJT13b5/LdLpCyE6fqA7poa9qp+FilPs="
           }
 
-       For more information, see View package version readme file in  the  AWS
+       For  more  information, see View package version readme file in the AWS
        CodeArtifact User Guide.
 
 OUTPUT
@@ -124,15 +134,15 @@ OUTPUT
 
        namespace -> (string)
           The namespace of the package version with the requested readme file.
-          The package version component that specifies its  namespace  depends
+          The  package  version component that specifies its namespace depends
           on its type. For example:
 
           o The namespace of a Maven package version is its groupId .
 
           o The namespace of an npm package version is its scope .
 
-          o Python  and  NuGet package versions do not contain a corresponding
-            component, package versions of those formats do not have  a  name-
+          o Python and NuGet package versions do not contain  a  corresponding
+            component,  package  versions of those formats do not have a name-
             space.
 
        package -> (string)
