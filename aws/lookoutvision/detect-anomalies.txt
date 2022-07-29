@@ -10,7 +10,9 @@ DESCRIPTION
 
        The  response  from  DetectAnomalies includes a boolean prediction that
        the image contains one or more anomalies and a confidence value for the
-       prediction.
+       prediction.  If  the model is an image segmentation model, the response
+       also includes segmentation information for each type of  anomaly  found
+       in the image.
 
        NOTE:
           Before  calling  DetectAnomalies  ,  you must first start your model
@@ -19,7 +21,10 @@ DESCRIPTION
           detection units that your model uses. If you are not using a  model,
           use the  StopModel operation to stop your model.
 
-       This  operation  requires  permissions to perform the lookoutvision:De-
+       For more information, see Detecting anomalies in an image in the Amazon
+       Lookout for Vision developer guide.
+
+       This operation requires permissions to  perform  the  lookoutvision:De-
        tectAnomalies operation.
 
        See also: AWS API Documentation
@@ -37,7 +42,7 @@ SYNOPSIS
 
 OPTIONS
        --project-name (string)
-          The name of the project that contains the  model  version  that  you
+          The  name  of  the  project that contains the model version that you
           want to use.
 
        --model-version (string)
@@ -47,20 +52,20 @@ OPTIONS
           The unencrypted image bytes that you want to analyze.
 
        --content-type (string)
-          The  type  of  the image passed in Body . Valid values are image/png
+          The type of the image passed in Body . Valid  values  are  image/png
           (PNG format images) and image/jpeg (JPG format images).
 
-       --cli-input-json (string) Performs service operation based on the  JSON
-       string  provided. The JSON string follows the format provided by --gen-
-       erate-cli-skeleton. If other arguments  are  provided  on  the  command
-       line,  the CLI values will override the JSON-provided values. It is not
+       --cli-input-json  (string) Performs service operation based on the JSON
+       string provided. The JSON string follows the format provided by  --gen-
+       erate-cli-skeleton.  If  other  arguments  are  provided on the command
+       line, the CLI values will override the JSON-provided values. It is  not
        possible to pass arbitrary binary values using a JSON-provided value as
        the string will be taken literally.
 
-       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
+       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
        output without sending an API request. If provided with no value or the
        value input, prints a sample input JSON that can be used as an argument
-       for --cli-input-json. If provided with the value output,  it  validates
+       for  --cli-input-json.  If provided with the value output, it validates
        the command inputs and returns a sample output JSON for that command.
 
        See 'aws help' for descriptions of global parameters.
@@ -78,11 +83,63 @@ OUTPUT
                  The type of the image.
 
           IsAnomalous -> (boolean)
-              True if the image contains an anomaly, otherwise false.
+              True if Amazon Lookout for Vision classifies the image  as  con-
+              taining an anomaly, otherwise false.
 
           Confidence -> (float)
-              The  confidence  that Amazon Lookout for Vision has in the accu-
-              racy of the prediction.
+              The  confidence  that  Lookout for Vision has in the accuracy of
+              the classification in IsAnomalous .
+
+          Anomalies -> (list)
+              If the model is an image segmentation model, Anomalies  contains
+              a  list  of anomaly types found in the image. There is one entry
+              for each type of anomaly found (even if multiple instances of an
+              anomaly  type exist on the image). The first element in the list
+              is always an anomaly  type  representing  the  image  background
+              ('background')  and  shouldn't  be considered an anomaly. Amazon
+              Lookout for Vision automatically add the background anomaly type
+              to  the  response,  and  you  don't need to declare a background
+              anomaly type in your dataset.
+
+              If the list has one  entry  ('background'),  no  anomalies  were
+              found on the image.
+
+              An image classification model doesn't return an Anomalies list.
+
+              (structure)
+                 Information about an anomaly type found on an image by an im-
+                 age  segmentation  model.  For  more  information,  see   De-
+                 tectAnomalies .
+
+                 Name -> (string)
+                     The  name of an anomaly type found in an image. Name maps
+                     to an anomaly type in the training  dataset,  apart  from
+                     the  anomaly  type background . The service automatically
+                     inserts the background anomaly  type  into  the  response
+                     from DetectAnomalies .
+
+                 PixelAnomaly -> (structure)
+                     Information  about  the pixel mask that covers an anomaly
+                     type.
+
+                     TotalPercentageArea -> (float)
+                        The percentage area of the image that the anomaly type
+                        covers.
+
+                     Color -> (string)
+                        A  hex color value for the mask that covers an anomaly
+                        type. Each anomaly type has a  different  mask  color.
+                        The  color  maps to the color of the anomaly type used
+                        in the training dataset.
+
+          AnomalyMask -> (blob)
+              If the model is an image segmentation  model,  AnomalyMask  con-
+              tains pixel masks that covers all anomaly types found on the im-
+              age. Each anomaly type has a different  mask  color.  To  map  a
+              color  to  an  anomaly  type,  see the color field of the  Pixe-
+              lAnomaly object.
+
+              An image classification model doesn't return an Anomalies list.
 
 
 
