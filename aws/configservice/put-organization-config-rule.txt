@@ -6,12 +6,12 @@ NAME
        put-organization-config-rule -
 
 DESCRIPTION
-       Adds  or  updates organization Config rule for your entire organization
-       evaluating whether your Amazon Web Services resources comply with  your
-       desired configurations. For information on how many organization Config
-       rules   you   can   have   per   account,   see   `   Service    Limits
+       Adds or updates an Config rule for your entire organization to evaluate
+       if your Amazon Web Services resources comply with your desired configu-
+       rations.  For information on how many organization Config rules you can
+       have      per      account,      see       `       Service       Limits
        https://docs.aws.amazon.com/config/latest/developerguide/configlimits.html`__
-       in the Config Developer Guide.
+       in the Config Developer Guide .
 
        Only a master account and a delegated administrator can create  or  up-
        date  an  organization  Config rule. When calling this API with a dele-
@@ -20,9 +20,9 @@ DESCRIPTION
        gated administrators.
 
        This API enables organization service access through the  EnableAWSSer-
-       viceAccess  action and creates a service linked role AWSServiceRoleFor-
+       viceAccess  action and creates a service-linked role AWSServiceRoleFor-
        ConfigMultiAccountSetup in the master or  delegated  administrator  ac-
-       count  of  your  organization.  The service linked role is created only
+       count  of  your  organization.  The service-linked role is created only
        when the role does not exist in the caller account. Config verifies the
        existence of role with GetRole action.
 
@@ -30,23 +30,35 @@ DESCRIPTION
        ministrator by calling Amazon Web Services Organization  register-dele-
        gated-administrator for config-multiaccountsetup.amazonaws.com .
 
-       You  can  use this action to create both Config custom rules and Config
-       managed rules. If you are adding a new Config  custom  rule,  you  must
-       first  create  Lambda function in the master account or a delegated ad-
-       ministrator that the rule invokes to evaluate your resources. You  also
-       need  to  create an IAM role in the managed-account that can be assumed
-       by the Lambda function. When you use the PutOrganizationConfigRule  ac-
-       tion  to  add  the rule to Config, you must specify the Amazon Resource
-       Name (ARN) that Lambda assigns to the function. If you  are  adding  an
-       Config  managed rule, specify the rule's identifier for the RuleIdenti-
-       fier key.
+       There  are  two  types of rules: Config Custom Rules and Config Managed
+       Rules. You can use PutOrganizationConfigRule to create both Config cus-
+       tom rules and Config managed rules.
+
+       Custom rules are rules that you can create using either Guard or Lambda
+       functions. Guard (Guard GitHub Repository ) is  a  policy-as-code  lan-
+       guage  that  allows  you  to write policies that are enforced by Config
+       Custom Policy rules. Lambda uses custom code that you upload to  evalu-
+       ate  a  custom  rule.  If  you are adding a new Custom Lambda rule, you
+       first need to create an Lambda function in the master account or a del-
+       egated  administrator that the rule invokes to evaluate your resources.
+       You also need to create an IAM role in the managed account that can  be
+       assumed  by the Lambda function. When you use PutOrganizationConfigRule
+       to add a Custom Lambda rule to Config, you must specify the Amazon  Re-
+       source Name (ARN) that Lambda assigns to the function.
+
+       Managed rules are predefined, customizable rules created by Config. For
+       a list of managed rules, see List of Config Managed Rules . If you  are
+       adding  an  Config managed rule, you must specify the rule's identifier
+       for the RuleIdentifier key.
 
        NOTE:
           Prerequisite: Ensure you call EnableAllFeatures API  to  enable  all
           features in an organization.
 
-          Specify either OrganizationCustomRuleMetadata or OrganizationManage-
-          dRuleMetadata .
+          Make sure to specify one of either OrganizationCustomPolicyRuleMeta-
+          data for Custom  Policy  rules,  OrganizationCustomRuleMetadata  for
+          Custom  Lambda rules, or OrganizationManagedRuleMetadata for managed
+          rules.
 
        See also: AWS API Documentation
 
@@ -67,7 +79,11 @@ OPTIONS
           The name that you assign to an organization Config rule.
 
        --organization-managed-rule-metadata (structure)
-          An OrganizationManagedRuleMetadata object.
+          An OrganizationManagedRuleMetadata object. This object specifies or-
+          ganization  managed  rule  metadata  such as resource type and ID of
+          Amazon Web Services resource along with the rule identifier. It also
+          provides the frequency with which you want Config to run evaluations
+          for the rule if the trigger type is periodic.
 
           Description -> (string)
               The description that you provide for  your  organization  Config
@@ -127,7 +143,13 @@ OPTIONS
           }
 
        --organization-custom-rule-metadata (structure)
-          An OrganizationCustomRuleMetadata object.
+          An  OrganizationCustomRuleMetadata object. This object specifies or-
+          ganization custom rule metadata such as resource type,  resource  ID
+          of  Amazon Web Services resource, Lambda function ARN, and organiza-
+          tion trigger types that trigger Config to evaluate your  Amazon  Web
+          Services  resources  against  a rule. It also provides the frequency
+          with which you want Config to run evaluations for the  rule  if  the
+          trigger type is periodic.
 
           Description -> (string)
               The  description  that  you provide for your organization Config
@@ -217,15 +239,16 @@ OPTIONS
           "string" "string" ...
 
        --organization-custom-policy-rule-metadata (structure)
-          An  object  that  specifies  metadata for your organization's Config
-          Custom Policy rule. The metadata includes the runtime system in use,
-          which  accounts  have  debug  logging enabled, and other custom rule
-          metadata, such as resource type, resource ID of Amazon Web  Services
-          resource,  and  organization  trigger  types that initiate Config to
-          evaluate Amazon Web Services resources against a rule.
+          An  OrganizationCustomPolicyRuleMetadata  object. This object speci-
+          fies metadata for your organization's Config Custom Policy rule. The
+          metadata includes the runtime system in use, which accounts have de-
+          bug logging enabled, and other custom rule  metadata,  such  as  re-
+          source  type, resource ID of Amazon Web Services resource, and orga-
+          nization trigger types that initiate Config to evaluate  Amazon  Web
+          Services resources against a rule.
 
           Description -> (string)
-              The description that you provide for  your  organization  Config
+              The  description  that  you provide for your organization Config
               Custom Policy rule.
 
           OrganizationConfigRuleTriggerTypes -> (list)
@@ -233,26 +256,26 @@ OPTIONS
               tion for a rule. For Config Custom Policy rules, Config supports
               change-initiated notification types:
 
-              o ConfigurationItemChangeNotification  - Initiates an evaluation
+              o ConfigurationItemChangeNotification - Initiates an  evaluation
                 when Config delivers a configuration item as a result of a re-
                 source change.
 
               o OversizedConfigurationItemChangeNotification  -  Initiates  an
-                evaluation when Config  delivers  an  oversized  configuration
-                item.  Config  may  generate this notification type when a re-
-                source changes and the notification exceeds the  maximum  size
+                evaluation  when  Config  delivers  an oversized configuration
+                item. Config may generate this notification type  when  a  re-
+                source  changes  and the notification exceeds the maximum size
                 allowed by Amazon SNS.
 
               (string)
 
           InputParameters -> (string)
-              A  string,  in  JSON format, that is passed to your organization
+              A string, in JSON format, that is passed  to  your  organization
               Config Custom Policy rule.
 
           MaximumExecutionFrequency -> (string)
-              The maximum frequency with which Config runs evaluations  for  a
-              rule.  Your  Config  Custom Policy rule is triggered when Config
-              delivers the configuration snapshot. For more  information,  see
+              The  maximum  frequency with which Config runs evaluations for a
+              rule. Your Config Custom Policy rule is  triggered  when  Config
+              delivers  the  configuration snapshot. For more information, see
               ConfigSnapshotDeliveryProperties .
 
           ResourceTypesScope -> (list)
@@ -265,18 +288,18 @@ OPTIONS
 
           TagKeyScope -> (string)
               One part of a key-value pair that make up a tag. A key is a gen-
-              eral label that acts like a category for more specific tag  val-
+              eral  label that acts like a category for more specific tag val-
               ues.
 
           TagValueScope -> (string)
-              The  optional  part  of  a  key-value pair that make up a tag. A
+              The optional part of a key-value pair that  make  up  a  tag.  A
               value acts as a descriptor within a tag category (key).
 
           PolicyRuntime -> (string)
-              The runtime system for your organization  Config  Custom  Policy
-              rules.  Guard  is  a  policy-as-code language that allows you to
-              write policies that are enforced by Config Custom Policy  rules.
-              For  more  information about Guard, see the Guard GitHub Reposi-
+              The  runtime  system  for your organization Config Custom Policy
+              rules. Guard is a policy-as-code language  that  allows  you  to
+              write  policies that are enforced by Config Custom Policy rules.
+              For more information about Guard, see the Guard  GitHub  Reposi-
               tory .
 
           PolicyText -> (string)
@@ -284,8 +307,8 @@ OPTIONS
               Config Custom Policy rule.
 
           DebugLogDeliveryAccounts -> (list)
-              A  list  of  accounts that you can enable debug logging for your
-              organization Config Custom Policy rule. List is null when  debug
+              A list of accounts that you can enable debug  logging  for  your
+              organization  Config Custom Policy rule. List is null when debug
               logging is enabled for all accounts.
 
               (string)
@@ -310,17 +333,17 @@ OPTIONS
             "DebugLogDeliveryAccounts": ["string", ...]
           }
 
-       --cli-input-json  (string) Performs service operation based on the JSON
-       string provided. The JSON string follows the format provided by  --gen-
-       erate-cli-skeleton.  If  other  arguments  are  provided on the command
-       line, the CLI values will override the JSON-provided values. It is  not
+       --cli-input-json (string) Performs service operation based on the  JSON
+       string  provided. The JSON string follows the format provided by --gen-
+       erate-cli-skeleton. If other arguments  are  provided  on  the  command
+       line,  the CLI values will override the JSON-provided values. It is not
        possible to pass arbitrary binary values using a JSON-provided value as
        the string will be taken literally.
 
-       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
+       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
        output without sending an API request. If provided with no value or the
        value input, prints a sample input JSON that can be used as an argument
-       for  --cli-input-json.  If provided with the value output, it validates
+       for --cli-input-json. If provided with the value output,  it  validates
        the command inputs and returns a sample output JSON for that command.
 
        See 'aws help' for descriptions of global parameters.
