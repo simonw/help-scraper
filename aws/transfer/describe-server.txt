@@ -144,9 +144,27 @@ OUTPUT
           ProtocolDetails -> (structure)
               The protocol settings that are configured for your server.
 
-              Use  the  PassiveIp  parameter to indicate passive mode. Enter a
-              single IPv4 address, such as the public IP address  of  a  fire-
-              wall, router, or load balancer.
+              o To indicate passive mode (for FTP and FTPS protocols), use the
+                PassiveIp parameter. Enter a single dotted-quad IPv4  address,
+                such as the external IP address of a firewall, router, or load
+                balancer.
+
+              o To ignore the error that is generated when the client attempts
+                to use the SETSTAT command on a file that you are uploading to
+                an Amazon S3 bucket, use the SetStatOption parameter. To  have
+                the  Transfer Family server ignore the SETSTAT command and up-
+                load files without needing to make any changes  to  your  SFTP
+                client,  set  the  value to ENABLE_NO_OP . If you set the Set-
+                StatOption parameter to ENABLE_NO_OP , Transfer Family  gener-
+                ates  a  log  entry to Amazon CloudWatch Logs, so that you can
+                determine when the client is making a SETSTAT call.
+
+              o To determine whether your Transfer Family server  resumes  re-
+                cent, negotiated sessions through a unique session ID, use the
+                TlsSessionResumptionMode parameter.
+
+              o As2Transports indicates the transport method for the AS2  mes-
+                sages. Currently, only HTTP is supported.
 
               PassiveIp -> (string)
                  Indicates  passive  mode, for FTP and FTPS protocols. Enter a
@@ -157,7 +175,7 @@ OUTPUT
                      aws   transfer   update-server   --protocol-details  Pas-
                      siveIp=*0.0.0.0* ``
 
-                     System Message: WARNING/2 (<string>:, line 206)
+                     System Message: WARNING/2 (<string>:, line 214)
                             Inline literal start-string without end-string.
 
                  Replace `` 0.0.0.0 `` in the example above with the actual IP
@@ -394,37 +412,60 @@ OUTPUT
 
               o FTP (File Transfer Protocol): Unencrypted file transfer
 
+              o AS2  (Applicability Statement 2): used for transporting struc-
+                tured business-to-business data
+
+              NOTE:
+
+                 o If you select FTPS , you must choose a  certificate  stored
+                   in Certificate Manager (ACM) which is used to identify your
+                   server when clients connect to it over FTPS.
+
+                 o If Protocol includes either FTP or FTPS  ,  then  the  End-
+                   pointType  must be VPC and the IdentityProviderType must be
+                   AWS_DIRECTORY_SERVICE or API_GATEWAY .
+
+                 o If Protocol includes FTP , then AddressAllocationIds cannot
+                   be associated.
+
+                 o If  Protocol  is set only to SFTP , the EndpointType can be
+                   set to PUBLIC and the IdentityProviderType can  be  set  to
+                   SERVICE_MANAGED .
+
+                 o If  Protocol  includes  AS2 , then the EndpointType must be
+                   VPC , and domain must be Amazon S3.
+
               (string)
 
           SecurityPolicyName -> (string)
-              Specifies  the  name  of the security policy that is attached to
+              Specifies the name of the security policy that  is  attached  to
               the server.
 
           ServerId -> (string)
-              Specifies the unique system-assigned  identifier  for  a  server
+              Specifies  the  unique  system-assigned  identifier for a server
               that you instantiate.
 
           State -> (string)
-              The  condition  of the server that was described. A value of ON-
-              LINE indicates that the server  can  accept  jobs  and  transfer
-              files.  A  State  value  of OFFLINE means that the server cannot
+              The condition of the server that was described. A value  of  ON-
+              LINE  indicates  that  the  server  can accept jobs and transfer
+              files. A State value of OFFLINE means  that  the  server  cannot
               perform file transfer operations.
 
-              The states of STARTING and STOPPING indicate that the server  is
-              in  an  intermediate state, either not fully able to respond, or
+              The  states of STARTING and STOPPING indicate that the server is
+              in an intermediate state, either not fully able to  respond,  or
               not fully offline. The values of START_FAILED or STOP_FAILED can
               indicate an error condition.
 
           Tags -> (list)
               Specifies the key-value pairs that you can use to search for and
-              group servers that were assigned to  the  server  that  was  de-
+              group  servers  that  were  assigned  to the server that was de-
               scribed.
 
               (structure)
-                 Creates  a  key-value  pair for a specific resource. Tags are
-                 metadata that you can use to search for and group a  resource
-                 for  various  purposes. You can apply tags to servers, users,
-                 and roles. A tag key can take more than one value. For  exam-
+                 Creates a key-value pair for a specific  resource.  Tags  are
+                 metadata  that you can use to search for and group a resource
+                 for various purposes. You can apply tags to  servers,  users,
+                 and  roles. A tag key can take more than one value. For exam-
                  ple, to group servers for accounting purposes, you might cre-
                  ate a tag called Group and assign the values Research and Ac-
                  counting to that group.
@@ -433,11 +474,11 @@ OUTPUT
                      The name assigned to the tag that you create.
 
                  Value -> (string)
-                     Contains  one or more values that you assigned to the key
+                     Contains one or more values that you assigned to the  key
                      name you create.
 
           UserCount -> (integer)
-              Specifies the number of users that are assigned to a server  you
+              Specifies  the number of users that are assigned to a server you
               specified with the ServerId .
 
           WorkflowDetails -> (structure)
@@ -448,23 +489,23 @@ OUTPUT
                  A trigger that starts a workflow: the workflow begins to exe-
                  cute after a file is uploaded.
 
-                 To  remove an associated workflow from a server, you can pro-
+                 To remove an associated workflow from a server, you can  pro-
                  vide an empty OnUpload object, as in the following example.
-                     aws       transfer       update-server        --server-id
+                     aws        transfer       update-server       --server-id
                      s-01234567890abcdef --workflow-details '{"OnUpload":[]}'
 
                  (structure)
-                     Specifies  the workflow ID for the workflow to assign and
-                     the execution role that's used for  executing  the  work-
+                     Specifies the workflow ID for the workflow to assign  and
+                     the  execution  role  that's used for executing the work-
                      flow.
 
                      WorkflowId -> (string)
                         A unique identifier for the workflow.
 
                      ExecutionRole -> (string)
-                        Includes  the  necessary  permissions for S3, EFS, and
-                        Lambda operations that Transfer can  assume,  so  that
-                        all  workflow  steps  can  operate on the required re-
+                        Includes the necessary permissions for  S3,  EFS,  and
+                        Lambda  operations  that  Transfer can assume, so that
+                        all workflow steps can operate  on  the  required  re-
                         sources
 
 
