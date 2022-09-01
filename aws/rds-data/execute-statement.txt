@@ -8,7 +8,7 @@ NAME
 DESCRIPTION
        Runs a SQL statement against a database.
 
-       WARNING:
+       NOTE:
           If a call isn't part of a transaction because it doesn't include the
           transactionID parameter, changes that result from the call are  com-
           mitted automatically.
@@ -20,17 +20,17 @@ DESCRIPTION
 
 SYNOPSIS
             execute-statement
-          [--continue-after-timeout | --no-continue-after-timeout]
-          [--database <value>]
-          [--format-records-as <value>]
-          [--include-result-metadata | --no-include-result-metadata]
-          [--parameters <value>]
           --resource-arn <value>
-          [--result-set-options <value>]
-          [--schema <value>]
           --secret-arn <value>
           --sql <value>
+          [--database <value>]
+          [--schema <value>]
+          [--parameters <value>]
           [--transaction-id <value>]
+          [--include-result-metadata | --no-include-result-metadata]
+          [--continue-after-timeout | --no-continue-after-timeout]
+          [--result-set-options <value>]
+          [--format-records-as <value>]
           [--cli-input-json <value>]
           [--generate-cli-skeleton <value>]
           [--debug]
@@ -49,38 +49,28 @@ SYNOPSIS
           [--cli-connect-timeout <value>]
 
 OPTIONS
-       --continue-after-timeout | --no-continue-after-timeout (boolean)
-          A value that indicates whether to continue running the statement af-
-          ter the call times out. By default, the statement stops running when
-          the call times out.
+       --resource-arn (string)
+          The Amazon Resource Name (ARN) of the Aurora Serverless DB cluster.
 
-          WARNING:
-              For DDL statements, we recommend continuing to run the statement
-              after the call times out. When a DDL statement terminates before
-              it is finished running, it can result  in  errors  and  possibly
-              corrupted data structures.
+       --secret-arn (string)
+          The ARN of the secret that enables access to the DB  cluster.  Enter
+          the  database  user name and password for the credentials in the se-
+          cret.
+
+          For information about creating the secret, see Create a database se-
+          cret .
+
+       --sql (string)
+          The SQL statement to run.
 
        --database (string)
           The name of the database.
 
-       --format-records-as (string)
-          A  value that indicates whether to format the result set as a single
-          JSON string. This parameter only applies to SELECT statements and is
-          ignored  for  other types of statements. Allowed values are NONE and
-          JSON . The default value is NONE . The result  is  returned  in  the
-          formattedRecords field.
+       --schema (string)
+          The name of the database schema.
 
-          For  usage  information  about  the JSON format for result sets, see
-          Using the Data API in the Amazon Aurora User Guide .
-
-          Possible values:
-
-          o NONE
-
-          o JSON
-
-       --include-result-metadata | --no-include-result-metadata (boolean)
-          A value that indicates whether to include metadata in the results.
+          NOTE:
+              Currently, the schema parameter isn't supported.
 
        --parameters (list)
           The parameters for the SQL statement.
@@ -94,47 +84,60 @@ OPTIONS
               name -> (string)
                  The name of the parameter.
 
-              typeHint -> (string)
-                 A hint that specifies the correct object type for  data  type
-                 mapping. Possible values are as follows:
-
-                 o DATE  - The corresponding String parameter value is sent as
-                   an object of DATE type to the database. The accepted format
-                   is YYYY-MM-DD .
-
-                 o DECIMAL  - The corresponding String parameter value is sent
-                   as an object of DECIMAL type to the database.
-
-                 o JSON - The corresponding String parameter value is sent  as
-                   an object of JSON type to the database.
-
-                 o TIME  - The corresponding String parameter value is sent as
-                   an object of TIME type to the database. The accepted format
-                   is HH:MM:SS[.FFF] .
-
-                 o TIMESTAMP  -  The  corresponding  String parameter value is
-                   sent as an object of TIMESTAMP type to  the  database.  The
-                   accepted format is YYYY-MM-DD HH:MM:SS[.FFF] .
-
-                 o UUID  - The corresponding String parameter value is sent as
-                   an object of UUID type to the database.
-
               value -> (tagged union structure)
                  The value of the parameter.
 
                  NOTE:
                      This is a Tagged Union structure. Only one of the follow-
-                     ing  top  level  keys  can be set: arrayValue, blobValue,
-                     booleanValue,  doubleValue,  isNull,  longValue,  string-
+                     ing top level keys  can  be  set:  isNull,  booleanValue,
+                     longValue,  doubleValue,  stringValue,  blobValue, array-
                      Value.
+
+                 isNull -> (boolean)
+                     A NULL value.
+
+                 booleanValue -> (boolean)
+                     A value of Boolean data type.
+
+                 longValue -> (long)
+                     A value of long data type.
+
+                 doubleValue -> (double)
+                     A value of double data type.
+
+                 stringValue -> (string)
+                     A value of string data type.
+
+                 blobValue -> (blob)
+                     A value of BLOB data type.
 
                  arrayValue -> (tagged union structure)
                      An array of values.
 
                      NOTE:
                         This is a Tagged Union structure. Only one of the fol-
-                        lowing  top  level  keys  can  be  set:   arrayValues,
-                        booleanValues, doubleValues, longValues, stringValues.
+                        lowing top level keys can be set: booleanValues, long-
+                        Values, doubleValues, stringValues, arrayValues.
+
+                     booleanValues -> (list)
+                        An array of Boolean values.
+
+                        (boolean)
+
+                     longValues -> (list)
+                        An array of integers.
+
+                        (long)
+
+                     doubleValues -> (list)
+                        An array of floating-point numbers.
+
+                        (double)
+
+                     stringValues -> (list)
+                        An array of strings.
+
+                        (string)
 
                      arrayValues -> (list)
                         An array of arrays.
@@ -143,133 +146,139 @@ OPTIONS
                             Contains an array.
 
                             NOTE:
-                               This  is  a Tagged Union structure. Only one of
-                               the following top level keys can be set: array-
-                               Values,  booleanValues,  doubleValues, longVal-
-                               ues, stringValues.
-
-                            arrayValues -> (list)
-                               An array of arrays.
-
-                               ( ... recursive ... )
+                               This is a Tagged Union structure. Only  one  of
+                               the  following  top  level  keys  can  be  set:
+                               booleanValues,    longValues,     doubleValues,
+                               stringValues, arrayValues.
 
                             booleanValues -> (list)
                                An array of Boolean values.
 
                                (boolean)
 
-                            doubleValues -> (list)
-                               An array of floating-point numbers.
-
-                               (double)
-
                             longValues -> (list)
                                An array of integers.
 
                                (long)
+
+                            doubleValues -> (list)
+                               An array of floating-point numbers.
+
+                               (double)
 
                             stringValues -> (list)
                                An array of strings.
 
                                (string)
 
-                     booleanValues -> (list)
-                        An array of Boolean values.
+                            arrayValues -> (list)
+                               An array of arrays.
 
-                        (boolean)
+                               ( ... recursive ... )
 
-                     doubleValues -> (list)
-                        An array of floating-point numbers.
+              typeHint -> (string)
+                 A  hint  that specifies the correct object type for data type
+                 mapping. Possible values are as follows:
 
-                        (double)
+                 o DATE - The corresponding String parameter value is sent  as
+                   an object of DATE type to the database. The accepted format
+                   is YYYY-MM-DD .
 
-                     longValues -> (list)
-                        An array of integers.
+                 o DECIMAL - The corresponding String parameter value is  sent
+                   as an object of DECIMAL type to the database.
 
-                        (long)
+                 o JSON  - The corresponding String parameter value is sent as
+                   an object of JSON type to the database.
 
-                     stringValues -> (list)
-                        An array of strings.
+                 o TIME - The corresponding String parameter value is sent  as
+                   an object of TIME type to the database. The accepted format
+                   is HH:MM:SS[.FFF] .
 
-                        (string)
+                 o TIMESTAMP - The corresponding  String  parameter  value  is
+                   sent  as  an  object of TIMESTAMP type to the database. The
+                   accepted format is YYYY-MM-DD HH:MM:SS[.FFF] .
 
-                 blobValue -> (blob)
-                     A value of BLOB data type.
-
-                 booleanValue -> (boolean)
-                     A value of Boolean data type.
-
-                 doubleValue -> (double)
-                     A value of double data type.
-
-                 isNull -> (boolean)
-                     A NULL value.
-
-                 longValue -> (long)
-                     A value of long data type.
-
-                 stringValue -> (string)
-                     A value of string data type.
+                 o UUID - The corresponding String parameter value is sent  as
+                   an object of UUID type to the database.
 
        JSON Syntax:
 
           [
             {
               "name": "string",
-              "typeHint": "JSON"|"UUID"|"TIMESTAMP"|"DATE"|"TIME"|"DECIMAL",
               "value": {
+                "isNull": true|false,
+                "booleanValue": true|false,
+                "longValue": long,
+                "doubleValue": double,
+                "stringValue": "string",
+                "blobValue": blob,
                 "arrayValue": {
+                  "booleanValues": [true|false, ...],
+                  "longValues": [long, ...],
+                  "doubleValues": [double, ...],
+                  "stringValues": ["string", ...],
                   "arrayValues": [
                     {
+                      "booleanValues": [true|false, ...],
+                      "longValues": [long, ...],
+                      "doubleValues": [double, ...],
+                      "stringValues": ["string", ...],
                       "arrayValues": [
                         { ... recursive ... }
                         ...
-                      ],
-                      "booleanValues": [true|false, ...],
-                      "doubleValues": [double, ...],
-                      "longValues": [long, ...],
-                      "stringValues": ["string", ...]
+                      ]
                     }
                     ...
-                  ],
-                  "booleanValues": [true|false, ...],
-                  "doubleValues": [double, ...],
-                  "longValues": [long, ...],
-                  "stringValues": ["string", ...]
-                },
-                "blobValue": blob,
-                "booleanValue": true|false,
-                "doubleValue": double,
-                "isNull": true|false,
-                "longValue": long,
-                "stringValue": "string"
-              }
+                  ]
+                }
+              },
+              "typeHint": "JSON"|"UUID"|"TIMESTAMP"|"DATE"|"TIME"|"DECIMAL"
             }
             ...
           ]
 
-       --resource-arn (string)
-          The Amazon Resource Name (ARN) of the Aurora Serverless DB cluster.
+       --transaction-id (string)
+          The identifier of a transaction that was started by using the Begin-
+          Transaction operation. Specify the transaction ID of the transaction
+          that you want to include the SQL statement in.
+
+          If  the  SQL  statement is not part of a transaction, don't set this
+          parameter.
+
+       --include-result-metadata | --no-include-result-metadata (boolean)
+          A value that indicates whether to include metadata in the results.
+
+       --continue-after-timeout | --no-continue-after-timeout (boolean)
+          A value that indicates whether to continue running the statement af-
+          ter the call times out. By default, the statement stops running when
+          the call times out.
+
+          NOTE:
+              For DDL statements, we recommend continuing to run the statement
+              after the call times out. When a DDL statement terminates before
+              it is finished running, it can result  in  errors  and  possibly
+              corrupted data structures.
 
        --result-set-options (structure)
           Options that control how the result set is returned.
 
           decimalReturnType -> (string)
-              A value that indicates how a field of  DECIMAL  type  is  repre-
+              A  value  that  indicates  how a field of DECIMAL type is repre-
               sented in the response. The value of STRING , the default, spec-
-              ifies that it is converted to a String value. The value of  DOU-
-              BLE_OR_LONG  specifies  that  it is converted to a Long value if
+              ifies  that it is converted to a String value. The value of DOU-
+              BLE_OR_LONG specifies that it is converted to a  Long  value  if
               its scale is 0, or to a Double value otherwise.
 
-              WARNING:
-                 Conversion to Double or Long can result  in  roundoff  errors
+              NOTE:
+                 Conversion  to  Double  or Long can result in roundoff errors
                  due to precision loss. We recommend converting to String, es-
                  pecially when working with currency values.
 
           longReturnType -> (string)
-              A value that indicates how a field of LONG type is  represented.
+              A  value that indicates how a field of LONG type is represented.
               Allowed values are LONG and STRING . The default is LONG . Spec-
-              ify STRING if the length or precision of  numeric  values  might
+              ify  STRING  if  the length or precision of numeric values might
               cause truncation or rounding errors.
 
        Shorthand Syntax:
@@ -283,30 +292,21 @@ OPTIONS
             "longReturnType": "STRING"|"LONG"
           }
 
-       --schema (string)
-          The name of the database schema.
+       --format-records-as (string)
+          A value that indicates whether to format the result set as a  single
+          JSON string. This parameter only applies to SELECT statements and is
+          ignored for other types of statements. Allowed values are  NONE  and
+          JSON  .  The  default  value is NONE . The result is returned in the
+          formattedRecords field.
 
-          NOTE:
-              Currently, the schema parameter isn't supported.
+          For usage information about the JSON format  for  result  sets,  see
+          Using the Data API in the Amazon Aurora User Guide .
 
-       --secret-arn (string)
-          The  ARN  of the secret that enables access to the DB cluster. Enter
-          the database user name and password for the credentials in  the  se-
-          cret.
+          Possible values:
 
-          For information about creating the secret, see Create a database se-
-          cret .
+          o NONE
 
-       --sql (string)
-          The SQL statement to run.
-
-       --transaction-id (string)
-          The identifier of a transaction that was started by using the Begin-
-          Transaction operation. Specify the transaction ID of the transaction
-          that you want to include the SQL statement in.
-
-          If the SQL statement is not part of a transaction,  don't  set  this
-          parameter.
+          o JSON
 
        --cli-input-json  (string) Performs service operation based on the JSON
        string provided. The JSON string follows the format provided by  --gen-
@@ -449,170 +449,6 @@ EXAMPLES
        the Amazon RDS User Guide.
 
 OUTPUT
-       columnMetadata -> (list)
-          Metadata for the columns included in  the  results.  This  field  is
-          blank if the formatRecordsAs parameter is set to JSON .
-
-          (structure)
-              Contains the metadata for a column.
-
-              arrayBaseColumnType -> (integer)
-                 The type of the column.
-
-              isAutoIncrement -> (boolean)
-                 A value that indicates whether the column increments automat-
-                 ically.
-
-              isCaseSensitive -> (boolean)
-                 A value that indicates whether the column is case-sensitive.
-
-              isCurrency -> (boolean)
-                 A value that indicates whether the column  contains  currency
-                 values.
-
-              isSigned -> (boolean)
-                 A value that indicates whether an integer column is signed.
-
-              label -> (string)
-                 The label for the column.
-
-              name -> (string)
-                 The name of the column.
-
-              nullable -> (integer)
-                 A value that indicates whether the column is nullable.
-
-              precision -> (integer)
-                 The precision value of a decimal number column.
-
-              scale -> (integer)
-                 The scale value of a decimal number column.
-
-              schemaName -> (string)
-                 The  name of the schema that owns the table that includes the
-                 column.
-
-              tableName -> (string)
-                 The name of the table that includes the column.
-
-              type -> (integer)
-                 The type of the column.
-
-              typeName -> (string)
-                 The database-specific data type of the column.
-
-       formattedRecords -> (string)
-          A string value that represents the result set of a SELECT  statement
-          in  JSON format. This value is only present when the formatRecordsAs
-          parameter is set to JSON .
-
-          The size limit for this field is currently 10 MB. If  the  JSON-for-
-          matted  string representing the result set requires more than 10 MB,
-          the call returns an error.
-
-       generatedFields -> (list)
-          Values for fields generated during a DML request.
-              <note> <p>The <code>generatedFields</code> data isn't  supported
-              by Aurora PostgreSQL. To get the values of generated fields, use
-              the <code>RETURNING</code> clause. For more information, see  <a
-              href="https://www.postgresql.org/docs/10/dml-returning.html">Re-
-              turning Data From Modified Rows</a> in the PostgreSQL documenta-
-              tion.</p> </note>
-
-          (tagged union structure)
-              Contains a value.
-
-              NOTE:
-                 This  is  a Tagged Union structure. Only one of the following
-                 top level keys can be set:  arrayValue,  blobValue,  boolean-
-                 Value, doubleValue, isNull, longValue, stringValue.
-
-              arrayValue -> (tagged union structure)
-                 An array of values.
-
-                 NOTE:
-                     This is a Tagged Union structure. Only one of the follow-
-                     ing top level keys can be set:  arrayValues,  booleanVal-
-                     ues, doubleValues, longValues, stringValues.
-
-                 arrayValues -> (list)
-                     An array of arrays.
-
-                     (tagged union structure)
-                        Contains an array.
-
-                        NOTE:
-                            This  is a Tagged Union structure. Only one of the
-                            following top level keys can be set:  arrayValues,
-                            booleanValues,  doubleValues,  longValues, string-
-                            Values.
-
-                        arrayValues -> (list)
-                            An array of arrays.
-
-                            ( ... recursive ... )
-
-                        booleanValues -> (list)
-                            An array of Boolean values.
-
-                            (boolean)
-
-                        doubleValues -> (list)
-                            An array of floating-point numbers.
-
-                            (double)
-
-                        longValues -> (list)
-                            An array of integers.
-
-                            (long)
-
-                        stringValues -> (list)
-                            An array of strings.
-
-                            (string)
-
-                 booleanValues -> (list)
-                     An array of Boolean values.
-
-                     (boolean)
-
-                 doubleValues -> (list)
-                     An array of floating-point numbers.
-
-                     (double)
-
-                 longValues -> (list)
-                     An array of integers.
-
-                     (long)
-
-                 stringValues -> (list)
-                     An array of strings.
-
-                     (string)
-
-              blobValue -> (blob)
-                 A value of BLOB data type.
-
-              booleanValue -> (boolean)
-                 A value of Boolean data type.
-
-              doubleValue -> (double)
-                 A value of double data type.
-
-              isNull -> (boolean)
-                 A NULL value.
-
-              longValue -> (long)
-                 A value of long data type.
-
-              stringValue -> (string)
-                 A value of string data type.
-
-       numberOfRecordsUpdated -> (long)
-          The number of records updated by the request.
-
        records -> (list)
           The records returned by the SQL statement. This field  is  blank  if
           the formatRecordsAs parameter is set to JSON .
@@ -623,17 +459,55 @@ OUTPUT
 
                  NOTE:
                      This is a Tagged Union structure. Only one of the follow-
-                     ing top level keys can  be  set:  arrayValue,  blobValue,
-                     booleanValue,  doubleValue,  isNull,  longValue,  string-
+                     ing top level keys  can  be  set:  isNull,  booleanValue,
+                     longValue,  doubleValue,  stringValue,  blobValue, array-
                      Value.
+
+                 isNull -> (boolean)
+                     A NULL value.
+
+                 booleanValue -> (boolean)
+                     A value of Boolean data type.
+
+                 longValue -> (long)
+                     A value of long data type.
+
+                 doubleValue -> (double)
+                     A value of double data type.
+
+                 stringValue -> (string)
+                     A value of string data type.
+
+                 blobValue -> (blob)
+                     A value of BLOB data type.
 
                  arrayValue -> (tagged union structure)
                      An array of values.
 
                      NOTE:
                         This is a Tagged Union structure. Only one of the fol-
-                        lowing   top  level  keys  can  be  set:  arrayValues,
-                        booleanValues, doubleValues, longValues, stringValues.
+                        lowing top level keys can be set: booleanValues, long-
+                        Values, doubleValues, stringValues, arrayValues.
+
+                     booleanValues -> (list)
+                        An array of Boolean values.
+
+                        (boolean)
+
+                     longValues -> (list)
+                        An array of integers.
+
+                        (long)
+
+                     doubleValues -> (list)
+                        An array of floating-point numbers.
+
+                        (double)
+
+                     stringValues -> (list)
+                        An array of strings.
+
+                        (string)
 
                      arrayValues -> (list)
                         An array of arrays.
@@ -643,72 +517,198 @@ OUTPUT
 
                             NOTE:
                                This is a Tagged Union structure. Only  one  of
-                               the following top level keys can be set: array-
-                               Values, booleanValues,  doubleValues,  longVal-
-                               ues, stringValues.
-
-                            arrayValues -> (list)
-                               An array of arrays.
-
-                               ( ... recursive ... )
+                               the  following  top  level  keys  can  be  set:
+                               booleanValues,    longValues,     doubleValues,
+                               stringValues, arrayValues.
 
                             booleanValues -> (list)
                                An array of Boolean values.
 
                                (boolean)
 
-                            doubleValues -> (list)
-                               An array of floating-point numbers.
-
-                               (double)
-
                             longValues -> (list)
                                An array of integers.
 
                                (long)
+
+                            doubleValues -> (list)
+                               An array of floating-point numbers.
+
+                               (double)
 
                             stringValues -> (list)
                                An array of strings.
 
                                (string)
 
-                     booleanValues -> (list)
-                        An array of Boolean values.
+                            arrayValues -> (list)
+                               An array of arrays.
 
-                        (boolean)
+                               ( ... recursive ... )
 
-                     doubleValues -> (list)
-                        An array of floating-point numbers.
+       columnMetadata -> (list)
+          Metadata  for  the  columns  included  in the results. This field is
+          blank if the formatRecordsAs parameter is set to JSON .
 
-                        (double)
+          (structure)
+              Contains the metadata for a column.
 
-                     longValues -> (list)
-                        An array of integers.
+              name -> (string)
+                 The name of the column.
 
-                        (long)
+              type -> (integer)
+                 The type of the column.
 
-                     stringValues -> (list)
-                        An array of strings.
+              typeName -> (string)
+                 The database-specific data type of the column.
 
-                        (string)
+              label -> (string)
+                 The label for the column.
 
-                 blobValue -> (blob)
-                     A value of BLOB data type.
+              schemaName -> (string)
+                 The name of the schema that owns the table that includes  the
+                 column.
 
-                 booleanValue -> (boolean)
-                     A value of Boolean data type.
+              tableName -> (string)
+                 The name of the table that includes the column.
 
-                 doubleValue -> (double)
-                     A value of double data type.
+              isAutoIncrement -> (boolean)
+                 A value that indicates whether the column increments automat-
+                 ically.
 
-                 isNull -> (boolean)
-                     A NULL value.
+              isSigned -> (boolean)
+                 A value that indicates whether an integer column is signed.
 
-                 longValue -> (long)
-                     A value of long data type.
+              isCurrency -> (boolean)
+                 A value that indicates whether the column  contains  currency
+                 values.
 
-                 stringValue -> (string)
-                     A value of string data type.
+              isCaseSensitive -> (boolean)
+                 A value that indicates whether the column is case-sensitive.
+
+              nullable -> (integer)
+                 A value that indicates whether the column is nullable.
+
+              precision -> (integer)
+                 The precision value of a decimal number column.
+
+              scale -> (integer)
+                 The scale value of a decimal number column.
+
+              arrayBaseColumnType -> (integer)
+                 The type of the column.
+
+       numberOfRecordsUpdated -> (long)
+          The number of records updated by the request.
+
+       generatedFields -> (list)
+          Values for fields generated during a DML request.
+              <note>  <p>The <code>generatedFields</code> data isn't supported
+              by Aurora PostgreSQL. To get the values of generated fields, use
+              the  <code>RETURNING</code> clause. For more information, see <a
+              href="https://www.postgresql.org/docs/10/dml-returning.html">Re-
+              turning Data From Modified Rows</a> in the PostgreSQL documenta-
+              tion.</p> </note>
+
+          (tagged union structure)
+              Contains a value.
+
+              NOTE:
+                 This is a Tagged Union structure. Only one of  the  following
+                 top  level  keys can be set: isNull, booleanValue, longValue,
+                 doubleValue, stringValue, blobValue, arrayValue.
+
+              isNull -> (boolean)
+                 A NULL value.
+
+              booleanValue -> (boolean)
+                 A value of Boolean data type.
+
+              longValue -> (long)
+                 A value of long data type.
+
+              doubleValue -> (double)
+                 A value of double data type.
+
+              stringValue -> (string)
+                 A value of string data type.
+
+              blobValue -> (blob)
+                 A value of BLOB data type.
+
+              arrayValue -> (tagged union structure)
+                 An array of values.
+
+                 NOTE:
+                     This is a Tagged Union structure. Only one of the follow-
+                     ing top level keys can be set: booleanValues, longValues,
+                     doubleValues, stringValues, arrayValues.
+
+                 booleanValues -> (list)
+                     An array of Boolean values.
+
+                     (boolean)
+
+                 longValues -> (list)
+                     An array of integers.
+
+                     (long)
+
+                 doubleValues -> (list)
+                     An array of floating-point numbers.
+
+                     (double)
+
+                 stringValues -> (list)
+                     An array of strings.
+
+                     (string)
+
+                 arrayValues -> (list)
+                     An array of arrays.
+
+                     (tagged union structure)
+                        Contains an array.
+
+                        NOTE:
+                            This is a Tagged Union structure. Only one of  the
+                            following  top  level keys can be set: booleanVal-
+                            ues, longValues, doubleValues,  stringValues,  ar-
+                            rayValues.
+
+                        booleanValues -> (list)
+                            An array of Boolean values.
+
+                            (boolean)
+
+                        longValues -> (list)
+                            An array of integers.
+
+                            (long)
+
+                        doubleValues -> (list)
+                            An array of floating-point numbers.
+
+                            (double)
+
+                        stringValues -> (list)
+                            An array of strings.
+
+                            (string)
+
+                        arrayValues -> (list)
+                            An array of arrays.
+
+                            ( ... recursive ... )
+
+       formattedRecords -> (string)
+          A  string value that represents the result set of a SELECT statement
+          in JSON format. This value is only present when the  formatRecordsAs
+          parameter is set to JSON .
+
+          The  size  limit for this field is currently 10 MB. If the JSON-for-
+          matted string representing the result set requires more than 10  MB,
+          the call returns an error.
 
 
 

@@ -781,37 +781,42 @@ OPTIONS
                  data in the ML storage volume, choose File as the TrainingIn-
                  putMode in the algorithm specification.
 
-                 You must specify sufficient ML storage for your scenario.
+                 When using an ML instance with NVMe SSD volumes  ,  SageMaker
+                 doesn't  provision Amazon EBS General Purpose SSD (gp2) stor-
+                 age. Available storage is fixed to the  NVMe-type  instance's
+                 storage  capacity.  SageMaker  configures  storage  paths for
+                 training datasets, checkpoints, model artifacts, and  outputs
+                 to use the entire capacity of the instance storage. For exam-
+                 ple, ML instance families with the NVMe-type instance storage
+                 include ml.p4d , ml.g4dn , and ml.g5 .
 
-                 NOTE:
-                     SageMaker supports only the General Purpose SSD (gp2)  ML
-                     storage volume type.
+                 When  using  an  ML instance with the EBS-only storage option
+                 and without instance storage, you must define the size of EBS
+                 volume  through VolumeSizeInGB in the ResourceConfig API. For
+                 example, ML instance families that use  EBS  volumes  include
+                 ml.c5 and ml.p2 .
 
-                 NOTE:
-                     Certain  Nitro-based instances include local storage with
-                     a fixed total size, dependent on the instance type.  When
-                     using  these instances for training, SageMaker mounts the
-                     local instance storage instead of Amazon EBS gp2 storage.
-                     You can't request a VolumeSizeInGB greater than the total
-                     size of the local instance storage.
+                 To  look  up  instance types and their instance storage types
+                 and volumes, see Amazon EC2 Instance Types .
 
-                     For a list of instance types that support local  instance
-                     storage,  including the total size per instance type, see
-                     Instance Store Volumes .
+                 To find the default local  paths  defined  by  the  SageMaker
+                 training  platform,  see  Amazon  SageMaker  Training Storage
+                 Folders for Training Datasets, Checkpoints, Model  Artifacts,
+                 and Outputs .
 
               VolumeKmsKeyId -> (string)
-                 The Amazon Web Services KMS key that SageMaker  uses  to  en-
-                 crypt  data  on the storage volume attached to the ML compute
+                 The  Amazon  Web  Services KMS key that SageMaker uses to en-
+                 crypt data on the storage volume attached to the  ML  compute
                  instance(s) that run the training job.
 
                  NOTE:
-                     Certain Nitro-based instances include local storage,  de-
-                     pendent  on  the instance type. Local storage volumes are
-                     encrypted using a hardware module on  the  instance.  You
-                     can't  request  a  VolumeKmsKeyId  when using an instance
+                     Certain  Nitro-based instances include local storage, de-
+                     pendent on the instance type. Local storage  volumes  are
+                     encrypted  using  a  hardware module on the instance. You
+                     can't request a VolumeKmsKeyId  when  using  an  instance
                      type with local storage.
 
-                     For a list of instance types that support local  instance
+                     For  a list of instance types that support local instance
                      storage, see Instance Store Volumes .
 
                      For more information about local instance storage encryp-
@@ -821,7 +826,7 @@ OPTIONS
 
                  o // KMS Key ID  "1234abcd-12ab-34cd-56ef-1234567890ab"
 
-                 o //   Amazon   Resource   Name   (ARN)   of   a   KMS    Key
+                 o //    Amazon   Resource   Name   (ARN)   of   a   KMS   Key
                    "arn:aws:kms:us-west-2:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab"
 
               InstanceGroups -> (list)
@@ -830,81 +835,85 @@ OPTIONS
                  (structure)
                      Defines  an  instance  group  for  heterogeneous  cluster
                      training.  When  requesting  a  training  job  using  the
-                     CreateTrainingJob API, you  can  configure  multiple  in-
+                     CreateTrainingJob  API,  you  can  configure multiple in-
                      stance groups .
 
                      InstanceType -> (string)
                         Specifies the instance type of the instance group.
 
                      InstanceCount -> (integer)
-                        Specifies  the  number  of  instances  of the instance
+                        Specifies the number  of  instances  of  the  instance
                         group.
 
                      InstanceGroupName -> (string)
                         Specifies the name of the instance group.
 
           StoppingCondition -> (structure)
-              Specifies a limit to how long a  model  hyperparameter  training
-              job  can run. It also specifies how long a managed spot training
-              job has to complete. When the job reaches the time limit,  Sage-
-              Maker  ends the training job. Use this API to cap model training
+              Specifies  a  limit  to how long a model hyperparameter training
+              job can run. It also specifies how long a managed spot  training
+              job  has to complete. When the job reaches the time limit, Sage-
+              Maker ends the training job. Use this API to cap model  training
               costs.
 
               MaxRuntimeInSeconds -> (integer)
-                 The maximum length of time, in seconds, that  a  training  or
-                 compilation job can run.
+                 The  maximum  length  of time, in seconds, that a training or
+                 compilation job can run before it is stopped.
 
-                 For  compilation  jobs,  if  the job does not complete during
-                 this time, a TimeOut error is generated. We recommend  start-
-                 ing  with  900  seconds  and increasing as necessary based on
+                 For compilation jobs, if the job  does  not  complete  during
+                 this  time, a TimeOut error is generated. We recommend start-
+                 ing with 900 seconds and increasing  as  necessary  based  on
                  your model.
 
-                 For all other jobs, if the job does not complete during  this
+                 For  all other jobs, if the job does not complete during this
                  time, SageMaker ends the job. When RetryStrategy is specified
                  in the job request, MaxRuntimeInSeconds specifies the maximum
-                 time  for  all  of the attempts in total, not each individual
-                 attempt. The default value is 1 day. The maximum value is  28
+                 time for all of the attempts in total,  not  each  individual
+                 attempt.  The default value is 1 day. The maximum value is 28
                  days.
 
+                 The maximum time that a TrainingJob can run in total, includ-
+                 ing  any  time  spent publishing metrics or archiving and up-
+                 loading models after it has been stopped, is 30 days.
+
               MaxWaitTimeInSeconds -> (integer)
-                 The  maximum  length of time, in seconds, that a managed Spot
-                 training job has to complete. It is the amount of time  spent
+                 The maximum length of time, in seconds, that a  managed  Spot
+                 training  job has to complete. It is the amount of time spent
                  waiting for Spot capacity plus the amount of time the job can
-                 run. It must be equal to or greater than  MaxRuntimeInSeconds
-                 .  If  the  job does not complete during this time, SageMaker
+                 run.  It must be equal to or greater than MaxRuntimeInSeconds
+                 . If the job does not complete during  this  time,  SageMaker
                  ends the job.
 
-                 When RetryStrategy is specified in the job request,  MaxWait-
-                 TimeInSeconds  specifies  the maximum time for all of the at-
+                 When  RetryStrategy is specified in the job request, MaxWait-
+                 TimeInSeconds specifies the maximum time for all of  the  at-
                  tempts in total, not each individual attempt.
 
           EnableNetworkIsolation -> (boolean)
-              Isolates the training container. No inbound or outbound  network
-              calls  can  be  made,  except  for  calls between peers within a
-              training cluster for distributed training. If network  isolation
-              is  used  for  training  jobs  that are configured to use a VPC,
-              SageMaker downloads and uploads customer data  and  model  arti-
+              Isolates  the training container. No inbound or outbound network
+              calls can be made, except  for  calls  between  peers  within  a
+              training  cluster for distributed training. If network isolation
+              is used for training jobs that are  configured  to  use  a  VPC,
+              SageMaker  downloads  and  uploads customer data and model arti-
               facts through the specified VPC, but the training container does
               not have network access.
 
           EnableInterContainerTrafficEncryption -> (boolean)
-              To encrypt all communications between ML  compute  instances  in
-              distributed  training, choose True . Encryption provides greater
-              security for  distributed  training,  but  training  might  take
+              To  encrypt  all  communications between ML compute instances in
+              distributed training, choose True . Encryption provides  greater
+              security  for  distributed  training,  but  training  might take
               longer. How long it takes depends on the amount of communication
               between compute instances, especially if you use a deep learning
               algorithm in distributed training.
 
           EnableManagedSpotTraining -> (boolean)
-              A  Boolean  indicating  whether managed spot training is enabled
+              A Boolean indicating whether managed spot  training  is  enabled
               (True ) or not (False ).
 
           CheckpointConfig -> (structure)
-              Contains information about the output location for managed  spot
+              Contains  information about the output location for managed spot
               training checkpoint data.
 
               S3Uri -> (string)
-                 Identifies  the  S3  path  where  you want SageMaker to store
+                 Identifies the S3 path where  you  want  SageMaker  to  store
                  checkpoints. For example, s3://bucket-name/key-name-prefix .
 
               LocalPath -> (string)
@@ -912,67 +921,68 @@ OPTIONS
                  The default directory is /opt/ml/checkpoints/ .
 
           RetryStrategy -> (structure)
-              The  number  of times to retry the job when the job fails due to
+              The number of times to retry the job when the job fails  due  to
               an InternalServerError .
 
               MaximumRetryAttempts -> (integer)
-                 The number of times to retry the job. When  the  job  is  re-
+                 The  number  of  times  to retry the job. When the job is re-
                  tried, it's SecondaryStatus is changed to STARTING .
 
           HyperParameterTuningResourceConfig -> (structure)
-              The  configuration  for the hyperparameter tuning resources, in-
-              cluding the compute instances  and  storage  volumes,  used  for
-              training  jobs  launched  by the tuning job. By default, storage
+              The configuration for the hyperparameter tuning  resources,  in-
+              cluding  the  compute  instances  and  storage volumes, used for
+              training jobs launched by the tuning job.  By  default,  storage
               volumes hold model artifacts and incremental states. Choose File
               for TrainingInputMode in the AlgorithmSpecification parameter to
-              additionally store training data  in  the  storage  volume  (op-
+              additionally  store  training  data  in  the storage volume (op-
               tional).
 
               InstanceType -> (string)
-                 The  instance  type  used  to run hyperparameter optimization
-                 tuning jobs. See descriptions of instance types for more  in-
+                 The instance type used  to  run  hyperparameter  optimization
+                 tuning  jobs. See descriptions of instance types for more in-
                  formation.
 
               InstanceCount -> (integer)
-                 The  number of compute instances of type InstanceType to use.
+                 The number of compute instances of type InstanceType to  use.
                  For distributed training , select a value greater than 1.
 
               VolumeSizeInGB -> (integer)
-                 The volume size in GB for the storage volume to  be  used  in
+                 The  volume  size  in GB for the storage volume to be used in
                  processing hyperparameter optimization jobs (optional). These
                  volumes store model artifacts, incremental states and option-
                  ally, scratch space for training algorithms. Do not provide a
-                 value for this parameter if a value  for  InstanceConfigs  is
+                 value  for  this  parameter if a value for InstanceConfigs is
                  also specified.
 
                  Some instance types have a fixed total local storage size. If
-                 you select one of these instances for  training,  VolumeSize-
-                 InGB  cannot  be  greater than this total size. For a list of
-                 instance types with local instance storage and  their  sizes,
+                 you  select  one of these instances for training, VolumeSize-
+                 InGB cannot be greater than this total size. For  a  list  of
+                 instance  types  with local instance storage and their sizes,
                  see instance store volumes .
 
                  NOTE:
-                     SageMaker  supports  only  the  General Purpose SSD (gp2)
+                     SageMaker supports only the  General  Purpose  SSD  (gp2)
                      storage volume type.
 
               VolumeKmsKeyId -> (string)
-                 A key used by AWS Key Management Service to encrypt  data  on
-                 the  storage volume attached to the compute instances used to
-                 run the training job. You can use  either  of  the  following
-                 formats to specify a key.
+                 A  key  used by Amazon Web Services Key Management Service to
+                 encrypt data on the storage volume attached  to  the  compute
+                 instances used to run the training job. You can use either of
+                 the following formats to specify a key.
 
                  KMS Key ID:
                      "1234abcd-12ab-34cd-56ef-1234567890ab"
 
-                 Amazon Resource Name (ARN) of a AWS KMS key:
+                 Amazon Resource Name (ARN) of a KMS key:
                      "arn:aws:kms:us-west-2:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab"
 
                  Some instances use local storage, which use a hardware module
-                 to  encrypt  storage  volumes. If you choose one of these in-
-                 stance types, you cannot request a  VolumeKmsKeyId  .  For  a
-                 list  of  instance types that use local storage, see instance
-                 store volumes . For more information about AWS Key Management
-                 Service, see AWS KMS encryption for more information.
+                 to encrypt storage volumes. If you choose one  of  these  in-
+                 stance  types,  you  cannot  request a VolumeKmsKeyId . For a
+                 list of instance types that use local storage,  see  instance
+                 store  volumes  .  For more information about Amazon Web Ser-
+                 vices Key Management Service, see KMS encryption for more in-
+                 formation.
 
               AllocationStrategy -> (string)
                  The  strategy that determines the order of preference for re-
@@ -988,12 +998,12 @@ OPTIONS
                  urations provided in InstanceConfigs are used.
 
                  NOTE:
-                     If you only want to use a  single  InstanceConfig  inside
-                     the  HyperParameterTuningResourceConfig  API, do not pro-
-                     vide a value for InstanceConfigs . Instead, use Instance-
-                     Type  , VolumeSizeInGB and InstanceCount . If you use In-
-                     stanceConfigs , do not provide values for InstanceType  ,
-                     VolumeSizeInGB or InstanceCount .
+                     If you only want to use a single  instance  configuration
+                     inside the HyperParameterTuningResourceConfig API, do not
+                     provide a value for InstanceConfigs .  Instead,  use  In-
+                     stanceType  ,  VolumeSizeInGB  and InstanceCount . If you
+                     use InstanceConfigs , do not provide values for Instance-
+                     Type , VolumeSizeInGB or InstanceCount .
 
                  (structure)
                      The configuration for hyperparameter tuning resources for
@@ -1697,49 +1707,54 @@ OPTIONS
                      ing  data  in  the  ML storage volume, choose File as the
                      TrainingInputMode in the algorithm specification.
 
-                     You must specify sufficient ML storage for your scenario.
+                     When using an ML instance with NVMe SSD volumes  ,  Sage-
+                     Maker  doesn't  provision  Amazon EBS General Purpose SSD
+                     (gp2)  storage.  Available  storage  is  fixed   to   the
+                     NVMe-type  instance's storage capacity. SageMaker config-
+                     ures storage paths for  training  datasets,  checkpoints,
+                     model  artifacts,  and outputs to use the entire capacity
+                     of the instance storage. For example, ML  instance  fami-
+                     lies with the NVMe-type instance storage include ml.p4d ,
+                     ml.g4dn , and ml.g5 .
 
-                     NOTE:
-                        SageMaker supports only the General Purpose SSD  (gp2)
-                        ML storage volume type.
+                     When using an ML instance with the EBS-only  storage  op-
+                     tion  and  without  instance storage, you must define the
+                     size of EBS volume  through  VolumeSizeInGB  in  the  Re-
+                     sourceConfig  API. For example, ML instance families that
+                     use EBS volumes include ml.c5 and ml.p2 .
 
-                     NOTE:
-                        Certain  Nitro-based  instances  include local storage
-                        with a fixed total size,  dependent  on  the  instance
-                        type.  When  using these instances for training, Sage-
-                        Maker mounts the local  instance  storage  instead  of
-                        Amazon  EBS  gp2  storage. You can't request a Volume-
-                        SizeInGB greater than the total size of the local  in-
-                        stance storage.
+                     To look up instance  types  and  their  instance  storage
+                     types and volumes, see Amazon EC2 Instance Types .
 
-                        For  a  list  of instance types that support local in-
-                        stance storage, including the total size per  instance
-                        type, see Instance Store Volumes .
+                     To  find the default local paths defined by the SageMaker
+                     training platform, see Amazon SageMaker Training  Storage
+                     Folders  for  Training Datasets, Checkpoints, Model Arti-
+                     facts, and Outputs .
 
                  VolumeKmsKeyId -> (string)
-                     The  Amazon  Web  Services KMS key that SageMaker uses to
-                     encrypt data on the storage volume  attached  to  the  ML
+                     The Amazon Web Services KMS key that  SageMaker  uses  to
+                     encrypt  data  on  the  storage volume attached to the ML
                      compute instance(s) that run the training job.
 
                      NOTE:
-                        Certain  Nitro-based  instances include local storage,
-                        dependent on the instance type. Local storage  volumes
+                        Certain Nitro-based instances include  local  storage,
+                        dependent  on the instance type. Local storage volumes
                         are encrypted using a hardware module on the instance.
-                        You can't request a VolumeKmsKeyId when using  an  in-
+                        You  can't  request a VolumeKmsKeyId when using an in-
                         stance type with local storage.
 
-                        For  a  list  of instance types that support local in-
+                        For a list of instance types that  support  local  in-
                         stance storage, see Instance Store Volumes .
 
-                        For more information about local instance storage  en-
+                        For  more information about local instance storage en-
                         cryption, see SSD Instance Store Volumes .
 
-                     The  VolumeKmsKeyId  can  be in any of the following for-
+                     The VolumeKmsKeyId can be in any of  the  following  for-
                      mats:
 
                      o // KMS Key ID  "1234abcd-12ab-34cd-56ef-1234567890ab"
 
-                     o //  Amazon  Resource  Name   (ARN)   of   a   KMS   Key
+                     o //   Amazon   Resource   Name   (ARN)   of  a  KMS  Key
                        "arn:aws:kms:us-west-2:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab"
 
                  InstanceGroups -> (list)
@@ -1747,16 +1762,16 @@ OPTIONS
                      mat.
 
                      (structure)
-                        Defines  an  instance  group for heterogeneous cluster
-                        training. When requesting a  training  job  using  the
-                        CreateTrainingJob  API, you can configure multiple in-
+                        Defines an instance group  for  heterogeneous  cluster
+                        training.  When  requesting  a  training job using the
+                        CreateTrainingJob API, you can configure multiple  in-
                         stance groups .
 
                         InstanceType -> (string)
                             Specifies the instance type of the instance group.
 
                         InstanceCount -> (integer)
-                            Specifies the number of instances of the  instance
+                            Specifies  the number of instances of the instance
                             group.
 
                         InstanceGroupName -> (string)
@@ -1766,24 +1781,29 @@ OPTIONS
                  Specifies a limit to how long a model hyperparameter training
                  job can run. It also specifies how long a managed spot train-
                  ing job has to complete. When the job reaches the time limit,
-                 SageMaker ends the training job. Use this API  to  cap  model
+                 SageMaker  ends  the  training job. Use this API to cap model
                  training costs.
 
                  MaxRuntimeInSeconds -> (integer)
-                     The  maximum  length of time, in seconds, that a training
-                     or compilation job can run.
+                     The maximum length of time, in seconds, that  a  training
+                     or compilation job can run before it is stopped.
 
                      For compilation jobs, if the job does not complete during
-                     this  time,  a  TimeOut  error is generated. We recommend
-                     starting with 900 seconds  and  increasing  as  necessary
+                     this time, a TimeOut error  is  generated.  We  recommend
+                     starting  with  900  seconds  and increasing as necessary
                      based on your model.
 
-                     For  all  other jobs, if the job does not complete during
-                     this time, SageMaker ends the job. When RetryStrategy  is
-                     specified  in the job request, MaxRuntimeInSeconds speci-
-                     fies the maximum time for all of the attempts  in  total,
-                     not  each individual attempt. The default value is 1 day.
+                     For all other jobs, if the job does not  complete  during
+                     this  time, SageMaker ends the job. When RetryStrategy is
+                     specified in the job request, MaxRuntimeInSeconds  speci-
+                     fies  the  maximum time for all of the attempts in total,
+                     not each individual attempt. The default value is 1  day.
                      The maximum value is 28 days.
+
+                     The maximum time that a TrainingJob can run in total, in-
+                     cluding any time spent publishing  metrics  or  archiving
+                     and  uploading  models  after  it has been stopped, is 30
+                     days.
 
                  MaxWaitTimeInSeconds -> (integer)
                      The maximum length of time, in seconds,  that  a  managed
@@ -1877,15 +1897,15 @@ OPTIONS
                         storage volume type.
 
                  VolumeKmsKeyId -> (string)
-                     A  key used by AWS Key Management Service to encrypt data
-                     on the storage volume attached to the  compute  instances
-                     used  to  run the training job. You can use either of the
-                     following formats to specify a key.
+                     A  key used by Amazon Web Services Key Management Service
+                     to encrypt data on the storage  volume  attached  to  the
+                     compute  instances  used to run the training job. You can
+                     use either of the following formats to specify a key.
 
                      KMS Key ID:
                         "1234abcd-12ab-34cd-56ef-1234567890ab"
 
-                     Amazon Resource Name (ARN) of a AWS KMS key:
+                     Amazon Resource Name (ARN) of a KMS key:
                         "arn:aws:kms:us-west-2:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab"
 
                      Some  instances  use  local storage, which use a hardware
@@ -1893,8 +1913,8 @@ OPTIONS
                      these instance types, you cannot request a VolumeKmsKeyId
                      . For a list of instance types that  use  local  storage,
                      see  instance  store volumes . For more information about
-                     AWS Key Management Service, see AWS  KMS  encryption  for
-                     more information.
+                     Amazon Web Services Key Management Service, see  KMS  en-
+                     cryption for more information.
 
                  AllocationStrategy -> (string)
                      The  strategy that determines the order of preference for
@@ -1911,39 +1931,40 @@ OPTIONS
                      are used.
 
                      NOTE:
-                        If you only want to use a single InstanceConfig inside
-                        the  HyperParameterTuningResourceConfig  API,  do  not
-                        provide a value for InstanceConfigs . Instead, use In-
-                        stanceType , VolumeSizeInGB and InstanceCount . If you
-                        use  InstanceConfigs  ,  do not provide values for In-
-                        stanceType , VolumeSizeInGB or InstanceCount .
+                        If  you  only want to use a single instance configura-
+                        tion  inside  the   HyperParameterTuningResourceConfig
+                        API,  do not provide a value for InstanceConfigs . In-
+                        stead, use InstanceType , VolumeSizeInGB and Instance-
+                        Count  .  If  you use InstanceConfigs , do not provide
+                        values for InstanceType , VolumeSizeInGB or  Instance-
+                        Count .
 
                      (structure)
-                        The configuration for hyperparameter tuning  resources
-                        for  use  in training jobs launched by the tuning job.
-                        These resources include compute instances and  storage
+                        The  configuration for hyperparameter tuning resources
+                        for use in training jobs launched by the  tuning  job.
+                        These  resources include compute instances and storage
                         volumes. Specify one or more compute instance configu-
-                        rations and allocation strategies to select  resources
+                        rations  and allocation strategies to select resources
                         (optional).
 
                         InstanceType -> (string)
-                            The  instance type used for processing of hyperpa-
-                            rameter optimization  jobs.  Choose  from  general
-                            purpose  (no  GPUs)  instance types: ml.m5.xlarge,
-                            ml.m5.2xlarge, and ml.m5.4xlarge or compute  opti-
-                            mized  (no  GPUs) instance types: ml.c5.xlarge and
+                            The instance type used for processing of  hyperpa-
+                            rameter  optimization  jobs.  Choose  from general
+                            purpose (no GPUs)  instance  types:  ml.m5.xlarge,
+                            ml.m5.2xlarge,  and ml.m5.4xlarge or compute opti-
+                            mized (no GPUs) instance types:  ml.c5.xlarge  and
                             ml.c5.2xlarge. For more information about instance
                             types, see instance type descriptions .
 
                         InstanceCount -> (integer)
-                            The  number  of instances of the type specified by
-                            InstanceType . Choose  an  instance  count  larger
-                            than  1  for  distributed training algorithms. See
-                            SageMaker distributed training jobs for  more  in-
+                            The number of instances of the type  specified  by
+                            InstanceType  .  Choose  an  instance count larger
+                            than 1 for distributed  training  algorithms.  See
+                            SageMaker  distributed  training jobs for more in-
                             formation.
 
                         VolumeSizeInGB -> (integer)
-                            The  volume size in GB of the data to be processed
+                            The volume size in GB of the data to be  processed
                             for hyperparameter optimization (optional).
 
        JSON Syntax:
@@ -2081,28 +2102,28 @@ OPTIONS
           ]
 
        --warm-start-config (structure)
-          Specifies the configuration for starting the  hyperparameter  tuning
-          job  using one or more previous tuning jobs as a starting point. The
-          results of previous tuning jobs are used to  inform  which  combina-
+          Specifies  the  configuration for starting the hyperparameter tuning
+          job using one or more previous tuning jobs as a starting point.  The
+          results  of  previous  tuning jobs are used to inform which combina-
           tions of hyperparameters to search over in the new tuning job.
 
-          All  training jobs launched by the new hyperparameter tuning job are
-          evaluated by using the objective  metric.  If  you  specify  IDENTI-
+          All training jobs launched by the new hyperparameter tuning job  are
+          evaluated  by  using  the  objective  metric. If you specify IDENTI-
           CAL_DATA_AND_ALGORITHM as the WarmStartType value for the warm start
-          configuration, the training job that performs the best  in  the  new
-          tuning  job  is  compared  to the best training jobs from the parent
-          tuning jobs. From these, the training job that performs the best  as
-          measured  by  the  objective  metric is returned as the overall best
+          configuration,  the  training  job that performs the best in the new
+          tuning job is compared to the best training  jobs  from  the  parent
+          tuning  jobs. From these, the training job that performs the best as
+          measured by the objective metric is returned  as  the  overall  best
           training job.
 
           NOTE:
-              All training jobs launched by parent hyperparameter tuning  jobs
-              and  the  new hyperparameter tuning jobs count against the limit
+              All  training jobs launched by parent hyperparameter tuning jobs
+              and the new hyperparameter tuning jobs count against  the  limit
               of training jobs for the tuning job.
 
           ParentHyperParameterTuningJobs -> (list)
-              An array of hyperparameter tuning jobs  that  are  used  as  the
-              starting  point  for the new hyperparameter tuning job. For more
+              An  array  of  hyperparameter  tuning  jobs that are used as the
+              starting point for the new hyperparameter tuning job.  For  more
               information about warm starting a hyperparameter tuning job, see
               Using a Previous Hyperparameter Tuning Job as a Starting Point .
 
@@ -2110,8 +2131,8 @@ OPTIONS
               be used as parent jobs for warm start tuning jobs.
 
               (structure)
-                 A previously completed or stopped hyperparameter  tuning  job
-                 to  be used as a starting point for a new hyperparameter tun-
+                 A  previously  completed or stopped hyperparameter tuning job
+                 to be used as a starting point for a new hyperparameter  tun-
                  ing job.
 
                  HyperParameterTuningJobName -> (string)
@@ -2122,29 +2143,29 @@ OPTIONS
               Specifies one of the following:
                  IDENTICAL_DATA_AND_ALGORITHM
 
-              The  new  hyperparameter tuning job uses the same input data and
+              The new hyperparameter tuning job uses the same input  data  and
               training image as the parent tuning jobs. You can change the hy-
               perparameter ranges to search and the maximum number of training
               jobs that the hyperparameter tuning job launches. You cannot use
-              a  new  version of the training algorithm, unless the changes in
+              a new version of the training algorithm, unless the  changes  in
               the new version do not affect the algorithm itself. For example,
-              changes  that  improve logging or adding support for a different
-              data format are allowed. You  can  also  change  hyperparameters
-              from  tunable to static, and from static to tunable, but the to-
-              tal number of static plus tunable  hyperparameters  must  remain
-              the  same  as it is in all parent jobs. The objective metric for
+              changes that improve logging or adding support for  a  different
+              data  format  are  allowed.  You can also change hyperparameters
+              from tunable to static, and from static to tunable, but the  to-
+              tal  number  of  static plus tunable hyperparameters must remain
+              the same as it is in all parent jobs. The objective  metric  for
               the new tuning job must be the same as for all parent jobs.
                  TRANSFER_LEARNING
 
               The new hyperparameter tuning job can include input data, hyper-
-              parameter  ranges,  maximum  number of concurrent training jobs,
-              and maximum number of training  jobs  that  are  different  than
+              parameter ranges, maximum number of  concurrent  training  jobs,
+              and  maximum  number  of  training  jobs that are different than
               those of its parent hyperparameter tuning jobs. The training im-
               age can also be a different version from the version used in the
-              parent  hyperparameter  tuning job. You can also change hyperpa-
+              parent hyperparameter tuning job. You can also  change  hyperpa-
               rameters from tunable to static, and from static to tunable, but
               the total number of static plus tunable hyperparameters must re-
-              main the same as it is in all parent jobs. The objective  metric
+              main  the same as it is in all parent jobs. The objective metric
               for the new tuning job must be the same as for all parent jobs.
 
        Shorthand Syntax:
@@ -2164,26 +2185,26 @@ OPTIONS
           }
 
        --tags (list)
-          An  array  of  key-value  pairs. You can use tags to categorize your
-          Amazon Web Services resources in different  ways,  for  example,  by
-          purpose,  owner,  or  environment. For more information, see Tagging
+          An array of key-value pairs. You can use  tags  to  categorize  your
+          Amazon  Web  Services  resources  in different ways, for example, by
+          purpose, owner, or environment. For more  information,  see  Tagging
           Amazon Web Services Resources .
 
-          Tags that you specify for the tuning  job  are  also  added  to  all
+          Tags  that  you  specify  for  the  tuning job are also added to all
           training jobs that the tuning job launches.
 
           (structure)
-              A  tag object that consists of a key and an optional value, used
+              A tag object that consists of a key and an optional value,  used
               to manage metadata for SageMaker Amazon Web Services resources.
 
-              You can add tags to notebook instances, training jobs,  hyperpa-
-              rameter  tuning  jobs,  batch  transform  jobs, models, labeling
-              jobs, work teams, endpoint configurations,  and  endpoints.  For
+              You  can add tags to notebook instances, training jobs, hyperpa-
+              rameter tuning jobs,  batch  transform  jobs,  models,  labeling
+              jobs,  work  teams,  endpoint configurations, and endpoints. For
               more information on adding tags to SageMaker resources, see  Ad-
               dTags .
 
-              For more information on adding metadata to your Amazon Web  Ser-
-              vices  resources  with  tagging, see Tagging Amazon Web Services
+              For  more information on adding metadata to your Amazon Web Ser-
+              vices resources with tagging, see Tagging  Amazon  Web  Services
               resources . For advice on best practices for managing Amazon Web
               Services resources with tagging, see Tagging Best Practices: Im-
               plement an Effective Amazon Web Services Resource Tagging Strat-
@@ -2209,17 +2230,17 @@ OPTIONS
             ...
           ]
 
-       --cli-input-json  (string) Performs service operation based on the JSON
-       string provided. The JSON string follows the format provided by  --gen-
-       erate-cli-skeleton.  If  other  arguments  are  provided on the command
-       line, the CLI values will override the JSON-provided values. It is  not
+       --cli-input-json (string) Performs service operation based on the  JSON
+       string  provided. The JSON string follows the format provided by --gen-
+       erate-cli-skeleton. If other arguments  are  provided  on  the  command
+       line,  the CLI values will override the JSON-provided values. It is not
        possible to pass arbitrary binary values using a JSON-provided value as
        the string will be taken literally.
 
-       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
+       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
        output without sending an API request. If provided with no value or the
        value input, prints a sample input JSON that can be used as an argument
-       for  --cli-input-json.  If provided with the value output, it validates
+       for --cli-input-json. If provided with the value output,  it  validates
        the command inputs and returns a sample output JSON for that command.
 
 GLOBAL OPTIONS
@@ -2233,7 +2254,7 @@ GLOBAL OPTIONS
 
        --no-verify-ssl (boolean)
 
-       By default, the AWS CLI uses SSL when communicating with AWS  services.
+       By  default, the AWS CLI uses SSL when communicating with AWS services.
        For each SSL connection, the AWS CLI will verify SSL certificates. This
        option overrides the default behavior of verifying SSL certificates.
 
@@ -2279,7 +2300,7 @@ GLOBAL OPTIONS
 
        --no-sign-request (boolean)
 
-       Do not sign requests. Credentials will not be loaded if  this  argument
+       Do  not  sign requests. Credentials will not be loaded if this argument
        is provided.
 
        --ca-bundle (string)
@@ -2289,19 +2310,19 @@ GLOBAL OPTIONS
 
        --cli-read-timeout (int)
 
-       The maximum socket read time in seconds. If the value is set to 0,  the
-       socket  read  will be blocking and not timeout. The default value is 60
+       The  maximum socket read time in seconds. If the value is set to 0, the
+       socket read will be blocking and not timeout. The default value  is  60
        seconds.
 
        --cli-connect-timeout (int)
 
-       The maximum socket connect time in seconds. If the value is set  to  0,
-       the  socket connect will be blocking and not timeout. The default value
+       The  maximum  socket connect time in seconds. If the value is set to 0,
+       the socket connect will be blocking and not timeout. The default  value
        is 60 seconds.
 
 OUTPUT
        HyperParameterTuningJobArn -> (string)
-          The Amazon Resource Name (ARN) of the tuning job. SageMaker  assigns
+          The  Amazon Resource Name (ARN) of the tuning job. SageMaker assigns
           an ARN to a hyperparameter tuning job when you create it.
 
 
