@@ -7131,10 +7131,62 @@ OUTPUT
                      Strategy -> (string)
                         Specifies how hyperparameter tuning chooses the combi-
                         nations of hyperparameter values to use for the train-
-                        ing job it launches. To use the Bayesian search strat-
-                        egy, set this to Bayesian . To randomly search, set it
-                        to  Random  . For information about search strategies,
-                        see How Hyperparameter Tuning Works .
+                        ing  job  it  launches.  For  information about search
+                        strategies, see How Hyperparameter Tuning Works .
+
+                     StrategyConfig -> (structure)
+                        The  configuration  for  the  Hyperband   optimization
+                        strategy.  This  parameter  should be provided only if
+                        Hyperband is selected as the strategy for HyperParame-
+                        terTuningJobConfig .
+
+                        HyperbandStrategyConfig -> (structure)
+                            The  configuration  for  the object that specifies
+                            the Hyperband strategy.  This  parameter  is  only
+                            supported for the Hyperband selection for Strategy
+                            within the HyperParameterTuningJobConfig API.
+
+                            MinResource -> (integer)
+                               The  minimum  number  of  resources  (such   as
+                               epochs)  that  can  be  used  by a training job
+                               launched by a hyperparameter tuning job. If the
+                               value for MinResource has not been reached, the
+                               training job will not be stopped by Hyperband .
+
+                            MaxResource -> (integer)
+                               The  maximum  number  of  resources  (such   as
+                               epochs)  that  can  be  used  by a training job
+                               launched by a hyperparameter tuning job. Once a
+                               job   reaches  the  MaxResource  value,  it  is
+                               stopped. If a value for MaxResource is not pro-
+                               vided,  and Hyperband is selected as the hyper-
+                               parameter tuning  strategy,  HyperbandTrainingJ
+                               attempts  to infer MaxResource from the follow-
+                               ing keys (if present) in StaticsHyperParameters
+                               :
+
+                               o epochs
+
+                               o numepochs
+
+                               o n-epochs
+
+                               o n_epochs
+
+                               o num_epochs
+
+                               If HyperbandStrategyConfig is unable to infer a
+                               value for MaxResource , it generates a  valida-
+                               tion error. The maximum value is 20,000 epochs.
+                               All metrics that  correspond  to  an  objective
+                               metric  are used to derive early stopping deci-
+                               sions . For distributive training jobs,  ensure
+                               that  duplicate  metrics are not printed in the
+                               logs across the individual nodes in a  training
+                               job. If multiple nodes are publishing duplicate
+                               or incorrect metrics, training jobs may make an
+                               incorrect  stopping  decision  and stop the job
+                               prematurely.
 
                      HyperParameterTuningJobObjective -> (structure)
                         The   HyperParameterTuningJobObjective   object   that
@@ -7286,18 +7338,21 @@ OUTPUT
 
                      TrainingJobEarlyStoppingType -> (string)
                         Specifies whether to use early stopping  for  training
-                        jobs  launched  by the hyperparameter tuning job. This
-                        can be one of the following values (the default  value
-                        is OFF ):
+                        jobs  launched  by  the hyperparameter tuning job. Be-
+                        cause the Hyperband strategy has its own advanced  in-
+                        ternal early stopping mechanism, TrainingJobEarlyStop-
+                        pingType must be OFF to use Hyperband . This parameter
+                        can  take  on one of the following values (the default
+                        value is OFF ):
                             OFF
 
-                        Training  jobs  launched  by the hyperparameter tuning
+                        Training jobs launched by  the  hyperparameter  tuning
                         job do not use early stopping.
                             AUTO
 
                         SageMaker stops training jobs launched by the hyperpa-
-                        rameter  tuning  job when they are unlikely to perform
-                        better than previously completed  training  jobs.  For
+                        rameter tuning job when they are unlikely  to  perform
+                        better  than  previously  completed training jobs. For
                         more information, see Stop Training Jobs Early .
 
                      TuningJobCompletionCriteria -> (structure)
@@ -7307,7 +7362,7 @@ OUTPUT
                             The value of the objective metric.
 
                  TrainingJobDefinition -> (structure)
-                     Defines  the  training  jobs launched by a hyperparameter
+                     Defines the training jobs launched  by  a  hyperparameter
                      tuning job.
 
                      DefinitionName -> (string)
@@ -7315,10 +7370,10 @@ OUTPUT
 
                      TuningObjective -> (structure)
                         Defines the objective metric for a hyperparameter tun-
-                        ing  job. Hyperparameter tuning uses the value of this
-                        metric to evaluate the training jobs it launches,  and
-                        returns  the  training  job that results in either the
-                        highest or lowest value for this metric, depending  on
+                        ing job. Hyperparameter tuning uses the value of  this
+                        metric  to evaluate the training jobs it launches, and
+                        returns the training job that results  in  either  the
+                        highest  or lowest value for this metric, depending on
                         the value you specify for the Type parameter.
 
                         Type -> (string)
@@ -7326,53 +7381,53 @@ OUTPUT
                             ric.
 
                         MetricName -> (string)
-                            The name of the metric to use  for  the  objective
+                            The  name  of  the metric to use for the objective
                             metric.
 
                      HyperParameterRanges -> (structure)
                         Specifies ranges of integer, continuous, and categori-
-                        cal hyperparameters that a hyperparameter  tuning  job
-                        searches.   The  hyperparameter  tuning  job  launches
-                        training jobs with hyperparameter values within  these
-                        ranges  to  find the combination of values that result
-                        in the training job with the best performance as  mea-
-                        sured  by  the  objective metric of the hyperparameter
+                        cal  hyperparameters  that a hyperparameter tuning job
+                        searches.  The  hyperparameter  tuning  job   launches
+                        training  jobs with hyperparameter values within these
+                        ranges to find the combination of values  that  result
+                        in  the training job with the best performance as mea-
+                        sured by the objective metric  of  the  hyperparameter
                         tuning job.
 
                         NOTE:
-                            The maximum number of items  specified  for  Array
-                            Members  refers  to the maximum number of hyperpa-
-                            rameters for each range and also the  maximum  for
+                            The  maximum  number  of items specified for Array
+                            Members refers to the maximum number  of  hyperpa-
+                            rameters  for  each range and also the maximum for
                             the hyperparameter tuning job itself. That is, the
-                            sum of the number of hyperparameters for  all  the
+                            sum  of  the number of hyperparameters for all the
                             ranges can't exceed the maximum number specified.
 
                         IntegerParameterRanges -> (list)
-                            The  array  of  IntegerParameterRange objects that
-                            specify ranges of integer hyperparameters  that  a
+                            The array of  IntegerParameterRange  objects  that
+                            specify  ranges  of integer hyperparameters that a
                             hyperparameter tuning job searches.
 
                             (structure)
                                For a hyperparameter of the integer type, spec-
-                               ifies the range that  a  hyperparameter  tuning
+                               ifies  the  range  that a hyperparameter tuning
                                job searches.
 
                                Name -> (string)
                                    The name of the hyperparameter to search.
 
                                MinValue -> (string)
-                                   The  minimum value of the hyperparameter to
+                                   The minimum value of the hyperparameter  to
                                    search.
 
                                MaxValue -> (string)
-                                   The maximum value of the hyperparameter  to
+                                   The  maximum value of the hyperparameter to
                                    search.
 
                                ScalingType -> (string)
-                                   The  scale  that hyperparameter tuning uses
+                                   The scale that hyperparameter  tuning  uses
                                    to search the hyperparameter range. For in-
-                                   formation  about  choosing a hyperparameter
-                                   scale, see Hyperparameter Scaling . One  of
+                                   formation about choosing  a  hyperparameter
+                                   scale,  see Hyperparameter Scaling . One of
                                    the following values:
                                       Auto
 
@@ -7380,46 +7435,46 @@ OUTPUT
                                    best scale for the hyperparameter.
                                       Linear
 
-                                   Hyperparameter tuning searches  the  values
+                                   Hyperparameter  tuning  searches the values
                                    in the hyperparameter range by using a lin-
                                    ear scale.
                                       Logarithmic
 
-                                   Hyperparameter tuning searches  the  values
+                                   Hyperparameter  tuning  searches the values
                                    in the hyperparameter range by using a log-
                                    arithmic scale.
 
-                                   Logarithmic scaling works only  for  ranges
+                                   Logarithmic  scaling  works only for ranges
                                    that have only values greater than 0.
 
                         ContinuousParameterRanges -> (list)
                             The  array  of   ContinuousParameterRange  objects
-                            that specify ranges of continuous  hyperparameters
+                            that  specify ranges of continuous hyperparameters
                             that a hyperparameter tuning job searches.
 
                             (structure)
                                A list of continuous hyperparameters to tune.
 
                                Name -> (string)
-                                   The  name  of the continuous hyperparameter
+                                   The name of the  continuous  hyperparameter
                                    to tune.
 
                                MinValue -> (string)
-                                   The minimum value for  the  hyperparameter.
-                                   The  tuning  job uses floating-point values
+                                   The  minimum  value for the hyperparameter.
+                                   The tuning job uses  floating-point  values
                                    between this value and MaxValue for tuning.
 
                                MaxValue -> (string)
-                                   The maximum value for  the  hyperparameter.
-                                   The  tuning  job uses floating-point values
-                                   between MinValue value and this  value  for
+                                   The  maximum  value for the hyperparameter.
+                                   The tuning job uses  floating-point  values
+                                   between  MinValue  value and this value for
                                    tuning.
 
                                ScalingType -> (string)
-                                   The  scale  that hyperparameter tuning uses
+                                   The scale that hyperparameter  tuning  uses
                                    to search the hyperparameter range. For in-
-                                   formation  about  choosing a hyperparameter
-                                   scale, see Hyperparameter Scaling . One  of
+                                   formation about choosing  a  hyperparameter
+                                   scale,  see Hyperparameter Scaling . One of
                                    the following values:
                                       Auto
 
@@ -7427,29 +7482,29 @@ OUTPUT
                                    best scale for the hyperparameter.
                                       Linear
 
-                                   Hyperparameter tuning searches  the  values
+                                   Hyperparameter  tuning  searches the values
                                    in the hyperparameter range by using a lin-
                                    ear scale.
                                       Logarithmic
 
-                                   Hyperparameter tuning searches  the  values
+                                   Hyperparameter  tuning  searches the values
                                    in the hyperparameter range by using a log-
                                    arithmic scale.
 
-                                   Logarithmic scaling works only  for  ranges
+                                   Logarithmic  scaling  works only for ranges
                                    that have only values greater than 0.
                                       ReverseLogarithmic
 
-                                   Hyperparameter  tuning  searches the values
-                                   in the hyperparameter range by using a  re-
+                                   Hyperparameter tuning searches  the  values
+                                   in  the hyperparameter range by using a re-
                                    verse logarithmic scale.
 
-                                   Reverse  logarithmic scaling works only for
-                                   ranges that are entirely within  the  range
+                                   Reverse logarithmic scaling works only  for
+                                   ranges  that  are entirely within the range
                                    0<=x<1.0.
 
                         CategoricalParameterRanges -> (list)
-                            The  array  of   CategoricalParameterRange objects
+                            The array  of   CategoricalParameterRange  objects
                             that specify ranges of categorical hyperparameters
                             that a hyperparameter tuning job searches.
 
@@ -7457,17 +7512,17 @@ OUTPUT
                                A list of categorical hyperparameters to tune.
 
                                Name -> (string)
-                                   The  name of the categorical hyperparameter
+                                   The name of the categorical  hyperparameter
                                    to tune.
 
                                Values -> (list)
-                                   A list of the categories for  the  hyperpa-
+                                   A  list  of the categories for the hyperpa-
                                    rameter.
 
                                    (string)
 
                      StaticHyperParameters -> (map)
-                        Specifies  the  values  of hyperparameters that do not
+                        Specifies the values of hyperparameters  that  do  not
                         change for the tuning job.
 
                         key -> (string)
@@ -7475,71 +7530,71 @@ OUTPUT
                         value -> (string)
 
                      AlgorithmSpecification -> (structure)
-                        The  HyperParameterAlgorithmSpecification object  that
+                        The   HyperParameterAlgorithmSpecification object that
                         specifies the resource algorithm to use for the train-
                         ing jobs that the tuning job launches.
 
                         TrainingImage -> (string)
-                            The registry path of the Docker  image  that  con-
+                            The  registry  path  of the Docker image that con-
                             tains  the  training  algorithm.  For  information
-                            about Docker registry  paths  for  built-in  algo-
-                            rithms,  see  Algorithms  Provided by Amazon Sage-
+                            about  Docker  registry  paths  for built-in algo-
+                            rithms, see Algorithms Provided  by  Amazon  Sage-
                             Maker: Common Parameters . SageMaker supports both
                             registry/repository[:tag]   and   registry/reposi-
-                            tory[@digest] image path formats. For more  infor-
-                            mation,  see Using Your Own Algorithms with Amazon
+                            tory[@digest]  image path formats. For more infor-
+                            mation, see Using Your Own Algorithms with  Amazon
                             SageMaker .
 
                         TrainingInputMode -> (string)
-                            The training input mode that  the  algorithm  sup-
+                            The  training  input  mode that the algorithm sup-
                             ports. For more information about input modes, see
                             Algorithms .
                                Pipe mode
 
-                            If an algorithm supports Pipe mode,  Amazon  Sage-
-                            Maker  streams data directly from Amazon S3 to the
+                            If  an  algorithm supports Pipe mode, Amazon Sage-
+                            Maker streams data directly from Amazon S3 to  the
                             container.
                                File mode
 
-                            If an  algorithm  supports  File  mode,  SageMaker
-                            downloads  the training data from S3 to the provi-
+                            If  an  algorithm  supports  File  mode, SageMaker
+                            downloads the training data from S3 to the  provi-
                             sioned ML storage volume, and mounts the directory
                             to the Docker volume for the training container.
 
                             You must provision the ML storage volume with suf-
-                            ficient capacity to  accommodate  the  data  down-
-                            loaded  from S3. In addition to the training data,
-                            the ML  storage  volume  also  stores  the  output
+                            ficient  capacity  to  accommodate  the data down-
+                            loaded from S3. In addition to the training  data,
+                            the  ML  storage  volume  also  stores  the output
                             model. The algorithm container uses the ML storage
-                            volume to also store intermediate information,  if
+                            volume  to also store intermediate information, if
                             any.
 
-                            For  distributed algorithms, training data is dis-
+                            For distributed algorithms, training data is  dis-
                             tributed uniformly. Your training duration is pre-
-                            dictable  if  the input data objects sizes are ap-
+                            dictable if the input data objects sizes  are  ap-
                             proximately the same. SageMaker does not split the
-                            files  any  further for model training. If the ob-
-                            ject sizes are skewed, training won't  be  optimal
-                            as  the  data distribution is also skewed when one
+                            files any further for model training. If  the  ob-
+                            ject  sizes  are skewed, training won't be optimal
+                            as the data distribution is also skewed  when  one
                             host in a training cluster is overloaded, thus be-
                             coming a bottleneck in training.
                                FastFile mode
 
-                            If  an algorithm supports FastFile mode, SageMaker
-                            streams data directly from  S3  to  the  container
+                            If an algorithm supports FastFile mode,  SageMaker
+                            streams  data  directly  from  S3 to the container
                             with no code changes, and provides file system ac-
-                            cess to the data. Users can author their  training
-                            script  to  interact  with  these files as if they
+                            cess  to the data. Users can author their training
+                            script to interact with these  files  as  if  they
                             were stored on disk.
-                               FastFile mode works best when the data is  read
-                               sequentially.  Augmented  manifest files aren't
+                               FastFile  mode works best when the data is read
+                               sequentially. Augmented manifest  files  aren't
                                supported. The startup time is lower when there
                                are fewer files in the S3 bucket provided.
 
                         AlgorithmName -> (string)
-                            The  name of the resource algorithm to use for the
-                            hyperparameter tuning job. If you specify a  value
-                            for  this  parameter,  do  not specify a value for
+                            The name of the resource algorithm to use for  the
+                            hyperparameter  tuning job. If you specify a value
+                            for this parameter, do not  specify  a  value  for
                             TrainingImage .
 
                         MetricDefinitions -> (list)
@@ -7547,11 +7602,11 @@ OUTPUT
                             the metrics that the algorithm emits.
 
                             (structure)
-                               Specifies  a metric that the training algorithm
-                               writes to stderr or stdout .  SageMakerhyperpa-
-                               rameter  tuning  captures  all defined metrics.
-                               You specify one metric  that  a  hyperparameter
-                               tuning  job  uses  as  its  objective metric to
+                               Specifies a metric that the training  algorithm
+                               writes  to stderr or stdout . SageMakerhyperpa-
+                               rameter tuning captures  all  defined  metrics.
+                               You  specify  one  metric that a hyperparameter
+                               tuning job uses  as  its  objective  metric  to
                                choose the best training job.
 
                                Name -> (string)
@@ -7560,21 +7615,21 @@ OUTPUT
                                Regex -> (string)
                                    A regular expression that searches the out-
                                    put of a training job and gets the value of
-                                   the metric. For more information about  us-
-                                   ing  regular expressions to define metrics,
+                                   the  metric. For more information about us-
+                                   ing regular expressions to define  metrics,
                                    see Defining Objective Metrics .
 
                      RoleArn -> (string)
                         The Amazon Resource Name (ARN) of the IAM role associ-
-                        ated  with  the  training  jobs  that  the  tuning job
+                        ated with  the  training  jobs  that  the  tuning  job
                         launches.
 
                      InputDataConfig -> (list)
-                        An array of  Channel objects that  specify  the  input
+                        An  array  of   Channel objects that specify the input
                         for the training jobs that the tuning job launches.
 
                         (structure)
-                            A  channel  is  a named input source that training
+                            A channel is a named input  source  that  training
                             algorithms can consume.
 
                             ChannelName -> (string)
@@ -7584,135 +7639,135 @@ OUTPUT
                                The location of the channel data.
 
                                S3DataSource -> (structure)
-                                   The S3 location of the data source that  is
+                                   The  S3 location of the data source that is
                                    associated with a channel.
 
                                    S3DataType -> (string)
-                                      If  you  choose S3Prefix , S3Uri identi-
-                                      fies a key name prefix.  SageMaker  uses
+                                      If you choose S3Prefix ,  S3Uri  identi-
+                                      fies  a  key name prefix. SageMaker uses
                                       all objects that match the specified key
                                       name prefix for model training.
 
                                       If you choose ManifestFile , S3Uri iden-
                                       tifies an object that is a manifest file
-                                      containing a list of  object  keys  that
-                                      you  want  SageMaker  to  use  for model
+                                      containing  a  list  of object keys that
+                                      you want  SageMaker  to  use  for  model
                                       training.
 
-                                      If you  choose  AugmentedManifestFile  ,
-                                      S3Uri  identifies  an  object that is an
-                                      augmented manifest file  in  JSON  lines
-                                      format.  This file contains the data you
+                                      If  you  choose  AugmentedManifestFile ,
+                                      S3Uri identifies an object  that  is  an
+                                      augmented  manifest  file  in JSON lines
+                                      format. This file contains the data  you
                                       want to use for model training. Augment-
-                                      edManifestFile  can  only be used if the
+                                      edManifestFile can only be used  if  the
                                       Channel's input mode is Pipe .
 
                                    S3Uri -> (string)
                                       Depending on the value specified for the
-                                      S3DataType  ,  identifies  either  a key
+                                      S3DataType ,  identifies  either  a  key
                                       name prefix or a manifest. For example:
 
-                                      o A key  name  prefix  might  look  like
+                                      o A  key  name  prefix  might  look like
                                         this: s3://bucketname/exampleprefix
 
-                                      o A   manifest  might  look  like  this:
+                                      o A  manifest  might  look  like   this:
                                         s3://bucketname/example.manifest     A
-                                        manifest  is  an  S3 object which is a
-                                        JSON file consisting of  an  array  of
-                                        elements.  The first element is a pre-
-                                        fix which is followed by one  or  more
+                                        manifest is an S3 object  which  is  a
+                                        JSON  file  consisting  of an array of
+                                        elements. The first element is a  pre-
+                                        fix  which  is followed by one or more
                                         suffixes. SageMaker appends the suffix
-                                        elements to the prefix to get  a  full
-                                        set  of  S3Uri  . Note that the prefix
-                                        must be a valid non-empty  S3Uri  that
+                                        elements  to  the prefix to get a full
+                                        set of S3Uri . Note  that  the  prefix
+                                        must  be  a valid non-empty S3Uri that
                                         precludes users from specifying a man-
-                                        ifest  whose   individual   S3Uri   is
+                                        ifest   whose   individual   S3Uri  is
                                         sourced from different S3 buckets. The
-                                        following code example shows  a  valid
-                                        manifest    format:     [   {"prefix":
+                                        following  code  example shows a valid
+                                        manifest   format:     [    {"prefix":
                                         "s3://customer_bucket/some/prefix/"},
                                         "relative/path/to/custdata-1",
                                         "relative/path/custdata-2",        ...
                                         "relative/path/custdata-N"    ]   This
-                                        JSON is equivalent  to  the  following
+                                        JSON  is  equivalent  to the following
                                         S3Uri         list:          s3://cus-
                                         tomer_bucket/some/prefix/rela-
                                         tive/path/to/custdata-1      s3://cus-
                                         tomer_bucket/some/prefix/rela-
                                         tive/path/custdata-2               ...
                                         s3://customer_bucket/some/prefix/rela-
-                                        tive/path/custdata-N     The  complete
-                                        set of S3Uri in this manifest  is  the
-                                        input  data  for  the channel for this
+                                        tive/path/custdata-N    The   complete
+                                        set  of  S3Uri in this manifest is the
+                                        input data for the  channel  for  this
                                         data  source.  The  object  that  each
-                                        S3Uri  points  to  must be readable by
-                                        the IAM role that  SageMaker  uses  to
+                                        S3Uri points to must  be  readable  by
+                                        the  IAM  role  that SageMaker uses to
                                         perform tasks on your behalf.
 
                                    S3DataDistributionType -> (string)
-                                      If  you  want SageMaker to replicate the
-                                      entire dataset on each  ML  compute  in-
+                                      If you want SageMaker to  replicate  the
+                                      entire  dataset  on  each ML compute in-
                                       stance that is launched for model train-
                                       ing, specify FullyReplicated .
 
-                                      If you want  SageMaker  to  replicate  a
-                                      subset  of  data  on each ML compute in-
+                                      If  you  want  SageMaker  to replicate a
+                                      subset of data on each  ML  compute  in-
                                       stance that is launched for model train-
-                                      ing,  specify  ShardedByS3Key . If there
-                                      are n ML compute instances launched  for
-                                      a  training  job, each instance gets ap-
-                                      proximately 1/n of the number of S3  ob-
-                                      jects.  In  this case, model training on
-                                      each machine uses  only  the  subset  of
+                                      ing, specify ShardedByS3Key .  If  there
+                                      are  n ML compute instances launched for
+                                      a training job, each instance  gets  ap-
+                                      proximately  1/n of the number of S3 ob-
+                                      jects. In this case, model  training  on
+                                      each  machine  uses  only  the subset of
                                       training data.
 
-                                      Don't  choose  more ML compute instances
-                                      for training than available S3  objects.
+                                      Don't choose more ML  compute  instances
+                                      for  training than available S3 objects.
                                       If you do, some nodes won't get any data
-                                      and you will pay for nodes  that  aren't
-                                      getting  any training data. This applies
-                                      in both File and Pipe modes.  Keep  this
+                                      and  you  will pay for nodes that aren't
+                                      getting any training data. This  applies
+                                      in  both  File and Pipe modes. Keep this
                                       in mind when developing algorithms.
 
-                                      In  distributed  training, where you use
-                                      multiple ML compute EC2  instances,  you
+                                      In distributed training, where  you  use
+                                      multiple  ML  compute EC2 instances, you
                                       might choose ShardedByS3Key . If the al-
-                                      gorithm requires copying  training  data
+                                      gorithm  requires  copying training data
                                       to the ML storage volume (when Training-
-                                      InputMode is set to File ), this  copies
+                                      InputMode  is set to File ), this copies
                                       1/n of the number of objects.
 
                                    AttributeNames -> (list)
                                       A list of one or more attribute names to
-                                      use that are found in a  specified  aug-
+                                      use  that  are found in a specified aug-
                                       mented manifest file.
 
                                       (string)
 
                                    InstanceGroupNames -> (list)
-                                      A  list of names of instance groups that
+                                      A list of names of instance groups  that
                                       get data from the S3 data source.
 
                                       (string)
 
                                FileSystemDataSource -> (structure)
-                                   The file system that is associated  with  a
+                                   The  file  system that is associated with a
                                    channel.
 
                                    FileSystemId -> (string)
                                       The file system id.
 
                                    FileSystemAccessMode -> (string)
-                                      The  access mode of the mount of the di-
-                                      rectory associated with the  channel.  A
-                                      directory  can  be  mounted either in ro
+                                      The access mode of the mount of the  di-
+                                      rectory  associated  with the channel. A
+                                      directory can be mounted  either  in  ro
                                       (read-only) or rw (read-write) mode.
 
                                    FileSystemType -> (string)
                                       The file system type.
 
                                    DirectoryPath -> (string)
-                                      The full path to the directory to  asso-
+                                      The  full path to the directory to asso-
                                       ciate with the channel.
 
                             ContentType -> (string)
@@ -7720,88 +7775,88 @@ OUTPUT
 
                             CompressionType -> (string)
                                If training data is compressed, the compression
-                               type. The default value is None .  Compression-
-                               Type  is  used only in Pipe input mode. In File
+                               type.  The default value is None . Compression-
+                               Type is used only in Pipe input mode.  In  File
                                mode, leave this field unset or set it to None.
 
                             RecordWrapperType -> (string)
-                               Specify RecordIO as the value when  input  data
+                               Specify  RecordIO  as the value when input data
                                is in raw format but the training algorithm re-
                                quires the RecordIO format. In this case, Sage-
-                               Maker  wraps  each  individual  S3  object in a
-                               RecordIO record. If the input data  is  already
-                               in  RecordIO format, you don't need to set this
-                               attribute. For more information, see  Create  a
+                               Maker wraps each  individual  S3  object  in  a
+                               RecordIO  record.  If the input data is already
+                               in RecordIO format, you don't need to set  this
+                               attribute.  For  more information, see Create a
                                Dataset Using RecordIO .
 
-                               In  File mode, leave this field unset or set it
+                               In File mode, leave this field unset or set  it
                                to None.
 
                             InputMode -> (string)
-                               (Optional) The input mode to use for  the  data
-                               channel  in  a training job. If you don't set a
-                               value for InputMode , SageMaker uses the  value
-                               set  for TrainingInputMode . Use this parameter
-                               to override the TrainingInputMode setting in  a
-                               AlgorithmSpecification  request when you have a
-                               channel that needs a different input mode  from
+                               (Optional)  The  input mode to use for the data
+                               channel in a training job. If you don't  set  a
+                               value  for InputMode , SageMaker uses the value
+                               set for TrainingInputMode . Use this  parameter
+                               to  override the TrainingInputMode setting in a
+                               AlgorithmSpecification request when you have  a
+                               channel  that needs a different input mode from
                                the training job's general setting. To download
-                               the data from  Amazon  Simple  Storage  Service
-                               (Amazon  S3) to the provisioned ML storage vol-
-                               ume, and mount the directory to a  Docker  vol-
-                               ume,  use  File  input mode. To stream data di-
-                               rectly from Amazon S3 to the container,  choose
+                               the  data  from  Amazon  Simple Storage Service
+                               (Amazon S3) to the provisioned ML storage  vol-
+                               ume,  and  mount the directory to a Docker vol-
+                               ume, use File input mode. To  stream  data  di-
+                               rectly  from Amazon S3 to the container, choose
                                Pipe input mode.
 
                                To use a model for incremental training, choose
                                File input model.
 
                             ShuffleConfig -> (structure)
-                               A configuration for a shuffle option for  input
-                               data  in  a  channel.  If  you use S3Prefix for
-                               S3DataType , this shuffles the results  of  the
-                               S3  key prefix matches. If you use ManifestFile
-                               , the order of the S3 object references in  the
+                               A  configuration for a shuffle option for input
+                               data in a channel.  If  you  use  S3Prefix  for
+                               S3DataType  ,  this shuffles the results of the
+                               S3 key prefix matches. If you use  ManifestFile
+                               ,  the order of the S3 object references in the
                                ManifestFile is shuffled. If you use Augmented-
-                               ManifestFile , the order of the JSON  lines  in
-                               the   AugmentedManifestFile  is  shuffled.  The
-                               shuffling order is determined  using  the  Seed
+                               ManifestFile  ,  the order of the JSON lines in
+                               the  AugmentedManifestFile  is  shuffled.   The
+                               shuffling  order  is  determined using the Seed
                                value.
 
-                               For  Pipe  input mode, shuffling is done at the
-                               start of every epoch. With large datasets  this
-                               ensures  that the order of the training data is
-                               different for each epoch, it helps reduce  bias
-                               and   possible  overfitting.  In  a  multi-node
-                               training job  when  ShuffleConfig  is  combined
+                               For Pipe input mode, shuffling is done  at  the
+                               start  of every epoch. With large datasets this
+                               ensures that the order of the training data  is
+                               different  for each epoch, it helps reduce bias
+                               and  possible  overfitting.  In  a   multi-node
+                               training  job  when  ShuffleConfig  is combined
                                with S3DataDistributionType of ShardedByS3Key ,
-                               the data is shuffled across nodes so  that  the
-                               content  sent to a particular node on the first
-                               epoch might be sent to a different node on  the
+                               the  data  is shuffled across nodes so that the
+                               content sent to a particular node on the  first
+                               epoch  might be sent to a different node on the
                                second epoch.
 
                                Seed -> (long)
-                                   Determines  the shuffling order in Shuffle-
+                                   Determines the shuffling order in  Shuffle-
                                    Config value.
 
                      VpcConfig -> (structure)
-                        The  VpcConfig object that specifies the VPC that  you
+                        The   VpcConfig object that specifies the VPC that you
                         want the training jobs that this hyperparameter tuning
                         job launches to connect to. Control access to and from
-                        your  training  container  by configuring the VPC. For
-                        more information, see Protect Training Jobs  by  Using
+                        your training container by configuring  the  VPC.  For
+                        more  information,  see Protect Training Jobs by Using
                         an Amazon Virtual Private Cloud .
 
                         SecurityGroupIds -> (list)
-                            The   VPC   security   group   IDs,  in  the  form
-                            sg-xxxxxxxx. Specify the security groups  for  the
+                            The  VPC  security  group   IDs,   in   the   form
+                            sg-xxxxxxxx.  Specify  the security groups for the
                             VPC that is specified in the Subnets field.
 
                             (string)
 
                         Subnets -> (list)
                             The ID of the subnets in the VPC to which you want
-                            to connect your training job or model. For  infor-
+                            to  connect your training job or model. For infor-
                             mation about the availability of specific instance
                             types, see Supported Instance Types and Availabil-
                             ity Zones .
@@ -7809,21 +7864,21 @@ OUTPUT
                             (string)
 
                      OutputDataConfig -> (structure)
-                        Specifies  the  path to the Amazon S3 bucket where you
-                        store model artifacts from the training jobs that  the
+                        Specifies the path to the Amazon S3 bucket  where  you
+                        store  model artifacts from the training jobs that the
                         tuning job launches.
 
                         KmsKeyId -> (string)
-                            The  Amazon  Web  Services  Key Management Service
-                            (Amazon Web Services KMS) key that SageMaker  uses
-                            to  encrypt the model artifacts at rest using Ama-
+                            The Amazon Web  Services  Key  Management  Service
+                            (Amazon  Web Services KMS) key that SageMaker uses
+                            to encrypt the model artifacts at rest using  Ama-
                             zon S3 server-side encryption. The KmsKeyId can be
                             any of the following formats:
 
-                            o //             KMS             Key            ID
+                            o //            KMS             Key             ID
                               "1234abcd-12ab-34cd-56ef-1234567890ab"
 
-                            o // Amazon Resource  Name  (ARN)  of  a  KMS  Key
+                            o //  Amazon  Resource  Name  (ARN)  of  a KMS Key
                               "arn:aws:kms:us-west-2:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab"
 
                             o // KMS Key Alias  "alias/ExampleAlias"
@@ -7832,57 +7887,57 @@ OUTPUT
                               "arn:aws:kms:us-west-2:111122223333:alias/Exam-
                               pleAlias"
 
-                            If you use a KMS key ID or an alias  of  your  KMS
-                            key,  the  SageMaker  execution  role must include
-                            permissions to call kms:Encrypt  .  If  you  don't
-                            provide  a  KMS key ID, SageMaker uses the default
-                            KMS key for Amazon S3  for  your  role's  account.
+                            If  you  use  a KMS key ID or an alias of your KMS
+                            key, the SageMaker  execution  role  must  include
+                            permissions  to  call  kms:Encrypt  . If you don't
+                            provide a KMS key ID, SageMaker uses  the  default
+                            KMS  key  for  Amazon  S3 for your role's account.
                             SageMaker   uses   server-side   encryption   with
                             KMS-managed keys for OutputDataConfig . If you use
-                            a  bucket  policy  with an s3:PutObject permission
-                            that only allows objects with server-side  encryp-
+                            a bucket policy with  an  s3:PutObject  permission
+                            that  only allows objects with server-side encryp-
                             tion,     set     the     condition     key     of
                             s3:x-amz-server-side-encryption to "aws:kms" . For
-                            more  information, see KMS-Managed Encryption Keys
-                            in the Amazon  Simple  Storage  Service  Developer
+                            more information, see KMS-Managed Encryption  Keys
+                            in  the  Amazon  Simple  Storage Service Developer
                             Guide.
 
-                            The  KMS  key  policy must grant permission to the
-                            IAM role that you  specify  in  your  CreateTrain-
+                            The KMS key policy must grant  permission  to  the
+                            IAM  role  that  you  specify in your CreateTrain-
                             ingJob , CreateTransformJob , or CreateHyperParam-
-                            eterTuningJob requests. For more information,  see
-                            Using  Key  Policies in Amazon Web Services KMS in
+                            eterTuningJob  requests. For more information, see
+                            Using Key Policies in Amazon Web Services  KMS  in
                             the Amazon Web Services Key Management Service De-
                             veloper Guide .
 
                         S3OutputPath -> (string)
                             Identifies the S3 path where you want SageMaker to
-                            store   the   model   artifacts.   For    example,
+                            store    the   model   artifacts.   For   example,
                             s3://bucket-name/key-name-prefix .
 
                      ResourceConfig -> (structure)
-                        The  resources,  including  the  compute instances and
+                        The resources, including  the  compute  instances  and
                         storage volumes, to use for the training jobs that the
                         tuning job launches.
 
-                        Storage  volumes store model artifacts and incremental
-                        states. Training algorithms  might  also  use  storage
-                        volumes  for  scratch  space. If you want SageMaker to
-                        use the storage volume to  store  the  training  data,
-                        choose  File as the TrainingInputMode in the algorithm
-                        specification. For  distributed  training  algorithms,
+                        Storage volumes store model artifacts and  incremental
+                        states.  Training  algorithms  might  also use storage
+                        volumes for scratch space. If you  want  SageMaker  to
+                        use  the  storage  volume  to store the training data,
+                        choose File as the TrainingInputMode in the  algorithm
+                        specification.  For  distributed  training algorithms,
                         specify an instance count greater than 1.
 
                         NOTE:
-                            If  you  want  to  use hyperparameter optimization
-                            with instance type flexibility,  use  HyperParame-
+                            If you want  to  use  hyperparameter  optimization
+                            with  instance  type flexibility, use HyperParame-
                             terTuningResourceConfig instead.
 
                         InstanceType -> (string)
                             The ML compute instance type.
 
                         InstanceCount -> (integer)
-                            The  number  of  ML  compute instances to use. For
+                            The number of ML compute  instances  to  use.  For
                             distributed training, provide a value greater than
                             1.
 
@@ -7890,51 +7945,51 @@ OUTPUT
                             The size of the ML storage volume that you want to
                             provision.
 
-                            ML storage volumes store model artifacts  and  in-
-                            cremental  states.  Training algorithms might also
-                            use the ML storage volume for  scratch  space.  If
-                            you  want  to  store  the  training data in the ML
-                            storage volume, choose File as the  TrainingInput-
+                            ML  storage  volumes store model artifacts and in-
+                            cremental states. Training algorithms  might  also
+                            use  the  ML  storage volume for scratch space. If
+                            you want to store the  training  data  in  the  ML
+                            storage  volume, choose File as the TrainingInput-
                             Mode in the algorithm specification.
 
-                            When  using an ML instance with NVMe SSD volumes ,
-                            SageMaker doesn't  provision  Amazon  EBS  General
-                            Purpose  SSD  (gp2)  storage. Available storage is
-                            fixed to the NVMe-type instance's  storage  capac-
+                            When using an ML instance with NVMe SSD volumes  ,
+                            SageMaker  doesn't  provision  Amazon  EBS General
+                            Purpose SSD (gp2) storage.  Available  storage  is
+                            fixed  to  the NVMe-type instance's storage capac-
                             ity. SageMaker configures storage paths for train-
-                            ing datasets, checkpoints,  model  artifacts,  and
+                            ing  datasets,  checkpoints,  model artifacts, and
                             outputs to use the entire capacity of the instance
-                            storage. For example, ML  instance  families  with
-                            the  NVMe-type  instance  storage include ml.p4d ,
+                            storage.  For  example,  ML instance families with
+                            the NVMe-type instance storage  include  ml.p4d  ,
                             ml.g4dn , and ml.g5 .
 
-                            When using an ML instance with the EBS-only  stor-
-                            age  option and without instance storage, you must
-                            define the size of EBS volume through  VolumeSize-
-                            InGB  in  the  ResourceConfig API. For example, ML
-                            instance families that  use  EBS  volumes  include
+                            When  using an ML instance with the EBS-only stor-
+                            age option and without instance storage, you  must
+                            define  the size of EBS volume through VolumeSize-
+                            InGB in the ResourceConfig API.  For  example,  ML
+                            instance  families  that  use  EBS volumes include
                             ml.c5 and ml.p2 .
 
                             To look up instance types and their instance stor-
-                            age types and volumes,  see  Amazon  EC2  Instance
+                            age  types  and  volumes,  see Amazon EC2 Instance
                             Types .
 
-                            To  find  the  default  local paths defined by the
-                            SageMaker training platform, see Amazon  SageMaker
-                            Training  Storage  Folders  for Training Datasets,
+                            To find the default local  paths  defined  by  the
+                            SageMaker  training platform, see Amazon SageMaker
+                            Training Storage Folders  for  Training  Datasets,
                             Checkpoints, Model Artifacts, and Outputs .
 
                         VolumeKmsKeyId -> (string)
-                            The Amazon Web Services  KMS  key  that  SageMaker
-                            uses  to  encrypt  data  on the storage volume at-
-                            tached to the ML compute instance(s) that run  the
+                            The  Amazon  Web  Services  KMS key that SageMaker
+                            uses to encrypt data on  the  storage  volume  at-
+                            tached  to the ML compute instance(s) that run the
                             training job.
 
                             NOTE:
                                Certain  Nitro-based  instances  include  local
-                               storage, dependent on the instance type.  Local
-                               storage  volumes are encrypted using a hardware
-                               module on the instance.  You  can't  request  a
+                               storage,  dependent on the instance type. Local
+                               storage volumes are encrypted using a  hardware
+                               module  on  the  instance.  You can't request a
                                VolumeKmsKeyId when using an instance type with
                                local storage.
 
@@ -7942,26 +7997,26 @@ OUTPUT
                                instance storage, see Instance Store Volumes .
 
                                For more information about local instance stor-
-                               age encryption, see SSD Instance Store  Volumes
+                               age  encryption, see SSD Instance Store Volumes
                                .
 
-                            The  VolumeKmsKeyId can be in any of the following
+                            The VolumeKmsKeyId can be in any of the  following
                             formats:
 
-                            o //            KMS             Key             ID
+                            o //             KMS             Key            ID
                               "1234abcd-12ab-34cd-56ef-1234567890ab"
 
-                            o //  Amazon  Resource  Name  (ARN)  of  a KMS Key
+                            o // Amazon Resource  Name  (ARN)  of  a  KMS  Key
                               "arn:aws:kms:us-west-2:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab"
 
                         InstanceGroups -> (list)
-                            The  configuration  of  a heterogeneous cluster in
+                            The configuration of a  heterogeneous  cluster  in
                             JSON format.
 
                             (structure)
-                               Defines an  instance  group  for  heterogeneous
-                               cluster  training.  When  requesting a training
-                               job using the CreateTrainingJob  API,  you  can
+                               Defines  an  instance  group  for heterogeneous
+                               cluster training. When  requesting  a  training
+                               job  using  the  CreateTrainingJob API, you can
                                configure multiple instance groups .
 
                                InstanceType -> (string)
@@ -7969,22 +8024,22 @@ OUTPUT
                                    group.
 
                                InstanceCount -> (integer)
-                                   Specifies the number of  instances  of  the
+                                   Specifies  the  number  of instances of the
                                    instance group.
 
                                InstanceGroupName -> (string)
                                    Specifies the name of the instance group.
 
                      StoppingCondition -> (structure)
-                        Specifies  a  limit to how long a model hyperparameter
-                        training job can run. It also  specifies  how  long  a
-                        managed  spot  training  job has to complete. When the
-                        job reaches the time limit, SageMaker ends the  train-
+                        Specifies a limit to how long a  model  hyperparameter
+                        training  job  can  run.  It also specifies how long a
+                        managed spot training job has to  complete.  When  the
+                        job  reaches the time limit, SageMaker ends the train-
                         ing job. Use this API to cap model training costs.
 
                         MaxRuntimeInSeconds -> (integer)
-                            The  maximum  length  of  time, in seconds, that a
-                            training or compilation job can run before  it  is
+                            The maximum length of time,  in  seconds,  that  a
+                            training  or  compilation job can run before it is
                             stopped.
 
                             For compilation jobs, if the job does not complete
@@ -7992,87 +8047,87 @@ OUTPUT
                             recommend starting with 900 seconds and increasing
                             as necessary based on your model.
 
-                            For all other jobs, if the job does  not  complete
-                            during  this  time,  SageMaker  ends the job. When
-                            RetryStrategy is specified  in  the  job  request,
+                            For  all  other jobs, if the job does not complete
+                            during this time, SageMaker  ends  the  job.  When
+                            RetryStrategy  is  specified  in  the job request,
                             MaxRuntimeInSeconds specifies the maximum time for
-                            all of the attempts in total, not each  individual
-                            attempt.  The  default value is 1 day. The maximum
+                            all  of the attempts in total, not each individual
+                            attempt. The default value is 1 day.  The  maximum
                             value is 28 days.
 
                             The maximum time that a TrainingJob can run in to-
-                            tal,  including  any time spent publishing metrics
-                            or archiving and uploading  models  after  it  has
+                            tal, including any time spent  publishing  metrics
+                            or  archiving  and  uploading  models after it has
                             been stopped, is 30 days.
 
                         MaxWaitTimeInSeconds -> (integer)
-                            The  maximum  length  of  time, in seconds, that a
-                            managed Spot training job has to complete.  It  is
+                            The maximum length of time,  in  seconds,  that  a
+                            managed  Spot  training job has to complete. It is
                             the amount of time spent waiting for Spot capacity
-                            plus the amount of time the job can run.  It  must
-                            be  equal to or greater than MaxRuntimeInSeconds .
-                            If the job does not  complete  during  this  time,
+                            plus  the  amount of time the job can run. It must
+                            be equal to or greater than MaxRuntimeInSeconds  .
+                            If  the  job  does  not complete during this time,
                             SageMaker ends the job.
 
-                            When  RetryStrategy  is  specified  in the job re-
-                            quest, MaxWaitTimeInSeconds specifies the  maximum
-                            time  for  all  of the attempts in total, not each
+                            When RetryStrategy is specified  in  the  job  re-
+                            quest,  MaxWaitTimeInSeconds specifies the maximum
+                            time for all of the attempts in  total,  not  each
                             individual attempt.
 
                      EnableNetworkIsolation -> (boolean)
-                        Isolates the training container. No  inbound  or  out-
-                        bound  network calls can be made, except for calls be-
-                        tween peers within a training cluster for  distributed
-                        training.  If  network  isolation is used for training
+                        Isolates  the  training  container. No inbound or out-
+                        bound network calls can be made, except for calls  be-
+                        tween  peers within a training cluster for distributed
+                        training. If network isolation is  used  for  training
                         jobs that are configured to use a VPC, SageMaker down-
-                        loads  and  uploads  customer data and model artifacts
-                        through the specified VPC, but the training  container
+                        loads and uploads customer data  and  model  artifacts
+                        through  the specified VPC, but the training container
                         does not have network access.
 
                      EnableInterContainerTrafficEncryption -> (boolean)
-                        To  encrypt  all communications between ML compute in-
+                        To encrypt all communications between ML  compute  in-
                         stances in distributed training, choose True . Encryp-
-                        tion  provides greater security for distributed train-
+                        tion provides greater security for distributed  train-
                         ing, but training might take longer. How long it takes
                         depends on the amount of communication between compute
                         instances, especially if you use a deep learning algo-
                         rithm in distributed training.
 
                      EnableManagedSpotTraining -> (boolean)
-                        A  Boolean indicating whether managed spot training is
+                        A Boolean indicating whether managed spot training  is
                         enabled (True ) or not (False ).
 
                      CheckpointConfig -> (structure)
-                        Contains information about  the  output  location  for
+                        Contains  information  about  the  output location for
                         managed spot training checkpoint data.
 
                         S3Uri -> (string)
                             Identifies the S3 path where you want SageMaker to
-                            store       checkpoints.       For        example,
+                            store        checkpoints.       For       example,
                             s3://bucket-name/key-name-prefix .
 
                         LocalPath -> (string)
-                            (Optional)  The  local directory where checkpoints
-                            are   written.   The    default    directory    is
+                            (Optional) The local directory  where  checkpoints
+                            are    written.    The    default   directory   is
                             /opt/ml/checkpoints/ .
 
                      RetryStrategy -> (structure)
-                        The  number  of  times  to  retry the job when the job
+                        The number of times to retry  the  job  when  the  job
                         fails due to an InternalServerError .
 
                         MaximumRetryAttempts -> (integer)
                             The number of times to retry the job. When the job
-                            is  retried,  it's  SecondaryStatus  is changed to
+                            is retried, it's  SecondaryStatus  is  changed  to
                             STARTING .
 
                      HyperParameterTuningResourceConfig -> (structure)
-                        The configuration for the  hyperparameter  tuning  re-
-                        sources,  including  the compute instances and storage
+                        The  configuration  for  the hyperparameter tuning re-
+                        sources, including the compute instances  and  storage
                         volumes, used for training jobs launched by the tuning
-                        job.  By default, storage volumes hold model artifacts
+                        job. By default, storage volumes hold model  artifacts
                         and incremental states. Choose File for TrainingInput-
-                        Mode  in the AlgorithmSpecification parameter to addi-
-                        tionally store training data  in  the  storage  volume
+                        Mode in the AlgorithmSpecification parameter to  addi-
+                        tionally  store  training  data  in the storage volume
                         (optional).
 
                         InstanceType -> (string)
@@ -8081,24 +8136,24 @@ OUTPUT
                             types for more information.
 
                         InstanceCount -> (integer)
-                            The  number of compute instances of type Instance-
-                            Type to use. For distributed training ,  select  a
+                            The number of compute instances of type  Instance-
+                            Type  to  use. For distributed training , select a
                             value greater than 1.
 
                         VolumeSizeInGB -> (integer)
                             The volume size in GB for the storage volume to be
                             used  in  processing  hyperparameter  optimization
-                            jobs  (optional).  These volumes store model arti-
-                            facts, incremental states and optionally,  scratch
-                            space  for  training  algorithms. Do not provide a
-                            value for this parameter if a value for  Instance-
+                            jobs (optional). These volumes store  model  arti-
+                            facts,  incremental states and optionally, scratch
+                            space for training algorithms. Do  not  provide  a
+                            value  for this parameter if a value for Instance-
                             Configs is also specified.
 
                             Some instance types have a fixed total local stor-
                             age size. If you select one of these instances for
-                            training,  VolumeSizeInGB  cannot  be greater than
+                            training, VolumeSizeInGB cannot  be  greater  than
                             this total size. For a list of instance types with
-                            local   instance  storage  and  their  sizes,  see
+                            local  instance  storage  and  their  sizes,   see
                             instance store volumes .
 
                             NOTE:
@@ -8106,10 +8161,10 @@ OUTPUT
                                (gp2) storage volume type.
 
                         VolumeKmsKeyId -> (string)
-                            A  key  used by Amazon Web Services Key Management
-                            Service to encrypt data on the storage volume  at-
-                            tached  to  the  compute instances used to run the
-                            training job. You can use either of the  following
+                            A key used by Amazon Web Services  Key  Management
+                            Service  to encrypt data on the storage volume at-
+                            tached to the compute instances used  to  run  the
+                            training  job. You can use either of the following
                             formats to specify a key.
 
                             KMS Key ID:
@@ -8118,73 +8173,73 @@ OUTPUT
                             Amazon Resource Name (ARN) of a KMS key:
                                "arn:aws:kms:us-west-2:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab"
 
-                            Some instances use  local  storage,  which  use  a
+                            Some  instances  use  local  storage,  which use a
                             hardware module to encrypt storage volumes. If you
                             choose one of these instance types, you cannot re-
-                            quest  a  VolumeKmsKeyId  . For a list of instance
-                            types that use local storage, see  instance  store
-                            volumes  .  For  more information about Amazon Web
-                            Services Key Management Service, see  KMS  encryp-
+                            quest a VolumeKmsKeyId . For a  list  of  instance
+                            types  that  use local storage, see instance store
+                            volumes . For more information  about  Amazon  Web
+                            Services  Key  Management Service, see KMS encryp-
                             tion for more information.
 
                         AllocationStrategy -> (string)
-                            The  strategy that determines the order of prefer-
-                            ence for resources  specified  in  InstanceConfigs
+                            The strategy that determines the order of  prefer-
+                            ence  for  resources  specified in InstanceConfigs
                             used in hyperparameter optimization.
 
                         InstanceConfigs -> (list)
-                            A  list containing the configuration(s) for one or
+                            A list containing the configuration(s) for one  or
                             more resources for processing hyperparameter jobs.
                             These  resources  include  compute  instances  and
-                            storage volumes to  use  in  model  training  jobs
-                            launched  by hyperparameter tuning jobs. The Allo-
-                            cationStrategy controls the order in which  multi-
+                            storage  volumes  to  use  in  model training jobs
+                            launched by hyperparameter tuning jobs. The  Allo-
+                            cationStrategy  controls the order in which multi-
                             ple configurations provided in InstanceConfigs are
                             used.
 
                             NOTE:
-                               If you only want to use a single instance  con-
-                               figuration  inside  the HyperParameterTuningRe-
-                               sourceConfig API, do not provide  a  value  for
-                               InstanceConfigs  .  Instead, use InstanceType ,
-                               VolumeSizeInGB and InstanceCount . If  you  use
+                               If  you only want to use a single instance con-
+                               figuration inside  the  HyperParameterTuningRe-
+                               sourceConfig  API,  do  not provide a value for
+                               InstanceConfigs . Instead, use  InstanceType  ,
+                               VolumeSizeInGB  and  InstanceCount . If you use
                                InstanceConfigs , do not provide values for In-
                                stanceType , VolumeSizeInGB or InstanceCount .
 
                             (structure)
                                The configuration for hyperparameter tuning re-
-                               sources  for  use  in training jobs launched by
+                               sources for use in training  jobs  launched  by
                                the tuning job. These resources include compute
-                               instances  and  storage volumes. Specify one or
-                               more compute instance configurations and  allo-
+                               instances and storage volumes. Specify  one  or
+                               more  compute instance configurations and allo-
                                cation  strategies  to  select  resources  (op-
                                tional).
 
                                InstanceType -> (string)
-                                   The instance type used  for  processing  of
+                                   The  instance  type  used for processing of
                                    hyperparameter  optimization  jobs.  Choose
-                                   from general  purpose  (no  GPUs)  instance
-                                   types:   ml.m5.xlarge,  ml.m5.2xlarge,  and
-                                   ml.m5.4xlarge  or  compute  optimized   (no
-                                   GPUs)   instance  types:  ml.c5.xlarge  and
-                                   ml.c5.2xlarge. For more  information  about
-                                   instance  types, see instance type descrip-
+                                   from  general  purpose  (no  GPUs) instance
+                                   types:  ml.m5.xlarge,  ml.m5.2xlarge,   and
+                                   ml.m5.4xlarge   or  compute  optimized  (no
+                                   GPUs)  instance  types:  ml.c5.xlarge   and
+                                   ml.c5.2xlarge.  For  more information about
+                                   instance types, see instance type  descrip-
                                    tions .
 
                                InstanceCount -> (integer)
-                                   The number of instances of the type  speci-
-                                   fied  by  InstanceType . Choose an instance
-                                   count larger than 1 for distributed  train-
-                                   ing  algorithms.  See SageMaker distributed
+                                   The  number of instances of the type speci-
+                                   fied by InstanceType . Choose  an  instance
+                                   count  larger than 1 for distributed train-
+                                   ing algorithms. See  SageMaker  distributed
                                    training jobs for more information.
 
                                VolumeSizeInGB -> (integer)
-                                   The volume size in GB of  the  data  to  be
-                                   processed  for  hyperparameter optimization
+                                   The  volume  size  in  GB of the data to be
+                                   processed for  hyperparameter  optimization
                                    (optional).
 
                  TrainingJobDefinitions -> (list)
-                     The job definitions included in a  hyperparameter  tuning
+                     The  job  definitions included in a hyperparameter tuning
                      job.
 
                      (structure)
@@ -8195,16 +8250,16 @@ OUTPUT
                             The job definition name.
 
                         TuningObjective -> (structure)
-                            Defines the objective metric for a  hyperparameter
-                            tuning  job.  Hyperparameter tuning uses the value
-                            of this metric to evaluate the  training  jobs  it
-                            launches,  and  returns  the training job that re-
-                            sults in either the highest or  lowest  value  for
-                            this  metric,  depending  on the value you specify
+                            Defines  the objective metric for a hyperparameter
+                            tuning job. Hyperparameter tuning uses  the  value
+                            of  this  metric  to evaluate the training jobs it
+                            launches, and returns the training  job  that  re-
+                            sults  in  either  the highest or lowest value for
+                            this metric, depending on the  value  you  specify
                             for the Type parameter.
 
                             Type -> (string)
-                               Whether to minimize or maximize  the  objective
+                               Whether  to  minimize or maximize the objective
                                metric.
 
                             MetricName -> (string)
@@ -8214,93 +8269,43 @@ OUTPUT
                         HyperParameterRanges -> (structure)
                             Specifies ranges of integer, continuous, and cate-
                             gorical hyperparameters that a hyperparameter tun-
-                            ing job searches. The  hyperparameter  tuning  job
-                            launches  training jobs with hyperparameter values
-                            within these ranges to  find  the  combination  of
-                            values  that  result  in the training job with the
+                            ing  job  searches.  The hyperparameter tuning job
+                            launches training jobs with hyperparameter  values
+                            within  these  ranges  to  find the combination of
+                            values that result in the training  job  with  the
                             best performance as measured by the objective met-
                             ric of the hyperparameter tuning job.
 
                             NOTE:
                                The maximum number of items specified for Array
-                               Members refers to the maximum number of  hyper-
-                               parameters  for each range and also the maximum
-                               for the hyperparameter tuning job itself.  That
-                               is,  the  sum  of the number of hyperparameters
-                               for all the ranges  can't  exceed  the  maximum
+                               Members  refers to the maximum number of hyper-
+                               parameters for each range and also the  maximum
+                               for  the hyperparameter tuning job itself. That
+                               is, the sum of the  number  of  hyperparameters
+                               for  all  the  ranges  can't exceed the maximum
                                number specified.
 
                             IntegerParameterRanges -> (list)
                                The  array  of   IntegerParameterRange  objects
-                               that specify ranges of integer  hyperparameters
+                               that  specify ranges of integer hyperparameters
                                that a hyperparameter tuning job searches.
 
                                (structure)
-                                   For  a  hyperparameter of the integer type,
-                                   specifies the range that  a  hyperparameter
+                                   For a hyperparameter of the  integer  type,
+                                   specifies  the  range that a hyperparameter
                                    tuning job searches.
 
                                    Name -> (string)
-                                      The   name   of  the  hyperparameter  to
+                                      The  name  of  the   hyperparameter   to
                                       search.
 
                                    MinValue -> (string)
-                                      The minimum value of the  hyperparameter
+                                      The  minimum value of the hyperparameter
                                       to search.
 
                                    MaxValue -> (string)
-                                      The  maximum value of the hyperparameter
+                                      The maximum value of the  hyperparameter
                                       to search.
-
-                                   ScalingType -> (string)
-                                      The  scale  that  hyperparameter  tuning
-                                      uses to search the hyperparameter range.
-                                      For information about choosing a  hyper-
-                                      parameter   scale,   see  Hyperparameter
-                                      Scaling . One of the following values:
-                                          Auto
-
-                                      SageMaker hyperparameter tuning  chooses
-                                      the best scale for the hyperparameter.
-                                          Linear
-
-                                      Hyperparameter  tuning searches the val-
-                                      ues in the hyperparameter range by using
-                                      a linear scale.
-                                          Logarithmic
-
-                                      Hyperparameter  tuning searches the val-
-                                      ues in the hyperparameter range by using
-                                      a logarithmic scale.
-
-                                      Logarithmic   scaling   works  only  for
-                                      ranges that  have  only  values  greater
-                                      than 0.
-
-                            ContinuousParameterRanges -> (list)
-                               The  array of  ContinuousParameterRange objects
-                               that specify ranges of continuous  hyperparame-
-                               ters that a hyperparameter tuning job searches.
-
-                               (structure)
-                                   A  list  of  continuous  hyperparameters to
-                                   tune.
-
-                                   Name -> (string)
-                                      The name of the continuous  hyperparame-
-                                      ter to tune.
-
-                                   MinValue -> (string)
-                                      The  minimum  value for the hyperparame-
-                                      ter. The tuning job uses  floating-point
-                                      values  between  this value and MaxValue
-                                      for tuning.
-
-                                   MaxValue -> (string)
-                                      The maximum value for  the  hyperparame-
-                                      ter.  The tuning job uses floating-point
-                                      values between MinValue value  and  this
-                                      value for tuning.
 
                                    ScalingType -> (string)
                                       The  scale  that  hyperparameter  tuning
@@ -8326,14 +8331,64 @@ OUTPUT
                                       Logarithmic  scaling  works   only   for
                                       ranges  that  have  only  values greater
                                       than 0.
+
+                            ContinuousParameterRanges -> (list)
+                               The array of  ContinuousParameterRange  objects
+                               that  specify ranges of continuous hyperparame-
+                               ters that a hyperparameter tuning job searches.
+
+                               (structure)
+                                   A list  of  continuous  hyperparameters  to
+                                   tune.
+
+                                   Name -> (string)
+                                      The  name of the continuous hyperparame-
+                                      ter to tune.
+
+                                   MinValue -> (string)
+                                      The minimum value for  the  hyperparame-
+                                      ter.  The tuning job uses floating-point
+                                      values between this value  and  MaxValue
+                                      for tuning.
+
+                                   MaxValue -> (string)
+                                      The  maximum  value for the hyperparame-
+                                      ter. The tuning job uses  floating-point
+                                      values  between  MinValue value and this
+                                      value for tuning.
+
+                                   ScalingType -> (string)
+                                      The  scale  that  hyperparameter  tuning
+                                      uses to search the hyperparameter range.
+                                      For information about choosing a  hyper-
+                                      parameter   scale,   see  Hyperparameter
+                                      Scaling . One of the following values:
+                                          Auto
+
+                                      SageMaker hyperparameter tuning  chooses
+                                      the best scale for the hyperparameter.
+                                          Linear
+
+                                      Hyperparameter  tuning searches the val-
+                                      ues in the hyperparameter range by using
+                                      a linear scale.
+                                          Logarithmic
+
+                                      Hyperparameter  tuning searches the val-
+                                      ues in the hyperparameter range by using
+                                      a logarithmic scale.
+
+                                      Logarithmic   scaling   works  only  for
+                                      ranges that  have  only  values  greater
+                                      than 0.
                                           ReverseLogarithmic
 
-                                      Hyperparameter tuning searches the  val-
+                                      Hyperparameter  tuning searches the val-
                                       ues in the hyperparameter range by using
                                       a reverse logarithmic scale.
 
-                                      Reverse logarithmic scaling  works  only
-                                      for  ranges that are entirely within the
+                                      Reverse  logarithmic  scaling works only
+                                      for ranges that are entirely within  the
                                       range 0<=x<1.0.
 
                             CategoricalParameterRanges -> (list)
@@ -8342,7 +8397,7 @@ OUTPUT
                                ters that a hyperparameter tuning job searches.
 
                                (structure)
-                                   A list of  categorical  hyperparameters  to
+                                   A  list  of  categorical hyperparameters to
                                    tune.
 
                                    Name -> (string)
@@ -8350,13 +8405,13 @@ OUTPUT
                                       ter to tune.
 
                                    Values -> (list)
-                                      A list of the categories for the  hyper-
+                                      A  list of the categories for the hyper-
                                       parameter.
 
                                       (string)
 
                         StaticHyperParameters -> (map)
-                            Specifies  the  values  of hyperparameters that do
+                            Specifies the values of  hyperparameters  that  do
                             not change for the tuning job.
 
                             key -> (string)
@@ -8365,73 +8420,73 @@ OUTPUT
 
                         AlgorithmSpecification -> (structure)
                             The   HyperParameterAlgorithmSpecification  object
-                            that  specifies  the resource algorithm to use for
+                            that specifies the resource algorithm to  use  for
                             the training jobs that the tuning job launches.
 
                             TrainingImage -> (string)
                                The registry path of the Docker image that con-
-                               tains  the  training algorithm. For information
-                               about Docker registry paths for built-in  algo-
+                               tains the training algorithm.  For  information
+                               about  Docker registry paths for built-in algo-
                                rithms, see Algorithms Provided by Amazon Sage-
-                               Maker: Common Parameters .  SageMaker  supports
-                               both    registry/repository[:tag]    and   reg-
-                               istry/repository[@digest] image  path  formats.
-                               For  more information, see Using Your Own Algo-
+                               Maker:  Common  Parameters . SageMaker supports
+                               both   registry/repository[:tag]    and    reg-
+                               istry/repository[@digest]  image  path formats.
+                               For more information, see Using Your Own  Algo-
                                rithms with Amazon SageMaker .
 
                             TrainingInputMode -> (string)
                                The training input mode that the algorithm sup-
-                               ports.  For more information about input modes,
+                               ports. For more information about input  modes,
                                see Algorithms .
                                    Pipe mode
 
-                               If an  algorithm  supports  Pipe  mode,  Amazon
-                               SageMaker  streams data directly from Amazon S3
+                               If  an  algorithm  supports  Pipe  mode, Amazon
+                               SageMaker streams data directly from Amazon  S3
                                to the container.
                                    File mode
 
-                               If an algorithm supports File  mode,  SageMaker
+                               If  an  algorithm supports File mode, SageMaker
                                downloads the training data from S3 to the pro-
-                               visioned ML storage volume, and mounts the  di-
-                               rectory  to  the Docker volume for the training
+                               visioned  ML storage volume, and mounts the di-
+                               rectory to the Docker volume for  the  training
                                container.
 
-                               You must provision the ML storage  volume  with
-                               sufficient  capacity  to  accommodate  the data
+                               You  must  provision the ML storage volume with
+                               sufficient capacity  to  accommodate  the  data
                                downloaded from S3. In addition to the training
-                               data,  the  ML  storage  volume also stores the
-                               output model. The algorithm container uses  the
-                               ML  storage  volume  to also store intermediate
+                               data, the ML storage  volume  also  stores  the
+                               output  model. The algorithm container uses the
+                               ML storage volume to  also  store  intermediate
                                information, if any.
 
-                               For distributed algorithms,  training  data  is
-                               distributed  uniformly.  Your training duration
-                               is predictable if the input data objects  sizes
-                               are  approximately the same. SageMaker does not
+                               For  distributed  algorithms,  training data is
+                               distributed uniformly. Your  training  duration
+                               is  predictable if the input data objects sizes
+                               are approximately the same. SageMaker does  not
                                split the files any further for model training.
-                               If  the object sizes are skewed, training won't
-                               be optimal as the  data  distribution  is  also
-                               skewed  when  one host in a training cluster is
-                               overloaded,  thus  becoming  a  bottleneck   in
+                               If the object sizes are skewed, training  won't
+                               be  optimal  as  the  data distribution is also
+                               skewed when one host in a training  cluster  is
+                               overloaded,   thus  becoming  a  bottleneck  in
                                training.
                                    FastFile mode
 
-                               If  an  algorithm supports FastFile mode, Sage-
+                               If an algorithm supports FastFile  mode,  Sage-
                                Maker streams data directly from S3 to the con-
-                               tainer  with no code changes, and provides file
-                               system access to the  data.  Users  can  author
-                               their  training  script  to interact with these
+                               tainer with no code changes, and provides  file
+                               system  access  to  the  data. Users can author
+                               their training script to  interact  with  these
                                files as if they were stored on disk.
-                                   FastFile mode works best when the  data  is
+                                   FastFile  mode  works best when the data is
                                    read sequentially. Augmented manifest files
                                    aren't supported. The startup time is lower
                                    when there are fewer files in the S3 bucket
                                    provided.
 
                             AlgorithmName -> (string)
-                               The name of the resource algorithm to  use  for
+                               The  name  of the resource algorithm to use for
                                the hyperparameter tuning job. If you specify a
-                               value for this  parameter,  do  not  specify  a
+                               value  for  this  parameter,  do  not specify a
                                value for TrainingImage .
 
                             MetricDefinitions -> (list)
@@ -8439,33 +8494,33 @@ OUTPUT
                                specify the metrics that the algorithm emits.
 
                                (structure)
-                                   Specifies a metric that the training  algo-
+                                   Specifies  a metric that the training algo-
                                    rithm writes to stderr or stdout . SageMak-
-                                   erhyperparameter tuning  captures  all  de-
-                                   fined  metrics. You specify one metric that
+                                   erhyperparameter  tuning  captures  all de-
+                                   fined metrics. You specify one metric  that
                                    a hyperparameter tuning job uses as its ob-
-                                   jective  metric to choose the best training
+                                   jective metric to choose the best  training
                                    job.
 
                                    Name -> (string)
                                       The name of the metric.
 
                                    Regex -> (string)
-                                      A regular expression that  searches  the
-                                      output  of  a  training job and gets the
-                                      value of the metric. For  more  informa-
-                                      tion  about using regular expressions to
-                                      define metrics, see  Defining  Objective
+                                      A  regular  expression that searches the
+                                      output of a training job  and  gets  the
+                                      value  of  the metric. For more informa-
+                                      tion about using regular expressions  to
+                                      define  metrics,  see Defining Objective
                                       Metrics .
 
                         RoleArn -> (string)
                             The Amazon Resource Name (ARN) of the IAM role as-
-                            sociated with the training jobs  that  the  tuning
+                            sociated  with  the  training jobs that the tuning
                             job launches.
 
                         InputDataConfig -> (list)
-                            An  array of  Channel objects that specify the in-
-                            put for the training  jobs  that  the  tuning  job
+                            An array of  Channel objects that specify the  in-
+                            put  for  the  training  jobs  that the tuning job
                             launches.
 
                             (structure)
@@ -8479,301 +8534,301 @@ OUTPUT
                                    The location of the channel data.
 
                                    S3DataSource -> (structure)
-                                      The S3 location of the data source  that
+                                      The  S3 location of the data source that
                                       is associated with a channel.
 
                                       S3DataType -> (string)
                                           If you choose S3Prefix , S3Uri iden-
-                                          tifies a key name prefix.  SageMaker
+                                          tifies  a key name prefix. SageMaker
                                           uses  all  objects  that  match  the
-                                          specified key name prefix for  model
+                                          specified  key name prefix for model
                                           training.
 
-                                          If  you  choose ManifestFile , S3Uri
+                                          If you choose ManifestFile  ,  S3Uri
                                           identifies an object that is a mani-
-                                          fest  file  containing a list of ob-
+                                          fest file containing a list  of  ob-
                                           ject keys that you want SageMaker to
                                           use for model training.
 
-                                          If  you choose AugmentedManifestFile
+                                          If you choose  AugmentedManifestFile
                                           , S3Uri identifies an object that is
-                                          an  augmented  manifest file in JSON
+                                          an augmented manifest file  in  JSON
                                           lines format. This file contains the
                                           data  you  want  to  use  for  model
-                                          training. AugmentedManifestFile  can
-                                          only  be used if the Channel's input
+                                          training.  AugmentedManifestFile can
+                                          only be used if the Channel's  input
                                           mode is Pipe .
 
                                       S3Uri -> (string)
                                           Depending on the value specified for
                                           the S3DataType , identifies either a
-                                          key name prefix or a  manifest.  For
+                                          key  name  prefix or a manifest. For
                                           example:
 
-                                          o A  key name prefix might look like
+                                          o A key name prefix might look  like
                                             this:  s3://bucketname/examplepre-
                                             fix
 
-                                          o A  manifest  might look like this:
+                                          o A manifest might look  like  this:
                                             s3://bucketname/example.manifest
-                                            A  manifest  is an S3 object which
-                                            is a JSON file  consisting  of  an
-                                            array  of elements. The first ele-
+                                            A manifest is an S3  object  which
+                                            is  a  JSON  file consisting of an
+                                            array of elements. The first  ele-
                                             ment is a prefix which is followed
                                             by one or more suffixes. SageMaker
                                             appends the suffix elements to the
-                                            prefix  to get a full set of S3Uri
-                                            . Note that the prefix must  be  a
-                                            valid  non-empty  S3Uri  that pre-
+                                            prefix to get a full set of  S3Uri
+                                            .  Note  that the prefix must be a
+                                            valid non-empty  S3Uri  that  pre-
                                             cludes  users  from  specifying  a
                                             manifest whose individual S3Uri is
                                             sourced from different S3 buckets.
                                             The following code example shows a
-                                            valid manifest format:   [  {"pre-
+                                            valid  manifest format:   [ {"pre-
                                             fix":                   "s3://cus-
                                             tomer_bucket/some/prefix/"},
                                             "relative/path/to/custdata-1",
                                             "relative/path/custdata-2",    ...
                                             "relative/path/custdata-N"       ]
-                                            This JSON  is  equivalent  to  the
-                                            following  S3Uri  list:  s3://cus-
+                                            This  JSON  is  equivalent  to the
+                                            following S3Uri  list:   s3://cus-
                                             tomer_bucket/some/prefix/rela-
                                             tive/path/to/custdata-1
                                             s3://customer_bucket/some/pre-
                                             fix/relative/path/custdata-2
                                             ...                      s3://cus-
                                             tomer_bucket/some/prefix/rela-
-                                            tive/path/custdata-N    The   com-
-                                            plete  set  of S3Uri in this mani-
-                                            fest is the  input  data  for  the
-                                            channel  for this data source. The
-                                            object that each S3Uri  points  to
-                                            must  be  readable by the IAM role
+                                            tive/path/custdata-N     The  com-
+                                            plete set of S3Uri in  this  mani-
+                                            fest  is  the  input  data for the
+                                            channel for this data source.  The
+                                            object  that  each S3Uri points to
+                                            must be readable by the  IAM  role
                                             that  SageMaker  uses  to  perform
                                             tasks on your behalf.
 
                                       S3DataDistributionType -> (string)
-                                          If  you  want SageMaker to replicate
-                                          the entire dataset on each  ML  com-
-                                          pute  instance  that is launched for
-                                          model training, specify  FullyRepli-
+                                          If you want SageMaker  to  replicate
+                                          the  entire  dataset on each ML com-
+                                          pute instance that is  launched  for
+                                          model  training, specify FullyRepli-
                                           cated .
 
                                           If you want SageMaker to replicate a
-                                          subset of data on  each  ML  compute
-                                          instance  that is launched for model
-                                          training, specify  ShardedByS3Key  .
-                                          If  there are n ML compute instances
-                                          launched for a  training  job,  each
-                                          instance  gets  approximately 1/n of
-                                          the number of S3  objects.  In  this
+                                          subset  of  data  on each ML compute
+                                          instance that is launched for  model
+                                          training,  specify  ShardedByS3Key .
+                                          If there are n ML compute  instances
+                                          launched  for  a  training job, each
+                                          instance gets approximately  1/n  of
+                                          the  number  of  S3 objects. In this
                                           case, model training on each machine
-                                          uses only  the  subset  of  training
+                                          uses  only  the  subset  of training
                                           data.
 
-                                          Don't  choose  more  ML  compute in-
-                                          stances for training than  available
-                                          S3  objects.  If  you do, some nodes
-                                          won't get any data and you will  pay
-                                          for  nodes  that  aren't getting any
-                                          training data. This applies in  both
-                                          File  and  Pipe  modes. Keep this in
+                                          Don't choose  more  ML  compute  in-
+                                          stances  for training than available
+                                          S3 objects. If you  do,  some  nodes
+                                          won't  get any data and you will pay
+                                          for nodes that  aren't  getting  any
+                                          training  data. This applies in both
+                                          File and Pipe modes.  Keep  this  in
                                           mind when developing algorithms.
 
-                                          In distributed training,  where  you
+                                          In  distributed  training, where you
                                           use  multiple  ML  compute  EC2  in-
-                                          stances, you might  choose  Sharded-
-                                          ByS3Key  . If the algorithm requires
+                                          stances,  you  might choose Sharded-
+                                          ByS3Key . If the algorithm  requires
                                           copying  training  data  to  the  ML
-                                          storage  volume (when TrainingInput-
-                                          Mode is set to File ),  this  copies
+                                          storage volume (when  TrainingInput-
+                                          Mode  is  set to File ), this copies
                                           1/n of the number of objects.
 
                                       AttributeNames -> (list)
-                                          A  list  of  one  or  more attribute
-                                          names to use that  are  found  in  a
+                                          A list  of  one  or  more  attribute
+                                          names  to  use  that  are found in a
                                           specified augmented manifest file.
 
                                           (string)
 
                                       InstanceGroupNames -> (list)
-                                          A  list  of names of instance groups
+                                          A list of names of  instance  groups
                                           that  get  data  from  the  S3  data
                                           source.
 
                                           (string)
 
                                    FileSystemDataSource -> (structure)
-                                      The  file system that is associated with
+                                      The file system that is associated  with
                                       a channel.
 
                                       FileSystemId -> (string)
                                           The file system id.
 
                                       FileSystemAccessMode -> (string)
-                                          The access mode of the mount of  the
-                                          directory  associated with the chan-
-                                          nel. A directory can be mounted  ei-
-                                          ther   in   ro   (read-only)  or  rw
+                                          The  access mode of the mount of the
+                                          directory associated with the  chan-
+                                          nel.  A directory can be mounted ei-
+                                          ther  in  ro   (read-only)   or   rw
                                           (read-write) mode.
 
                                       FileSystemType -> (string)
                                           The file system type.
 
                                       DirectoryPath -> (string)
-                                          The full path to  the  directory  to
+                                          The  full  path  to the directory to
                                           associate with the channel.
 
                                ContentType -> (string)
                                    The MIME type of the data.
 
                                CompressionType -> (string)
-                                   If  training  data  is compressed, the com-
-                                   pression type. The default value is None  .
-                                   CompressionType  is used only in Pipe input
-                                   mode. In File mode, leave this field  unset
+                                   If training data is  compressed,  the  com-
+                                   pression  type. The default value is None .
+                                   CompressionType is used only in Pipe  input
+                                   mode.  In File mode, leave this field unset
                                    or set it to None.
 
                                RecordWrapperType -> (string)
-                                   Specify  RecordIO  as  the value when input
-                                   data is in raw format but the training  al-
-                                   gorithm  requires  the  RecordIO format. In
-                                   this case, SageMaker wraps each  individual
-                                   S3  object in a RecordIO record. If the in-
+                                   Specify RecordIO as the  value  when  input
+                                   data  is in raw format but the training al-
+                                   gorithm requires the  RecordIO  format.  In
+                                   this  case, SageMaker wraps each individual
+                                   S3 object in a RecordIO record. If the  in-
                                    put data is already in RecordIO format, you
-                                   don't  need to set this attribute. For more
-                                   information, see  Create  a  Dataset  Using
+                                   don't need to set this attribute. For  more
+                                   information,  see  Create  a  Dataset Using
                                    RecordIO .
 
                                    In File mode, leave this field unset or set
                                    it to None.
 
                                InputMode -> (string)
-                                   (Optional) The input mode to  use  for  the
-                                   data  channel  in  a  training  job. If you
+                                   (Optional)  The  input  mode to use for the
+                                   data channel in  a  training  job.  If  you
                                    don't set a value for InputMode , SageMaker
-                                   uses  the value set for TrainingInputMode .
-                                   Use this parameter to override  the  Train-
-                                   ingInputMode  setting in a  AlgorithmSpeci-
-                                   fication request when you  have  a  channel
-                                   that  needs a different input mode from the
+                                   uses the value set for TrainingInputMode  .
+                                   Use  this  parameter to override the Train-
+                                   ingInputMode setting in a   AlgorithmSpeci-
+                                   fication  request  when  you have a channel
+                                   that needs a different input mode from  the
                                    training job's general setting. To download
                                    the data from Amazon Simple Storage Service
-                                   (Amazon S3) to the provisioned  ML  storage
+                                   (Amazon  S3)  to the provisioned ML storage
                                    volume, and mount the directory to a Docker
                                    volume, use File input mode. To stream data
-                                   directly  from  Amazon S3 to the container,
+                                   directly from Amazon S3 to  the  container,
                                    choose Pipe input mode.
 
-                                   To use a model  for  incremental  training,
+                                   To  use  a  model for incremental training,
                                    choose File input model.
 
                                ShuffleConfig -> (structure)
-                                   A  configuration  for  a shuffle option for
-                                   input data in a channel. If you use  S3Pre-
-                                   fix  for S3DataType , this shuffles the re-
-                                   sults of the S3 key prefix matches. If  you
-                                   use  ManifestFile , the order of the S3 ob-
+                                   A configuration for a  shuffle  option  for
+                                   input  data in a channel. If you use S3Pre-
+                                   fix for S3DataType , this shuffles the  re-
+                                   sults  of the S3 key prefix matches. If you
+                                   use ManifestFile , the order of the S3  ob-
                                    ject  references  in  the  ManifestFile  is
-                                   shuffled.  If you use AugmentedManifestFile
-                                   , the order of the JSON lines in  the  Aug-
-                                   mentedManifestFile  is  shuffled. The shuf-
-                                   fling order is determined  using  the  Seed
+                                   shuffled. If you use  AugmentedManifestFile
+                                   ,  the  order of the JSON lines in the Aug-
+                                   mentedManifestFile is shuffled.  The  shuf-
+                                   fling  order  is  determined using the Seed
                                    value.
 
-                                   For  Pipe  input mode, shuffling is done at
-                                   the  start  of  every  epoch.  With   large
+                                   For Pipe input mode, shuffling is  done  at
+                                   the   start  of  every  epoch.  With  large
                                    datasets this ensures that the order of the
-                                   training data is different for each  epoch,
-                                   it  helps reduce bias and possible overfit-
-                                   ting. In a  multi-node  training  job  when
-                                   ShuffleConfig  is  combined with S3DataDis-
-                                   tributionType of ShardedByS3Key , the  data
-                                   is  shuffled  across nodes so that the con-
+                                   training  data is different for each epoch,
+                                   it helps reduce bias and possible  overfit-
+                                   ting.  In  a  multi-node  training job when
+                                   ShuffleConfig is combined  with  S3DataDis-
+                                   tributionType  of ShardedByS3Key , the data
+                                   is shuffled across nodes so that  the  con-
                                    tent sent to a particular node on the first
-                                   epoch  might be sent to a different node on
+                                   epoch might be sent to a different node  on
                                    the second epoch.
 
                                    Seed -> (long)
-                                      Determines the shuffling order in  Shuf-
+                                      Determines  the shuffling order in Shuf-
                                       fleConfig value.
 
                         VpcConfig -> (structure)
-                            The   VpcConfig object that specifies the VPC that
-                            you want the training jobs that this  hyperparame-
+                            The  VpcConfig object that specifies the VPC  that
+                            you  want the training jobs that this hyperparame-
                             ter tuning job launches to connect to. Control ac-
-                            cess to and from your training container  by  con-
-                            figuring   the  VPC.  For  more  information,  see
-                            Protect Training Jobs by Using an  Amazon  Virtual
+                            cess  to  and from your training container by con-
+                            figuring  the  VPC.  For  more  information,   see
+                            Protect  Training  Jobs by Using an Amazon Virtual
                             Private Cloud .
 
                             SecurityGroupIds -> (list)
-                               The   VPC  security  group  IDs,  in  the  form
-                               sg-xxxxxxxx. Specify the  security  groups  for
+                               The  VPC  security  group  IDs,  in  the   form
+                               sg-xxxxxxxx.  Specify  the  security groups for
                                the VPC that is specified in the Subnets field.
 
                                (string)
 
                             Subnets -> (list)
-                               The  ID  of the subnets in the VPC to which you
+                               The ID of the subnets in the VPC to  which  you
                                want to connect your training job or model. For
-                               information  about the availability of specific
-                               instance types, see  Supported  Instance  Types
+                               information about the availability of  specific
+                               instance  types,  see  Supported Instance Types
                                and Availability Zones .
 
                                (string)
 
                         OutputDataConfig -> (structure)
-                            Specifies  the  path to the Amazon S3 bucket where
-                            you store model artifacts from the  training  jobs
+                            Specifies the path to the Amazon S3  bucket  where
+                            you  store  model artifacts from the training jobs
                             that the tuning job launches.
 
                             KmsKeyId -> (string)
-                               The  Amazon Web Services Key Management Service
-                               (Amazon Web Services KMS)  key  that  SageMaker
+                               The Amazon Web Services Key Management  Service
+                               (Amazon  Web  Services  KMS) key that SageMaker
                                uses to encrypt the model artifacts at rest us-
-                               ing  Amazon  S3  server-side  encryption.   The
+                               ing   Amazon  S3  server-side  encryption.  The
                                KmsKeyId can be any of the following formats:
 
-                               o //            KMS            Key           ID
+                               o //           KMS            Key            ID
                                  "1234abcd-12ab-34cd-56ef-1234567890ab"
 
-                               o // Amazon Resource Name (ARN) of  a  KMS  Key
+                               o //  Amazon  Resource  Name (ARN) of a KMS Key
                                  "arn:aws:kms:us-west-2:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab"
 
                                o // KMS Key Alias  "alias/ExampleAlias"
 
-                               o // Amazon Resource Name (ARN) of  a  KMS  Key
+                               o //  Amazon  Resource  Name (ARN) of a KMS Key
                                  Alias
                                  "arn:aws:kms:us-west-2:111122223333:alias/Ex-
                                  ampleAlias"
 
                                If you use a KMS key ID or an alias of your KMS
-                               key, the SageMaker execution role must  include
-                               permissions  to call kms:Encrypt . If you don't
-                               provide a KMS key ID, SageMaker  uses  the  de-
+                               key,  the SageMaker execution role must include
+                               permissions to call kms:Encrypt . If you  don't
+                               provide  a  KMS  key ID, SageMaker uses the de-
                                fault KMS key for Amazon S3 for your role's ac-
-                               count. SageMaker  uses  server-side  encryption
+                               count.  SageMaker  uses  server-side encryption
                                with KMS-managed keys for OutputDataConfig . If
-                               you use a bucket policy  with  an  s3:PutObject
-                               permission   that   only  allows  objects  with
-                               server-side encryption, set the  condition  key
+                               you  use  a  bucket policy with an s3:PutObject
+                               permission  that  only  allows   objects   with
+                               server-side  encryption,  set the condition key
                                of s3:x-amz-server-side-encryption to "aws:kms"
                                . For more information, see KMS-Managed Encryp-
-                               tion  Keys in the Amazon Simple Storage Service
+                               tion Keys in the Amazon Simple Storage  Service
                                Developer Guide.
 
                                The KMS key policy must grant permission to the
-                               IAM  role that you specify in your CreateTrain-
+                               IAM role that you specify in your  CreateTrain-
                                ingJob , CreateTransformJob , or CreateHyperPa-
-                               rameterTuningJob  requests.  For  more informa-
+                               rameterTuningJob requests.  For  more  informa-
                                tion, see Using Key Policies in Amazon Web Ser-
-                               vices  KMS  in the Amazon Web Services Key Man-
+                               vices KMS in the Amazon Web Services  Key  Man-
                                agement Service Developer Guide .
 
                             S3OutputPath -> (string)
                                Identifies the S3 path where you want SageMaker
-                               to  store  the  model  artifacts.  For example,
+                               to store  the  model  artifacts.  For  example,
                                s3://bucket-name/key-name-prefix .
 
                         ResourceConfig -> (structure)
@@ -8781,17 +8836,17 @@ OUTPUT
                             storage volumes, to use for the training jobs that
                             the tuning job launches.
 
-                            Storage volumes store model artifacts  and  incre-
-                            mental  states. Training algorithms might also use
-                            storage volumes for scratch  space.  If  you  want
-                            SageMaker  to  use the storage volume to store the
-                            training data, choose File as  the  TrainingInput-
-                            Mode  in the algorithm specification. For distrib-
+                            Storage  volumes  store model artifacts and incre-
+                            mental states. Training algorithms might also  use
+                            storage  volumes  for  scratch  space. If you want
+                            SageMaker to use the storage volume to  store  the
+                            training  data,  choose File as the TrainingInput-
+                            Mode in the algorithm specification. For  distrib-
                             uted  training  algorithms,  specify  an  instance
                             count greater than 1.
 
                             NOTE:
-                               If  you want to use hyperparameter optimization
+                               If you want to use hyperparameter  optimization
                                with instance type flexibility, use HyperParam-
                                eterTuningResourceConfig instead.
 
@@ -8799,79 +8854,79 @@ OUTPUT
                                The ML compute instance type.
 
                             InstanceCount -> (integer)
-                               The  number of ML compute instances to use. For
-                               distributed training, provide a  value  greater
+                               The number of ML compute instances to use.  For
+                               distributed  training,  provide a value greater
                                than 1.
 
                             VolumeSizeInGB -> (integer)
                                The size of the ML storage volume that you want
                                to provision.
 
-                               ML storage volumes store  model  artifacts  and
-                               incremental  states.  Training algorithms might
-                               also use the  ML  storage  volume  for  scratch
-                               space.  If  you want to store the training data
-                               in the ML storage volume, choose  File  as  the
-                               TrainingInputMode  in  the algorithm specifica-
+                               ML  storage  volumes  store model artifacts and
+                               incremental states. Training  algorithms  might
+                               also  use  the  ML  storage  volume for scratch
+                               space. If you want to store the  training  data
+                               in  the  ML  storage volume, choose File as the
+                               TrainingInputMode in the  algorithm  specifica-
                                tion.
 
                                When using an ML instance with NVMe SSD volumes
-                               ,  SageMaker  doesn't provision Amazon EBS Gen-
+                               , SageMaker doesn't provision Amazon  EBS  Gen-
                                eral Purpose SSD (gp2) storage. Available stor-
-                               age  is fixed to the NVMe-type instance's stor-
-                               age  capacity.  SageMaker  configures   storage
+                               age is fixed to the NVMe-type instance's  stor-
+                               age   capacity.  SageMaker  configures  storage
                                paths for training datasets, checkpoints, model
                                artifacts, and outputs to use the entire capac-
-                               ity  of  the  instance storage. For example, ML
-                               instance families with the  NVMe-type  instance
+                               ity of the instance storage.  For  example,  ML
+                               instance  families  with the NVMe-type instance
                                storage include ml.p4d , ml.g4dn , and ml.g5 .
 
-                               When  using  an  ML  instance with the EBS-only
-                               storage option and  without  instance  storage,
-                               you  must define the size of EBS volume through
-                               VolumeSizeInGB in the ResourceConfig  API.  For
+                               When using an ML  instance  with  the  EBS-only
+                               storage  option  and  without instance storage,
+                               you must define the size of EBS volume  through
+                               VolumeSizeInGB  in  the ResourceConfig API. For
                                example, ML instance families that use EBS vol-
                                umes include ml.c5 and ml.p2 .
 
-                               To look up instance types  and  their  instance
-                               storage  types  and volumes, see Amazon EC2 In-
+                               To  look  up  instance types and their instance
+                               storage types and volumes, see Amazon  EC2  In-
                                stance Types .
 
-                               To find the default local paths defined by  the
-                               SageMaker  training  platform, see Amazon Sage-
-                               Maker Training  Storage  Folders  for  Training
+                               To  find the default local paths defined by the
+                               SageMaker training platform, see  Amazon  Sage-
+                               Maker  Training  Storage  Folders  for Training
                                Datasets,  Checkpoints,  Model  Artifacts,  and
                                Outputs .
 
                             VolumeKmsKeyId -> (string)
-                               The Amazon Web Services KMS key that  SageMaker
-                               uses  to encrypt data on the storage volume at-
-                               tached to the ML compute instance(s)  that  run
+                               The  Amazon Web Services KMS key that SageMaker
+                               uses to encrypt data on the storage volume  at-
+                               tached  to  the ML compute instance(s) that run
                                the training job.
 
                                NOTE:
                                    Certain Nitro-based instances include local
-                                   storage, dependent on  the  instance  type.
+                                   storage,  dependent  on  the instance type.
                                    Local storage volumes are encrypted using a
-                                   hardware module on the instance. You  can't
-                                   request  a VolumeKmsKeyId when using an in-
+                                   hardware  module on the instance. You can't
+                                   request a VolumeKmsKeyId when using an  in-
                                    stance type with local storage.
 
-                                   For a list of instance types  that  support
-                                   local  instance storage, see Instance Store
+                                   For  a  list of instance types that support
+                                   local instance storage, see Instance  Store
                                    Volumes .
 
-                                   For more information about  local  instance
-                                   storage  encryption, see SSD Instance Store
+                                   For  more  information about local instance
+                                   storage encryption, see SSD Instance  Store
                                    Volumes .
 
                                The VolumeKmsKeyId can be in any of the follow-
                                ing formats:
 
-                               o //            KMS            Key           ID
+                               o //           KMS            Key            ID
                                  "1234abcd-12ab-34cd-56ef-1234567890ab"
 
-                               o // Amazon Resource Name (ARN) of  a  KMS  Key
+                               o //  Amazon  Resource  Name (ARN) of a KMS Key
                                  "arn:aws:kms:us-west-2:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab"
 
                             InstanceGroups -> (list)
@@ -8880,13 +8935,13 @@ OUTPUT
 
                                (structure)
                                    Defines an instance group for heterogeneous
-                                   cluster training. When requesting a  train-
-                                   ing  job  using  the CreateTrainingJob API,
-                                   you can configure multiple instance  groups
+                                   cluster  training. When requesting a train-
+                                   ing job using  the  CreateTrainingJob  API,
+                                   you  can configure multiple instance groups
                                    .
 
                                    InstanceType -> (string)
-                                      Specifies  the  instance type of the in-
+                                      Specifies the instance type of  the  in-
                                       stance group.
 
                                    InstanceCount -> (integer)
@@ -8894,73 +8949,73 @@ OUTPUT
                                       instance group.
 
                                    InstanceGroupName -> (string)
-                                      Specifies   the  name  of  the  instance
+                                      Specifies  the  name  of  the   instance
                                       group.
 
                         StoppingCondition -> (structure)
                             Specifies a limit to how long a model hyperparame-
-                            ter  training  job  can run. It also specifies how
-                            long a managed spot training job has to  complete.
-                            When  the  job  reaches  the time limit, SageMaker
-                            ends the training job. Use this API to  cap  model
+                            ter training job can run. It  also  specifies  how
+                            long  a managed spot training job has to complete.
+                            When the job reaches  the  time  limit,  SageMaker
+                            ends  the  training job. Use this API to cap model
                             training costs.
 
                             MaxRuntimeInSeconds -> (integer)
-                               The  maximum length of time, in seconds, that a
-                               training or compilation job can run  before  it
+                               The maximum length of time, in seconds, that  a
+                               training  or  compilation job can run before it
                                is stopped.
 
-                               For  compilation jobs, if the job does not com-
+                               For compilation jobs, if the job does not  com-
                                plete during this time, a TimeOut error is gen-
-                               erated.  We recommend starting with 900 seconds
+                               erated. We recommend starting with 900  seconds
                                and  increasing  as  necessary  based  on  your
                                model.
 
-                               For  all  other  jobs, if the job does not com-
+                               For all other jobs, if the job  does  not  com-
                                plete during this time, SageMaker ends the job.
-                               When  RetryStrategy is specified in the job re-
-                               quest, MaxRuntimeInSeconds specifies the  maxi-
-                               mum  time for all of the attempts in total, not
+                               When RetryStrategy is specified in the job  re-
+                               quest,  MaxRuntimeInSeconds specifies the maxi-
+                               mum time for all of the attempts in total,  not
                                each individual attempt. The default value is 1
                                day. The maximum value is 28 days.
 
-                               The  maximum time that a TrainingJob can run in
+                               The maximum time that a TrainingJob can run  in
                                total, including any time spent publishing met-
                                rics or archiving and uploading models after it
                                has been stopped, is 30 days.
 
                             MaxWaitTimeInSeconds -> (integer)
-                               The maximum length of time, in seconds, that  a
-                               managed  Spot  training job has to complete. It
-                               is the amount of time spent  waiting  for  Spot
-                               capacity  plus  the  amount of time the job can
-                               run. It  must  be  equal  to  or  greater  than
-                               MaxRuntimeInSeconds  . If the job does not com-
+                               The  maximum length of time, in seconds, that a
+                               managed Spot training job has to  complete.  It
+                               is  the  amount  of time spent waiting for Spot
+                               capacity plus the amount of time  the  job  can
+                               run.  It  must  be  equal  to  or  greater than
+                               MaxRuntimeInSeconds . If the job does not  com-
                                plete during this time, SageMaker ends the job.
 
-                               When RetryStrategy is specified in the job  re-
+                               When  RetryStrategy is specified in the job re-
                                quest, MaxWaitTimeInSeconds specifies the maxi-
-                               mum time for all of the attempts in total,  not
+                               mum  time for all of the attempts in total, not
                                each individual attempt.
 
                         EnableNetworkIsolation -> (boolean)
-                            Isolates  the  training  container.  No inbound or
-                            outbound network calls can  be  made,  except  for
-                            calls  between peers within a training cluster for
+                            Isolates the training  container.  No  inbound  or
+                            outbound  network  calls  can  be made, except for
+                            calls between peers within a training cluster  for
                             distributed training. If network isolation is used
-                            for  training  jobs  that  are configured to use a
+                            for training jobs that are  configured  to  use  a
                             VPC, SageMaker downloads and uploads customer data
                             and model artifacts through the specified VPC, but
-                            the training container does not have  network  ac-
+                            the  training  container does not have network ac-
                             cess.
 
                         EnableInterContainerTrafficEncryption -> (boolean)
-                            To  encrypt  all communications between ML compute
-                            instances in distributed training, choose  True  .
-                            Encryption  provides greater security for distrib-
+                            To encrypt all communications between  ML  compute
+                            instances  in  distributed training, choose True .
+                            Encryption provides greater security for  distrib-
                             uted training, but training might take longer. How
-                            long  it takes depends on the amount of communica-
-                            tion between compute instances, especially if  you
+                            long it takes depends on the amount of  communica-
+                            tion  between compute instances, especially if you
                             use  a  deep  learning  algorithm  in  distributed
                             training.
 
@@ -8974,57 +9029,57 @@ OUTPUT
 
                             S3Uri -> (string)
                                Identifies the S3 path where you want SageMaker
-                               to     store    checkpoints.    For    example,
+                               to    store    checkpoints.    For     example,
                                s3://bucket-name/key-name-prefix .
 
                             LocalPath -> (string)
-                               (Optional) The  local  directory  where  check-
-                               points  are  written.  The default directory is
+                               (Optional)  The  local  directory  where check-
+                               points are written. The  default  directory  is
                                /opt/ml/checkpoints/ .
 
                         RetryStrategy -> (structure)
-                            The number of times to retry the job when the  job
+                            The  number of times to retry the job when the job
                             fails due to an InternalServerError .
 
                             MaximumRetryAttempts -> (integer)
-                               The  number of times to retry the job. When the
+                               The number of times to retry the job. When  the
                                job is retried, it's SecondaryStatus is changed
                                to STARTING .
 
                         HyperParameterTuningResourceConfig -> (structure)
-                            The  configuration  for  the hyperparameter tuning
-                            resources, including  the  compute  instances  and
-                            storage  volumes,  used for training jobs launched
-                            by the tuning job.  By  default,  storage  volumes
-                            hold   model  artifacts  and  incremental  states.
-                            Choose File for  TrainingInputMode  in  the  Algo-
+                            The configuration for  the  hyperparameter  tuning
+                            resources,  including  the  compute  instances and
+                            storage volumes, used for training  jobs  launched
+                            by  the  tuning  job.  By default, storage volumes
+                            hold  model  artifacts  and  incremental   states.
+                            Choose  File  for  TrainingInputMode  in the Algo-
                             rithmSpecification parameter to additionally store
                             training data in the storage volume (optional).
 
                             InstanceType -> (string)
-                               The instance type used  to  run  hyperparameter
-                               optimization  tuning  jobs. See descriptions of
+                               The  instance  type  used to run hyperparameter
+                               optimization tuning jobs. See  descriptions  of
                                instance types for more information.
 
                             InstanceCount -> (integer)
-                               The number of compute  instances  of  type  In-
-                               stanceType  to  use. For distributed training ,
+                               The  number  of  compute  instances of type In-
+                               stanceType to use. For distributed  training  ,
                                select a value greater than 1.
 
                             VolumeSizeInGB -> (integer)
                                The volume size in GB for the storage volume to
-                               be  used in processing hyperparameter optimiza-
+                               be used in processing hyperparameter  optimiza-
                                tion jobs (optional). These volumes store model
-                               artifacts,  incremental  states and optionally,
-                               scratch space for training algorithms.  Do  not
-                               provide  a  value for this parameter if a value
+                               artifacts, incremental states  and  optionally,
+                               scratch  space  for training algorithms. Do not
+                               provide a value for this parameter if  a  value
                                for InstanceConfigs is also specified.
 
-                               Some instance types have a  fixed  total  local
-                               storage  size.  If  you select one of these in-
-                               stances for training, VolumeSizeInGB cannot  be
+                               Some  instance  types  have a fixed total local
+                               storage size. If you select one  of  these  in-
+                               stances  for training, VolumeSizeInGB cannot be
                                greater than this total size. For a list of in-
-                               stance types with local  instance  storage  and
+                               stance  types  with  local instance storage and
                                their sizes, see instance store volumes .
 
                                NOTE:
@@ -9032,10 +9087,10 @@ OUTPUT
                                    SSD (gp2) storage volume type.
 
                             VolumeKmsKeyId -> (string)
-                               A key used by Amazon Web Services  Key  Manage-
-                               ment  Service  to  encrypt  data on the storage
-                               volume attached to the compute  instances  used
-                               to  run the training job. You can use either of
+                               A  key  used by Amazon Web Services Key Manage-
+                               ment Service to encrypt  data  on  the  storage
+                               volume  attached  to the compute instances used
+                               to run the training job. You can use either  of
                                the following formats to specify a key.
 
                                KMS Key ID:
@@ -9044,71 +9099,71 @@ OUTPUT
                                Amazon Resource Name (ARN) of a KMS key:
                                    "arn:aws:kms:us-west-2:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab"
 
-                               Some  instances  use local storage, which use a
-                               hardware module to encrypt storage volumes.  If
-                               you  choose  one  of  these instance types, you
+                               Some instances use local storage, which  use  a
+                               hardware  module to encrypt storage volumes. If
+                               you choose one of  these  instance  types,  you
                                cannot request a VolumeKmsKeyId . For a list of
-                               instance  types  that  use  local  storage, see
-                               instance store volumes . For  more  information
-                               about  Amazon  Web Services Key Management Ser-
+                               instance types  that  use  local  storage,  see
+                               instance  store  volumes . For more information
+                               about Amazon Web Services Key  Management  Ser-
                                vice, see KMS encryption for more information.
 
                             AllocationStrategy -> (string)
                                The strategy that determines the order of pref-
-                               erence  for resources specified in InstanceCon-
+                               erence for resources specified in  InstanceCon-
                                figs used in hyperparameter optimization.
 
                             InstanceConfigs -> (list)
-                               A list containing the configuration(s) for  one
+                               A  list containing the configuration(s) for one
                                or more resources for processing hyperparameter
                                jobs. These resources include compute instances
-                               and  storage  volumes  to use in model training
-                               jobs launched by  hyperparameter  tuning  jobs.
-                               The  AllocationStrategy  controls  the order in
-                               which multiple configurations provided  in  In-
+                               and storage volumes to use  in  model  training
+                               jobs  launched  by  hyperparameter tuning jobs.
+                               The AllocationStrategy controls  the  order  in
+                               which  multiple  configurations provided in In-
                                stanceConfigs are used.
 
                                NOTE:
-                                   If  you  only want to use a single instance
+                                   If you only want to use a  single  instance
                                    configuration inside the HyperParameterTun-
-                                   ingResourceConfig  API,  do  not  provide a
-                                   value for InstanceConfigs  .  Instead,  use
+                                   ingResourceConfig API,  do  not  provide  a
+                                   value  for  InstanceConfigs  . Instead, use
                                    InstanceType , VolumeSizeInGB and Instance-
                                    Count . If you use InstanceConfigs , do not
-                                   provide  values  for InstanceType , Volume-
+                                   provide values for InstanceType  ,  Volume-
                                    SizeInGB or InstanceCount .
 
                                (structure)
                                    The configuration for hyperparameter tuning
                                    resources for use in training jobs launched
-                                   by the tuning job. These resources  include
-                                   compute   instances  and  storage  volumes.
-                                   Specify one or more compute  instance  con-
-                                   figurations  and  allocation  strategies to
+                                   by  the tuning job. These resources include
+                                   compute  instances  and  storage   volumes.
+                                   Specify  one  or more compute instance con-
+                                   figurations and  allocation  strategies  to
                                    select resources (optional).
 
                                    InstanceType -> (string)
                                       The instance type used for processing of
                                       hyperparameter optimization jobs. Choose
-                                      from general purpose (no GPUs)  instance
-                                      types:  ml.m5.xlarge, ml.m5.2xlarge, and
-                                      ml.m5.4xlarge or compute  optimized  (no
-                                      GPUs)  instance  types: ml.c5.xlarge and
-                                      ml.c5.2xlarge.  For   more   information
-                                      about  instance types, see instance type
+                                      from  general purpose (no GPUs) instance
+                                      types: ml.m5.xlarge, ml.m5.2xlarge,  and
+                                      ml.m5.4xlarge  or  compute optimized (no
+                                      GPUs) instance types:  ml.c5.xlarge  and
+                                      ml.c5.2xlarge.   For   more  information
+                                      about instance types, see instance  type
                                       descriptions .
 
                                    InstanceCount -> (integer)
-                                      The number  of  instances  of  the  type
-                                      specified  by  InstanceType  . Choose an
-                                      instance count larger than  1  for  dis-
-                                      tributed    training   algorithms.   See
-                                      SageMaker distributed training jobs  for
+                                      The  number  of  instances  of  the type
+                                      specified by InstanceType  .  Choose  an
+                                      instance  count  larger  than 1 for dis-
+                                      tributed   training   algorithms.    See
+                                      SageMaker  distributed training jobs for
                                       more information.
 
                                    VolumeSizeInGB -> (integer)
-                                      The  volume size in GB of the data to be
-                                      processed for  hyperparameter  optimiza-
+                                      The volume size in GB of the data to  be
+                                      processed  for  hyperparameter optimiza-
                                       tion (optional).
 
                  HyperParameterTuningJobStatus -> (string)
@@ -9121,7 +9176,7 @@ OUTPUT
                      The time that a hyperparameter tuning job ended.
 
                  LastModifiedTime -> (timestamp)
-                     The  time that a hyperparameter tuning job was last modi-
+                     The time that a hyperparameter tuning job was last  modi-
                      fied.
 
                  TrainingJobStatusCounters -> (structure)
@@ -9129,21 +9184,21 @@ OUTPUT
                      tuning job, categorized by status.
 
                      Completed -> (integer)
-                        The  number of completed training jobs launched by the
+                        The number of completed training jobs launched by  the
                         hyperparameter tuning job.
 
                      InProgress -> (integer)
-                        The number of in-progress training jobs launched by  a
+                        The  number of in-progress training jobs launched by a
                         hyperparameter tuning job.
 
                      RetryableError -> (integer)
-                        The  number  of  training jobs that failed, but can be
-                        retried. A failed training job can be retried only  if
+                        The number of training jobs that failed,  but  can  be
+                        retried.  A failed training job can be retried only if
                         it failed because an internal service error occurred.
 
                      NonRetryableError -> (integer)
-                        The  number  of training jobs that failed and can't be
-                        retried. A failed training job can't be retried if  it
+                        The number of training jobs that failed and  can't  be
+                        retried.  A failed training job can't be retried if it
                         failed because a client error occurred.
 
                      Stopped -> (integer)
@@ -9151,11 +9206,11 @@ OUTPUT
                         ter tuning job that were manually stopped.
 
                  ObjectiveStatusCounters -> (structure)
-                     Specifies the number of training jobs that this  hyperpa-
+                     Specifies  the number of training jobs that this hyperpa-
                      rameter tuning job launched, categorized by the status of
                      their objective metric. The objective metric status shows
-                     whether  the  final objective metric for the training job
-                     has been evaluated by the tuning job and used in the  hy-
+                     whether the final objective metric for the  training  job
+                     has  been evaluated by the tuning job and used in the hy-
                      perparameter tuning process.
 
                      Succeeded -> (integer)
@@ -9164,95 +9219,16 @@ OUTPUT
                         used in the hyperparameter tuning process.
 
                      Pending -> (integer)
-                        The  number  of training jobs that are in progress and
+                        The number of training jobs that are in  progress  and
                         pending evaluation of their final objective metric.
 
                      Failed -> (integer)
                         The number of training jobs whose final objective met-
-                        ric  was  not evaluated and used in the hyperparameter
-                        tuning process. This typically occurs when the  train-
+                        ric was not evaluated and used in  the  hyperparameter
+                        tuning  process. This typically occurs when the train-
                         ing job failed or did not emit an objective metric.
 
                  BestTrainingJob -> (structure)
-                     The  container for the summary information about a train-
-                     ing job.
-
-                     TrainingJobDefinitionName -> (string)
-                        The training job definition name.
-
-                     TrainingJobName -> (string)
-                        The name of the training job.
-
-                     TrainingJobArn -> (string)
-                        The Amazon Resource Name (ARN) of the training job.
-
-                     TuningJobName -> (string)
-                        The HyperParameter tuning job that launched the train-
-                        ing job.
-
-                     CreationTime -> (timestamp)
-                        The date and time that the training job was created.
-
-                     TrainingStartTime -> (timestamp)
-                        The date and time that the training job started.
-
-                     TrainingEndTime -> (timestamp)
-                        Specifies  the  time  when  the  training  job ends on
-                        training instances. You are billed for the time inter-
-                        val  between  the  value of TrainingStartTime and this
-                        time. For successful jobs and stopped  jobs,  this  is
-                        the  time  after  model  artifacts  are  uploaded. For
-                        failed jobs, this is the time when SageMaker detects a
-                        job failure.
-
-                     TrainingJobStatus -> (string)
-                        The status of the training job.
-
-                     TunedHyperParameters -> (map)
-                        A  list of the hyperparameters for which you specified
-                        ranges to search.
-
-                        key -> (string)
-
-                        value -> (string)
-
-                     FailureReason -> (string)
-                        The reason that the training job failed.
-
-                     FinalHyperParameterTuningJobObjectiveMetric  ->   (struc-
-                     ture)
-                        The   FinalHyperParameterTuningJobObjectiveMetric  ob-
-                        ject that specifies the value of the objective  metric
-                        of the tuning job that launched this training job.
-
-                        Type -> (string)
-                            Whether to minimize or maximize the objective met-
-                            ric. Valid values are Minimize and Maximize.
-
-                        MetricName -> (string)
-                            The name of the objective metric.
-
-                        Value -> (float)
-                            The value of the objective metric.
-
-                     ObjectiveStatus -> (string)
-                        The status of the objective metric  for  the  training
-                        job:
-
-                        o Succeeded: The final objective metric for the train-
-                          ing job was evaluated by the  hyperparameter  tuning
-                          job and used in the hyperparameter tuning process.
-
-                        o Pending: The training job is in progress and evalua-
-                          tion of its final objective metric is pending.
-
-                        o Failed: The final objective metric for the  training
-                          job  was  not evaluated, and was not used in the hy-
-                          perparameter tuning process. This  typically  occurs
-                          when  the training job failed or did not emit an ob-
-                          jective metric.
-
-                 OverallBestTrainingJob -> (structure)
                      The container for the summary information about a  train-
                      ing job.
 
@@ -9331,41 +9307,120 @@ OUTPUT
                           when the training job failed or did not emit an  ob-
                           jective metric.
 
+                 OverallBestTrainingJob -> (structure)
+                     The  container for the summary information about a train-
+                     ing job.
+
+                     TrainingJobDefinitionName -> (string)
+                        The training job definition name.
+
+                     TrainingJobName -> (string)
+                        The name of the training job.
+
+                     TrainingJobArn -> (string)
+                        The Amazon Resource Name (ARN) of the training job.
+
+                     TuningJobName -> (string)
+                        The HyperParameter tuning job that launched the train-
+                        ing job.
+
+                     CreationTime -> (timestamp)
+                        The date and time that the training job was created.
+
+                     TrainingStartTime -> (timestamp)
+                        The date and time that the training job started.
+
+                     TrainingEndTime -> (timestamp)
+                        Specifies  the  time  when  the  training  job ends on
+                        training instances. You are billed for the time inter-
+                        val  between  the  value of TrainingStartTime and this
+                        time. For successful jobs and stopped  jobs,  this  is
+                        the  time  after  model  artifacts  are  uploaded. For
+                        failed jobs, this is the time when SageMaker detects a
+                        job failure.
+
+                     TrainingJobStatus -> (string)
+                        The status of the training job.
+
+                     TunedHyperParameters -> (map)
+                        A  list of the hyperparameters for which you specified
+                        ranges to search.
+
+                        key -> (string)
+
+                        value -> (string)
+
+                     FailureReason -> (string)
+                        The reason that the training job failed.
+
+                     FinalHyperParameterTuningJobObjectiveMetric  ->   (struc-
+                     ture)
+                        The   FinalHyperParameterTuningJobObjectiveMetric  ob-
+                        ject that specifies the value of the objective  metric
+                        of the tuning job that launched this training job.
+
+                        Type -> (string)
+                            Whether to minimize or maximize the objective met-
+                            ric. Valid values are Minimize and Maximize.
+
+                        MetricName -> (string)
+                            The name of the objective metric.
+
+                        Value -> (float)
+                            The value of the objective metric.
+
+                     ObjectiveStatus -> (string)
+                        The status of the objective metric  for  the  training
+                        job:
+
+                        o Succeeded: The final objective metric for the train-
+                          ing job was evaluated by the  hyperparameter  tuning
+                          job and used in the hyperparameter tuning process.
+
+                        o Pending: The training job is in progress and evalua-
+                          tion of its final objective metric is pending.
+
+                        o Failed: The final objective metric for the  training
+                          job  was  not evaluated, and was not used in the hy-
+                          perparameter tuning process. This  typically  occurs
+                          when  the training job failed or did not emit an ob-
+                          jective metric.
+
                  WarmStartConfig -> (structure)
-                     Specifies  the  configuration for a hyperparameter tuning
-                     job that uses one or more previous hyperparameter  tuning
-                     jobs  as a starting point. The results of previous tuning
+                     Specifies the configuration for a  hyperparameter  tuning
+                     job  that uses one or more previous hyperparameter tuning
+                     jobs as a starting point. The results of previous  tuning
                      jobs are used to inform which combinations of hyperparam-
                      eters to search over in the new tuning job.
 
                      All training jobs launched by the new hyperparameter tun-
-                     ing job are evaluated by using the objective metric,  and
-                     the  training  job  that performs the best is compared to
-                     the best training jobs from the parent tuning jobs.  From
-                     these,  the  training  job that performs the best as mea-
-                     sured by the objective metric is returned as the  overall
+                     ing  job are evaluated by using the objective metric, and
+                     the training job that performs the best  is  compared  to
+                     the  best training jobs from the parent tuning jobs. From
+                     these, the training job that performs the  best  as  mea-
+                     sured  by the objective metric is returned as the overall
                      best training job.
 
                      NOTE:
-                        All  training  jobs  launched by parent hyperparameter
-                        tuning jobs and the  new  hyperparameter  tuning  jobs
-                        count  against the limit of training jobs for the tun-
+                        All training jobs launched  by  parent  hyperparameter
+                        tuning  jobs  and  the  new hyperparameter tuning jobs
+                        count against the limit of training jobs for the  tun-
                         ing job.
 
                      ParentHyperParameterTuningJobs -> (list)
-                        An array of hyperparameter tuning jobs that  are  used
-                        as  the starting point for the new hyperparameter tun-
-                        ing job. For more information about  warm  starting  a
+                        An  array  of hyperparameter tuning jobs that are used
+                        as the starting point for the new hyperparameter  tun-
+                        ing  job.  For  more information about warm starting a
                         hyperparameter tuning job, see Using a Previous Hyper-
                         parameter Tuning Job as a Starting Point .
 
-                        Hyperparameter tuning jobs created before  October  1,
+                        Hyperparameter  tuning  jobs created before October 1,
                         2018 cannot be used as parent jobs for warm start tun-
                         ing jobs.
 
                         (structure)
-                            A previously completed or  stopped  hyperparameter
-                            tuning  job  to  be used as a starting point for a
+                            A  previously  completed or stopped hyperparameter
+                            tuning job to be used as a starting  point  for  a
                             new hyperparameter tuning job.
 
                             HyperParameterTuningJobName -> (string)
@@ -9377,62 +9432,62 @@ OUTPUT
                         Specifies one of the following:
                             IDENTICAL_DATA_AND_ALGORITHM
 
-                        The new hyperparameter tuning job uses the same  input
+                        The  new hyperparameter tuning job uses the same input
                         data and training image as the parent tuning jobs. You
                         can change the hyperparameter ranges to search and the
-                        maximum  number of training jobs that the hyperparame-
-                        ter tuning job launches. You cannot use a new  version
-                        of  the  training algorithm, unless the changes in the
-                        new version do not affect the  algorithm  itself.  For
-                        example,  changes  that improve logging or adding sup-
-                        port for a different data format are allowed. You  can
-                        also  change  hyperparameters  from tunable to static,
-                        and from static to tunable, but the  total  number  of
-                        static  plus  tunable  hyperparameters must remain the
+                        maximum number of training jobs that the  hyperparame-
+                        ter  tuning job launches. You cannot use a new version
+                        of the training algorithm, unless the changes  in  the
+                        new  version  do  not affect the algorithm itself. For
+                        example, changes that improve logging or  adding  sup-
+                        port  for a different data format are allowed. You can
+                        also change hyperparameters from  tunable  to  static,
+                        and  from  static  to tunable, but the total number of
+                        static plus tunable hyperparameters  must  remain  the
                         same as it is in all parent jobs. The objective metric
-                        for  the  new  tuning  job must be the same as for all
+                        for the new tuning job must be the  same  as  for  all
                         parent jobs.
                             TRANSFER_LEARNING
 
-                        The new hyperparameter tuning job  can  include  input
+                        The  new  hyperparameter  tuning job can include input
                         data, hyperparameter ranges, maximum number of concur-
-                        rent training jobs, and  maximum  number  of  training
-                        jobs  that  are different than those of its parent hy-
-                        perparameter tuning jobs. The training image can  also
-                        be  a  different  version from the version used in the
-                        parent hyperparameter tuning job. You can also  change
+                        rent  training  jobs,  and  maximum number of training
+                        jobs that are different than those of its  parent  hy-
+                        perparameter  tuning jobs. The training image can also
+                        be a different version from the version  used  in  the
+                        parent  hyperparameter tuning job. You can also change
                         hyperparameters  from  tunable  to  static,  and  from
                         static to tunable, but the total number of static plus
-                        tunable  hyperparameters must remain the same as it is
-                        in all parent jobs. The objective metric for  the  new
+                        tunable hyperparameters must remain the same as it  is
+                        in  all  parent jobs. The objective metric for the new
                         tuning job must be the same as for all parent jobs.
 
                  FailureReason -> (string)
-                     The  error  that was created when a hyperparameter tuning
+                     The error that was created when a  hyperparameter  tuning
                      job failed.
 
                  Tags -> (list)
                      The tags associated with a hyperparameter tuning job. For
-                     more  information  see  Tagging  Amazon  Web Services re-
+                     more information see  Tagging  Amazon  Web  Services  re-
                      sources .
 
                      (structure)
-                        A tag object that consists of a key  and  an  optional
-                        value,  used  to  manage metadata for SageMaker Amazon
+                        A  tag  object  that consists of a key and an optional
+                        value, used to manage metadata  for  SageMaker  Amazon
                         Web Services resources.
 
                         You can add tags to notebook instances, training jobs,
                         hyperparameter tuning jobs, batch transform jobs, mod-
-                        els, labeling jobs, work  teams,  endpoint  configura-
-                        tions,  and  endpoints. For more information on adding
+                        els,  labeling  jobs,  work teams, endpoint configura-
+                        tions, and endpoints. For more information  on  adding
                         tags to SageMaker resources, see  AddTags .
 
                         For more information on adding metadata to your Amazon
-                        Web  Services resources with tagging, see Tagging Ama-
-                        zon Web Services resources . For advice on best  prac-
-                        tices  for managing Amazon Web Services resources with
-                        tagging, see Tagging Best Practices: Implement an  Ef-
-                        fective  Amazon Web Services Resource Tagging Strategy
+                        Web Services resources with tagging, see Tagging  Ama-
+                        zon  Web Services resources . For advice on best prac-
+                        tices for managing Amazon Web Services resources  with
+                        tagging,  see Tagging Best Practices: Implement an Ef-
+                        fective Amazon Web Services Resource Tagging  Strategy
                         .
 
                         Key -> (string)
@@ -9442,8 +9497,8 @@ OUTPUT
                             The tag value.
 
        NextToken -> (string)
-          If the result of the previous Search request was truncated, the  re-
-          sponse  includes  a  NextToken. To retrieve the next set of results,
+          If  the result of the previous Search request was truncated, the re-
+          sponse includes a NextToken. To retrieve the next  set  of  results,
           use the token in the next request.
 
 
