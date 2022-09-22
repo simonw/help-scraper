@@ -10,11 +10,10 @@ DESCRIPTION
        a domain, and is the main way to reference a "person" for the  purposes
        of sharing, reporting, and other user-oriented features. This entity is
        created when a user onboards to Amazon SageMaker Studio. If an adminis-
-       trator  invites  a person by email or imports them from Amazon Web Ser-
-       vices SSO, a user profile is automatically created. A user  profile  is
-       the  primary holder of settings for an individual user and has a refer-
-       ence to the user's private Amazon Elastic File System (EFS) home direc-
-       tory.
+       trator invites a person by email or imports them from IAM Identity Cen-
+       ter, a user profile is automatically created. A  user  profile  is  the
+       primary  holder  of settings for an individual user and has a reference
+       to the user's private Amazon Elastic File System (EFS) home directory.
 
        See also: AWS API Documentation
 
@@ -51,38 +50,38 @@ OPTIONS
           A name for the UserProfile. This value is not case sensitive.
 
        --single-sign-on-user-identifier (string)
-          A  specifier  for  the  type of value specified in SingleSignOnUser-
+          A specifier for the type of  value  specified  in  SingleSignOnUser-
           Value. Currently, the only supported value is "UserName". If the Do-
-          main's  AuthMode is Amazon Web Services SSO, this field is required.
-          If the Domain's AuthMode is not Amazon Web Services SSO, this  field
-          cannot be specified.
+          main's AuthMode is IAM Identity Center, this field is  required.  If
+          the  Domain's AuthMode is not IAM Identity Center, this field cannot
+          be specified.
 
        --single-sign-on-user-value (string)
-          The  username  of  the associated Amazon Web Services Single Sign-On
-          User for this UserProfile. If the Domain's AuthMode  is  Amazon  Web
-          Services  SSO,  this field is required, and must match a valid user-
-          name of a user in your directory. If the Domain's  AuthMode  is  not
-          Amazon Web Services SSO, this field cannot be specified.
+          The username of the associated Amazon Web  Services  Single  Sign-On
+          User  for this UserProfile. If the Domain's AuthMode is IAM Identity
+          Center, this field is required, and must match a valid username of a
+          user in your directory. If the Domain's AuthMode is not IAM Identity
+          Center, this field cannot be specified.
 
        --tags (list)
-          Each  tag  consists of a key and an optional value. Tag keys must be
+          Each tag consists of a key and an optional value. Tag keys  must  be
           unique per resource.
 
-          Tags that you specify for the User Profile are  also  added  to  all
+          Tags  that  you  specify  for the User Profile are also added to all
           Apps that the User Profile launches.
 
           (structure)
-              A  tag object that consists of a key and an optional value, used
+              A tag object that consists of a key and an optional value,  used
               to manage metadata for SageMaker Amazon Web Services resources.
 
-              You can add tags to notebook instances, training jobs,  hyperpa-
-              rameter  tuning  jobs,  batch  transform  jobs, models, labeling
-              jobs, work teams, endpoint configurations,  and  endpoints.  For
+              You  can add tags to notebook instances, training jobs, hyperpa-
+              rameter tuning jobs,  batch  transform  jobs,  models,  labeling
+              jobs,  work  teams,  endpoint configurations, and endpoints. For
               more information on adding tags to SageMaker resources, see  Ad-
               dTags .
 
-              For more information on adding metadata to your Amazon Web  Ser-
-              vices  resources  with  tagging, see Tagging Amazon Web Services
+              For  more information on adding metadata to your Amazon Web Ser-
+              vices resources with tagging, see Tagging  Amazon  Web  Services
               resources . For advice on best practices for managing Amazon Web
               Services resources with tagging, see Tagging Best Practices: Im-
               plement an Effective Amazon Web Services Resource Tagging Strat-
@@ -115,7 +114,7 @@ OPTIONS
               The execution role for the user.
 
           SecurityGroups -> (list)
-              The  security  groups for the Amazon Virtual Private Cloud (VPC)
+              The security groups for the Amazon Virtual Private  Cloud  (VPC)
               that Studio uses for communication.
 
               Optional when the CreateDomain.AppNetworkAccessType parameter is
@@ -125,7 +124,7 @@ OPTIONS
               set to VpcOnly .
 
               Amazon SageMaker adds a security group to allow NFS traffic from
-              SageMaker  Studio. Therefore, the number of security groups that
+              SageMaker Studio. Therefore, the number of security groups  that
               you can specify is one less than the maximum number shown.
 
               (string)
@@ -134,26 +133,73 @@ OPTIONS
               Specifies options for sharing SageMaker Studio notebooks.
 
               NotebookOutputOption -> (string)
-                 Whether to include the notebook cell output when sharing  the
+                 Whether  to include the notebook cell output when sharing the
                  notebook. The default is Disabled .
 
               S3OutputPath -> (string)
-                 When  NotebookOutputOption  is Allowed , the Amazon S3 bucket
+                 When NotebookOutputOption is Allowed , the Amazon  S3  bucket
                  used to store the shared notebook snapshots.
 
               S3KmsKeyId -> (string)
-                 When NotebookOutputOption is Allowed , the  Amazon  Web  Ser-
-                 vices  Key Management Service (KMS) encryption key ID used to
+                 When  NotebookOutputOption  is  Allowed , the Amazon Web Ser-
+                 vices Key Management Service (KMS) encryption key ID used  to
                  encrypt the notebook cell output in the Amazon S3 bucket.
 
           JupyterServerAppSettings -> (structure)
               The Jupyter server's app settings.
 
               DefaultResourceSpec -> (structure)
-                 The default instance type and the Amazon Resource Name  (ARN)
+                 The  default instance type and the Amazon Resource Name (ARN)
                  of the default SageMaker image used by the JupyterServer app.
-                 If you use the LifecycleConfigArns parameter, then  this  pa-
+                 If  you  use the LifecycleConfigArns parameter, then this pa-
                  rameter is also required.
+
+                 SageMakerImageArn -> (string)
+                     The ARN of the SageMaker image that the image version be-
+                     longs to.
+
+                 SageMakerImageVersionArn -> (string)
+                     The ARN of the image version created on the instance.
+
+                 InstanceType -> (string)
+                     The instance type that the image version runs on.
+
+                     NOTE:
+                            JupyterServer apps only support the system value.
+
+                        For  KernelGateway  apps  , the system value is trans-
+                        lated to ml.t3.medium . KernelGateway apps  also  sup-
+                        port all other values for available instance types.
+
+                 LifecycleConfigArn -> (string)
+                     The  Amazon Resource Name (ARN) of the Lifecycle Configu-
+                     ration attached to the Resource.
+
+              LifecycleConfigArns -> (list)
+                 The Amazon Resource Name (ARN) of  the  Lifecycle  Configura-
+                 tions  attached  to the JupyterServerApp. If you use this pa-
+                 rameter, the DefaultResourceSpec parameter is also required.
+
+                 NOTE:
+                     To remove a Lifecycle Config, you must set  LifecycleCon-
+                     figArns to an empty list.
+
+                 (string)
+
+          KernelGatewayAppSettings -> (structure)
+              The kernel gateway app settings.
+
+              DefaultResourceSpec -> (structure)
+                 The  default instance type and the Amazon Resource Name (ARN)
+                 of the default SageMaker image used by the KernelGateway app.
+
+                 NOTE:
+                     The Amazon SageMaker Studio UI does not use  the  default
+                     instance  type  value set here. The default instance type
+                     set here is used when Apps are created using  the  Amazon
+                     Web  Services  Command  Line Interface or Amazon Web Ser-
+                     vices CloudFormation  and  the  instance  type  parameter
+                     value is not passed.
 
                  SageMakerImageArn -> (string)
                      The ARN of the SageMaker image that the image version be-
@@ -176,55 +222,8 @@ OPTIONS
                      The Amazon Resource Name (ARN) of the Lifecycle  Configu-
                      ration attached to the Resource.
 
-              LifecycleConfigArns -> (list)
-                 The  Amazon  Resource  Name (ARN) of the Lifecycle Configura-
-                 tions attached to the JupyterServerApp. If you use  this  pa-
-                 rameter, the DefaultResourceSpec parameter is also required.
-
-                 NOTE:
-                     To  remove a Lifecycle Config, you must set LifecycleCon-
-                     figArns to an empty list.
-
-                 (string)
-
-          KernelGatewayAppSettings -> (structure)
-              The kernel gateway app settings.
-
-              DefaultResourceSpec -> (structure)
-                 The default instance type and the Amazon Resource Name  (ARN)
-                 of the default SageMaker image used by the KernelGateway app.
-
-                 NOTE:
-                     The  Amazon  SageMaker Studio UI does not use the default
-                     instance type value set here. The default  instance  type
-                     set  here  is used when Apps are created using the Amazon
-                     Web Services Command Line Interface or  Amazon  Web  Ser-
-                     vices  CloudFormation  and  the  instance  type parameter
-                     value is not passed.
-
-                 SageMakerImageArn -> (string)
-                     The ARN of the SageMaker image that the image version be-
-                     longs to.
-
-                 SageMakerImageVersionArn -> (string)
-                     The ARN of the image version created on the instance.
-
-                 InstanceType -> (string)
-                     The instance type that the image version runs on.
-
-                     NOTE:
-                            JupyterServer apps only support the system value.
-
-                        For  KernelGateway  apps  , the system value is trans-
-                        lated to ml.t3.medium . KernelGateway apps  also  sup-
-                        port all other values for available instance types.
-
-                 LifecycleConfigArn -> (string)
-                     The  Amazon Resource Name (ARN) of the Lifecycle Configu-
-                     ration attached to the Resource.
-
               CustomImages -> (list)
-                 A list of custom SageMaker images that are configured to  run
+                 A  list of custom SageMaker images that are configured to run
                  as a KernelGateway app.
 
                  (structure)
@@ -232,7 +231,7 @@ OPTIONS
                      your own SageMaker image .
 
                      ImageName -> (string)
-                        The name of the CustomImage. Must be  unique  to  your
+                        The  name  of  the CustomImage. Must be unique to your
                         account.
 
                      ImageVersionNumber -> (integer)
@@ -242,11 +241,11 @@ OPTIONS
                         The name of the AppImageConfig.
 
               LifecycleConfigArns -> (list)
-                 The  Amazon  Resource  Name (ARN) of the Lifecycle Configura-
+                 The Amazon Resource Name (ARN) of  the  Lifecycle  Configura-
                  tions attached to the the user profile or domain.
 
                  NOTE:
-                     To remove a Lifecycle Config, you must set  LifecycleCon-
+                     To  remove a Lifecycle Config, you must set LifecycleCon-
                      figArns to an empty list.
 
                  (string)
@@ -255,7 +254,7 @@ OPTIONS
               The TensorBoard app settings.
 
               DefaultResourceSpec -> (structure)
-                 The  default instance type and the Amazon Resource Name (ARN)
+                 The default instance type and the Amazon Resource Name  (ARN)
                  of the SageMaker image created on the instance.
 
                  SageMakerImageArn -> (string)
@@ -271,33 +270,33 @@ OPTIONS
                      NOTE:
                             JupyterServer apps only support the system value.
 
-                        For  KernelGateway  apps  , the system value is trans-
-                        lated to ml.t3.medium . KernelGateway apps  also  sup-
+                        For KernelGateway apps , the system  value  is  trans-
+                        lated  to  ml.t3.medium . KernelGateway apps also sup-
                         port all other values for available instance types.
 
                  LifecycleConfigArn -> (string)
-                     The  Amazon Resource Name (ARN) of the Lifecycle Configu-
+                     The Amazon Resource Name (ARN) of the Lifecycle  Configu-
                      ration attached to the Resource.
 
           RStudioServerProAppSettings -> (structure)
-              A collection of settings that configure  user  interaction  with
+              A  collection  of  settings that configure user interaction with
               the RStudioServerPro app.
 
               AccessStatus -> (string)
-                 Indicates  whether  the  current user has access to the RStu-
+                 Indicates whether the current user has access  to  the  RStu-
                  dioServerPro app.
 
               UserGroup -> (string)
-                 The level of permissions that the user has within  the  RStu-
-                 dioServerPro  app.  This  value  defaults  to User. The Admin
-                 value allows the user access to  the  RStudio  Administrative
+                 The  level  of permissions that the user has within the RStu-
+                 dioServerPro app. This value  defaults  to  User.  The  Admin
+                 value  allows  the  user access to the RStudio Administrative
                  Dashboard.
 
           RSessionAppSettings -> (structure)
               A collection of settings that configure the RSessionGateway app.
 
               DefaultResourceSpec -> (structure)
-                 Specifies  the ARN's of a SageMaker image and SageMaker image
+                 Specifies the ARN's of a SageMaker image and SageMaker  image
                  version, and the instance type that the version runs on.
 
                  SageMakerImageArn -> (string)
@@ -313,16 +312,16 @@ OPTIONS
                      NOTE:
                             JupyterServer apps only support the system value.
 
-                        For  KernelGateway  apps  , the system value is trans-
-                        lated to ml.t3.medium . KernelGateway apps  also  sup-
+                        For KernelGateway apps , the system  value  is  trans-
+                        lated  to  ml.t3.medium . KernelGateway apps also sup-
                         port all other values for available instance types.
 
                  LifecycleConfigArn -> (string)
-                     The  Amazon Resource Name (ARN) of the Lifecycle Configu-
+                     The Amazon Resource Name (ARN) of the Lifecycle  Configu-
                      ration attached to the Resource.
 
               CustomImages -> (list)
-                 A list of custom SageMaker images that are configured to  run
+                 A  list of custom SageMaker images that are configured to run
                  as a RSession app.
 
                  (structure)
@@ -330,7 +329,7 @@ OPTIONS
                      your own SageMaker image .
 
                      ImageName -> (string)
-                        The name of the CustomImage. Must be  unique  to  your
+                        The  name  of  the CustomImage. Must be unique to your
                         account.
 
                      ImageVersionNumber -> (integer)
@@ -338,6 +337,28 @@ OPTIONS
 
                      AppImageConfigName -> (string)
                         The name of the AppImageConfig.
+
+          CanvasAppSettings -> (structure)
+              The Canvas app settings.
+
+              TimeSeriesForecastingSettings -> (structure)
+                 Time series forecast settings for the Canvas app.
+
+                 Status -> (string)
+                     Describes whether time series forecasting is  enabled  or
+                     disabled in the Canvas app.
+
+                 AmazonForecastRoleArn -> (string)
+                     The  IAM  role  that Canvas passes to Amazon Forecast for
+                     time series forecasting. By default, Canvas uses the exe-
+                     cution  role  specified  in the UserProfile that launches
+                     the Canvas app. If an execution role is not specified  in
+                     the  UserProfile  , Canvas uses the execution role speci-
+                     fied in the Domain that owns the UserProfile .  To  allow
+                     time  series  forecasting,  this IAM role should have the
+                     AmazonSageMakerCanvasForecastAccess policy  attached  and
+                     forecast.amazonaws.com added in the trust relationship as
+                     a service principal.
 
        JSON Syntax:
 
@@ -402,20 +423,26 @@ OPTIONS
                 }
                 ...
               ]
+            },
+            "CanvasAppSettings": {
+              "TimeSeriesForecastingSettings": {
+                "Status": "ENABLED"|"DISABLED",
+                "AmazonForecastRoleArn": "string"
+              }
             }
           }
 
-       --cli-input-json  (string) Performs service operation based on the JSON
-       string provided. The JSON string follows the format provided by  --gen-
-       erate-cli-skeleton.  If  other  arguments  are  provided on the command
-       line, the CLI values will override the JSON-provided values. It is  not
+       --cli-input-json (string) Performs service operation based on the  JSON
+       string  provided. The JSON string follows the format provided by --gen-
+       erate-cli-skeleton. If other arguments  are  provided  on  the  command
+       line,  the CLI values will override the JSON-provided values. It is not
        possible to pass arbitrary binary values using a JSON-provided value as
        the string will be taken literally.
 
-       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
+       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
        output without sending an API request. If provided with no value or the
        value input, prints a sample input JSON that can be used as an argument
-       for  --cli-input-json.  If provided with the value output, it validates
+       for --cli-input-json. If provided with the value output,  it  validates
        the command inputs and returns a sample output JSON for that command.
 
 GLOBAL OPTIONS
@@ -429,7 +456,7 @@ GLOBAL OPTIONS
 
        --no-verify-ssl (boolean)
 
-       By default, the AWS CLI uses SSL when communicating with AWS  services.
+       By  default, the AWS CLI uses SSL when communicating with AWS services.
        For each SSL connection, the AWS CLI will verify SSL certificates. This
        option overrides the default behavior of verifying SSL certificates.
 
@@ -475,7 +502,7 @@ GLOBAL OPTIONS
 
        --no-sign-request (boolean)
 
-       Do not sign requests. Credentials will not be loaded if  this  argument
+       Do  not  sign requests. Credentials will not be loaded if this argument
        is provided.
 
        --ca-bundle (string)
@@ -485,14 +512,14 @@ GLOBAL OPTIONS
 
        --cli-read-timeout (int)
 
-       The maximum socket read time in seconds. If the value is set to 0,  the
-       socket  read  will be blocking and not timeout. The default value is 60
+       The  maximum socket read time in seconds. If the value is set to 0, the
+       socket read will be blocking and not timeout. The default value  is  60
        seconds.
 
        --cli-connect-timeout (int)
 
-       The maximum socket connect time in seconds. If the value is set  to  0,
-       the  socket connect will be blocking and not timeout. The default value
+       The  maximum  socket connect time in seconds. If the value is set to 0,
+       the socket connect will be blocking and not timeout. The default  value
        is 60 seconds.
 
 OUTPUT
