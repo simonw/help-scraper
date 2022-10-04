@@ -8,6 +8,10 @@ NAME
 DESCRIPTION
        Returns detailed metadata about the specified ACM certificate.
 
+       If you have just created a certificate using the RequestCertificate ac-
+       tion, there is a delay of several seconds before you can  retrieve  in-
+       formation about it.
+
        See also: AWS API Documentation
 
 SYNOPSIS
@@ -303,18 +307,27 @@ OUTPUT
               only when the certificate type is AMAZON_ISSUED .
 
           ImportedAt -> (timestamp)
-              The date and time at which the certificate  was  imported.  This
-              value exists only when the certificate type is IMPORTED .
+              The date and time when the certificate was imported. This  value
+              exists only when the certificate type is IMPORTED .
 
           Status -> (string)
               The status of the certificate.
+
+              A  certificate  enters  status PENDING_VALIDATION upon being re-
+              quested, unless it fails for any of the  reasons  given  in  the
+              troubleshooting  topic Certificate request fails . ACM makes re-
+              peated attempts to validate a certificate for 72 hours and  then
+              times  out.  If  a  certificate  shows  status FAILED or VALIDA-
+              TION_TIMED_OUT, delete the request, correct the issue  with  DNS
+              validation  or  Email  validation , and try again. If validation
+              succeeds, the certificate enters status ISSUED.
 
           RevokedAt -> (timestamp)
               The time at which the certificate was revoked. This value exists
               only when the certificate status is REVOKED .
 
           RevocationReason -> (string)
-              The reason the certificate was revoked. This value  exists  only
+              The  reason  the certificate was revoked. This value exists only
               when the certificate status is REVOKED .
 
           NotBefore -> (timestamp)
@@ -324,36 +337,36 @@ OUTPUT
               The time after which the certificate is not valid.
 
           KeyAlgorithm -> (string)
-              The  algorithm  that was used to generate the public-private key
+              The algorithm that was used to generate the  public-private  key
               pair.
 
           SignatureAlgorithm -> (string)
               The algorithm that was used to sign the certificate.
 
           InUseBy -> (list)
-              A list of ARNs for the Amazon Web Services  resources  that  are
-              using  the  certificate.  A  certificate can be used by multiple
+              A  list  of  ARNs for the Amazon Web Services resources that are
+              using the certificate. A certificate can  be  used  by  multiple
               Amazon Web Services resources.
 
               (string)
 
           FailureReason -> (string)
-              The reason the certificate request  failed.  This  value  exists
-              only  when  the certificate status is FAILED . For more informa-
-              tion, see Certificate Request Failed in the Amazon Web  Services
-              Certificate Manager User Guide .
+              The  reason  the  certificate  request failed. This value exists
+              only when the certificate status is FAILED . For  more  informa-
+              tion,  see Certificate Request Failed in the Certificate Manager
+              User Guide .
 
           Type -> (string)
               The source of the certificate. For certificates provided by ACM,
               this value is AMAZON_ISSUED . For certificates that you imported
-              with   ImportCertificate , this value is IMPORTED . ACM does not
-              provide managed renewal for imported certificates. For more  in-
-              formation  about  the  differences between certificates that you
-              import and those that ACM provides, see  Importing  Certificates
-              in the Amazon Web Services Certificate Manager User Guide .
+              with  ImportCertificate , this value is IMPORTED . ACM does  not
+              provide  managed renewal for imported certificates. For more in-
+              formation about the differences between  certificates  that  you
+              import  and  those that ACM provides, see Importing Certificates
+              in the Certificate Manager User Guide .
 
           RenewalSummary -> (structure)
-              Contains  information  about the status of ACM's managed renewal
+              Contains information about the status of ACM's  managed  renewal
               for the certificate. This field exists only when the certificate
               type is AMAZON_ISSUED .
 
@@ -363,16 +376,16 @@ OUTPUT
               DomainValidationOptions -> (list)
                  Contains information about the validation of each domain name
                  in the certificate, as it pertains to ACM's managed renewal .
-                 This  is different from the initial validation that occurs as
-                 a result of the  RequestCertificate request. This  field  ex-
+                 This is different from the initial validation that occurs  as
+                 a  result  of the  RequestCertificate request. This field ex-
                  ists only when the certificate type is AMAZON_ISSUED .
 
                  (structure)
-                     Contains  information about the validation of each domain
+                     Contains information about the validation of each  domain
                      name in the certificate.
 
                      DomainName -> (string)
-                        A fully qualified domain name (FQDN) in  the  certifi-
+                        A  fully  qualified domain name (FQDN) in the certifi-
                         cate. For example, www.example.com or example.com .
 
                      ValidationEmails -> (list)
@@ -382,11 +395,11 @@ OUTPUT
                         (string)
 
                      ValidationDomain -> (string)
-                        The domain name that ACM used to send  domain  valida-
+                        The  domain  name that ACM used to send domain valida-
                         tion emails.
 
                      ValidationStatus -> (string)
-                        The  validation status of the domain name. This can be
+                        The validation status of the domain name. This can  be
                         one of the following values:
 
                         o PENDING_VALIDATION
@@ -396,27 +409,27 @@ OUTPUT
                         o FAILED
 
                      ResourceRecord -> (structure)
-                        Contains the CNAME record that you  add  to  your  DNS
-                        database  for domain validation. For more information,
+                        Contains  the  CNAME  record  that you add to your DNS
+                        database for domain validation. For more  information,
                         see Use DNS to Validate Domain Ownership .
 
                         Note: The CNAME information that you need does not in-
                         clude the name of your domain. If you include your do-
                         main name in the DNS database CNAME record, validation
-                        fails.     For     example,    if    the    name    is
+                        fails.    For    example,    if    the     name     is
                         "_a79865eb4cd1a6ab990a45779b4e0b96.yourdomain.com",
                         only "_a79865eb4cd1a6ab990a45779b4e0b96" must be used.
 
                         Name -> (string)
-                            The  name  of the DNS record to create in your do-
+                            The name of the DNS record to create in  your  do-
                             main. This is supplied by ACM.
 
                         Type -> (string)
-                            The type of DNS  record.  Currently  this  can  be
+                            The  type  of  DNS  record.  Currently this can be
                             CNAME .
 
                         Value -> (string)
-                            The  value  of the CNAME record to add to your DNS
+                            The value of the CNAME record to add to  your  DNS
                             database. This is supplied by ACM.
 
                      ValidationMethod -> (string)
@@ -430,35 +443,35 @@ OUTPUT
 
           KeyUsages -> (list)
               A list of Key Usage X.509 v3 extension objects. Each object is a
-              string  value that identifies the purpose of the public key con-
-              tained in the certificate.  Possible  extension  values  include
+              string value that identifies the purpose of the public key  con-
+              tained  in  the  certificate.  Possible extension values include
               DIGITAL_SIGNATURE, KEY_ENCHIPHERMENT, NON_REPUDIATION, and more.
 
               (structure)
-                 The  Key  Usage X.509 v3 extension defines the purpose of the
+                 The Key Usage X.509 v3 extension defines the purpose  of  the
                  public key contained in the certificate.
 
                  Name -> (string)
                      A string value that contains a Key Usage extension name.
 
           ExtendedKeyUsages -> (list)
-              Contains a list of Extended Key Usage  X.509  v3  extension  ob-
+              Contains  a  list  of  Extended Key Usage X.509 v3 extension ob-
               jects. Each object specifies a purpose for which the certificate
-              public key can be used and consists of  a  name  and  an  object
+              public  key  can  be  used  and consists of a name and an object
               identifier (OID).
 
               (structure)
                  The Extended Key Usage X.509 v3 extension defines one or more
                  purposes for which the public key can be used. This is in ad-
-                 dition  to or in place of the basic purposes specified by the
+                 dition to or in place of the basic purposes specified by  the
                  Key Usage extension.
 
                  Name -> (string)
                      The name of an Extended Key Usage value.
 
                  OID -> (string)
-                     An object identifier (OID) for the extension value.  OIDs
-                     are  strings of numbers separated by periods. The follow-
+                     An  object identifier (OID) for the extension value. OIDs
+                     are strings of numbers separated by periods. The  follow-
                      ing OIDs are defined in RFC 3280 and RFC 5280.
 
                      o 1.3.6.1.5.5.7.3.1 (TLS_WEB_SERVER_AUTHENTICATION)
@@ -480,23 +493,23 @@ OUTPUT
                      o 1.3.6.1.5.5.7.3.7 (IPSEC_USER)
 
           CertificateAuthorityArn -> (string)
-              The Amazon Resource Name (ARN) of the ACM PCA  private  certifi-
-              cate  authority  (CA)  that issued the certificate. This has the
-              following format:
+              The  Amazon  Resource  Name (ARN) of the private certificate au-
+              thority (CA) that issued the certificate. This has the following
+              format:
                  arn:aws:acm-pca:region:account:certificate-author-
                  ity/12345678-1234-1234-1234-123456789012
 
           RenewalEligibility -> (string)
-              Specifies  whether  the  certificate is eligible for renewal. At
-              this time, only exported private  certificates  can  be  renewed
+              Specifies whether the certificate is eligible  for  renewal.  At
+              this  time,  only  exported  private certificates can be renewed
               with the  RenewCertificate command.
 
           Options -> (structure)
-              Value  that specifies whether to add the certificate to a trans-
-              parency log. Certificate transparency makes it possible  to  de-
-              tect  SSL  certificates that have been mistakenly or maliciously
+              Value that specifies whether to add the certificate to a  trans-
+              parency  log.  Certificate transparency makes it possible to de-
+              tect SSL certificates that have been mistakenly  or  maliciously
               issued. A browser might respond to certificate that has not been
-              logged  by  showing an error message. The logs are cryptographi-
+              logged by showing an error message. The logs  are  cryptographi-
               cally secure.
 
               CertificateTransparencyLoggingPreference -> (string)

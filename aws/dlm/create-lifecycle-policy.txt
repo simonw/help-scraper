@@ -183,31 +183,41 @@ OPTIONS
 
                         The  operation occurs within a one-hour window follow-
                         ing the specified time. If you do not specify a  time,
-                        Amazon DLM selects a time within the next 24 hours.
+                        Amazon  Data  Lifecycle  Manager selects a time within
+                        the next 24 hours.
 
                         (string)
 
                      CronExpression -> (string)
-                        The  schedule,  as a Cron expression. The schedule in-
+                        The schedule, as a Cron expression. The  schedule  in-
                         terval must be between 1 hour and 1 year. For more in-
-                        formation,  see  Cron expressions in the Amazon Cloud-
+                        formation, see Cron expressions in the  Amazon  Cloud-
                         Watch User Guide .
 
                  RetainRule -> (structure)
-                     The retention rule for snapshots or AMIs created  by  the
+                     The  retention  rule for snapshots or AMIs created by the
                      policy.
 
                      Count -> (integer)
-                        The  number of snapshots to retain for each volume, up
-                        to a maximum of 1000.
+                        The number of snapshots to retain for each volume,  up
+                        to  a  maximum of 1000. For example if you want to re-
+                        tain a maximum of three snapshots, specify  3  .  When
+                        the  fourth  snapshot  is created, the oldest retained
+                        snapshot is deleted, or it is  moved  to  the  archive
+                        tier if you have specified an  ArchiveRule .
 
                      Interval -> (integer)
-                        The amount of time to retain each snapshot. The  maxi-
-                        mum  is  100 years. This is equivalent to 1200 months,
+                        The  amount of time to retain each snapshot. The maxi-
+                        mum is 100 years. This is equivalent to  1200  months,
                         5200 weeks, or 36500 days.
 
                      IntervalUnit -> (string)
-                        The unit of time for time-based retention.
+                        The  unit  of time for time-based retention. For exam-
+                        ple, to retain snapshots for 3 months, specify  Inter-
+                        val=3  and IntervalUnit=MONTHS . Once the snapshot has
+                        been retained for 3 months, it is deleted,  or  it  is
+                        moved  to  the  archive  tier if you have specified an
+                        ArchiveRule .
 
                  FastRestoreRule -> (structure)
                         [Snapshot policies only] The rule  for  enabling  fast
@@ -369,6 +379,48 @@ OPTIONS
 
                      IntervalUnit -> (string)
                         The unit of time in which to measure the Interval .
+
+                 ArchiveRule -> (structure)
+                        [Snapshot policies that target volumes only] The snap-
+                        shot archiving rule for the schedule. When you specify
+                        an archiving rule, snapshots are  automatically  moved
+                        from  the  standard  tier to the archive tier once the
+                        schedule's retention threshold is met.  Snapshots  are
+                        then  retained in the archive tier for the archive re-
+                        tention period that you specify.
+
+                     For more information about using snapshot archiving,  see
+                     Considerations for snapshot lifecycle policies .
+
+                     RetainRule -> (structure)
+                        Information  about  the retention period for the snap-
+                        shot archiving rule.
+
+                        RetentionArchiveTier -> (structure)
+                            Information about retention period in  the  Amazon
+                            EBS  Snapshots  Archive. For more information, see
+                            Archive Amazon EBS snapshots .
+
+                            Count -> (integer)
+                               The maximum number of snapshots  to  retain  in
+                               the  archive  storage tier for each volume. The
+                               count must ensure that each snapshot remains in
+                               the  archive tier for at least 90 days. For ex-
+                               ample, if the schedule creates snapshots  every
+                               30  days, you must specify a count of 3 or more
+                               to ensure that each snapshot is archived for at
+                               least 90 days.
+
+                            Interval -> (integer)
+                               Specifies  the  period  of time to retain snap-
+                               shots in the archive tier.  After  this  period
+                               expires, the snapshot is permanently deleted.
+
+                            IntervalUnit -> (string)
+                               The unit of time in which to measure the Inter-
+                               val . For example, to retain a snapshots in the
+                               archive  tier  for 6 months, specify Interval=6
+                               and IntervalUnit=MONTHS .
 
           Parameters -> (structure)
                  [Snapshot and AMI policies only] A set of optional parameters
@@ -592,6 +644,15 @@ OPTIONS
                   "Count": integer,
                   "Interval": integer,
                   "IntervalUnit": "DAYS"|"WEEKS"|"MONTHS"|"YEARS"
+                },
+                "ArchiveRule": {
+                  "RetainRule": {
+                    "RetentionArchiveTier": {
+                      "Count": integer,
+                      "Interval": integer,
+                      "IntervalUnit": "DAYS"|"WEEKS"|"MONTHS"|"YEARS"
+                    }
+                  }
                 }
               }
               ...

@@ -28,6 +28,7 @@ SYNOPSIS
           --report <value>
           [--client-request-token <value>]
           [--tags <value>]
+          [--capacity-to-release <value>]
           [--cli-input-json <value>]
           [--generate-cli-skeleton <value>]
           [--debug]
@@ -54,6 +55,10 @@ OPTIONS
           o EXPORT_TO_REPOSITORY
 
           o IMPORT_METADATA_FROM_REPOSITORY
+
+          o RELEASE_DATA_FROM_FILESYSTEM
+
+          o AUTO_RELEASE_DATA
 
        --paths (list)
           A list of paths for the data repository task to use when the task is
@@ -170,6 +175,11 @@ OPTIONS
             ...
           ]
 
+       --capacity-to-release (long)
+          Specifies  the  amount of data to release, in GiB, by an Amazon File
+          Cache AUTO_RELEASE_DATA task that automatically releases files  from
+          the cache.
+
        --cli-input-json  (string) Performs service operation based on the JSON
        string provided. The JSON string follows the format provided by  --gen-
        erate-cli-skeleton.  If  other  arguments  are  provided on the command
@@ -271,51 +281,53 @@ OUTPUT
           Lifecycle -> (string)
               The lifecycle status of the data repository task, as follows:
 
-              o PENDING - Amazon FSx has not started the task.
+              o PENDING - The task has not started.
 
-              o EXECUTING - Amazon FSx is processing the task.
+              o EXECUTING - The task is in process.
 
-              o FAILED - Amazon FSx was not able to complete the task. For ex-
-                ample, there may be files the  task  failed  to  process.  The
-                DataRepositoryTaskFailureDetails property provides more infor-
-                mation about task failures.
+              o FAILED  -  The task was not able to be completed. For example,
+                there may be files the task failed to process. The  DataRepos-
+                itoryTaskFailureDetails  property  provides  more  information
+                about task failures.
 
-              o SUCCEEDED - FSx completed the task successfully.
+              o SUCCEEDED - The task has completed successfully.
 
-              o CANCELED - Amazon FSx canceled the task and it  did  not  com-
-                plete.
+              o CANCELED - The task was canceled and it did not complete.
 
-              o CANCELING - FSx is in process of canceling the task.
+              o CANCELING - The task is in process of being canceled.
 
               NOTE:
-                 You  cannot delete an FSx for Lustre file system if there are
-                 data repository tasks for the file system in the  PENDING  or
-                 EXECUTING  states. Please retry when the data repository task
-                 is finished (with a status  of  CANCELED  ,  SUCCEEDED  ,  or
-                 FAILED  ).  You can use the DescribeDataRepositoryTask action
-                 to monitor the task status. Contact the FSx team if you  need
+                 You cannot delete an FSx for Lustre file system if there  are
+                 data  repository  tasks for the file system in the PENDING or
+                 EXECUTING states. Please retry when the data repository  task
+                 is  finished  (with  a  status  of  CANCELED , SUCCEEDED , or
+                 FAILED ). You can use the  DescribeDataRepositoryTask  action
+                 to  monitor the task status. Contact the FSx team if you need
                  to delete your file system immediately.
 
           Type -> (string)
               The type of data repository task.
 
-              o The  EXPORT_TO_REPOSITORY  data  repository  task exports from
-                your Lustre file system from to a linked S3 bucket.
+              o EXPORT_TO_REPOSITORY tasks export from  your  Amazon  FSx  for
+                Lustre file system to a linked data repository.
 
-              o The IMPORT_METADATA_FROM_REPOSITORY data repository  task  im-
-                ports  metadata changes from a linked S3 bucket to your Lustre
-                file system.
+              o IMPORT_METADATA_FROM_REPOSITORY  tasks import metadata changes
+                from a linked S3 bucket to your Amazon  FSx  for  Lustre  file
+                system.
+
+              o AUTO_RELEASE_DATA  tasks  automatically  release files from an
+                Amazon File Cache resource.
 
           CreationTime -> (timestamp)
               The time that  the  resource  was  created,  in  seconds  (since
               1970-01-01T00:00:00Z), also known as Unix time.
 
           StartTime -> (timestamp)
-              The time that Amazon FSx began processing the task.
+              The time the system began processing the task.
 
           EndTime -> (timestamp)
-              The  time  that  Amazon FSx completed processing the task, popu-
-              lated after the task is complete.
+              The time the system completed processing the task, populated af-
+              ter the task is complete.
 
           ResourceARN -> (string)
               The Amazon Resource  Name  (ARN)  for  a  given  resource.  ARNs
@@ -344,35 +356,34 @@ OUTPUT
                      April and also of payroll : April .
 
           FileSystemId -> (string)
-              The  globally  unique  ID of the file system, assigned by Amazon
-              FSx.
+              The globally unique ID of the file system.
 
           Paths -> (list)
-              An array of paths on the Amazon FSx for Lustre file system  that
-              specify  the  data  for the data repository task to process. For
-              example, in an  EXPORT_TO_REPOSITORY  task,  the  paths  specify
-              which data to export to the linked data repository.
+              An  array of paths that specify the data for the data repository
+              task to process. For example, in an  EXPORT_TO_REPOSITORY  task,
+              the paths specify which data to export to the linked data repos-
+              itory.
 
-              (Default)  If  Paths  is not specified, Amazon FSx uses the file
+              (Default) If Paths is not specified, Amazon FSx  uses  the  file
               system root directory.
 
               (string)
 
           FailureDetails -> (structure)
-              Failure message describing why the task failed, it is  populated
+              Failure  message describing why the task failed, it is populated
               only when Lifecycle is set to FAILED .
 
               Message -> (string)
                  A detailed error message.
 
           Status -> (structure)
-              Provides  the  status  of  the number of files that the task has
+              Provides the status of the number of files  that  the  task  has
               processed successfully and failed to process.
 
               TotalCount -> (long)
                  The total number of files that the task will process. While a
                  task is executing, the sum of SucceededCount plus FailedCount
-                 may not equal TotalCount . When the task is complete,  Total-
+                 may  not equal TotalCount . When the task is complete, Total-
                  Count equals the sum of SucceededCount plus FailedCount .
 
               SucceededCount -> (long)
@@ -380,52 +391,65 @@ OUTPUT
                  cessfully processed.
 
               FailedCount -> (long)
-                 A running total of the number of files that the  task  failed
+                 A  running  total of the number of files that the task failed
                  to process.
 
               LastUpdatedTime -> (timestamp)
                  The time at which the task status was last updated.
 
+              ReleasedCapacity -> (long)
+                 The total amount of data, in GiB, released by an Amazon  File
+                 Cache  AUTO_RELEASE_DATA  task  that  automatically  releases
+                 files from the cache.
+
           Report -> (structure)
-              Provides  a report detailing the data repository task results of
+              Provides a report detailing the data repository task results  of
               the files processed that match the criteria specified in the re-
-              port  Scope  parameter. FSx delivers the report to the file sys-
+              port Scope parameter. FSx delivers the report to the  file  sys-
               tem's linked data repository in Amazon S3, using the path speci-
-              fied  in  the  report Path parameter. You can specify whether or
+              fied in the report Path parameter. You can  specify  whether  or
               not a report gets generated for a task using the Enabled parame-
               ter.
 
               Enabled -> (boolean)
-                 Set  Enabled  to True to generate a CompletionReport when the
-                 task completes. If set to true , then you need to  provide  a
-                 report  Scope  ,  Path , and Format . Set Enabled to False if
-                 you do not want a CompletionReport generated  when  the  task
+                 Set Enabled to True to generate a CompletionReport  when  the
+                 task  completes.  If set to true , then you need to provide a
+                 report Scope , Path , and Format . Set Enabled  to  False  if
+                 you  do  not  want a CompletionReport generated when the task
                  completes.
 
               Path -> (string)
-                 Required  if  Enabled is set to true . Specifies the location
+                 Required if Enabled is set to true . Specifies  the  location
                  of the report on the file system's linked S3 data repository.
-                 An  absolute  path  that  defines where the completion report
+                 An absolute path that defines  where  the  completion  report
                  will be stored in the destination location. The Path you pro-
-                 vide  must  be located within the file systems ExportPath. An
-                 example Path value  is  "s3://myBucket/myExportPath/optional-
-                 Prefix".  The  report  provides the following information for
+                 vide must be located within the file systems  ExportPath.  An
+                 example  Path  value is "s3://myBucket/myExportPath/optional-
+                 Prefix". The report provides the  following  information  for
                  each file in the report: FilePath, FileStatus, and ErrorCode.
                  To learn more about a file system's ExportPath , see .
 
               Format -> (string)
-                 Required  if Enabled is set to true . Specifies the format of
+                 Required if Enabled is set to true . Specifies the format  of
                  the CompletionReport . REPORT_CSV_20191124 is the only format
-                 currently    supported.   When   Format   is   set   to   RE-
-                 PORT_CSV_20191124 , the CompletionReport is provided  in  CSV
+                 currently   supported.   When   Format   is   set   to    RE-
+                 PORT_CSV_20191124  ,  the CompletionReport is provided in CSV
                  format, and is delivered to {path}/task-{id}/failures.csv .
 
               Scope -> (string)
-                 Required  if  Enabled is set to true . Specifies the scope of
-                 the CompletionReport ; FAILED_FILES_ONLY is  the  only  scope
+                 Required if Enabled is set to true . Specifies the  scope  of
+                 the  CompletionReport  ;  FAILED_FILES_ONLY is the only scope
                  currently supported. When Scope is set to FAILED_FILES_ONLY ,
-                 the CompletionReport only contains  information  about  files
+                 the  CompletionReport  only  contains information about files
                  that the data repository task failed to process.
+
+          CapacityToRelease -> (long)
+              Specifies the amount of data to release, in GiB,  by  an  Amazon
+              File  Cache  AUTO_RELEASE_DATA  task that automatically releases
+              files from the cache.
+
+          FileCacheId -> (string)
+              The system-generated, unique ID of the cache.
 
 
 

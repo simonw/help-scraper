@@ -20,12 +20,17 @@ DESCRIPTION
        ing a data repository to your file system, see Linking your file system
        to an S3 bucket .
 
+       NOTE:
+          CreateDataRepositoryAssociation isn't supported on Amazon File Cache
+          resources. To create a DRA on Amazon File Cache, use the CreateFile-
+          Cache operation.
+
        See also: AWS API Documentation
 
 SYNOPSIS
             create-data-repository-association
           --file-system-id <value>
-          --file-system-path <value>
+          [--file-system-path <value>]
           --data-repository-path <value>
           [--batch-import-meta-data-on-create | --no-batch-import-meta-data-on-create]
           [--imported-file-chunk-size <value>]
@@ -69,7 +74,7 @@ OPTIONS
 
           NOTE:
               If you specify only a forward slash (/  )  as  the  file  system
-              path,  you  can  link only 1 data repository to the file system.
+              path,  you can link only one data repository to the file system.
               You can only specify "/" as the file system path for  the  first
               data repository associated with a file system.
 
@@ -137,12 +142,12 @@ OPTIONS
               Events -> (list)
                  The AutoExportPolicy can have the following event values:
 
-                 o NEW - Amazon FSx automatically exports new files and direc-
-                   tories to the data repository as they are added to the file
-                   system.
+                 o NEW  - New files and directories are automatically exported
+                   to the data repository as they are added to the  file  sys-
+                   tem.
 
-                 o CHANGED - Amazon FSx automatically exports changes to files
-                   and directories on the file system to the data repository.
+                 o CHANGED - Changes to files and directories on the file sys-
+                   tem are automatically exported to the data repository.
 
                  o DELETED - Files and directories are  automatically  deleted
                    on  the  data  repository when they are deleted on the file
@@ -321,17 +326,17 @@ OUTPUT
               Describes  the state of a data repository association. The life-
               cycle can have the following values:
 
-              o CREATING - The data repository  association  between  the  FSx
-                file  system  and the S3 data repository is being created. The
+              o CREATING - The data repository association  between  the  file
+                system  or cache and the data repository is being created. The
                 data repository is unavailable.
 
               o AVAILABLE - The data repository association is  available  for
                 use.
 
-              o MISCONFIGURED - Amazon FSx cannot automatically import updates
-                from the S3 bucket or automatically export updates to  the  S3
-                bucket  until the data repository association configuration is
-                corrected.
+              o MISCONFIGURED  - The data repository association is misconfig-
+                ured. Until the configuration is corrected,  automatic  import
+                and  automatic  export  will not work (only for Amazon FSx for
+                Lustre).
 
               o UPDATING - The data repository  association  is  undergoing  a
                 customer initiated update that might affect its availability.
@@ -350,14 +355,14 @@ OUTPUT
                  A detailed error message.
 
           FileSystemPath -> (string)
-              A path on the file system that points to a high-level  directory
-              (such  as  /ns1/  ) or subdirectory (such as /ns1/subdir/ ) that
-              will be mapped 1-1 with DataRepositoryPath . The leading forward
-              slash  in the name is required. Two data repository associations
-              cannot have overlapping file system paths.  For  example,  if  a
-              data repository is associated with file system path /ns1/ , then
-              you cannot link another data repository with  file  system  path
-              /ns1/ns2 .
+              A path on the Amazon FSx for Lustre file system that points to a
+              high-level  directory  (such as /ns1/ ) or subdirectory (such as
+              /ns1/subdir/ ) that will be mapped 1-1 with DataRepositoryPath .
+              The  leading  forward  slash  in  the name is required. Two data
+              repository associations  cannot  have  overlapping  file  system
+              paths. For example, if a data repository is associated with file
+              system path /ns1/ , then you cannot link another data repository
+              with file system path /ns1/ns2 .
 
               This  path specifies where in your file system files will be ex-
               ported from or imported to. This file system  directory  can  be
@@ -366,28 +371,51 @@ OUTPUT
 
               NOTE:
                  If you specify only a forward slash (/ ) as the  file  system
-                 path, you can link only 1 data repository to the file system.
-                 You can only specify "/" as the  file  system  path  for  the
+                 path,  you can link only one data repository to the file sys-
+                 tem. You can only specify "/" as the file system path for the
                  first data repository associated with a file system.
 
           DataRepositoryPath -> (string)
-              The path to the Amazon S3 data repository that will be linked to
-              the file system. The path can be an S3 bucket or prefix  in  the
-              format  s3://myBucket/myPrefix/  .  This path specifies where in
-              the S3 data repository files will be imported from  or  exported
-              to.
+              The path to the data repository that will be linked to the cache
+              or file system.
+
+              o For Amazon File Cache, the path can be an NFS data  repository
+                that  will  be  linked to the cache. The path can be in one of
+                two formats:
+
+                o If you are not using the DataRepositorySubdirectories param-
+                  eter,  the path is to an NFS Export directory (or one of its
+                  subdirectories) in the format  nsf://nfs-domain-name/export-
+                  path  . You can therefore link a single NFS Export to a sin-
+                  gle data repository association.
+
+                o If you are using the DataRepositorySubdirectories parameter,
+                  the  path  is  the domain name of the NFS file system in the
+                  format nfs://filer-domain-name , which indicates the root of
+                  the  subdirectories  specified with the DataRepositorySubdi-
+                  rectories parameter.
+
+              o For Amazon File Cache, the path can be an S3 bucket or  prefix
+                in the format s3://myBucket/myPrefix/ .
+
+              o For  Amazon  FSx  for  Lustre, the path can be an S3 bucket or
+                prefix in the format s3://myBucket/myPrefix/ .
 
           BatchImportMetaDataOnCreate -> (boolean)
               A boolean flag indicating whether an import data repository task
               to import metadata should run after the data repository associa-
               tion is created. The task runs if this flag is set to true .
 
+              NOTE:
+                 BatchImportMetaDataOnCreate is not supported for data reposi-
+                 tories linked to an Amazon File Cache resource.
+
           ImportedFileChunkSize -> (integer)
               For files imported from a data repository, this value determines
               the stripe count and maximum amount of data per  file  (in  MiB)
               stored  on  a  single physical disk. The maximum number of disks
               that a single file can be striped across is limited by the total
-              number of disks that make up the file system.
+              number of disks that make up the file system or cache.
 
               The  default  chunk size is 1,024 MiB (1 GiB) and can go as high
               as 512,000 MiB (500 GiB). Amazon S3 objects have a maximum  size
@@ -395,11 +423,8 @@ OUTPUT
 
           S3 -> (structure)
               The  configuration for an Amazon S3 data repository linked to an
-              Amazon FSx Lustre file system with a  data  repository  associa-
-              tion. The configuration defines which file events (new, changed,
-              or deleted files or directories) are automatically imported from
-              the  linked  data repository to the file system or automatically
-              exported from the file system to the data repository.
+              Amazon FSx for Lustre file system with a data repository associ-
+              ation.
 
               AutoImportPolicy -> (structure)
                  Specifies the type of updated objects (new, changed, deleted)
@@ -409,44 +434,44 @@ OUTPUT
                  Events -> (list)
                      The AutoImportPolicy can have the following event values:
 
-                     o NEW - Amazon  FSx  automatically  imports  metadata  of
-                       files  added  to  the linked S3 bucket that do not cur-
+                     o NEW  -  Amazon  FSx  automatically  imports metadata of
+                       files added to the linked S3 bucket that  do  not  cur-
                        rently exist in the FSx file system.
 
-                     o CHANGED - Amazon FSx automatically updates  file  meta-
-                       data  and invalidates existing file content on the file
+                     o CHANGED  -  Amazon FSx automatically updates file meta-
+                       data and invalidates existing file content on the  file
                        system as files change in the data repository.
 
                      o DELETED - Amazon FSx automatically deletes files on the
-                       file  system  as corresponding files are deleted in the
+                       file system as corresponding files are deleted  in  the
                        data repository.
 
-                     You can define any combination of event  types  for  your
+                     You  can  define  any combination of event types for your
                      AutoImportPolicy .
 
                      (string)
 
               AutoExportPolicy -> (structure)
                  Specifies the type of updated objects (new, changed, deleted)
-                 that will be automatically exported from your file system  to
+                 that  will be automatically exported from your file system to
                  the linked S3 bucket.
 
                  Events -> (list)
                      The AutoExportPolicy can have the following event values:
 
-                     o NEW  -  Amazon  FSx automatically exports new files and
-                       directories to the data repository as they are added to
-                       the file system.
+                     o NEW - New files and directories are  automatically  ex-
+                       ported  to the data repository as they are added to the
+                       file system.
 
-                     o CHANGED  -  Amazon FSx automatically exports changes to
-                       files and directories on the file system  to  the  data
-                       repository.
+                     o CHANGED - Changes to files and directories on the  file
+                       system  are  automatically exported to the data reposi-
+                       tory.
 
                      o DELETED  -  Files  and  directories  are  automatically
                        deleted on the data repository when they are deleted on
                        the file system.
 
-                     You  can  define  any combination of event types for your
+                     You can define any combination of event  types  for  your
                      AutoExportPolicy .
 
                      (string)
@@ -458,20 +483,99 @@ OUTPUT
                  Specifies a key-value pair for a resource tag.
 
                  Key -> (string)
-                     A value that specifies the TagKey , the name of the  tag.
-                     Tag  keys  must  be unique for the resource to which they
+                     A  value that specifies the TagKey , the name of the tag.
+                     Tag keys must be unique for the resource  to  which  they
                      are attached.
 
                  Value -> (string)
-                     A value that specifies the TagValue , the value  assigned
-                     to  the corresponding tag key. Tag values can be null and
-                     don't have to be unique in a tag set.  For  example,  you
-                     can  have  a  key-value  pair  in a tag set of finances :
+                     A  value that specifies the TagValue , the value assigned
+                     to the corresponding tag key. Tag values can be null  and
+                     don't  have  to  be unique in a tag set. For example, you
+                     can have a key-value pair in a  tag  set  of  finances  :
                      April and also of payroll : April .
 
           CreationTime -> (timestamp)
-              The time that  the  resource  was  created,  in  seconds  (since
+              The  time  that  the  resource  was  created,  in seconds (since
               1970-01-01T00:00:00Z), also known as Unix time.
+
+          FileCacheId -> (string)
+              The globally unique ID of the Amazon File Cache resource.
+
+          FileCachePath -> (string)
+              A path on the Amazon File Cache that points to a high-level  di-
+              rectory (such as /ns1/ ) or subdirectory (such as /ns1/subdir/ )
+              that will be mapped 1-1 with DataRepositoryPath  .  The  leading
+              forward slash in the path is required. Two data repository asso-
+              ciations cannot have overlapping cache paths. For example, if  a
+              data  repository  is associated with cache path /ns1/ , then you
+              cannot link another data repository with cache path /ns1/ns2 .
+
+              This path specifies the directory in your cache where files will
+              be exported from. This cache directory can be linked to only one
+              data repository (S3 or NFS) and no other data repository can  be
+              linked to the directory.
+
+              NOTE:
+                 The cache path can only be set to root (/) on an NFS DRA when
+                 DataRepositorySubdirectories is  specified.  If  you  specify
+                 root  (/)  as  the cache path, you can create only one DRA on
+                 the cache.
+
+                 The cache path cannot be set to root (/) for an S3 DRA.
+
+          DataRepositorySubdirectories -> (list)
+              For Amazon File Cache, a list of NFS Exports that will be linked
+              with  an NFS data repository association. All the subdirectories
+              must be on a single NFS file system. The Export paths are in the
+              format  /exportpath1 . To use this parameter, you must configure
+              DataRepositoryPath as the domain name of the  NFS  file  system.
+              The  NFS  file  system  domain name in effect is the root of the
+              subdirectories. Note that  DataRepositorySubdirectories  is  not
+              supported for S3 data repositories.
+
+              (string)
+
+          NFS -> (structure)
+              The configuration for an NFS data repository linked to an Amazon
+              File Cache resource with a data repository association.
+
+              Version -> (string)
+                 The version of the NFS (Network File System) protocol of  the
+                 NFS  data  repository. Currently, the only supported value is
+                 NFS3 , which indicates that the data repository must  support
+                 the NFSv3 protocol.
+
+              DnsIps -> (list)
+                 A list of up to 2 IP addresses of DNS servers used to resolve
+                 the NFS file system domain name. The  provided  IP  addresses
+                 can either be the IP addresses of a DNS forwarder or resolver
+                 that the customer manages and runs inside the  customer  VPC,
+                 or the IP addresses of the on-premises DNS servers.
+
+                 (string)
+
+              AutoExportPolicy -> (structure)
+                 This parameter is not supported for Amazon File Cache.
+
+                 Events -> (list)
+                     The AutoExportPolicy can have the following event values:
+
+                     o NEW  -  New files and directories are automatically ex-
+                       ported to the data repository as they are added to  the
+                       file system.
+
+                     o CHANGED  - Changes to files and directories on the file
+                       system are automatically exported to the  data  reposi-
+                       tory.
+
+                     o DELETED  -  Files  and  directories  are  automatically
+                       deleted on the data repository when they are deleted on
+                       the file system.
+
+                     You  can  define  any combination of event types for your
+                     AutoExportPolicy .
+
+                     (string)
 
 
 
