@@ -105,7 +105,7 @@ Version: `3.40.0`
      line        One value per line
      list        Values delimited by "|"
      markdown    Markdown table format
-     qbox        Shorthand for "box --width 60 --quote"
+     qbox        Shorthand for "box --wrap 60 --quote"
      quote       Escape answers as for SQL
      table       ASCII-art table
      tabs        Tab-separated values
