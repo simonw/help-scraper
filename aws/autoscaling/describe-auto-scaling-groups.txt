@@ -1003,26 +1003,32 @@ OUTPUT
                      The instances distribution.
 
                      OnDemandAllocationStrategy -> (string)
-                        The  order  of the launch template overrides to use in
-                        fulfilling On-Demand capacity.
+                        The allocation strategy to apply to your On-Demand In-
+                        stances when  they  are  launched.  Possible  instance
+                        types  are determined by the launch template overrides
+                        that you specify.
 
-                        If you specify lowest-price , Amazon EC2 Auto  Scaling
-                        uses  price to determine the order, launching the low-
-                        est price first.
+                        The following lists the valid values:
+                            lowest-price
 
-                        If you specify prioritized , Amazon EC2  Auto  Scaling
-                        uses  the  priority  that  you assigned to each launch
-                        template  override,  launching  the  highest  priority
-                        first.  If  all your On-Demand capacity cannot be ful-
-                        filled using your highest priority instance, then Ama-
-                        zon  EC2  Auto Scaling launches the remaining capacity
-                        using the second priority instance type, and so on.
+                        Uses price to determine which instance types  are  the
+                        highest priority, launching the lowest priced instance
+                        types within an Availability Zone first. This  is  the
+                        default  value  for  Auto  Scaling groups that specify
+                        InstanceRequirements .
+                            prioritized
 
-                        Default: lowest-price for  Auto  Scaling  groups  that
-                        specify   InstanceRequirements  in  the  overrides and
-                        prioritized for Auto Scaling groups that don't.
-
-                        Valid values: lowest-price | prioritized
+                        You set the order of instance  types  for  the  launch
+                        template  overrides  from  highest  to lowest priority
+                        (from first to last in  the  list).  Amazon  EC2  Auto
+                        Scaling  launches your highest priority instance types
+                        first. If all your On-Demand capacity cannot  be  ful-
+                        filled using your highest priority instance type, then
+                        Amazon EC2 Auto Scaling launches the remaining  capac-
+                        ity  using  the  second priority instance type, and so
+                        on. This is the default value for Auto Scaling  groups
+                        that don't specify  InstanceRequirements and cannot be
+                        used for groups that do.
 
                      OnDemandBaseCapacity -> (integer)
                         The minimum amount of the Auto Scaling group's  capac-
@@ -1030,74 +1036,95 @@ OUTPUT
                         This base portion is  launched  first  as  your  group
                         scales.
 
-                        If  you  specify weights for the instance types in the
-                        overrides, the base capacity is measured in  the  same
-                        unit  of  measurement  as  the  instance types. If you
-                        specify  InstanceRequirements in  the  overrides,  the
-                        base capacity is measured in the same unit of measure-
-                        ment as your group's desired capacity.
+                        This  number  has  the same unit of measurement as the
+                        group's desired capacity. If you  change  the  default
+                        unit  of measurement (number of instances) by specify-
+                        ing weighted capacity values in your  launch  template
+                        overrides list, or by changing the default desired ca-
+                        pacity type setting of the  group,  you  must  specify
+                        this number using the same unit of measurement.
 
                         Default: 0
 
                      OnDemandPercentageAboveBaseCapacity -> (integer)
-                        Controls the percentages of  On-Demand  Instances  and
+                        Controls  the  percentages  of On-Demand Instances and
                         Spot Instances for your additional capacity beyond On-
-                        DemandBaseCapacity . Expressed as a number (for  exam-
-                        ple,  20  specifies  20% On-Demand Instances, 80% Spot
-                        Instances). If set to 100,  only  On-Demand  Instances
+                        DemandBaseCapacity  . Expressed as a number (for exam-
+                        ple, 20 specifies 20% On-Demand  Instances,  80%  Spot
+                        Instances).  If  set  to 100, only On-Demand Instances
                         are used.
 
                         Default: 100
 
                      SpotAllocationStrategy -> (string)
-                        Indicates  how  to  allocate instances across Spot In-
-                        stance pools.
+                        The allocation strategy to  apply  to  your  Spot  In-
+                        stances  when  they  are  launched.  Possible instance
+                        types are determined by the launch template  overrides
+                        that you specify.
 
-                        If the allocation strategy is lowest-price , the  Auto
-                        Scaling  group launches instances using the Spot pools
-                        with the lowest price, and evenly allocates  your  in-
-                        stances across the number of Spot pools that you spec-
-                        ify.
+                        The following lists the valid values:
+                            capacity-optimized
 
-                        If the allocation strategy is capacity-optimized (rec-
-                        ommended),  the  Auto Scaling group launches instances
-                        using Spot pools that are optimally  chosen  based  on
-                        the  available  Spot  capacity. Alternatively, you can
-                        use capacity-optimized-prioritized and set  the  order
-                        of instance types in the list of launch template over-
-                        rides from highest to lowest priority (from  first  to
-                        last  in the list). Amazon EC2 Auto Scaling honors the
-                        instance type priorities on a  best-effort  basis  but
-                        optimizes for capacity first.
+                        Requests Spot Instances using pools that are optimally
+                        chosen based on  the  available  Spot  capacity.  This
+                        strategy  has the lowest risk of interruption. To give
+                        certain instance types a higher  chance  of  launching
+                        first, use capacity-optimized-prioritized .
+                            capacity-optimized-prioritized
 
-                        Default: lowest-price
+                        You  set  the  order  of instance types for the launch
+                        template overrides from  highest  to  lowest  priority
+                        (from  first  to  last  in  the list). Amazon EC2 Auto
+                        Scaling honors the instance type priorities on a  best
+                        effort  basis  but  optimizes for capacity first. Note
+                        that if the On-Demand allocation strategy  is  set  to
+                        prioritized  ,  the same priority is applied when ful-
+                        filling On-Demand capacity. This is not a valid  value
+                        for Auto Scaling groups that specify  InstanceRequire-
+                        ments .
+                            lowest-price
 
-                        Valid  values: lowest-price | capacity-optimized | ca-
-                        pacity-optimized-prioritized
+                        Requests Spot Instances using the lowest priced  pools
+                        within an Availability Zone, across the number of Spot
+                        pools that you specify for the SpotInstancePools prop-
+                        erty. To ensure that your desired capacity is met, you
+                        might receive Spot Instances from several pools.  This
+                        is the default value, but it might lead to high inter-
+                        ruption rates because this strategy only considers in-
+                        stance price and not available capacity.
+                            price-capacity-optimized (recommended)
+
+                        Amazon  EC2 Auto Scaling identifies the pools with the
+                        highest capacity availability for the  number  of  in-
+                        stances  that  are  launching. This means that we will
+                        request Spot Instances from the pools that we  believe
+                        have  the  lowest  chance  of interruption in the near
+                        term. Amazon EC2 Auto Scaling then requests  Spot  In-
+                        stances from the lowest priced of these pools.
 
                      SpotInstancePools -> (integer)
-                        The number of Spot Instance pools across which to  al-
-                        locate  your Spot Instances. The Spot pools are deter-
-                        mined from the different instance types in  the  over-
-                        rides. Valid only when the Spot allocation strategy is
+                        The  number of Spot Instance pools across which to al-
+                        locate your Spot Instances. The Spot pools are  deter-
+                        mined  from  the different instance types in the over-
+                        rides. Valid only when the  SpotAllocationStrategy  is
                         lowest-price . Value must be in the range of 120.
 
                         Default: 2
 
                      SpotMaxPrice -> (string)
-                        The maximum price per unit hour that you  are  willing
-                        to  pay  for a Spot Instance. If your maximum price is
-                        lower than the Spot price for the instance types  that
+                        The  maximum  price per unit hour that you are willing
+                        to pay for a Spot Instance. If your maximum  price  is
+                        lower  than the Spot price for the instance types that
                         you selected, your Spot Instances are not launched. We
                         do not recommend specifying a maximum price because it
-                        can  lead  to  increased  interruptions. When Spot In-
+                        can lead to increased  interruptions.  When  Spot  In-
                         stances launch, you pay the current Spot price. To re-
-                        move  a maximum price that you previously set, include
-                        the property but specify an empty string ("") for  the
+                        move a maximum price that you previously set,  include
+                        the  property but specify an empty string ("") for the
                         value.
 
                         WARNING:
-                            If  you  specify  a  maximum price, your instances
+                            If you specify a  maximum  price,  your  instances
                             will be interrupted more frequently than if you do
                             not specify one.
 
@@ -1113,7 +1140,7 @@ OUTPUT
                  The desired size of the group.
 
               PredictedCapacity -> (integer)
-                 The  predicted capacity of the group when it has a predictive
+                 The predicted capacity of the group when it has a  predictive
                  scaling policy.
 
               DefaultCooldown -> (integer)
@@ -1136,10 +1163,10 @@ OUTPUT
                  (string)
 
               HealthCheckType -> (string)
-                 The  service  to  use for the health checks. The valid values
-                 are EC2 and ELB . If you configure an Auto Scaling  group  to
+                 The service to use for the health checks.  The  valid  values
+                 are  EC2  and ELB . If you configure an Auto Scaling group to
                  use ELB health checks, it considers the instance unhealthy if
-                 it fails either the EC2 status checks or  the  load  balancer
+                 it  fails  either  the EC2 status checks or the load balancer
                  health checks.
 
               HealthCheckGracePeriod -> (integer)
@@ -1158,19 +1185,19 @@ OUTPUT
                         The instance type of the EC2 instance.
 
                      AvailabilityZone -> (string)
-                        The  Availability  Zone  in which the instance is run-
+                        The Availability Zone in which the  instance  is  run-
                         ning.
 
                      LifecycleState -> (string)
-                        A description of  the  current  lifecycle  state.  The
-                        Quarantined  state  is not used. For information about
+                        A  description  of  the  current  lifecycle state. The
+                        Quarantined state is not used. For  information  about
                         lifecycle states, see Instance lifecycle in the Amazon
                         EC2 Auto Scaling User Guide .
 
                      HealthStatus -> (string)
-                        The  last  reported  health  status  of  the instance.
-                        "Healthy" means  that  the  instance  is  healthy  and
-                        should  remain  in service. "Unhealthy" means that the
+                        The last  reported  health  status  of  the  instance.
+                        "Healthy"  means  that  the  instance  is  healthy and
+                        should remain in service. "Unhealthy" means  that  the
                         instance is unhealthy and that Amazon EC2 Auto Scaling
                         should terminate and replace it.
 
@@ -1186,38 +1213,38 @@ OUTPUT
                             operation. New launch templates can be created us-
                             ing the Amazon EC2 CreateLaunchTemplate API.
 
-                            Conditional: You must specify either a  LaunchTem-
+                            Conditional:  You must specify either a LaunchTem-
                             plateId or a LaunchTemplateName .
 
                         LaunchTemplateName -> (string)
-                            The  name  of the launch template. To get the tem-
+                            The name of the launch template. To get  the  tem-
                             plate     name,     use     the     Amazon     EC2
-                            DescribeLaunchTemplates  API operation. New launch
-                            templates can be  created  using  the  Amazon  EC2
+                            DescribeLaunchTemplates API operation. New  launch
+                            templates  can  be  created  using  the Amazon EC2
                             CreateLaunchTemplate API.
 
-                            Conditional:  You must specify either a LaunchTem-
+                            Conditional: You must specify either a  LaunchTem-
                             plateId or a LaunchTemplateName .
 
                         Version -> (string)
                             The version number, $Latest , or $Default . To get
                             the   version   number,   use   the   Amazon   EC2
-                            DescribeLaunchTemplateVersions API operation.  New
-                            launch  template versions can be created using the
+                            DescribeLaunchTemplateVersions  API operation. New
+                            launch template versions can be created using  the
                             Amazon EC2 CreateLaunchTemplateVersion API. If the
                             value is $Latest , Amazon EC2 Auto Scaling selects
-                            the latest version of  the  launch  template  when
-                            launching  instances.  If  the value is $Default ,
-                            Amazon EC2 Auto Scaling selects the  default  ver-
-                            sion  of  the  launch  template when launching in-
+                            the  latest  version  of  the launch template when
+                            launching instances. If the value  is  $Default  ,
+                            Amazon  EC2  Auto Scaling selects the default ver-
+                            sion of the launch  template  when  launching  in-
                             stances. The default value is $Default .
 
                      ProtectedFromScaleIn -> (boolean)
-                        Indicates whether the instance is protected from  ter-
+                        Indicates  whether the instance is protected from ter-
                         mination by Amazon EC2 Auto Scaling when scaling in.
 
                      WeightedCapacity -> (string)
-                        The  number  of  capacity units contributed by the in-
+                        The number of capacity units contributed  by  the  in-
                         stance based on its instance type.
 
                         Valid Range: Minimum value of 1. Maximum value of 999.
@@ -1229,7 +1256,7 @@ OUTPUT
                  The suspended processes associated with the group.
 
                  (structure)
-                     Describes an auto scaling  process  that  has  been  sus-
+                     Describes  an  auto  scaling  process  that has been sus-
                      pended.
 
                      For more information, see Scaling processes in the Amazon
@@ -1297,7 +1324,7 @@ OUTPUT
 
                         o GroupAndWarmPoolTotalCapacity
 
-                        For  more  information, see Auto Scaling group metrics
+                        For more information, see Auto Scaling  group  metrics
                         in the Amazon EC2 Auto Scaling User Guide .
 
                      Granularity -> (string)
@@ -1305,7 +1332,7 @@ OUTPUT
                         1Minute .
 
               Status -> (string)
-                 The  current  state of the group when the  DeleteAutoScaling-
+                 The current state of the group when  the   DeleteAutoScaling-
                  Group operation is in progress.
 
               Tags -> (list)
@@ -1318,7 +1345,7 @@ OUTPUT
                         The name of the group.
 
                      ResourceType -> (string)
-                        The type of resource.  The  only  supported  value  is
+                        The  type  of  resource.  The  only supported value is
                         auto-scaling-group .
 
                      Key -> (string)
@@ -1328,7 +1355,7 @@ OUTPUT
                         The tag value.
 
                      PropagateAtLaunch -> (boolean)
-                        Determines  whether  the tag is added to new instances
+                        Determines whether the tag is added to  new  instances
                         as they are launched in the group.
 
               TerminationPolicies -> (list)
@@ -1341,12 +1368,12 @@ OUTPUT
                  termination by Amazon EC2 Auto Scaling when scaling in.
 
               ServiceLinkedRoleARN -> (string)
-                 The  Amazon  Resource  Name  (ARN) of the service-linked role
-                 that the Auto Scaling group uses to  call  other  Amazon  Web
+                 The Amazon Resource Name (ARN)  of  the  service-linked  role
+                 that  the  Auto  Scaling  group uses to call other Amazon Web
                  Services on your behalf.
 
               MaxInstanceLifetime -> (integer)
-                 The  maximum amount of time, in seconds, that an instance can
+                 The maximum amount of time, in seconds, that an instance  can
                  be in service.
 
                  Valid Range: Minimum value of 0.
@@ -1359,15 +1386,15 @@ OUTPUT
 
                  MaxGroupPreparedCapacity -> (integer)
                      The maximum number of instances that are allowed to be in
-                     the  warm  pool or in any state except Terminated for the
+                     the warm pool or in any state except Terminated  for  the
                      Auto Scaling group.
 
                  MinSize -> (integer)
-                     The minimum number of instances to maintain in  the  warm
+                     The  minimum  number of instances to maintain in the warm
                      pool.
 
                  PoolState -> (string)
-                     The  instance  state to transition to after the lifecycle
+                     The instance state to transition to after  the  lifecycle
                      actions are complete.
 
                  Status -> (string)
@@ -1377,7 +1404,7 @@ OUTPUT
                      The instance reuse policy.
 
                      ReuseOnScaleIn -> (boolean)
-                        Specifies whether instances in the Auto Scaling  group
+                        Specifies  whether instances in the Auto Scaling group
                         can be returned to the warm pool on scale in.
 
               WarmPoolSize -> (integer)
@@ -1387,16 +1414,16 @@ OUTPUT
                  Reserved.
 
               DesiredCapacityType -> (string)
-                 The  unit  of measurement for the value specified for desired
-                 capacity. Amazon EC2 Auto Scaling  supports  DesiredCapacity-
+                 The unit of measurement for the value specified  for  desired
+                 capacity.  Amazon  EC2 Auto Scaling supports DesiredCapacity-
                  Type for attribute-based instance type selection only.
 
               DefaultInstanceWarmup -> (integer)
                  The duration of the default instance warmup, in seconds.
 
        NextToken -> (string)
-          A  string  that indicates that the response contains more items than
-          can be returned in a single response. To receive  additional  items,
+          A string that indicates that the response contains more  items  than
+          can  be  returned in a single response. To receive additional items,
           specify this string for the NextToken value when requesting the next
           set of items. This value is null when there are no more items to re-
           turn.
