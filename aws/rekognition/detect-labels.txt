@@ -14,66 +14,101 @@ DESCRIPTION
        For an example, see Analyzing images stored in an Amazon S3  bucket  in
        the Amazon Rekognition Developer Guide.
 
-       NOTE:
-          DetectLabels  does not support the detection of activities. However,
-          activity detection is supported for label detection in  videos.  For
-          more  information, see StartLabelDetection in the Amazon Rekognition
-          Developer Guide.
-
-       You pass the input image as base64-encoded image bytes or as  a  refer-
+       You  pass  the input image as base64-encoded image bytes or as a refer-
        ence to an image in an Amazon S3 bucket. If you use the AWS CLI to call
-       Amazon Rekognition operations, passing image bytes  is  not  supported.
+       Amazon  Rekognition  operations,  passing image bytes is not supported.
        The image must be either a PNG or JPEG formatted file.
+          Optional Parameters
+
+       You can specify one or both of the GENERAL_LABELS and  IMAGE_PROPERTIES
+       feature  types when calling the DetectLabels API. Including GENERAL_LA-
+       BELS will ensure the response includes the labels detected in the input
+       image,  while  including  IMAGE_PROPERTIES will ensure the response in-
+       cludes information about the image quality and color.
+
+       When using GENERAL_LABELS and/or IMAGE_PROPERTIES you can provide  fil-
+       tering  criteria to the Settings parameter. You can filter with sets of
+       individual labels or with label categories. You can  specify  inclusive
+       filters, exclusive filters, or a combination of inclusive and exclusive
+       filters. For more information on filtering see Detecting Labels  in  an
+       Image .
+
+       You  can  specify MinConfidence to control the confidence threshold for
+       the labels returned. The default is 55%. You can also add the MaxLabels
+       parameter to limit the number of labels returned. The default and upper
+       limit is 1000 labels.
+          Response Elements
 
        For each object, scene, and concept the API returns one or more labels.
-       Each label provides the object name, and the level of  confidence  that
-       the image contains the object. For example, suppose the input image has
-       a lighthouse, the sea, and a rock. The response includes all three  la-
-       bels, one for each object.
+       The API returns the following types of information regarding labels:
+
+       o Name - The name of the detected label.
+
+       o Confidence  -  The level of confidence in the label assigned to a de-
+         tected object.
+
+       o Parents - The ancestor labels for a detected label. DetectLabels  re-
+         turns  a hierarchical taxonomy of detected labels. For example, a de-
+         tected car might be assigned the label car. The  label  car  has  two
+         parent labels: Vehicle (its parent) and Transportation (its grandpar-
+         ent). The response includes the all ancestors for a label, where  ev-
+         ery  ancestor  is a unique label. In the previous example, Car, Vehi-
+         cle, and Transportation are returned as  unique  labels  in  the  re-
+         sponse.
+
+       o Aliases - Possible Aliases for the label.
+
+       o Categories - The label categories that the detected label belongs to.
+         A given label can belong to more than one category.
+
+       o BoundingBox  Bounding boxes are described for all  instances  of  de-
+         tected  common  object  labels,  returned in an array of Instance ob-
+         jects. An Instance object contains a BoundingBox  object,  describing
+         the  location  of  the label on the input image. It also includes the
+         confidence for the accuracy of the detected bounding box.
+
+       The API returns the following information regarding the image, as  part
+       of the ImageProperties structure:
+
+       o Quality  -  Information about the Sharpness, Brightness, and Contrast
+         of the input image, scored between 0 to 100.  Image  quality  is  re-
+         turned  for the entire image, as well as the background and the fore-
+         ground.
+
+       o Dominant Color - An array of the dominant colors in the image.
+
+       o Foreground - Information about the Sharpness and  Brightness  of  the
+         input images foreground.
+
+       o Background  -  Information  about the Sharpness and Brightness of the
+         input images background.
+
+       The list of returned labels will include at least one label  for  every
+       detected  object,  along with information about that label. In the fol-
+       lowing example, suppose the input image has a lighthouse, the sea,  and
+       a rock. The response includes all three labels, one for each object, as
+       well as the confidence in the label:
           {Name: lighthouse, Confidence: 98.4629}
 
           {Name: rock,Confidence: 79.2097}
 
           {Name: sea,Confidence: 75.061}
 
-       In  the  preceding example, the operation returns one label for each of
-       the three objects. The operation can also return  multiple  labels  for
-       the  same  object in the image. For example, if the input image shows a
-       flower (for example, a tulip), the operation might return the following
-       three labels.
+       The list of labels can include multiple labels for the same object. For
+       example,  if the input image shows a flower (for example, a tulip), the
+       operation might return the following three labels.
           {Name: flower,Confidence: 99.0562}
 
           {Name: plant,Confidence: 99.0562}
 
           {Name: tulip,Confidence: 99.0562}
 
-       In  this example, the detection algorithm more precisely identifies the
+       In this example, the detection algorithm more precisely identifies  the
        flower as a tulip.
 
-       In response, the API returns an array of labels. In addition,  the  re-
-       sponse  also  includes  the orientation correction. Optionally, you can
-       specify MinConfidence to control the confidence threshold for  the  la-
-       bels  returned.  The default is 55%. You can also add the MaxLabels pa-
-       rameter to limit the number of labels returned.
-
        NOTE:
-              If the object detected is a person, the operation  doesn't  pro-
-              vide  the  same  facial  details that the  DetectFaces operation
-              provides.
-
-          DetectLabels returns bounding boxes for instances of  common  object
-          labels in an array of  Instance objects. An Instance object contains
-          a  BoundingBox object, for the location of the label on  the  image.
-          It  also  includes  the confidence by which the bounding box was de-
-          tected.
-
-          DetectLabels also returns a hierarchical taxonomy  of  detected  la-
-          bels.  For example, a detected car might be assigned the label car .
-          The label car has two parent labels: Vehicle (its parent) and Trans-
-          portation (its grandparent). The response returns the entire list of
-          ancestors for a label. Each ancestor is a unique label  in  the  re-
-          sponse.  In the previous example, Car , Vehicle , and Transportation
-          are returned as unique labels in the response.
+          If  the  object  detected is a person, the operation doesn't provide
+          the same facial details that the  DetectFaces operation provides.
 
        This is a stateless API operation. That is, the operation does not per-
        sist any data.
@@ -88,6 +123,8 @@ SYNOPSIS
           [--image <value>]
           [--max-labels <value>]
           [--min-confidence <value>]
+          [--features <value>]
+          [--settings <value>]
           [--image-bytes <value>]
           [--cli-input-json <value>]
           [--generate-cli-skeleton <value>]
@@ -163,6 +200,83 @@ OPTIONS
 
           If MinConfidence is not specified, the operation returns labels with
           a confidence values greater than or equal to 55 percent.
+
+       --features (list)
+          A list of the types of analysis to perform.  Specifying  GENERAL_LA-
+          BELS  uses the label detection feature, while specifying IMAGE_PROP-
+          ERTIES returns information regarding image color and quality. If  no
+          option is specified GENERAL_LABELS is used by default.
+
+          (string)
+
+       Syntax:
+
+          "string" "string" ...
+
+          Where valid values are:
+            GENERAL_LABELS
+            IMAGE_PROPERTIES
+
+       --settings (structure)
+          A  list of the filters to be applied to returned detected labels and
+          image properties. Specified filters can be inclusive, exclusive,  or
+          a  combination of both. Filters can be used for individual labels or
+          label categories. The exact label names or label categories must  be
+          supplied.  For  a full list of labels and label categories, see LINK
+          HERE.
+
+          GeneralLabels -> (structure)
+              Contains the specified filters for GENERAL_LABELS.
+
+              LabelInclusionFilters -> (list)
+                 The labels that should be included in the return from Detect-
+                 Labels.
+
+                 (string)
+
+              LabelExclusionFilters -> (list)
+                 The  labels  that should be excluded from the return from De-
+                 tectLabels.
+
+                 (string)
+
+              LabelCategoryInclusionFilters -> (list)
+                 The label categories that should be included  in  the  return
+                 from DetectLabels.
+
+                 (string)
+
+              LabelCategoryExclusionFilters -> (list)
+                 The  label categories that should be excluded from the return
+                 from DetectLabels.
+
+                 (string)
+
+          ImageProperties -> (structure)
+              Contains the chosen number of maximum dominant colors in an  im-
+              age.
+
+              MaxDominantColors -> (integer)
+                 The  maximum number of dominant colors to return when detect-
+                 ing labels in an image. The default value is 10.
+
+       Shorthand Syntax:
+
+          GeneralLabels={LabelInclusionFilters=[string,string],LabelExclusionFilters=[string,string],LabelCategoryInclusionFilters=[string,string],LabelCategoryExclusionFilters=[string,string]},ImageProperties={MaxDominantColors=integer}
+
+       JSON Syntax:
+
+          {
+            "GeneralLabels": {
+              "LabelInclusionFilters": ["string", ...],
+              "LabelExclusionFilters": ["string", ...],
+              "LabelCategoryInclusionFilters": ["string", ...],
+              "LabelCategoryExclusionFilters": ["string", ...]
+            },
+            "ImageProperties": {
+              "MaxDominantColors": integer
+            }
+          }
 
        --image-bytes (blob)
           The content of the image to be uploaded. To specify the content of a
@@ -885,6 +999,37 @@ OUTPUT
                         The confidence that Amazon Rekognition has in the  ac-
                         curacy of the bounding box.
 
+                     DominantColors -> (list)
+                        The dominant colors found in an individual instance of
+                        a label.
+
+                        (structure)
+                            A description of the dominant colors in an image.
+
+                            Red -> (integer)
+                               The Red RGB value for a dominant color.
+
+                            Blue -> (integer)
+                               The Blue RGB value for a dominant color.
+
+                            Green -> (integer)
+                               The Green RGB value for a dominant color.
+
+                            HexCode -> (string)
+                               The Hex code equivalent of the RGB values for a
+                               dominant color.
+
+                            CSSColor -> (string)
+                               The CSS color name of a dominant color.
+
+                            SimplifiedColor -> (string)
+                               One  of  12 simplified color names applied to a
+                               dominant color.
+
+                            PixelPercent -> (float)
+                               The percentage of  image  pixels  that  have  a
+                               given dominant color.
+
               Parents -> (list)
                  The  parent labels for a label. The response includes all an-
                  cestor labels.
@@ -895,6 +1040,24 @@ OUTPUT
 
                      Name -> (string)
                         The name of the parent label.
+
+              Aliases -> (list)
+                 A list of potential aliases for a given label.
+
+                 (structure)
+                     A potential alias of for a given label.
+
+                     Name -> (string)
+                        The name of an alias for a given label.
+
+              Categories -> (list)
+                 A list of the categories associated with a given label.
+
+                 (structure)
+                     The category that applies to a given label.
+
+                     Name -> (string)
+                        The name of a category that applies to a given label.
 
        OrientationCorrection -> (string)
           The value of OrientationCorrection is always null.
@@ -915,6 +1078,159 @@ OUTPUT
        LabelModelVersion -> (string)
           Version number of the label detection model that was used to  detect
           labels.
+
+       ImageProperties -> (structure)
+          Information about the properties of the input image, such as bright-
+          ness, sharpness, contrast, and dominant colors.
+
+          Quality -> (structure)
+              Information about the quality of the image foreground as defined
+              by brightness, sharpness, and contrast. The higher the value the
+              greater the brightness, sharpness, and contrast respectively.
+
+              Brightness -> (float)
+                 The brightness of an image provided for label detection.
+
+              Sharpness -> (float)
+                 The sharpness of an image provided for label detection.
+
+              Contrast -> (float)
+                 The contrast of an image provided for label detection.
+
+          DominantColors -> (list)
+              Information about the dominant colors found  in  an  image,  de-
+              scribed  with RGB values, CSS color name, simplified color name,
+              and PixelPercentage (the percentage of image pixels that have  a
+              particular color).
+
+              (structure)
+                 A description of the dominant colors in an image.
+
+                 Red -> (integer)
+                     The Red RGB value for a dominant color.
+
+                 Blue -> (integer)
+                     The Blue RGB value for a dominant color.
+
+                 Green -> (integer)
+                     The Green RGB value for a dominant color.
+
+                 HexCode -> (string)
+                     The  Hex code equivalent of the RGB values for a dominant
+                     color.
+
+                 CSSColor -> (string)
+                     The CSS color name of a dominant color.
+
+                 SimplifiedColor -> (string)
+                     One of 12 simplified color names applied  to  a  dominant
+                     color.
+
+                 PixelPercent -> (float)
+                     The percentage of image pixels that have a given dominant
+                     color.
+
+          Foreground -> (structure)
+              Information about the properties of an  images  foreground,  in-
+              cluding  the  foregrounds quality and dominant colors, including
+              the quality and dominant colors of the image.
+
+              Quality -> (structure)
+                 The quality of the image foreground as defined by  brightness
+                 and sharpness.
+
+                 Brightness -> (float)
+                     The brightness of an image provided for label detection.
+
+                 Sharpness -> (float)
+                     The sharpness of an image provided for label detection.
+
+                 Contrast -> (float)
+                     The contrast of an image provided for label detection.
+
+              DominantColors -> (list)
+                 The  dominant colors found in the foreground of an image, de-
+                 fined with RGB values, CSS color name, simplified color name,
+                 and PixelPercentage (the percentage of image pixels that have
+                 a particular color).
+
+                 (structure)
+                     A description of the dominant colors in an image.
+
+                     Red -> (integer)
+                        The Red RGB value for a dominant color.
+
+                     Blue -> (integer)
+                        The Blue RGB value for a dominant color.
+
+                     Green -> (integer)
+                        The Green RGB value for a dominant color.
+
+                     HexCode -> (string)
+                        The Hex code equivalent of the RGB values for a  domi-
+                        nant color.
+
+                     CSSColor -> (string)
+                        The CSS color name of a dominant color.
+
+                     SimplifiedColor -> (string)
+                        One of 12 simplified color names applied to a dominant
+                        color.
+
+                     PixelPercent -> (float)
+                        The percentage of image pixels that have a given domi-
+                        nant color.
+
+          Background -> (structure)
+              Information  about  the  properties of an images background, in-
+              cluding the backgrounds quality and dominant  colors,  including
+              the quality and dominant colors of the image.
+
+              Quality -> (structure)
+                 The  quality of the image background as defined by brightness
+                 and sharpness.
+
+                 Brightness -> (float)
+                     The brightness of an image provided for label detection.
+
+                 Sharpness -> (float)
+                     The sharpness of an image provided for label detection.
+
+                 Contrast -> (float)
+                     The contrast of an image provided for label detection.
+
+              DominantColors -> (list)
+                 The dominant colors found in the background of an image,  de-
+                 fined with RGB values, CSS color name, simplified color name,
+                 and PixelPercentage (the percentage of image pixels that have
+                 a particular color).
+
+                 (structure)
+                     A description of the dominant colors in an image.
+
+                     Red -> (integer)
+                        The Red RGB value for a dominant color.
+
+                     Blue -> (integer)
+                        The Blue RGB value for a dominant color.
+
+                     Green -> (integer)
+                        The Green RGB value for a dominant color.
+
+                     HexCode -> (string)
+                        The  Hex code equivalent of the RGB values for a domi-
+                        nant color.
+
+                     CSSColor -> (string)
+                        The CSS color name of a dominant color.
+
+                     SimplifiedColor -> (string)
+                        One of 12 simplified color names applied to a dominant
+                        color.
+
+                     PixelPercent -> (float)
+                        The percentage of image pixels that have a given domi-
+                        nant color.
 
 
 
