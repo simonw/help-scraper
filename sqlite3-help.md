@@ -1,6 +1,6 @@
 # sqlite3 .help
 
-Version: `3.40.0`
+Version: `3.41.0`
 
 ```
 .auth ON|OFF             Show authorizer callbacks
@@ -173,7 +173,7 @@ Version: `3.40.0`
 
 .save ?OPTIONS? FILE     Write database to FILE (an alias for .backup ...)
 
-.scanstats on|off        Turn sqlite3_stmt_scanstatus() metrics on or off
+.scanstats on|off|est    Turn sqlite3_stmt_scanstatus() metrics on or off
 
 .schema ?PATTERN?        Show the CREATE statements matching PATTERN
    Options:
