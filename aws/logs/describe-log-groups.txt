@@ -26,18 +26,26 @@ DESCRIPTION
        System Message: WARNING/2 (<string>:, line 22)
               Inline literal start-string without end-string.
 
+              If you are using CloudWatch cross-account observability, you can
+              use this operation in a monitoring account and  view  data  from
+              the linked source accounts. For more information, see CloudWatch
+              cross-account observability .
+
               See also: AWS API Documentation
 
               describe-log-groups is a paginated operation. Multiple API calls
-              may be issued in order to retrieve the entire data  set  of  re-
+              may  be  issued  in order to retrieve the entire data set of re-
               sults. You can disable pagination by providing the --no-paginate
-              argument.  When using --output text and the --query argument  on
-              a  paginated  response,  the  --query argument must extract data
+              argument.   When using --output text and the --query argument on
+              a paginated response, the --query  argument  must  extract  data
               from the results of the following query expressions: logGroups
 
 SYNOPSIS
             describe-log-groups
+          [--account-identifiers <value>]
           [--log-group-name-prefix <value>]
+          [--log-group-name-pattern <value>]
+          [--include-linked-accounts | --no-include-linked-accounts]
           [--cli-input-json <value>]
           [--starting-token <value>]
           [--page-size <value>]
@@ -59,8 +67,49 @@ SYNOPSIS
           [--cli-connect-timeout <value>]
 
 OPTIONS
+       --account-identifiers (list)
+          When  includeLinkedAccounts  is  set to True , use this parameter to
+          specify the list of accounts to search. You can specify as  many  as
+          20 account IDs in the array.
+
+          (string)
+
+       Syntax:
+
+          "string" "string" ...
+
        --log-group-name-prefix (string)
           The prefix to match.
+
+          NOTE:
+              logGroupNamePrefix  and  logGroupNamePattern are mutually exclu-
+              sive. Only one of these parameters can be passed.
+
+       --log-group-name-pattern (string)
+          If you specify a string for this parameter,  the  operation  returns
+          only  log  groups  that  have names that match the string based on a
+          case-sensitive substring search. For example, if you specify  Foo  ,
+          log  groups  named  FooBar , aws/Foo , and GroupFoo would match, but
+          foo , F/o/o and Froo would not match.
+
+          NOTE:
+              logGroupNamePattern and logGroupNamePrefix are  mutually  exclu-
+              sive. Only one of these parameters can be passed.
+
+       --include-linked-accounts | --no-include-linked-accounts (boolean)
+          If  you are using a monitoring account, set this to True to have the
+          operation return log groups in the accounts listed in accountIdenti-
+          fiers .
+
+          If  this  parameter is set to true and accountIdentifiers contains a
+          null value, the operation returns all log groups in  the  monitoring
+          account and all log groups in all source accounts that are linked to
+          the monitoring account.
+
+          NOTE:
+              If you specify includeLinkedAccounts in your request, then  met-
+              ricFilterCount  ,  retentionInDays , and storedBytes are not in-
+              cluded in the response.
 
        --cli-input-json (string) Performs service operation based on the  JSON
        string  provided. The JSON string follows the format provided by --gen-
@@ -215,7 +264,7 @@ OUTPUT
           The log groups.
 
           If  the  retentionInDays value is not included for a log group, then
-          that log group is set to have its events never expire.
+          that log group's events do not expire.
 
           (structure)
               Represents a log group.
@@ -233,7 +282,7 @@ OUTPUT
                  120,  150,  180,  365, 400, 545, 731, 1827, 2192, 2557, 2922,
                  3288, and 3653.
 
-                 To set a log group to  never  have  log  events  expire,  use
+                 To set a log group so that its log events do not expire,  use
                  DeleteRetentionPolicy .
 
               metricFilterCount -> (integer)
@@ -246,8 +295,13 @@ OUTPUT
                  The number of bytes stored.
 
               kmsKeyId -> (string)
-                 The  Amazon  Resource  Name  (ARN) of the CMK to use when en-
+                 The Amazon Resource Name (ARN) of the KMS key to use when en-
                  crypting log data.
+
+              dataProtectionStatus -> (string)
+                 Displays whether this log group has a protection  policy,  or
+                 whether  it  had  one  in the past. For more information, see
+                 PutDataProtectionPolicy .
 
        nextToken -> (string)
           The token for the next set of items to return. The token expires af-

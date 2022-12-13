@@ -36,14 +36,7 @@ DESCRIPTION
 
        If  successful,  this operation creates a new Fleet resource and places
        it in NEW status, which prompts GameLift to initiate the fleet creation
-       workflow  . You can track fleet creation by checking fleet status using
-       DescribeFleetAttributes and  DescribeFleetLocationAttributes /,  or  by
-       monitoring  fleet  creation events using  DescribeFleetEvents . As soon
-       as the fleet status changes to ACTIVE , you can enable automatic  scal-
-       ing  for the fleet with  PutScalingPolicy and set capacity for the home
-       Region with  UpdateFleetCapacity . When the status of each remote loca-
-       tion  reaches  ACTIVE , you can set capacity by location using  Update-
-       FleetCapacity .
+       workflow .
           Learn more
 
           Setting up fleets
@@ -51,12 +44,6 @@ DESCRIPTION
           Debug fleet creation issues
 
           Multi-location fleets
-
-          Related actions
-              CreateFleet |  UpdateFleetCapacity |   PutScalingPolicy  |   De-
-              scribeEC2InstanceLimits   |    DescribeFleetAttributes   |   De-
-              scribeFleetLocationAttributes   |     UpdateFleetAttributes    |
-              StopFleetActions |  DeleteFleet | All APIs by task
 
        See also: AWS API Documentation
 
@@ -69,7 +56,7 @@ SYNOPSIS
           [--server-launch-path <value>]
           [--server-launch-parameters <value>]
           [--log-paths <value>]
-          --ec2-instance-type <value>
+          [--ec2-instance-type <value>]
           [--ec2-inbound-permissions <value>]
           [--new-game-session-protection-policy <value>]
           [--runtime-configuration <value>]
@@ -82,6 +69,8 @@ SYNOPSIS
           [--certificate-configuration <value>]
           [--locations <value>]
           [--tags <value>]
+          [--compute-type <value>]
+          [--anywhere-configuration <value>]
           [--cli-input-json <value>]
           [--generate-cli-skeleton <value>]
           [--debug]
@@ -105,7 +94,7 @@ OPTIONS
           not need to be unique.
 
        --description (string)
-          A human-readable description of the fleet.
+          A description for the fleet.
 
        --build-id (string)
           The unique identifier for a custom game server build to be  deployed
@@ -133,8 +122,8 @@ OPTIONS
               This parameter is no longer  used.  To  specify  where  GameLift
               should store log files once a server process shuts down, use the
               GameLift server API ProcessReady() and specify one or  more  di-
-              rectory  paths  in  logParameters  . See more information in the
-              Server API Reference .
+              rectory  paths  in  logParameters  .  For  more information, see
+              Initialize the server process in the GameLift Developer Guide .
 
           (string)
 
@@ -394,8 +383,6 @@ OPTIONS
               Fleets with custom game builds must have permissions  explicitly
               set.  For  Realtime Servers fleets, GameLift automatically opens
               two port ranges, one for TCP messaging and one for UDP.
-                 Related actions
-                     DescribeFleetPortSettings
 
               FromPort -> (integer)
                  A starting value for a range of allowed port numbers.
@@ -439,7 +426,7 @@ OPTIONS
           The status of termination protection for active game sessions on the
           fleet.  By  default,  this property is set to NoProtection . You can
           also set game session protection for an individual game  session  by
-          calling  UpdateGameSession .
+          calling UpdateGameSession .
 
           o NoProtection - Game sessions can be terminated during active game-
             play as a result of a scale-down event.
@@ -474,8 +461,8 @@ OPTIONS
                  A  set of instructions for launching server processes on each
                  instance in a fleet. Server  processes  run  either  an  exe-
                  cutable  in a custom game build or a Realtime Servers script.
-                 Server process configurations are part of a fleet's  Runtime-
-                 Configuration .
+                 Server process configurations are part of a  fleet's  runtime
+                 configuration.
 
                  LaunchPath -> (string)
                      The  location  of a game build executable or the Realtime
@@ -535,11 +522,18 @@ OPTIONS
           of time.
 
           NewGameSessionsPerCreator -> (integer)
-              The  maximum number of game sessions that an individual can cre-
-              ate during the policy period.
+              A  policy that puts limits on the number of game sessions that a
+              player can create within a specified span  of  time.  With  this
+              policy,  you  can  control players' ability to consume available
+              resources.
+
+              The policy is evaluated when a player tries to create a new game
+              session.  On  receiving  a  CreateGameSession  request, GameLift
+              checks that the player (identified by CreatorId  )  has  created
+              fewer than game session limit in the specified time period.
 
           PolicyPeriodInMinutes -> (integer)
-              The time span used in evaluating  the  resource  creation  limit
+              The  time  span  used  in evaluating the resource creation limit
               policy.
 
        Shorthand Syntax:
@@ -554,9 +548,9 @@ OPTIONS
           }
 
        --metric-groups (list)
-          The  name  of  an Amazon Web Services CloudWatch metric group to add
-          this fleet to. A metric group is used to aggregate the  metrics  for
-          multiple  fleets.  You  can specify an existing metric group name or
+          The name of an Amazon Web Services CloudWatch metric  group  to  add
+          this  fleet  to. A metric group is used to aggregate the metrics for
+          multiple fleets. You can specify an existing metric  group  name  or
           set a new name to create a new metric group. A fleet can be included
           in only one metric group at a time.
 
@@ -568,21 +562,21 @@ OPTIONS
 
        --peer-vpc-aws-account-id (string)
           Used when peering your GameLift fleet with a VPC, the unique identi-
-          fier for the Amazon Web Services account that owns the VPC. You  can
-          find  your  account ID in the Amazon Web Services Management Console
+          fier  for the Amazon Web Services account that owns the VPC. You can
+          find your account ID in the Amazon Web Services  Management  Console
           under account settings.
 
        --peer-vpc-id (string)
-          A unique identifier for a VPC with resources to be accessed by  your
+          A  unique identifier for a VPC with resources to be accessed by your
           GameLift fleet. The VPC must be in the same Region as your fleet. To
-          look up a VPC ID, use the VPC Dashboard in the Amazon  Web  Services
+          look  up  a VPC ID, use the VPC Dashboard in the Amazon Web Services
           Management Console. Learn more about VPC peering in VPC Peering with
           GameLift Fleets .
 
        --fleet-type (string)
           Indicates whether to use On-Demand or Spot instances for this fleet.
-          By  default,  this  property  is set to ON_DEMAND . Learn more about
-          when to use On-Demand versus Spot Instances . This  property  cannot
+          By default, this property is set to ON_DEMAND  .  Learn  more  about
+          when  to  use On-Demand versus Spot Instances . This property cannot
           be changed after the fleet is created.
 
           Possible values:
@@ -594,29 +588,36 @@ OPTIONS
        --instance-role-arn (string)
           A unique identifier for an IAM role that manages access to your Ama-
           zon Web Services services. With an instance role ARN set, any appli-
-          cation  that  runs on an instance in this fleet can assume the role,
+          cation that runs on an instance in this fleet can assume  the  role,
           including install scripts, server processes, and daemons (background
-          processes).  Create  a role or look up a role's ARN by using the IAM
-          dashboard in the Amazon Web Services Management Console. Learn  more
-          about  using  on-box credentials for your game servers at Access ex-
-          ternal resources from a  game  server  .  This  property  cannot  be
+          processes). Create a role or look up a role's ARN by using  the  IAM
+          dashboard  in the Amazon Web Services Management Console. Learn more
+          about using on-box credentials for your game servers at  Access  ex-
+          ternal  resources  from  a  game  server  .  This property cannot be
           changed after the fleet is created.
 
        --certificate-configuration (structure)
-          Prompts  GameLift  to  generate a TLS/SSL certificate for the fleet.
-          TLS certificates  are  used  for  encrypting  traffic  between  game
-          clients  and  the  game servers that are running on GameLift. By de-
-          fault, the CertificateConfiguration is set to DISABLED . This  prop-
-          erty cannot be changed after the fleet is created.
+          Prompts GameLift to generate a TLS/SSL certificate  for  the  fleet.
+          GameLift  uses  the  certificates  to  encrypt  traffic between game
+          clients and the game servers running on GameLift.  By  default,  the
+          CertificateConfiguration  is  DISABLED . You can't change this prop-
+          erty after you create the fleet.
 
-          Note: This feature requires the Amazon Web Services Certificate Man-
-          ager (ACM) service, which is not available in all  Amazon  Web  Ser-
-          vices  regions.  When working in a region that does not support this
-          feature, a fleet creation request with certificate generation  fails
-          with a 4xx error.
+          Certificate Manager (ACM) certificates expire after 13 months.  Cer-
+          tificate  expiration  can  cause  fleets to fail, preventing players
+          from connecting to instances in the fleet. We recommend you  replace
+          fleets  before  13 months, consider using fleet aliases for a smooth
+          transition.
+
+          NOTE:
+              ACM isn't available in all Amazon Web Services regions. A  fleet
+              creation  request  with certificate generation enabled in an un-
+              supported Region, fails with a 4xx error. For  more  information
+              about  the  supported Regions, see Supported Regions in the Cer-
+              tificate Manager User Guide .
 
           CertificateType -> (string)
-              Indicates  whether  a  TLS/SSL  certificate  is  generated for a
+              Indicates whether a  TLS/SSL  certificate  is  generated  for  a
               fleet.
 
               Valid values include:
@@ -638,19 +639,16 @@ OPTIONS
 
        --locations (list)
           A set of remote locations to deploy additional instances to and man-
-          age as part of the fleet. This parameter can only be used when  cre-
-          ating  fleets  in  Amazon Web Services Regions that support multiple
-          locations. You can add any GameLift-supported  Amazon  Web  Services
-          Region  as  a remote location, in the form of an Amazon Web Services
-          Region code such as us-west-2 . To create a fleet with instances  in
+          age  as part of the fleet. This parameter can only be used when cre-
+          ating fleets in Amazon Web Services Regions  that  support  multiple
+          locations.  You  can  add any GameLift-supported Amazon Web Services
+          Region as a remote location, in the form of an Amazon  Web  Services
+          Region  code such as us-west-2 . To create a fleet with instances in
           the home Region only, omit this parameter.
 
           (structure)
-              A  remote  location  where a multi-location fleet can deploy EC2
+              A remote location where a multi-location fleet  can  deploy  EC2
               instances for game hosting.
-                 Related actions
-
-                 CreateFleet
 
               Location -> (string)
                  An Amazon Web Services Region code, such as us-west-2 .
@@ -669,28 +667,24 @@ OPTIONS
           ]
 
        --tags (list)
-          A list of labels to assign to the new fleet resource. Tags  are  de-
-          veloper-defined  key-value  pairs.  Tagging  Amazon Web Services re-
-          sources are useful for resource management,  access  management  and
-          cost  allocation.  For more information, see Tagging Amazon Web Ser-
-          vices Resources in the Amazon Web Services General Reference .  Once
-          the  fleet  is  created, you can use  TagResource ,  UntagResource ,
-          and  ListTagsForResource to add, remove, and view tags. The  maximum
-          tag limit may be lower than stated. See the Amazon Web Services Gen-
-          eral Reference for actual tagging limits.
+          A  list  of labels to assign to the new fleet resource. Tags are de-
+          veloper-defined key-value pairs. Tagging  Amazon  Web  Services  re-
+          sources  are  useful  for resource management, access management and
+          cost allocation. For more information, see Tagging Amazon  Web  Ser-
+          vices Resources in the Amazon Web Services General Reference .
 
           (structure)
               A label that can be assigned to a GameLift resource.
                  Learn more
 
-                 Tagging Amazon Web Services Resources in the Amazon Web  Ser-
+                 Tagging  Amazon Web Services Resources in the Amazon Web Ser-
                  vices General Reference
 
                  Amazon Web Services Tagging Strategies
 
                  Related actions
-                     TagResource |  UntagResource |  ListTagsForResource | All
-                     APIs by task
+
+                 All APIs by task
 
               Key -> (string)
                  The key for a developer-defined key:value pair for tagging an
@@ -713,6 +707,35 @@ OPTIONS
             }
             ...
           ]
+
+       --compute-type (string)
+          The type of compute resource used to host your game servers. You can
+          use  your own compute resources with GameLift Anywhere or use Amazon
+          EC2 instances with managed GameLift.
+
+          Possible values:
+
+          o EC2
+
+          o ANYWHERE
+
+       --anywhere-configuration (structure)
+          GameLift Anywhere configuration options.
+
+          Cost -> (string)
+              The cost to run your fleet per hour. GameLift uses the  provided
+              cost of your fleet to balance usage in queues. For more informa-
+              tion about queues, see Setting up queues .
+
+       Shorthand Syntax:
+
+          Cost=string
+
+       JSON Syntax:
+
+          {
+            "Cost": "string"
+          }
 
        --cli-input-json (string) Performs service operation based on the  JSON
        string  provided. The JSON string follows the format provided by --gen-
@@ -1003,12 +1026,15 @@ OUTPUT
               GameLift fleet ARN, the resource ID matches the FleetId value.
 
           FleetType -> (string)
-              The kind of instances, On-Demand or Spot, that this fleet uses.
+              Indicates  whether  to  use On-Demand or Spot instances for this
+              fleet. By default, this property is set  to  ON_DEMAND  .  Learn
+              more  about  when  to use On-Demand versus Spot Instances . This
+              property cannot be changed after the fleet is created.
 
           InstanceType -> (string)
-              The  Amazon  EC2 instance type that determines the computing re-
+              The Amazon EC2 instance type that determines the  computing  re-
               sources of each instance in the fleet. Instance type defines the
-              CPU,  memory, storage, and networking capacity. See Amazon Elas-
+              CPU, memory, storage, and networking capacity. See Amazon  Elas-
               tic Compute Cloud Instance Types for detailed descriptions.
 
           Description -> (string)
@@ -1019,29 +1045,29 @@ OUTPUT
               do not need to be unique.
 
           CreationTime -> (timestamp)
-              A  time stamp indicating when this data object was created. For-
-              mat is a number expressed in Unix time as milliseconds (for  ex-
+              A time stamp indicating when this data object was created.  For-
+              mat  is a number expressed in Unix time as milliseconds (for ex-
               ample "1469498468.057" ).
 
           TerminationTime -> (timestamp)
-              A  time  stamp  indicating when this data object was terminated.
-              Format is a number expressed in Unix time as  milliseconds  (for
+              A time stamp indicating when this data  object  was  terminated.
+              Format  is  a number expressed in Unix time as milliseconds (for
               example "1469498468.057" ).
 
           Status -> (string)
               Current status of the fleet. Possible fleet statuses include the
               following:
 
-              o NEW -- A new fleet has been defined and desired  instances  is
+              o NEW  --  A new fleet has been defined and desired instances is
                 set to 1.
 
               o DOWNLOADING/VALIDATING/BUILDING/ACTIVATING -- GameLift is set-
-                ting up the new fleet, creating new instances  with  the  game
+                ting  up  the  new fleet, creating new instances with the game
                 build or Realtime script and starting server processes.
 
               o ACTIVE -- Hosts can now accept game sessions.
 
-              o ERROR  --  An  error  occurred  when  downloading, validating,
+              o ERROR --  An  error  occurred  when  downloading,  validating,
                 building, or activating the fleet.
 
               o DELETING -- Hosts are responding to a delete fleet request.
@@ -1049,11 +1075,11 @@ OUTPUT
               o TERMINATED -- The fleet no longer exists.
 
           BuildId -> (string)
-              A unique identifier for the build resource that is  deployed  on
+              A  unique  identifier for the build resource that is deployed on
               instances in this fleet.
 
           BuildArn -> (string)
-              The  Amazon  Resource  Name  (ARN ) associated with the GameLift
+              The Amazon Resource Name (ARN )  associated  with  the  GameLift
               build resource that is deployed on instances in this fleet. In a
               GameLift build ARN, the resource ID matches the BuildId value.
 
@@ -1062,51 +1088,66 @@ OUTPUT
               ployed on instances in this fleet.
 
           ScriptArn -> (string)
-              The Amazon Resource Name (ARN )  associated  with  the  GameLift
-              script  resource that is deployed on instances in this fleet. In
-              a GameLift script ARN, the  resource  ID  matches  the  ScriptId
+              The  Amazon  Resource  Name  (ARN ) associated with the GameLift
+              script resource that is deployed on instances in this fleet.  In
+              a  GameLift  script  ARN,  the  resource ID matches the ScriptId
               value.
 
           ServerLaunchPath -> (string)
-              This  parameter  is  no longer used. Server launch paths are now
-              defined using the fleet's  RuntimeConfiguration  parameter.  Re-
-              quests that use this parameter instead continue to be valid.
+              This parameter is no longer used. Server launch  paths  are  now
+              defined  using  the fleet's RuntimeConfiguration . Requests that
+              use this parameter instead continue to be valid.
 
           ServerLaunchParameters -> (string)
-              This  parameter  is no longer used. Server launch parameters are
-              now defined using the fleet's   RuntimeConfiguration  parameter.
-              Requests that use this parameter instead continue to be valid.
+              This parameter is no longer used. Server launch  parameters  are
+              now  defined  using the fleet's runtime configuration . Requests
+              that use this parameter instead continue to be valid.
 
           LogPaths -> (list)
-                 This  parameter is no longer used. Game session log paths are
-                 now defined using  the  GameLift  server  API  ProcessReady()
+                 This parameter is no longer used. Game session log paths  are
+                 now  defined  using  the  GameLift  server API ProcessReady()
                  logParameters . See more information in the Server API Refer-
                  ence .
 
               (string)
 
           NewGameSessionProtectionPolicy -> (string)
-              The type of game session protection to set on all new  instances
+              The  type of game session protection to set on all new instances
               that are started in the fleet.
 
-              o NoProtection  --  The  game session can be terminated during a
+              o NoProtection -- The game session can be  terminated  during  a
                 scale-down event.
 
-              o FullProtection -- If the game session is in an ACTIVE  status,
+              o FullProtection  -- If the game session is in an ACTIVE status,
                 it cannot be terminated during a scale-down event.
 
           OperatingSystem -> (string)
-              The  operating  system  of  the  fleet's  computing resources. A
+              The operating system  of  the  fleet's  computing  resources.  A
               fleet's operating system is determined by the OS of the build or
               script that is deployed on this fleet.
 
           ResourceCreationLimitPolicy -> (structure)
-              The  fleet policy that limits the number of game sessions an in-
-              dividual player can create over a span of time.
+              A policy that puts limits on the number of game sessions that  a
+              player  can  create  within  a specified span of time. With this
+              policy, you can control players' ability  to  consume  available
+              resources.
+
+              The policy is evaluated when a player tries to create a new game
+              session. On  receiving  a  CreateGameSession  request,  GameLift
+              checks  that  the  player (identified by CreatorId ) has created
+              fewer than game session limit in the specified time period.
 
               NewGameSessionsPerCreator -> (integer)
-                 The maximum number of game sessions that  an  individual  can
-                 create during the policy period.
+                 A policy that puts limits on the number of game sessions that
+                 a  player  can  create  within a specified span of time. With
+                 this policy, you can  control  players'  ability  to  consume
+                 available resources.
+
+                 The  policy  is evaluated when a player tries to create a new
+                 game  session.  On  receiving  a  CreateGameSession  request,
+                 GameLift  checks  that  the player (identified by CreatorId )
+                 has created fewer than game session limit  in  the  specified
+                 time period.
 
               PolicyPeriodInMinutes -> (integer)
                  The  time span used in evaluating the resource creation limit
@@ -1138,19 +1179,36 @@ OUTPUT
               server .
 
           CertificateConfiguration -> (structure)
-              Indicates whether a TLS/SSL certificate was  generated  for  the
-              fleet.
+              Determines whether a TLS/SSL  certificate  is  generated  for  a
+              fleet. This feature must be enabled when creating the fleet. All
+              instances in a fleet share the same certificate. The certificate
+              can  be  retrieved  by calling the GameLift Server SDK operation
+              GetInstanceCertificate .
 
               CertificateType -> (string)
-                 Indicates  whether  a  TLS/SSL certificate is generated for a
+                 Indicates whether a TLS/SSL certificate is  generated  for  a
                  fleet.
 
                  Valid values include:
 
                  o GENERATED - Generate a TLS/SSL certificate for this fleet.
 
-                 o DISABLED - (default) Do not generate a TLS/SSL  certificate
+                 o DISABLED  - (default) Do not generate a TLS/SSL certificate
                    for this fleet.
+
+          ComputeType -> (string)
+              The type of compute resource used to host your game servers. You
+              can use your own compute resources with GameLift Anywhere or use
+              Amazon EC2 instances with managed GameLift.
+
+          AnywhereConfiguration -> (structure)
+              GameLift  Anywhere  configuration  options  for  your   Anywhere
+              fleets.
+
+              Cost -> (string)
+                 The  cost  to run your fleet per hour. GameLift uses the pro-
+                 vided cost of your fleet to balance usage in queues. For more
+                 information about queues, see Setting up queues .
 
        LocationStates -> (list)
           The  fleet's  locations  and life-cycle status of each location. For
@@ -1167,9 +1225,27 @@ OUTPUT
               first instance in a new location and preparing it for game host-
               ing, and then removing all instances and deleting  the  location
               from the fleet.
-                 Related actions
-                     CreateFleet  |   CreateFleetLocations |  DeleteFleetLoca-
-                     tions
+
+              o NEW  --  A new fleet location has been defined and desired in-
+                stances is set to 1.
+
+              o DOWNLOADING/VALIDATING/BUILDING/ACTIVATING -- GameLift is set-
+                ting  up  the  new fleet location, creating new instances with
+                the game build or Realtime script  and  starting  server  pro-
+                cesses.
+
+              o ACTIVE -- Hosts can now accept game sessions.
+
+              o ERROR  --  An  error  occurred  when  downloading, validating,
+                building, or activating the fleet location.
+
+              o DELETING -- Hosts are responding to a  delete  fleet  location
+                request.
+
+              o TERMINATED -- The fleet location no longer exists.
+
+              o NOT_FOUND  --  The fleet location was not found. This could be
+                because the custom location was removed or not created.
 
               Location -> (string)
                  The fleet location, expressed as an Amazon Web  Services  Re-

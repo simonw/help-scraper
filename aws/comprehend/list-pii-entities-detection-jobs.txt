@@ -10,12 +10,20 @@ DESCRIPTION
 
        See also: AWS API Documentation
 
+       list-pii-entities-detection-jobs is a paginated operation. Multiple API
+       calls may be issued in order to retrieve the entire  data  set  of  re-
+       sults.  You can disable pagination by providing the --no-paginate argu-
+       ment.  When using --output text and the --query argument on a paginated
+       response,  the  --query  argument must extract data from the results of
+       the following query expressions: PiiEntitiesDetectionJobPropertiesList
+
 SYNOPSIS
             list-pii-entities-detection-jobs
           [--filter <value>]
-          [--next-token <value>]
-          [--max-results <value>]
           [--cli-input-json <value>]
+          [--starting-token <value>]
+          [--page-size <value>]
+          [--max-items <value>]
           [--generate-cli-skeleton <value>]
           [--debug]
           [--endpoint-url <value>]
@@ -34,7 +42,7 @@ SYNOPSIS
 
 OPTIONS
        --filter (structure)
-          Filters  the  jobs  that  are returned. You can filter jobs on their
+          Filters the jobs that are returned. You can  filter  jobs  on  their
           name, status, or the date and time that they were submitted. You can
           only set one filter at a time.
 
@@ -42,18 +50,18 @@ OPTIONS
               Filters on the name of the job.
 
           JobStatus -> (string)
-              Filters  the list of jobs based on job status. Returns only jobs
+              Filters the list of jobs based on job status. Returns only  jobs
               with the specified status.
 
           SubmitTimeBefore -> (timestamp)
               Filters the list of jobs based on the time that the job was sub-
-              mitted  for  processing.  Returns only jobs submitted before the
-              specified time. Jobs are returned in ascending order, oldest  to
+              mitted for processing. Returns only jobs  submitted  before  the
+              specified  time. Jobs are returned in ascending order, oldest to
               newest.
 
           SubmitTimeAfter -> (timestamp)
               Filters the list of jobs based on the time that the job was sub-
-              mitted for processing. Returns only  jobs  submitted  after  the
+              mitted  for  processing.  Returns  only jobs submitted after the
               specified time. Jobs are returned in descending order, newest to
               oldest.
 
@@ -70,18 +78,40 @@ OPTIONS
             "SubmitTimeAfter": timestamp
           }
 
-       --next-token (string)
-          Identifies the next page of results to return.
-
-       --max-results (integer)
-          The maximum number of results to return in each page.
-
-       --cli-input-json (string) Performs service operation based on the  JSON
-       string  provided. The JSON string follows the format provided by --gen-
-       erate-cli-skeleton. If other arguments  are  provided  on  the  command
-       line,  the CLI values will override the JSON-provided values. It is not
+       --cli-input-json  (string) Performs service operation based on the JSON
+       string provided. The JSON string follows the format provided by  --gen-
+       erate-cli-skeleton.  If  other  arguments  are  provided on the command
+       line, the CLI values will override the JSON-provided values. It is  not
        possible to pass arbitrary binary values using a JSON-provided value as
        the string will be taken literally.
+
+       --starting-token (string)
+          A token to specify where to start paginating. This is the  NextToken
+          from a previously truncated response.
+
+          For usage examples, see Pagination in the AWS Command Line Interface
+          User Guide .
+
+       --page-size (integer)
+          The size of each page to get in the AWS service call. This does  not
+          affect the number of items returned in the command's output. Setting
+          a smaller page size results in more calls to the  AWS  service,  re-
+          trieving  fewer  items  in  each call. This can help prevent the AWS
+          service calls from timing out.
+
+          For usage examples, see Pagination in the AWS Command Line Interface
+          User Guide .
+
+       --max-items (integer)
+          The  total number of items to return in the command's output. If the
+          total number of items available is more than the value specified,  a
+          NextToken is provided in the command's output. To resume pagination,
+          provide the NextToken value in the starting-token argument of a sub-
+          sequent  command. Do not use the NextToken response element directly
+          outside of the AWS CLI.
+
+          For usage examples, see Pagination in the AWS Command Line Interface
+          User Guide .
 
        --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
        output without sending an API request. If provided with no value or the
@@ -234,50 +264,58 @@ OUTPUT
                        cessing many short documents, such as text messages.
 
                  DocumentReaderConfig -> (structure)
-                     The  document reader config field applies only for Input-
-                     DataConfig of StartEntitiesDetectionJob.
-
-                     Use DocumentReaderConfig to provide specifications  about
-                     how  you want your inference documents read. Currently it
-                     applies for PDF  documents  in  StartEntitiesDetectionJob
-                     custom inference.
+                     Provides configuration parameters to override the default
+                     actions for extracting text from PDF documents and  image
+                     files.
 
                      DocumentReadAction -> (string)
-                        This  enum field will start with two values which will
-                        apply to PDFs:
+                        This  field  defines the Amazon Textract API operation
+                        that Amazon Comprehend uses to extract text  from  PDF
+                        files and image files. Enter one of the following val-
+                        ues:
 
-                        o TEXTRACT_DETECT_DOCUMENT_TEXT -  The  service  calls
-                          DetectDocumentText for PDF documents per page.
+                        o TEXTRACT_DETECT_DOCUMENT_TEXT - The  Amazon  Compre-
+                          hend  service uses the DetectDocumentText API opera-
+                          tion.
 
-                        o TEXTRACT_ANALYZE_DOCUMENT  -  The service calls Ana-
-                          lyzeDocument for PDF documents per page.
+                        o TEXTRACT_ANALYZE_DOCUMENT -  The  Amazon  Comprehend
+                          service uses the AnalyzeDocument API operation.
 
                      DocumentReadMode -> (string)
-                        This enum field provides two values:
+                        Determines  the text extraction actions for PDF files.
+                        Enter one of the following values:
 
-                        o SERVICE_DEFAULT - use service defaults for  Document
-                          reading.  For Digital PDF it would mean using an in-
-                          ternal parser instead of Textract APIs
+                        o SERVICE_DEFAULT - use the Amazon Comprehend  service
+                          defaults for PDF files.
 
-                        o FORCE_DOCUMENT_READ_ACTION -  Always  use  specified
-                          action  for  DocumentReadAction,  including  Digital
-                          PDF.
+                        o FORCE_DOCUMENT_READ_ACTION  - Amazon Comprehend uses
+                          the Textract API specified by DocumentReadAction for
+                          all PDF files, including digital PDF files.
 
                      FeatureTypes -> (list)
-                        Specifies how the text in an input file should be pro-
-                        cessed:
+                        Specifies  the type of Amazon Textract features to ap-
+                        ply. If you  chose  TEXTRACT_ANALYZE_DOCUMENT  as  the
+                        read  action, you must specify one or both of the fol-
+                        lowing values:
+
+                        o TABLES - Returns information about any  tables  that
+                          are detected in the input document.
+
+                        o FORMS  -  Returns  information and the data from any
+                          forms that are detected in the input document.
 
                         (string)
-                            A  list  of the types of analyses to perform. This
-                            field specifies what feature types need to be  ex-
-                            tracted from the document where entity recognition
-                            is expected.
+                            Specifies the type of Amazon Textract features  to
+                            apply.  If  you chose TEXTRACT_ANALYZE_DOCUMENT as
+                            the read action, you must specify one or  both  of
+                            the following values:
 
-                            o TABLES - Add TABLES to the list to return infor-
-                              mation about the tables that are detected in the
-                              input document.
+                            o TABLES  -  Returns  additional information about
+                              any tables that are detected in the input  docu-
+                              ment.
 
-                            o FORMS - Add FORMS to return detected form data.
+                            o FORMS - Returns additional information about any
+                              forms that are detected in the input document.
 
               OutputDataConfig -> (structure)
                  The output data configuration that you supplied when you cre-

@@ -14,34 +14,41 @@ DESCRIPTION
        ation.
 
        By default, this operation returns as many log events as can fit  in  1
-       MB  (up  to  10,000 log events) or all the events found within the time
-       range that you specify. If the results include a token, then there  are
-       more log events available, and you can get additional results by speci-
-       fying the token in a subsequent call. This operation can  return  empty
-       results while there are more log events available through the token.
+       MB  (up to 10,000 log events) or all the events found within the speci-
+       fied time range. If the results include a token, that means  there  are
+       more log events available. You can get additional results by specifying
+       the token in a subsequent call. This operation can return empty results
+       while there are more log events available through the token.
 
        The  returned  log  events are sorted by event timestamp, the timestamp
        when the event was ingested by CloudWatch Logs, and the ID of the  Put-
        LogEvents request.
 
+       If  you  are  using CloudWatch cross-account observability, you can use
+       this operation in a monitoring account and view data  from  the  linked
+       source accounts. For more information, see CloudWatch cross-account ob-
+       servability .
+
        See also: AWS API Documentation
 
-       filter-log-events  is  a paginated operation. Multiple API calls may be
-       issued in order to retrieve the entire data set  of  results.  You  can
+       filter-log-events is a paginated operation. Multiple API calls  may  be
+       issued  in  order  to  retrieve the entire data set of results. You can
        disable pagination by providing the --no-paginate argument.  When using
-       --output text and the --query argument on  a  paginated  response,  the
-       --query  argument  must  extract data from the results of the following
+       --output  text  and  the  --query argument on a paginated response, the
+       --query argument must extract data from the results  of  the  following
        query expressions: events, searchedLogStreams
 
 SYNOPSIS
             filter-log-events
           --log-group-name <value>
+          [--log-group-identifier <value>]
           [--log-stream-names <value>]
           [--log-stream-name-prefix <value>]
           [--start-time <value>]
           [--end-time <value>]
           [--filter-pattern <value>]
           [--interleaved | --no-interleaved]
+          [--unmask | --no-unmask]
           [--cli-input-json <value>]
           [--starting-token <value>]
           [--page-size <value>]
@@ -66,10 +73,22 @@ OPTIONS
        --log-group-name (string)
           The name of the log group to search.
 
+          NOTE:
+              If  you specify values for both logGroupName and logGroupIdenti-
+              fier , the action returns an InvalidParameterException error.
+
+       --log-group-identifier (string)
+          Specify either the name or ARN of the log group to view  log  events
+          from.  If  the  log group is in a source account and you are using a
+          monitoring account, you must use the log group ARN.
+
+          If you specify values for both logGroupName and logGroupIdentifier ,
+          the action returns an InvalidParameterException error.
+
        --log-stream-names (list)
           Filters the results to only logs from the log streams in this list.
 
-          If you specify a value for both logStreamNamePrefix  and  logStream-
+          If  you  specify a value for both logStreamNamePrefix and logStream-
           Names , the action returns an InvalidParameterException error.
 
           (string)
@@ -79,22 +98,22 @@ OPTIONS
           "string" "string" ...
 
        --log-stream-name-prefix (string)
-          Filters  the  results  to  include only events from log streams that
+          Filters the results to include only events  from  log  streams  that
           have names starting with this prefix.
 
-          If you specify a value for both logStreamNamePrefix  and  logStream-
+          If  you  specify a value for both logStreamNamePrefix and logStream-
           Names , but the value for logStreamNamePrefix does not match any log
           stream names specified in logStreamNames , the action returns an In-
           validParameterException error.
 
        --start-time (long)
           The start of the time range, expressed as the number of milliseconds
-          after Jan 1, 1970 00:00:00 UTC. Events with a timestamp before  this
+          after Jan 1, 1970 00:00:00 UTC . Events with a timestamp before this
           time are not returned.
 
        --end-time (long)
-          The  end  of the time range, expressed as the number of milliseconds
-          after Jan 1, 1970 00:00:00 UTC. Events with a timestamp  later  than
+          The end of the time range, expressed as the number  of  milliseconds
+          after  Jan 1, 1970 00:00:00 UTC . Events with a timestamp later than
           this time are not returned.
 
        --filter-pattern (string)
@@ -104,16 +123,22 @@ OPTIONS
           If not provided, all the events are matched.
 
        --interleaved | --no-interleaved (boolean)
-          If the value is true, the operation makes a best effort  to  provide
-          responses  that  contain events from multiple log streams within the
-          log group, interleaved in a single response. If the value is  false,
-          all  the  matched  log  events  in the first log stream are searched
-          first, then those in the next log stream, and so on. The default  is
-          false.
-              Important:  Starting on June 17, 2019, this parameter is ignored
-              and the value is assumed to be true. The response from this  op-
-              eration  always  interleaves  events  from  multiple log streams
-              within a log group.
+          If  the  value  is true, the operation attempts to provide responses
+          that contain events from multiple log streams within the log  group,
+          interleaved  in  a  single  response. If the value is false, all the
+          matched log events in the first log stream are searched first,  then
+          those in the next log stream, and so on.
+              Important As of June 17, 2019, this parameter is ignored and the
+              value is assumed to be true. The response  from  this  operation
+              always interleaves events from multiple log streams within a log
+              group.
+
+       --unmask | --no-unmask (boolean)
+          Specify true to display the log event fields with all sensitive data
+          unmasked and visible. The default is false .
+
+          To  use  this operation with this parameter, you must be signed into
+          an account with the logs:Unmask permission.
 
        --cli-input-json (string) Performs service operation based on the  JSON
        string  provided. The JSON string follows the format provided by --gen-
@@ -245,24 +270,23 @@ OUTPUT
 
               timestamp -> (long)
                  The time the event occurred, expressed as the number of  mil-
-                 liseconds after Jan 1, 1970 00:00:00 UTC.
+                 liseconds after Jan 1, 1970 00:00:00 UTC .
 
               message -> (string)
                  The data contained in the log event.
 
               ingestionTime -> (long)
                  The  time  the event was ingested, expressed as the number of
-                 milliseconds after Jan 1, 1970 00:00:00 UTC.
+                 milliseconds after Jan 1, 1970 00:00:00 UTC .
 
               eventId -> (string)
                  The ID of the event.
 
        searchedLogStreams -> (list)
-              IMPORTANT Starting on May 15, 2020, this parameter will be  dep-
-              recated. This parameter will be an empty list after the depreca-
-              tion occurs.
+              Important As of May 15, 2020, this parameter is no  longer  sup-
+              ported. This parameter returns an empty list.
 
-          Indicates which log streams have been searched and whether each  has
+          Indicates  which log streams have been searched and whether each has
           been searched completely.
 
           (structure)
@@ -272,11 +296,11 @@ OUTPUT
                  The name of the log stream.
 
               searchedCompletely -> (boolean)
-                 Indicates  whether  all  the  events  in this log stream were
+                 Indicates whether all the events  in  this  log  stream  were
                  searched.
 
        nextToken -> (string)
-          The token to use when requesting the next set of  items.  The  token
+          The  token  to  use when requesting the next set of items. The token
           expires after 24 hours.
 
 

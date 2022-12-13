@@ -10,12 +10,26 @@ DESCRIPTION
        ment in real-time, using a previously created and trained custom  model
        and an endpoint.
 
+       You can input plain text or you can upload a single-page input document
+       (text, PDF, Word, or image).
+
+       If the system detects errors while processing a page in the input docu-
+       ment,  the  API response includes an entry in Errors that describes the
+       errors.
+
+       If the system detects a document-level error in  your  input  document,
+       the  API returns an InvalidRequestException error response. For details
+       about this exception, see Errors in semi-structured  documents  in  the
+       Comprehend Developer Guide.
+
        See also: AWS API Documentation
 
 SYNOPSIS
             classify-document
-          --text <value>
+          [--text <value>]
           --endpoint-arn <value>
+          [--bytes <value>]
+          [--document-reader-config <value>]
           [--cli-input-json <value>]
           [--generate-cli-skeleton <value>]
           [--debug]
@@ -35,11 +49,87 @@ SYNOPSIS
 
 OPTIONS
        --text (string)
-          The document text to be analyzed.
+          The  document  text to be analyzed. If you enter text using this pa-
+          rameter, do not use the Bytes parameter.
 
        --endpoint-arn (string)
-          The  Amazon  Resource  Number (ARN) of the endpoint. For information
+          The Amazon Resource Number (ARN) of the  endpoint.  For  information
           about endpoints, see Managing endpoints .
+
+       --bytes (blob)
+          Use  the  Bytes  parameter to input a text, PDF, Word or image file.
+          You can also use the Bytes parameter to input an Amazon Textract De-
+          tectDocumentText or AnalyzeDocument output file.
+
+          Provide the input document as a sequence of base64-encoded bytes. If
+          your code uses an Amazon Web Services SDK to classify documents, the
+          SDK may encode the document file bytes for you.
+
+          The maximum length of this field depends on the input document type.
+          For details, see Inputs for real-time custom analysis in the Compre-
+          hend Developer Guide.
+
+          If you use the Bytes parameter, do not use the Text parameter.
+
+       --document-reader-config (structure)
+          Provides  configuration  parameters  to override the default actions
+          for extracting text from PDF documents and image files.
+
+          DocumentReadAction -> (string)
+              This field defines the Amazon Textract API operation that Amazon
+              Comprehend  uses to extract text from PDF files and image files.
+              Enter one of the following values:
+
+              o TEXTRACT_DETECT_DOCUMENT_TEXT - The Amazon Comprehend  service
+                uses the DetectDocumentText API operation.
+
+              o TEXTRACT_ANALYZE_DOCUMENT - The Amazon Comprehend service uses
+                the AnalyzeDocument API operation.
+
+          DocumentReadMode -> (string)
+              Determines the text extraction actions for PDF files. Enter  one
+              of the following values:
+
+              o SERVICE_DEFAULT  -  use the Amazon Comprehend service defaults
+                for PDF files.
+
+              o FORCE_DOCUMENT_READ_ACTION - Amazon Comprehend uses  the  Tex-
+                tract  API  specified by DocumentReadAction for all PDF files,
+                including digital PDF files.
+
+          FeatureTypes -> (list)
+              Specifies the type of Amazon Textract features to apply. If  you
+              chose  TEXTRACT_ANALYZE_DOCUMENT  as  the  read action, you must
+              specify one or both of the following values:
+
+              o TABLES - Returns information about any  tables  that  are  de-
+                tected in the input document.
+
+              o FORMS  -  Returns information and the data from any forms that
+                are detected in the input document.
+
+              (string)
+                 Specifies the type of Amazon Textract features to  apply.  If
+                 you  chose  TEXTRACT_ANALYZE_DOCUMENT as the read action, you
+                 must specify one or both of the following values:
+
+                 o TABLES - Returns additional information  about  any  tables
+                   that are detected in the input document.
+
+                 o FORMS - Returns additional information about any forms that
+                   are detected in the input document.
+
+       Shorthand Syntax:
+
+          DocumentReadAction=string,DocumentReadMode=string,FeatureTypes=string,string
+
+       JSON Syntax:
+
+          {
+            "DocumentReadAction": "TEXTRACT_DETECT_DOCUMENT_TEXT"|"TEXTRACT_ANALYZE_DOCUMENT",
+            "DocumentReadMode": "SERVICE_DEFAULT"|"FORCE_DOCUMENT_READ_ACTION",
+            "FeatureTypes": ["TABLES"|"FORMS", ...]
+          }
 
        --cli-input-json (string) Performs service operation based on the  JSON
        string  provided. The JSON string follows the format provided by --gen-
@@ -149,6 +239,11 @@ OUTPUT
                  The  confidence  score  that Amazon Comprehend has this class
                  correctly attributed.
 
+              Page -> (integer)
+                 Page number in the input document. This field is  present  in
+                 the  response  only if your request includes the Byte parame-
+                 ter.
+
        Labels -> (list)
           The labels used the document being  analyzed.  These  are  used  for
           multi-label  trained  models.  Individual labels represent different
@@ -167,6 +262,82 @@ OUTPUT
               Score -> (float)
                  The confidence score that Amazon Comprehend  has  this  label
                  correctly attributed.
+
+              Page -> (integer)
+                 Page  number where the label occurs. This field is present in
+                 the response only if your request includes the  Byte  parame-
+                 ter.
+
+       DocumentMetadata -> (structure)
+          Extraction  information about the document. This field is present in
+          the response only if your request includes the Byte parameter.
+
+          Pages -> (integer)
+              Number of pages in the document.
+
+          ExtractedCharacters -> (list)
+              List of pages in the document, with the number of characters ex-
+              tracted from each page.
+
+              (structure)
+                 Array of the number of characters extracted from each page.
+
+                 Page -> (integer)
+                     Page number.
+
+                 Count -> (integer)
+                     Number of characters extracted from each page.
+
+       DocumentType -> (list)
+          The document type for each page in the input document. This field is
+          present in the response only if your request includes the  Byte  pa-
+          rameter.
+
+          (structure)
+              Document type for each page in the document.
+
+              Page -> (integer)
+                 Page number.
+
+              Type -> (string)
+                 Document type.
+
+       Errors -> (list)
+          Page-level  errors that the system detected while processing the in-
+          put document. The field is empty if the system  encountered  no  er-
+          rors.
+
+          (structure)
+              Text extraction encountered one or more page-level errors in the
+              input document.
+
+              The ErrorCode contains one of the following values:
+
+              o TEXTRACT_BAD_PAGE - Amazon Textract cannot read the page.  For
+                more  information  about  page  limits in Amazon Textract, see
+                Page Quotas in Amazon Textract .
+
+              o TEXTRACT_PROVISIONED_THROUGHPUT_EXCEEDED - The number  of  re-
+                quests  exceeded  your  throughput limit. For more information
+                about throughput quotas in Amazon Textract, see Default quotas
+                in Amazon Textract .
+
+              o PAGE_CHARACTERS_EXCEEDED  -  Too  many  text characters on the
+                page (10,000 characters maximum).
+
+              o PAGE_SIZE_EXCEEDED - The maximum page size is 10 MB.
+
+              o INTERNAL_SERVER_ERROR - The request encountered a service  is-
+                sue. Try the API request again.
+
+              Page -> (integer)
+                 Page number where the error occurred.
+
+              ErrorCode -> (string)
+                 Error code for the cause of the error.
+
+              ErrorMessage -> (string)
+                 Text message explaining the reason for the error.
 
 
 

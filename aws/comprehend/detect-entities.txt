@@ -6,17 +6,35 @@ NAME
        detect-entities -
 
 DESCRIPTION
-       Inspects  text  for named entities, and returns information about them.
-       For more information, about named entities, see Entities in the Compre-
-       hend Developer Guide.
+       Detects  named  entities  in  input  text  when you use the pre-trained
+       model. Detects custom entities if you have a custom entity  recognition
+       model.
+
+       When  detecting  named  entities using the pre-trained model, use plain
+       text as the input. For  more  information  about  named  entities,  see
+       Entities in the Comprehend Developer Guide.
+
+       When  you  use  a  custom entity recognition model, you can input plain
+       text or you can upload a single-page input document (text,  PDF,  Word,
+       or image).
+
+       If the system detects errors while processing a page in the input docu-
+       ment, the API response includes an entry in Errors for each error.
+
+       If the system detects a document-level error in  your  input  document,
+       the  API returns an InvalidRequestException error response. For details
+       about this exception, see Errors in semi-structured  documents  in  the
+       Comprehend Developer Guide.
 
        See also: AWS API Documentation
 
 SYNOPSIS
             detect-entities
-          --text <value>
+          [--text <value>]
           [--language-code <value>]
           [--endpoint-arn <value>]
+          [--bytes <value>]
+          [--document-reader-config <value>]
           [--cli-input-json <value>]
           [--generate-cli-skeleton <value>]
           [--debug]
@@ -36,16 +54,17 @@ SYNOPSIS
 
 OPTIONS
        --text (string)
-          A UTF-8 text string. The maximum string size is 100 KB.
+          A UTF-8 text string. The maximum string size is 100 KB. If you enter
+          text using this parameter, do not use the Bytes parameter.
 
        --language-code (string)
           The language of the input documents. You can specify any of the pri-
-          mary languages supported by Amazon Comprehend. All documents must be
-          in the same language.
+          mary  languages  supported by Amazon Comprehend. If your request in-
+          cludes the endpoint for a custom entity  recognition  model,  Amazon
+          Comprehend  uses  the  language of your custom model, and it ignores
+          any language code that you specify here.
 
-          If  your  request includes the endpoint for a custom entity recogni-
-          tion model, Amazon Comprehend  uses  the  language  of  your  custom
-          model, and it ignores any language code that you specify here.
+          All input documents must be in the same language.
 
           Possible values:
 
@@ -74,16 +93,99 @@ OPTIONS
           o zh-TW
 
        --endpoint-arn (string)
-          The  Amazon  Resource  Name of an endpoint that is associated with a
-          custom entity recognition model. Provide an endpoint if you want  to
-          detect  entities  by  using your own custom model instead of the de-
+          The Amazon Resource Name of an endpoint that is  associated  with  a
+          custom  entity recognition model. Provide an endpoint if you want to
+          detect entities by using your own custom model instead  of  the  de-
           fault model that is used by Amazon Comprehend.
 
-          If you specify an endpoint, Amazon Comprehend uses the  language  of
+          If  you  specify an endpoint, Amazon Comprehend uses the language of
           your custom model, and it ignores any language code that you provide
           in your request.
 
           For information about endpoints, see Managing endpoints .
+
+       --bytes (blob)
+          This  field  applies  only  when you use a custom entity recognition
+          model that was trained with PDF annotations. For other cases,  enter
+          your text input in the Text field.
+
+          Use  the  Bytes  parameter to input a text, PDF, Word or image file.
+          Using a plain-text file in the Bytes parameter is equivelent to  us-
+          ing  the Text parameter (the Entities field in the response is iden-
+          tical).
+
+          You can also use the Bytes parameter to input an Amazon Textract De-
+          tectDocumentText or AnalyzeDocument output file.
+
+          Provide the input document as a sequence of base64-encoded bytes. If
+          your code uses an Amazon Web Services SDK to  detect  entities,  the
+          SDK may encode the document file bytes for you.
+
+          The maximum length of this field depends on the input document type.
+          For details, see Inputs for real-time custom analysis in the Compre-
+          hend Developer Guide.
+
+          If you use the Bytes parameter, do not use the Text parameter.
+
+       --document-reader-config (structure)
+          Provides  configuration  parameters  to override the default actions
+          for extracting text from PDF documents and image files.
+
+          DocumentReadAction -> (string)
+              This field defines the Amazon Textract API operation that Amazon
+              Comprehend  uses to extract text from PDF files and image files.
+              Enter one of the following values:
+
+              o TEXTRACT_DETECT_DOCUMENT_TEXT - The Amazon Comprehend  service
+                uses the DetectDocumentText API operation.
+
+              o TEXTRACT_ANALYZE_DOCUMENT - The Amazon Comprehend service uses
+                the AnalyzeDocument API operation.
+
+          DocumentReadMode -> (string)
+              Determines the text extraction actions for PDF files. Enter  one
+              of the following values:
+
+              o SERVICE_DEFAULT  -  use the Amazon Comprehend service defaults
+                for PDF files.
+
+              o FORCE_DOCUMENT_READ_ACTION - Amazon Comprehend uses  the  Tex-
+                tract  API  specified by DocumentReadAction for all PDF files,
+                including digital PDF files.
+
+          FeatureTypes -> (list)
+              Specifies the type of Amazon Textract features to apply. If  you
+              chose  TEXTRACT_ANALYZE_DOCUMENT  as  the  read action, you must
+              specify one or both of the following values:
+
+              o TABLES - Returns information about any  tables  that  are  de-
+                tected in the input document.
+
+              o FORMS  -  Returns information and the data from any forms that
+                are detected in the input document.
+
+              (string)
+                 Specifies the type of Amazon Textract features to  apply.  If
+                 you  chose  TEXTRACT_ANALYZE_DOCUMENT as the read action, you
+                 must specify one or both of the following values:
+
+                 o TABLES - Returns additional information  about  any  tables
+                   that are detected in the input document.
+
+                 o FORMS - Returns additional information about any forms that
+                   are detected in the input document.
+
+       Shorthand Syntax:
+
+          DocumentReadAction=string,DocumentReadMode=string,FeatureTypes=string,string
+
+       JSON Syntax:
+
+          {
+            "DocumentReadAction": "TEXTRACT_DETECT_DOCUMENT_TEXT"|"TEXTRACT_ANALYZE_DOCUMENT",
+            "DocumentReadMode": "SERVICE_DEFAULT"|"FORCE_DOCUMENT_READ_ACTION",
+            "FeatureTypes": ["TABLES"|"FORMS", ...]
+          }
 
        --cli-input-json (string) Performs service operation based on the  JSON
        string  provided. The JSON string follows the format provided by --gen-
@@ -195,7 +297,13 @@ OUTPUT
                  curacy of the detection.
 
               Type -> (string)
-                 The entity's type.
+                 The entity type. For  entity  detection  using  the  built-in
+                 model,  this  field contains one of the standard entity types
+                 listed below.
+
+                 For custom entity detection, this field contains one  of  the
+                 entity  types that you specified when you trained your custom
+                 model.
 
               Text -> (string)
                  The text of the entity.
@@ -204,9 +312,215 @@ OUTPUT
                  The zero-based offset from the beginning of the  source  text
                  to the first character in the entity.
 
+                 This field is empty for non-text input.
+
               EndOffset -> (integer)
                  The  zero-based  offset from the beginning of the source text
                  to the last character in the entity.
+
+                 This field is empty for non-text input.
+
+              BlockReferences -> (list)
+                 A reference to each block for  this  entity.  This  field  is
+                 empty for plain-text input.
+
+                 (structure)
+                     A reference to a block.
+
+                     BlockId -> (string)
+                        Unique identifier for the block.
+
+                     BeginOffset -> (integer)
+                        Offset  of  the  start  of the block within its parent
+                        block.
+
+                     EndOffset -> (integer)
+                        Offset of the end  of  the  block  within  its  parent
+                        block.
+
+                     ChildBlocks -> (list)
+                        List of child blocks within this block.
+
+                        (structure)
+                            Nested block contained within a block.
+
+                            ChildBlockId -> (string)
+                               Unique identifier for the child block.
+
+                            BeginOffset -> (integer)
+                               Offset  of  the start of the child block within
+                               its parent block.
+
+                            EndOffset -> (integer)
+                               Offset of the end of the child block within its
+                               parent block.
+
+       DocumentMetadata -> (structure)
+          Information  about  the document, discovered during text extraction.
+          This field is present in the response only if your request used  the
+          Byte parameter.
+
+          Pages -> (integer)
+              Number of pages in the document.
+
+          ExtractedCharacters -> (list)
+              List of pages in the document, with the number of characters ex-
+              tracted from each page.
+
+              (structure)
+                 Array of the number of characters extracted from each page.
+
+                 Page -> (integer)
+                     Page number.
+
+                 Count -> (integer)
+                     Number of characters extracted from each page.
+
+       DocumentType -> (list)
+          The document type for each page in the input document. This field is
+          present  in  the response only if your request used the Byte parame-
+          ter.
+
+          (structure)
+              Document type for each page in the document.
+
+              Page -> (integer)
+                 Page number.
+
+              Type -> (string)
+                 Document type.
+
+       Blocks -> (list)
+          Information about each block of text in the input  document.  Blocks
+          are  nested.  A  page  block contains a block for each line of text,
+          which contains a block for each word.
+
+          The Block content for a Word input document does not include a Geom-
+          etry field.
+
+          The  Block  field  is not present in the response for plain-text in-
+          puts.
+
+          (structure)
+              Information about each word or line of text in the  input  docu-
+              ment.
+
+              For additional information, see Block in the Amazon Textract API
+              reference.
+
+              Id -> (string)
+                 Unique identifier for the block.
+
+              BlockType -> (string)
+                 The block represents a line of text or one word of text.
+
+                 o WORD - A word that's detected on a document page. A word is
+                   one  or  more ISO basic Latin script characters that aren't
+                   separated by spaces.
+
+                 o LINE - A string of tab-delimited, contiguous words that are
+                   detected on a document page
+
+              Text -> (string)
+                 The word or line of text extracted from the block.
+
+              Page -> (integer)
+                 Page number where the block appears.
+
+              Geometry -> (structure)
+                 Co-ordinates  of  the  rectangle or polygon that contains the
+                 text.
+
+                 BoundingBox -> (structure)
+                     An axis-aligned coarse representation of the location  of
+                     the recognized item on the document page.
+
+                     Height -> (float)
+                        The height of the bounding box as a ratio of the over-
+                        all document page height.
+
+                     Left -> (float)
+                        The left coordinate of the bounding box as a ratio  of
+                        overall document page width.
+
+                     Top -> (float)
+                        The  top  coordinate of the bounding box as a ratio of
+                        overall document page height.
+
+                     Width -> (float)
+                        The width of the bounding box as a ratio of the  over-
+                        all document page width.
+
+                 Polygon -> (list)
+                     Within  the  bounding  box, a fine-grained polygon around
+                     the recognized item.
+
+                     (structure)
+                        The X and Y coordinates of a point on a document page.
+
+                        For additional information, see Point  in  the  Amazon
+                        Textract API reference.
+
+                        X -> (float)
+                            The  value  of  the  X coordinate for a point on a
+                            polygon
+
+                        Y -> (float)
+                            The value of the Y coordinate for  a  point  on  a
+                            polygon
+
+              Relationships -> (list)
+                 A  list  of child blocks of the current block. For example, a
+                 LINE object has child blocks for each WORD block that's  part
+                 of the line of text.
+
+                 (structure)
+                     List of child blocks for the current block.
+
+                     Ids -> (list)
+                        Identifers of the child blocks.
+
+                        (string)
+
+                     Type -> (string)
+                        Only supported relationship is a child relationship.
+
+       Errors -> (list)
+          Page-level  errors that the system detected while processing the in-
+          put document. The field is empty if the system  encountered  no  er-
+          rors.
+
+          (structure)
+              Text extraction encountered one or more page-level errors in the
+              input document.
+
+              The ErrorCode contains one of the following values:
+
+              o TEXTRACT_BAD_PAGE - Amazon Textract cannot read the page.  For
+                more  information  about  page  limits in Amazon Textract, see
+                Page Quotas in Amazon Textract .
+
+              o TEXTRACT_PROVISIONED_THROUGHPUT_EXCEEDED - The number  of  re-
+                quests  exceeded  your  throughput limit. For more information
+                about throughput quotas in Amazon Textract, see Default quotas
+                in Amazon Textract .
+
+              o PAGE_CHARACTERS_EXCEEDED  -  Too  many  text characters on the
+                page (10,000 characters maximum).
+
+              o PAGE_SIZE_EXCEEDED - The maximum page size is 10 MB.
+
+              o INTERNAL_SERVER_ERROR - The request encountered a service  is-
+                sue. Try the API request again.
+
+              Page -> (integer)
+                 Page number where the error occurred.
+
+              ErrorCode -> (string)
+                 Error code for the cause of the error.
+
+              ErrorMessage -> (string)
+                 Text message explaining the reason for the error.
 
 
 

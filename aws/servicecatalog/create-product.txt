@@ -29,8 +29,9 @@ SYNOPSIS
           [--support-url <value>]
           --product-type <value>
           [--tags <value>]
-          --provisioning-artifact-parameters <value>
+          [--provisioning-artifact-parameters <value>]
           [--idempotency-token <value>]
+          [--source-connection <value>]
           [--cli-input-json <value>]
           [--generate-cli-skeleton <value>]
           [--debug]
@@ -132,13 +133,12 @@ OPTIONS
               but not both. Keys accepted:  [  LoadTemplateFromURL  ,  Import-
               FromPhysicalId ]
 
-              The  URL of the CloudFormation template in Amazon S3, Amazon Web
-              Services CodeCommit, or GitHub in JSON format. Specify  the  URL
-              in JSON format as follows:
+              The URL of the CloudFormation template in Amazon S3 or GitHub in
+              JSON format. Specify the URL in JSON format as follows:
                  "LoadTemplateFromURL":      "https://s3.amazonaws.com/cf-tem-
                  plates-ozkq9d3hgiq2-us-east-1/..."
 
-                 ImportFromPhysicalId : The physical id of the  resource  that
+                 ImportFromPhysicalId  :  The physical id of the resource that
                  contains the template. Currently only supports CloudFormation
                  stack arn. Specify the physical id in JSON format as follows:
                  ImportFromPhysicalId: arn:aws:cloudformation:[us-east-1]:[ac-
@@ -159,9 +159,8 @@ OPTIONS
                 Amazon Web Services Resources
 
           DisableTemplateValidation -> (boolean)
-              If  set to true, Amazon Web Services Service Catalog stops vali-
-              dating the specified provisioning artifact even  if  it  is  in-
-              valid.
+              If set to true, Service Catalog stops validating  the  specified
+              provisioning artifact even if it is invalid.
 
        Shorthand Syntax:
 
@@ -182,6 +181,58 @@ OPTIONS
           A  unique identifier that you provide to ensure idempotency. If mul-
           tiple requests differ only by the idempotency token,  the  same  re-
           sponse is returned for each repeated request.
+
+       --source-connection (structure)
+          Specifies  connection  details for the created product and syncs the
+          product to the connection source artifact. This  automatically  man-
+          ages  the  product's  artifacts  based on changes to the source. The
+          SourceConnection parameter consists of the following sub-fields.
+
+          o Type
+
+          o ConnectionParamters
+
+          Type -> (string)
+              The only supported SourceConnection type is Codestar.
+
+          ConnectionParameters -> (structure)
+              The connection details based on the connection Type .
+
+              CodeStar -> (structure)
+                 Provides ConnectionType details.
+
+                 ConnectionArn -> (string)
+                     The CodeStar ARN, which is the connection between Service
+                     Catalog and the external repository.
+
+                 Repository -> (string)
+                     The   specific   repository   where  the  products  arti-
+                     fact-to-be-synced resides, formatted as "Account/Repo."
+
+                 Branch -> (string)
+                     The specific branch where the artifact resides.
+
+                 ArtifactPath -> (string)
+                     The absolute path wehre the artifact resides  within  the
+                     repo and branch, formatted as "folder/file.json."
+
+       Shorthand Syntax:
+
+          Type=string,ConnectionParameters={CodeStar={ConnectionArn=string,Repository=string,Branch=string,ArtifactPath=string}}
+
+       JSON Syntax:
+
+          {
+            "Type": "CODESTAR",
+            "ConnectionParameters": {
+              "CodeStar": {
+                "ConnectionArn": "string",
+                "Repository": "string",
+                "Branch": "string",
+                "ArtifactPath": "string"
+              }
+            }
+          }
 
        --cli-input-json  (string) Performs service operation based on the JSON
        string provided. The JSON string follows the format provided by  --gen-
@@ -422,6 +473,72 @@ OUTPUT
           CreatedTime -> (timestamp)
               The UTC time stamp of the creation time.
 
+          SourceConnection -> (structure)
+              A top level ProductViewDetail response containing details  about
+              the  products connection. Service Catalog returns this field for
+              the CreateProduct , UpdateProduct , DescribeProductAsAdmin , and
+              SearchProductAsAdmin  APIs.  This  response  contains  the  same
+              fields as the ConnectionParameters request, with the addition of
+              the LastSync response.
+
+              Type -> (string)
+                 The only supported SourceConnection type is Codestar.
+
+              ConnectionParameters -> (structure)
+                 The connection details based on the connection Type .
+
+                 CodeStar -> (structure)
+                     Provides ConnectionType details.
+
+                     ConnectionArn -> (string)
+                        The CodeStar ARN, which is the connection between Ser-
+                        vice Catalog and the external repository.
+
+                     Repository -> (string)
+                        The  specific  repository  where  the  products  arti-
+                        fact-to-be-synced    resides,    formatted   as   "Ac-
+                        count/Repo."
+
+                     Branch -> (string)
+                        The specific branch where the artifact resides.
+
+                     ArtifactPath -> (string)
+                        The absolute path wehre the  artifact  resides  within
+                        the repo and branch, formatted as "folder/file.json."
+
+              LastSync -> (structure)
+                 Provides details about the product's connection sync and con-
+                 tains the following sub-fields.
+
+                 o LastSyncTime
+
+                 o LastSyncStatus
+
+                 o LastSyncStatusMessage
+
+                 o LastSuccessfulSyncTime
+
+                 o LastSuccessfulSyncProvisioningArtifactID
+
+                 LastSyncTime -> (timestamp)
+                     The time of the last attempted sync from  the  repository
+                     to the Service Catalog product.
+
+                 LastSyncStatus -> (string)
+                     The  current  status  of the sync. Responses include SUC-
+                     CEEDED or FAILED .
+
+                 LastSyncStatusMessage -> (string)
+                     The sync's status message.
+
+                 LastSuccessfulSyncTime -> (timestamp)
+                     The time of the latest successful sync  from  the  source
+                     repo artifact to the Service Catalog product.
+
+                 LastSuccessfulSyncProvisioningArtifactId -> (string)
+                     The  ProvisioningArtifactID  of  the ProvisioningArtifact
+                     created from the latest successful sync.
+
        ProvisioningArtifactDetail -> (structure)
           Information about the provisioning artifact.
 
@@ -454,11 +571,23 @@ OUTPUT
               Information  set by the administrator to provide guidance to end
               users about which provisioning artifacts to use.
 
+          SourceRevision -> (string)
+              Specifies the revision of the external artifact that was used to
+              automatically  sync  the  Service Catalog product and create the
+              provisioning artifact. Service Catalog  includes  this  response
+              parameter  as a high level field to the existing ProvisioningAr-
+              tifactDetail type, which is returned as part of the response for
+              CreateProduct  ,  UpdateProduct  ,  DescribeProductAsAdmin , De-
+              scribeProvisioningArtifact , ListProvisioningArtifact , and  Up-
+              dateProvisioningArticat APIs.
+
+              This field only exists for Repo-Synced products.
+
        Tags -> (list)
           Information about the tags associated with the product.
 
           (structure)
-              Information about a tag. A tag is a  key-value  pair.  Tags  are
+              Information  about  a  tag.  A tag is a key-value pair. Tags are
               propagated to the resources created when provisioning a product.
 
               Key -> (string)

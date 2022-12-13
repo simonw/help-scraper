@@ -7,7 +7,7 @@ NAME
 
 DESCRIPTION
        Retrieves (queries) statistical data and other information about one or
-       more S3 buckets that Amazon Macie monitors and analyzes.
+       more S3 buckets that Amazon Macie monitors and analyzes for an account.
 
        See also: AWS API Documentation
 
@@ -108,8 +108,8 @@ OPTIONS
               The  name  of  the  bucket property to sort the results by. This
               value can be one of the following properties that  Amazon  Macie
               defines  as  bucket  metadata:  accountId, bucketName, classifi-
-              ableObjectCount,   classifiableSizeInBytes,   objectCount,    or
-              sizeInBytes.
+              ableObjectCount, classifiableSizeInBytes, objectCount, sensitiv-
+              ityScore, or sizeInBytes.
 
           orderBy -> (string)
               The sort order to apply to the results, based on the value spec-
@@ -248,19 +248,19 @@ GLOBAL OPTIONS
 
 OUTPUT
        buckets -> (list)
-          An array of objects, one for each bucket that meets the filter  cri-
-          teria specified in the request.
+          An array of objects, one for each bucket  that  matches  the  filter
+          criteria specified in the request.
 
           (structure)
               Provides  statistical  data  and  other  information about an S3
               bucket that Amazon Macie monitors and analyzes for your account.
               If  an  error occurs when Macie attempts to retrieve and process
-              information about the bucket or the bucket's objects, the  value
-              for  the  versioning  property  is  false and the value for most
-              other properties is null. Exceptions are  accountId,  bucketArn,
-              bucketCreatedAt,  bucketName,  lastUpdated, and region. To iden-
-              tify the cause of the error, refer  to  the  errorCode  and  er-
-              rorMessage values.
+              metadata from Amazon S3 for the bucket and the bucket's objects,
+              the value for the versioning property is false and the value for
+              most other properties is null.  Key  exceptions  are  accountId,
+              bucketArn, bucketCreatedAt, bucketName, lastUpdated, and region.
+              To identify the cause of the error, refer to the  errorCode  and
+              errorMessage values.
 
               accountId -> (string)
                  The  unique  identifier  for  the Amazon Web Services account
@@ -272,26 +272,30 @@ OUTPUT
                  to the bucket. Possible values are:
 
                  o FALSE - The bucket policy requires  server-side  encryption
-                   of   new  objects.  PutObject  requests  must  include  the
-                   x-amz-server-side-encryption header and the value for  that
-                   header must be AES256 or aws:kms.
+                   of  new  objects.  PutObject  requests must include a valid
+                   server-side encryption header.
 
-                 o TRUE  - The bucket doesn't have a bucket policy or it has a
-                   bucket policy that doesn't require  server-side  encryption
-                   of  new  objects. If a bucket policy exists, it doesn't re-
-                   quire     PutObject     requests     to     include     the
-                   x-amz-server-side-encryption  header and it doesn't require
-                   the value for that header to be AES256 or aws:kms.
+                 o TRUE - The bucket doesn't have a bucket policy or it has  a
+                   bucket  policy  that doesn't require server-side encryption
+                   of new objects. If a bucket policy exists, it  doesn't  re-
+                   quire PutObject requests to include a valid server-side en-
+                   cryption header.
 
                  o UNKNOWN - Amazon Macie can't determine whether  the  bucket
                    policy requires server-side encryption of new objects.
+
+                 Valid      server-side      encryption      headers      are:
+                 x-amz-server-side-encryption  with  a  value  of  AES256   or
+                 aws:kms,  and x-amz-server-side-encryption-customer-algorithm
+                 with a value of AES256.
 
               bucketArn -> (string)
                  The Amazon Resource Name (ARN) of the bucket.
 
               bucketCreatedAt -> (timestamp)
-                 The  date and time, in UTC and extended ISO 8601 format, when
-                 the bucket was created.
+                 The date and time, in UTC and extended ISO 8601 format,  when
+                 the  bucket  was  created,  or  changes  such as edits to the
+                 bucket's policy were most recently made to the bucket.
 
               bucketName -> (string)
                  The name of the bucket.
@@ -394,6 +398,13 @@ OUTPUT
 
                      This  value  is typically null if the value for the isDe-
                      finedInJob property is FALSE or UNKNOWN.
+
+              lastAutomatedDiscoveryTime -> (timestamp)
+                 The date and time, in UTC and extended ISO 8601 format,  when
+                 Amazon Macie most recently performed automated sensitive data
+                 discovery for the bucket. This value  is  null  if  automated
+                 sensitive  data  discovery is currently disabled for your ac-
+                 count.
 
               lastUpdated -> (timestamp)
                  The date and time, in UTC and extended ISO 8601 format,  when
@@ -558,27 +569,33 @@ OUTPUT
 
                      (string)
 
+              sensitivityScore -> (integer)
+                 The  sensitivity  score  for  the bucket, ranging from -1 (no
+                 analysis due to an error) to 100 (sensitive). This  value  is
+                 null  if automated sensitive data discovery is currently dis-
+                 abled for your account.
+
               serverSideEncryption -> (structure)
-                 Specifies  whether the bucket encrypts new objects by default
+                 Specifies whether the bucket encrypts new objects by  default
                  and, if so, the type of server-side encryption that's used.
 
                  kmsMasterKeyId -> (string)
-                     The Amazon Resource Name (ARN) or unique identifier  (key
+                     The  Amazon Resource Name (ARN) or unique identifier (key
                      ID) for the KMS key that's used by default to encrypt ob-
                      jects that are added to the bucket. This value is null if
-                     the  bucket  uses an Amazon S3 managed key to encrypt new
-                     objects or the bucket doesn't encrypt new objects by  de-
+                     the bucket uses an Amazon S3 managed key to  encrypt  new
+                     objects  or the bucket doesn't encrypt new objects by de-
                      fault.
 
                  type -> (string)
                      The type of server-side encryption that's used by default
-                     when storing new objects in the bucket.  Possible  values
+                     when  storing  new objects in the bucket. Possible values
                      are:
 
-                     o AES256  -  New  objects are encrypted with an Amazon S3
+                     o AES256 - New objects are encrypted with  an  Amazon  S3
                        managed key. They use SSE-S3 encryption.
 
-                     o aws:kms - New objects are encrypted  with  an  KMS  key
+                     o aws:kms  -  New  objects  are encrypted with an KMS key
                        (kmsMasterKeyId), either an Amazon Web Services managed
                        key or a customer managed key. They use SSE-KMS encryp-
                        tion.
@@ -587,87 +604,64 @@ OUTPUT
                        encryption is disabled for the bucket.
 
               sharedAccess -> (string)
-                 Specifies whether the bucket is shared  with  another  Amazon
+                 Specifies  whether  the  bucket is shared with another Amazon
                  Web Services account. Possible values are:
 
                  o EXTERNAL - The bucket is shared with an Amazon Web Services
-                   account that isn't part of the same Amazon Macie  organiza-
+                   account  that isn't part of the same Amazon Macie organiza-
                    tion.
 
                  o INTERNAL - The bucket is shared with an Amazon Web Services
                    account that's part of the same Amazon Macie organization.
 
-                 o NOT_SHARED - The bucket isn't shared with other Amazon  Web
+                 o NOT_SHARED  - The bucket isn't shared with other Amazon Web
                    Services accounts.
 
-                 o UNKNOWN  -  Amazon Macie wasn't able to evaluate the shared
+                 o UNKNOWN - Amazon Macie wasn't able to evaluate  the  shared
                    access settings for the bucket.
 
               sizeInBytes -> (long)
                  The total storage size, in bytes, of the bucket.
 
-                 If versioning is enabled for the bucket, Amazon Macie  calcu-
-                 lates  this  value based on the size of the latest version of
-                 each object in the bucket. This  value  doesn't  reflect  the
+                 If  versioning is enabled for the bucket, Amazon Macie calcu-
+                 lates this value based on the size of the latest  version  of
+                 each  object  in  the  bucket. This value doesn't reflect the
                  storage size of all versions of each object in the bucket.
 
               sizeInBytesCompressed -> (long)
-                 The  total  storage  size,  in bytes, of the objects that are
+                 The total storage size, in bytes, of  the  objects  that  are
                  compressed (.gz, .gzip, .zip) files in the bucket.
 
-                 If versioning is enabled for the bucket, Amazon Macie  calcu-
-                 lates  this  value based on the size of the latest version of
-                 each applicable object in the bucket. This value doesn't  re-
+                 If  versioning is enabled for the bucket, Amazon Macie calcu-
+                 lates this value based on the size of the latest  version  of
+                 each  applicable object in the bucket. This value doesn't re-
                  flect the storage size of all versions of each applicable ob-
                  ject in the bucket.
 
               tags -> (list)
-                 An array that specifies the tags (keys and values)  that  are
+                 An  array  that specifies the tags (keys and values) that are
                  associated with the bucket.
 
                  (structure)
-                     Provides  information  about the tags that are associated
-                     with an S3 bucket or object. Each tag consists of  a  re-
+                     Provides information about the tags that  are  associated
+                     with  an  S3 bucket or object. Each tag consists of a re-
                      quired tag key and an associated tag value.
 
                      key -> (string)
-                        One  part  of a key-value pair that comprises a tag. A
+                        One part of a key-value pair that comprises a  tag.  A
                         tag key is a general label that acts as a category for
                         more specific tag values.
 
                      value -> (string)
-                        One  part  of a key-value pair that comprises a tag. A
-                        tag value acts as a descriptor for a tag  key.  A  tag
+                        One part of a key-value pair that comprises a  tag.  A
+                        tag  value  acts  as a descriptor for a tag key. A tag
                         value can be an empty string.
 
               unclassifiableObjectCount -> (structure)
-                 The  total  number of objects that Amazon Macie can't analyze
-                 in the bucket. These objects don't use  a  supported  storage
-                 class  or  don't  have  a file name extension for a supported
+                 The total number of objects that Amazon Macie  can't  analyze
+                 in  the  bucket.  These objects don't use a supported storage
+                 class or don't have a file name  extension  for  a  supported
                  file or storage format.
-
-                 fileType -> (long)
-                     The total storage size (in bytes) or  number  of  objects
-                     that Amazon Macie can't analyze because the objects don't
-                     have a file name extension for a supported file or  stor-
-                     age format.
-
-                 storageClass -> (long)
-                     The  total  storage  size (in bytes) or number of objects
-                     that Amazon Macie can't analyze because the  objects  use
-                     an unsupported storage class.
-
-                 total -> (long)
-                     The  total  storage  size (in bytes) or number of objects
-                     that Amazon Macie can't analyze because the  objects  use
-                     an  unsupported  storage  class or don't have a file name
-                     extension for a supported file or storage format.
-
-              unclassifiableObjectSizeInBytes -> (structure)
-                 The total storage size, in bytes, of the objects that  Amazon
-                 Macie  can't analyze in the bucket. These objects don't use a
-                 supported storage class or don't have a file  name  extension
-                 for a supported file or storage format.
 
                  fileType -> (long)
                      The  total  storage  size (in bytes) or number of objects
@@ -686,12 +680,35 @@ OUTPUT
                      an unsupported storage class or don't have  a  file  name
                      extension for a supported file or storage format.
 
+              unclassifiableObjectSizeInBytes -> (structure)
+                 The  total storage size, in bytes, of the objects that Amazon
+                 Macie can't analyze in the bucket. These objects don't use  a
+                 supported  storage  class or don't have a file name extension
+                 for a supported file or storage format.
+
+                 fileType -> (long)
+                     The total storage size (in bytes) or  number  of  objects
+                     that Amazon Macie can't analyze because the objects don't
+                     have a file name extension for a supported file or  stor-
+                     age format.
+
+                 storageClass -> (long)
+                     The  total  storage  size (in bytes) or number of objects
+                     that Amazon Macie can't analyze because the  objects  use
+                     an unsupported storage class.
+
+                 total -> (long)
+                     The  total  storage  size (in bytes) or number of objects
+                     that Amazon Macie can't analyze because the  objects  use
+                     an  unsupported  storage  class or don't have a file name
+                     extension for a supported file or storage format.
+
               versioning -> (boolean)
                  Specifies whether versioning is enabled for the bucket.
 
        nextToken -> (string)
-          The  string  to  use in a subsequent request to get the next page of
-          results in a paginated response. This value is null if there are  no
+          The string to use in a subsequent request to get the  next  page  of
+          results  in a paginated response. This value is null if there are no
           additional pages.
 
 

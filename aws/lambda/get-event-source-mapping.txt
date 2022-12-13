@@ -185,14 +185,22 @@ OUTPUT
           you must set MaximumBatchingWindowInSeconds to at least 1.
 
        MaximumBatchingWindowInSeconds -> (integer)
-          (Streams and Amazon SQS standard queues) The maximum amount of time,
-          in seconds, that Lambda spends gathering records before invoking the
-          function.
+          The maximum amount of time, in seconds, that Lambda spends gathering
+          records  before invoking the function. You can configure MaximumBat-
+          chingWindowInSeconds to any value from 0 seconds to 300  seconds  in
+          increments of seconds.
 
-          Default: 0
+          For  streams and Amazon SQS event sources, the default batching win-
+          dow is 0 seconds. For Amazon MSK,  Self-managed  Apache  Kafka,  and
+          Amazon MQ event sources, the default batching window is 500 ms. Note
+          that because you can only change  MaximumBatchingWindowInSeconds  in
+          increments  of seconds, you cannot revert back to the 500 ms default
+          batching window after you have changed it. To  restore  the  default
+          batching window, you must create a new event source mapping.
 
-          Related setting: When you set BatchSize to a value greater than  10,
-          you must set MaximumBatchingWindowInSeconds to at least 1.
+          Related  setting: For streams and Amazon SQS event sources, when you
+          set BatchSize to a value greater than 10, you must set MaximumBatch-
+          ingWindowInSeconds to at least 1.
 
        ParallelizationFactor -> (integer)
           (Streams  only)  The  number of batches to process concurrently from
@@ -202,9 +210,9 @@ OUTPUT
           The Amazon Resource Name (ARN) of the event source.
 
        FilterCriteria -> (structure)
-          (Streams and Amazon SQS) An object that defines the filter  criteria
-          that  determine whether Lambda should process an event. For more in-
-          formation, see Lambda event filtering .
+          An object that defines the filter criteria  that  determine  whether
+          Lambda  should  process  an  event. For more information, see Lambda
+          event filtering .
 
           Filters -> (list)
               A list of filters.
@@ -284,39 +292,42 @@ OUTPUT
                    ager ARN of your secret key used for SASL/PLAIN authentica-
                    tion of your Apache Kafka brokers.
 
-                 o VPC_SUBNET - The subnets associated with your  VPC.  Lambda
-                   connects to these subnets to fetch data from your self-man-
-                   aged Apache Kafka cluster.
+                 o VPC_SUBNET - (Self-managed Apache Kafka) The subnets  asso-
+                   ciated  with  your VPC. Lambda connects to these subnets to
+                   fetch data from your self-managed Apache Kafka cluster.
 
-                 o VPC_SECURITY_GROUP - The VPC security group used to  manage
-                   access to your self-managed Apache Kafka brokers.
+                 o VPC_SECURITY_GROUP - (Self-managed Apache  Kafka)  The  VPC
+                   security  group  used to manage access to your self-managed
+                   Apache Kafka brokers.
 
-                 o SASL_SCRAM_256_AUTH  -  The Secrets Manager ARN of your se-
-                   cret key used for SASL  SCRAM-256  authentication  of  your
-                   self-managed Apache Kafka brokers.
+                 o SASL_SCRAM_256_AUTH - (Self-managed Apache Kafka)  The  Se-
+                   crets  Manager  ARN  of  your  secret  key  used  for  SASL
+                   SCRAM-256 authentication of your self-managed Apache  Kafka
+                   brokers.
 
-                 o SASL_SCRAM_512_AUTH  -  The Secrets Manager ARN of your se-
-                   cret key used for SASL  SCRAM-512  authentication  of  your
-                   self-managed Apache Kafka brokers.
+                 o SASL_SCRAM_512_AUTH  -  (Amazon  MSK,  Self-managed  Apache
+                   Kafka) The Secrets Manager ARN of your secret key used  for
+                   SASL  SCRAM-512  authentication of your self-managed Apache
+                   Kafka brokers.
 
-                 o VIRTUAL_HOST  - (Amazon MQ) The name of the virtual host in
+                 o VIRTUAL_HOST - (RabbitMQ) The name of the virtual  host  in
                    your RabbitMQ broker. Lambda uses this RabbitMQ host as the
                    event source. This property cannot be specified in an Upda-
                    teEventSourceMapping API call.
 
                  o CLIENT_CERTIFICATE_TLS_AUTH  -  (Amazon  MSK,  self-managed
-                   Apache  Kafka)  The  Secrets Manager ARN of your secret key
-                   containing the certificate chain (X.509 PEM),  private  key
-                   (PKCS#8  PEM), and private key password (optional) used for
+                   Apache Kafka) The Secrets Manager ARN of  your  secret  key
+                   containing  the  certificate chain (X.509 PEM), private key
+                   (PKCS#8 PEM), and private key password (optional) used  for
                    mutual TLS authentication of your MSK/Apache Kafka brokers.
 
-                 o SERVER_ROOT_CA_CERTIFICATE -  (Self-managed  Apache  Kafka)
-                   The  Secrets  Manager ARN of your secret key containing the
-                   root CA certificate (X.509 PEM) used for TLS encryption  of
+                 o SERVER_ROOT_CA_CERTIFICATE  -  (Self-managed  Apache Kafka)
+                   The Secrets Manager ARN of your secret key  containing  the
+                   root  CA certificate (X.509 PEM) used for TLS encryption of
                    your Apache Kafka brokers.
 
               URI -> (string)
-                 The  value  for your chosen configuration in Type . For exam-
+                 The value for your chosen configuration in Type .  For  exam-
                  ple: "URI": "arn:aws:secretsmanager:us-east-1:01234567890:se-
                  cret:MyBrokerSecretName" .
 
@@ -325,7 +336,7 @@ OUTPUT
 
           Endpoints -> (map)
               The list of bootstrap servers for your Kafka brokers in the fol-
-              lowing            format:             "KAFKA_BOOTSTRAP_SERVERS":
+              lowing             format:            "KAFKA_BOOTSTRAP_SERVERS":
               ["abc.xyz.com:xxxx","abc2.xyz.com:xxxx"] .
 
               key -> (string)
@@ -335,50 +346,50 @@ OUTPUT
 
        MaximumRecordAgeInSeconds -> (integer)
           (Streams only) Discard records older than the specified age. The de-
-          fault value is -1, which sets the maximum age to infinite. When  the
+          fault  value is -1, which sets the maximum age to infinite. When the
           value is set to infinite, Lambda never discards old records.
 
        BisectBatchOnFunctionError -> (boolean)
-          (Streams  only) If the function returns an error, split the batch in
+          (Streams only) If the function returns an error, split the batch  in
           two and retry. The default value is false.
 
        MaximumRetryAttempts -> (integer)
-          (Streams only) Discard records after the  specified  number  of  re-
+          (Streams  only)  Discard  records  after the specified number of re-
           tries. The default value is -1, which sets the maximum number of re-
           tries to infinite. When MaximumRetryAttempts is infinite, Lambda re-
           tries failed records until the record expires in the event source.
 
        TumblingWindowInSeconds -> (integer)
-          (Streams  only)  The duration in seconds of a processing window. The
+          (Streams only) The duration in seconds of a processing  window.  The
           range is 1900 seconds.
 
        FunctionResponseTypes -> (list)
-          (Streams and Amazon SQS) A list of current response type  enums  ap-
+          (Streams  and  Amazon SQS) A list of current response type enums ap-
           plied to the event source mapping.
 
           (string)
 
        AmazonManagedKafkaEventSourceConfig -> (structure)
-          Specific  configuration settings for an Amazon Managed Streaming for
+          Specific configuration settings for an Amazon Managed Streaming  for
           Apache Kafka (Amazon MSK) event source.
-
-          ConsumerGroupId -> (string)
-              The identifier for the Kafka consumer group to  join.  The  con-
-              sumer  group  ID  must  be  unique  among  all  your Kafka event
-              sources. After creating a Kafka event source  mapping  with  the
-              consumer  group  ID specified, you cannot update this value. For
-              more information, see  services-msk-consumer-group-id .
-
-       SelfManagedKafkaEventSourceConfig -> (structure)
-          Specific configuration settings  for  a  self-managed  Apache  Kafka
-          event source.
 
           ConsumerGroupId -> (string)
               The  identifier  for  the Kafka consumer group to join. The con-
               sumer group ID  must  be  unique  among  all  your  Kafka  event
               sources.  After  creating  a Kafka event source mapping with the
               consumer group ID specified, you cannot update this  value.  For
-              more information, see  services-msk-consumer-group-id .
+              more information, see Customizable consumer group ID .
+
+       SelfManagedKafkaEventSourceConfig -> (structure)
+          Specific  configuration  settings  for  a  self-managed Apache Kafka
+          event source.
+
+          ConsumerGroupId -> (string)
+              The identifier for the Kafka consumer group to  join.  The  con-
+              sumer  group  ID  must  be  unique  among  all  your Kafka event
+              sources. After creating a Kafka event source  mapping  with  the
+              consumer  group  ID specified, you cannot update this value. For
+              more information, see Customizable consumer group ID .
 
 
 
