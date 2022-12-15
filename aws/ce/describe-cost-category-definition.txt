@@ -186,49 +186,97 @@ OUTPUT
                         Return results that match either Dimension object.
 
                         (structure)
-                            Use Expression to filter  by  cost  or  by  usage.
+                            Use Expression to filter in various Cost  Explorer
+                            APIs.
+
+                            Not  all  Expression  types  are supported in each
+                            API. Refer to the documentation for each  specific
+                            API to see what is supported.
+
                             There are two patterns:
 
-                            o Simple dimension values - You can set the dimen-
-                              sion name and values for the  filters  that  you
-                              plan to use. For example, you can filter for RE-
-                              GION==us-east-1  OR  REGION==us-west-1   .   For
-                              GetRightsizingRecommendation  ,  the Region is a
-                              full name (for example, REGION==US East (N. Vir-
-                              ginia)  .  The Expression example is as follows:
-                              { "Dimensions": { "Key": "REGION",  "Values":  [
-                              "us-east-1",  us-west-1  ] } }   The list of di-
-                              mension values are  OR'd  together  to  retrieve
-                              cost  or  usage  data. You can create Expression
-                              and DimensionValues objects using  either  with*
-                              methods or set* methods in multiple lines.
+                            o Simple dimension values.
 
-                            o Compound  dimension  values  with logical opera-
-                              tions - You can use  multiple  Expression  types
-                              and the logical operators AND/OR/NOT to create a
-                              list of one or more Expression objects. By doing
-                              this,  you  can filter on more advanced options.
-                              For example,  you  can  filter  on  ((REGION  ==
-                              us-east-1  OR  REGION == us-west-1) OR (TAG.Type
-                              == Type1)) AND (USAGE_TYPE  !=  DataTransfer)  .
-                              The Expression for that is as follows:  { "And":
-                              [ {"Or": [  {"Dimensions":  {  "Key":  "REGION",
-                              "Values":   [  "us-east-1",  "us-west-1"  ]  }},
-                              {"Tags":   {   "Key":    "TagName",    "Values":
-                              ["Value1"]  }  }  ]},  {"Not":  {"Dimensions": {
-                              "Key": "USAGE_TYPE", "Values":  ["DataTransfer"]
-                              }}} ] }
+                              o There are three types of simple dimension val-
+                                ues: CostCategories , Tags , and Dimensions .
+
+                                o Specify the CostCategories field to define a
+                                  filter that acts on Cost Categories.
+
+                                o Specify  the  Tags  field to define a filter
+                                  that acts on Cost Allocation Tags.
+
+                                o Specify the Dimensions  field  to  define  a
+                                  filter  that  acts  on the ` DimensionValues
+                                  https://docs.aws.amazon.com/aws-cost-management/latest/APIReference/API_DimensionValues.html`__
+                                  .
+
+                              o For  each  filter type, you can set the dimen-
+                                sion name and values for the filters that  you
+                                plan to use.
+
+                                o For   example,   you   can  filter  for  RE-
+                                  GION==us-east-1 OR REGION==us-west-1  .  For
+                                  GetRightsizingRecommendation , the Region is
+                                  a full name (for  example,  REGION==US  East
+                                  (N. Virginia) .
+
+                                o The  corresponding Expression for this exam-
+                                  ple is as follows: { "Dimensions": {  "Key":
+                                  "REGION", "Values": [ "us-east-1", us-west-1
+                                  ] } }
+
+                                o As shown in the previous example,  lists  of
+                                  dimension  values  are combined with OR when
+                                  applying the filter.
+
+                              o You can also set different  match  options  to
+                                further  control  how  the filter behaves. Not
+                                all APIs support match options. Refer  to  the
+                                documentation  for  each  specific  API to see
+                                what is supported.
+
+                                o For example, you can filter for  linked  ac-
+                                  count names that start with a.
+
+                                o The  corresponding Expression for this exam-
+                                  ple is as follows: { "Dimensions": {  "Key":
+                                  "LINKED_ACCOUNT_NAME",   "MatchOptions":   [
+                                  "STARTS_WITH" ], "Values": [ "a" ] } }
+
+                            o Compound Expression types  with  logical  opera-
+                              tions.
+
+                              o You  can use multiple Expression types and the
+                                logical operators AND/OR/NOT to create a  list
+                                of  one  or  more Expression objects. By doing
+                                this, you can filter by more advanced options.
+
+                              o For example, you can  filter  by  ((REGION  ==
+                                us-east-1 OR REGION == us-west-1) OR (TAG.Type
+                                == Type1)) AND (USAGE_TYPE != DataTransfer) .
+
+                              o The corresponding Expression for this  example
+                                is  as  follows:  { "And": [ {"Or": [ {"Dimen-
+                                sions":  {  "Key":   "REGION",   "Values":   [
+                                "us-east-1",  "us-west-1"  ]  }},  {"Tags":  {
+                                "Key": "TagName", "Values": ["Value1"] } } ]},
+                                {"Not":  {"Dimensions": { "Key": "USAGE_TYPE",
+                                "Values": ["DataTransfer"] }}} ] }
 
                             NOTE:
-                                   Because  each  Expression can have only one
-                                   operator, the service returns an  error  if
-                                   more  than  one is specified. The following
-                                   example shows  an  Expression  object  that
-                                   creates an error.
+                               Because each Expression can have only one oper-
+                               ator, the service returns an error if more than
+                               one is specified. The following  example  shows
+                               an  Expression  object that creates an error: {
+                               "And": [ ... ],  "Dimensions":  {  "Key":  "US-
+                               AGE_TYPE", "Values": [ "DataTransfer" ] } }
 
-                               {  "And": [ ... ], "DimensionValues": { "Dimen-
-                               sion": "USAGE_TYPE", "Values": [ "DataTransfer"
-                               ] } }
+                               The  following is an example of the correspond-
+                               ing error message: "Expression  has  more  than
+                               one  roots.  Only  one root operator is allowed
+                               for each expression: And, Or, Not,  Dimensions,
+                               Tags, CostCategories"
 
                             NOTE:
                                For  the GetRightsizingRecommendation action, a
@@ -262,23 +310,36 @@ OUTPUT
                                    The  names  of  the metadata types that you
                                    can use to filter and group  your  results.
                                    For  example,  AZ  returns a list of Avail-
-                                   ability Zones. LINK_ACCOUNT_NAME  and  SER-
-                                   VICE_CODE    can    only    be    used   in
-                                   CostCategoryRule .
+                                   ability Zones.
+
+                                   Not all dimensions are  supported  in  each
+                                   API.  Refer  to  the documentation for each
+                                   specific API to see what is supported.
+                                      LINK_ACCOUNT_NAME and  SERVICE_CODE  can
+                                      only be used in CostCategoryRule .
+
+                                      ANOMALY_TOTAL_IMPACT_ABSOLUTE  and ANOM-
+                                      ALY_TOTAL_IMPACT_PERCENTAGE can only  be
+                                      used in AnomalySubscriptions .
 
                                Values -> (list)
-                                   The metadata values that  you  can  use  to
-                                   filter  and group your results. You can use
+                                   The  metadata  values  that  you can use to
+                                   filter and group your results. You can  use
                                    GetDimensionValues to find specific values.
 
                                    (string)
 
                                MatchOptions -> (list)
-                                   The match options that you can use to  fil-
-                                   ter  your results. MatchOptions is only ap-
-                                   plicable for actions related to Cost  Cate-
-                                   gory.  The  default values for MatchOptions
-                                   are EQUALS and CASE_SENSITIVE .
+                                   The  match options that you can use to fil-
+                                   ter your results.
+                                      MatchOptions is only applicable for  ac-
+                                      tions related to Cost Category and Anom-
+                                      aly Subscriptions. Refer to the documen-
+                                      tation for each specific API to see what
+                                      is supported.
+
+                                   The default  values  for  MatchOptions  are
+                                   EQUALS and CASE_SENSITIVE .
 
                                    (string)
 
@@ -294,10 +355,10 @@ OUTPUT
                                    (string)
 
                                MatchOptions -> (list)
-                                   The match options that you can use to  fil-
-                                   ter  your results. MatchOptions is only ap-
-                                   plicable for actions related to Cost  Cate-
-                                   gory.  The  default values for MatchOptions
+                                   The  match options that you can use to fil-
+                                   ter your results. MatchOptions is only  ap-
+                                   plicable  for actions related to Cost Cate-
+                                   gory. The default values  for  MatchOptions
                                    are EQUALS and CASE_SENSITIVE .
 
                                    (string)
@@ -314,10 +375,10 @@ OUTPUT
                                    (string)
 
                                MatchOptions -> (list)
-                                   The match options that you can use to  fil-
-                                   ter  your results. MatchOptions is only ap-
-                                   plicable for actions related to cost  cate-
-                                   gory.  The  default values for MatchOptions
+                                   The  match options that you can use to fil-
+                                   ter your results. MatchOptions is only  ap-
+                                   plicable  for actions related to cost cate-
+                                   gory. The default values  for  MatchOptions
                                    is EQUALS and CASE_SENSITIVE .
 
                                    (string)
@@ -326,71 +387,119 @@ OUTPUT
                         Return results that match both Dimension objects.
 
                         (structure)
-                            Use Expression to filter  by  cost  or  by  usage.
+                            Use  Expression to filter in various Cost Explorer
+                            APIs.
+
+                            Not all Expression types  are  supported  in  each
+                            API.  Refer to the documentation for each specific
+                            API to see what is supported.
+
                             There are two patterns:
 
-                            o Simple dimension values - You can set the dimen-
-                              sion name and values for the  filters  that  you
-                              plan to use. For example, you can filter for RE-
-                              GION==us-east-1  OR  REGION==us-west-1   .   For
-                              GetRightsizingRecommendation  ,  the Region is a
-                              full name (for example, REGION==US East (N. Vir-
-                              ginia)  .  The Expression example is as follows:
-                              { "Dimensions": { "Key": "REGION",  "Values":  [
-                              "us-east-1",  us-west-1  ] } }   The list of di-
-                              mension values are  OR'd  together  to  retrieve
-                              cost  or  usage  data. You can create Expression
-                              and DimensionValues objects using  either  with*
-                              methods or set* methods in multiple lines.
+                            o Simple dimension values.
 
-                            o Compound  dimension  values  with logical opera-
-                              tions - You can use  multiple  Expression  types
-                              and the logical operators AND/OR/NOT to create a
-                              list of one or more Expression objects. By doing
-                              this,  you  can filter on more advanced options.
-                              For example,  you  can  filter  on  ((REGION  ==
-                              us-east-1  OR  REGION == us-west-1) OR (TAG.Type
-                              == Type1)) AND (USAGE_TYPE  !=  DataTransfer)  .
-                              The Expression for that is as follows:  { "And":
-                              [ {"Or": [  {"Dimensions":  {  "Key":  "REGION",
-                              "Values":   [  "us-east-1",  "us-west-1"  ]  }},
-                              {"Tags":   {   "Key":    "TagName",    "Values":
-                              ["Value1"]  }  }  ]},  {"Not":  {"Dimensions": {
-                              "Key": "USAGE_TYPE", "Values":  ["DataTransfer"]
-                              }}} ] }
+                              o There are three types of simple dimension val-
+                                ues: CostCategories , Tags , and Dimensions .
+
+                                o Specify the CostCategories field to define a
+                                  filter that acts on Cost Categories.
+
+                                o Specify the Tags field to  define  a  filter
+                                  that acts on Cost Allocation Tags.
+
+                                o Specify  the  Dimensions  field  to define a
+                                  filter that acts on  the  `  DimensionValues
+                                  https://docs.aws.amazon.com/aws-cost-management/latest/APIReference/API_DimensionValues.html`__
+                                  .
+
+                              o For each filter type, you can set  the  dimen-
+                                sion  name and values for the filters that you
+                                plan to use.
+
+                                o For  example,  you  can   filter   for   RE-
+                                  GION==us-east-1  OR  REGION==us-west-1 . For
+                                  GetRightsizingRecommendation , the Region is
+                                  a  full  name  (for example, REGION==US East
+                                  (N. Virginia) .
+
+                                o The corresponding Expression for this  exam-
+                                  ple  is as follows: { "Dimensions": { "Key":
+                                  "REGION", "Values": [ "us-east-1", us-west-1
+                                  ] } }
+
+                                o As  shown  in the previous example, lists of
+                                  dimension values are combined with  OR  when
+                                  applying the filter.
+
+                              o You  can  also  set different match options to
+                                further control how the  filter  behaves.  Not
+                                all  APIs  support match options. Refer to the
+                                documentation for each  specific  API  to  see
+                                what is supported.
+
+                                o For  example,  you can filter for linked ac-
+                                  count names that start with a.
+
+                                o The corresponding Expression for this  exam-
+                                  ple  is as follows: { "Dimensions": { "Key":
+                                  "LINKED_ACCOUNT_NAME",   "MatchOptions":   [
+                                  "STARTS_WITH" ], "Values": [ "a" ] } }
+
+                            o Compound  Expression  types  with logical opera-
+                              tions.
+
+                              o You can use multiple Expression types and  the
+                                logical  operators AND/OR/NOT to create a list
+                                of one or more Expression  objects.  By  doing
+                                this, you can filter by more advanced options.
+
+                              o For  example,  you  can  filter by ((REGION ==
+                                us-east-1 OR REGION == us-west-1) OR (TAG.Type
+                                == Type1)) AND (USAGE_TYPE != DataTransfer) .
+
+                              o The  corresponding Expression for this example
+                                is as follows: { "And": [  {"Or":  [  {"Dimen-
+                                sions":   {   "Key":   "REGION",  "Values":  [
+                                "us-east-1",  "us-west-1"  ]  }},  {"Tags":  {
+                                "Key": "TagName", "Values": ["Value1"] } } ]},
+                                {"Not": {"Dimensions": { "Key":  "USAGE_TYPE",
+                                "Values": ["DataTransfer"] }}} ] }
 
                             NOTE:
-                                   Because  each  Expression can have only one
-                                   operator, the service returns an  error  if
-                                   more  than  one is specified. The following
-                                   example shows  an  Expression  object  that
-                                   creates an error.
+                               Because each Expression can have only one oper-
+                               ator, the service returns an error if more than
+                               one  is  specified. The following example shows
+                               an Expression object that creates an  error:  {
+                               "And":  [  ...  ],  "Dimensions": { "Key": "US-
+                               AGE_TYPE", "Values": [ "DataTransfer" ] } }
 
-                               {  "And": [ ... ], "DimensionValues": { "Dimen-
-                               sion": "USAGE_TYPE", "Values": [ "DataTransfer"
-                               ] } }
+                               The following is an example of the  correspond-
+                               ing  error  message:  "Expression has more than
+                               one roots. Only one root  operator  is  allowed
+                               for  each expression: And, Or, Not, Dimensions,
+                               Tags, CostCategories"
 
                             NOTE:
-                               For  the GetRightsizingRecommendation action, a
-                               combination of OR and NOT isn't  supported.  OR
-                               isn't  supported  between different dimensions,
-                               or dimensions and tags.  NOT  operators  aren't
-                               supported.   Dimensions  are  also  limited  to
+                               For the GetRightsizingRecommendation action,  a
+                               combination  of  OR and NOT isn't supported. OR
+                               isn't supported between  different  dimensions,
+                               or  dimensions  and  tags. NOT operators aren't
+                               supported.  Dimensions  are  also  limited   to
                                LINKED_ACCOUNT , REGION , or RIGHTSIZING_TYPE .
 
-                               For  the   GetReservationPurchaseRecommendation
-                               action,  only  NOT  is  supported.  AND  and OR
-                               aren't supported.  Dimensions  are  limited  to
+                               For   the  GetReservationPurchaseRecommendation
+                               action, only  NOT  is  supported.  AND  and  OR
+                               aren't  supported.  Dimensions  are  limited to
                                LINKED_ACCOUNT .
 
                             Or -> (list)
-                               Return  results that match either Dimension ob-
+                               Return results that match either Dimension  ob-
                                ject.
 
                                ( ... recursive ... )
 
                             And -> (list)
-                               Return results that match  both  Dimension  ob-
+                               Return  results  that  match both Dimension ob-
                                jects.
 
                                ( ... recursive ... )
@@ -399,12 +508,20 @@ OUTPUT
                                The specific Dimension to use for Expression .
 
                                Key -> (string)
-                                   The  names  of  the metadata types that you
-                                   can use to filter and group  your  results.
-                                   For  example,  AZ  returns a list of Avail-
-                                   ability Zones. LINK_ACCOUNT_NAME  and  SER-
-                                   VICE_CODE    can    only    be    used   in
-                                   CostCategoryRule .
+                                   The names of the metadata  types  that  you
+                                   can  use  to filter and group your results.
+                                   For example, AZ returns a  list  of  Avail-
+                                   ability Zones.
+
+                                   Not  all  dimensions  are supported in each
+                                   API. Refer to the  documentation  for  each
+                                   specific API to see what is supported.
+                                      LINK_ACCOUNT_NAME  and  SERVICE_CODE can
+                                      only be used in CostCategoryRule .
+
+                                      ANOMALY_TOTAL_IMPACT_ABSOLUTE and  ANOM-
+                                      ALY_TOTAL_IMPACT_PERCENTAGE  can only be
+                                      used in AnomalySubscriptions .
 
                                Values -> (list)
                                    The metadata values that  you  can  use  to
@@ -415,10 +532,15 @@ OUTPUT
 
                                MatchOptions -> (list)
                                    The match options that you can use to  fil-
-                                   ter  your results. MatchOptions is only ap-
-                                   plicable for actions related to Cost  Cate-
-                                   gory.  The  default values for MatchOptions
-                                   are EQUALS and CASE_SENSITIVE .
+                                   ter your results.
+                                      MatchOptions  is only applicable for ac-
+                                      tions related to Cost Category and Anom-
+                                      aly Subscriptions. Refer to the documen-
+                                      tation for each specific API to see what
+                                      is supported.
+
+                                   The  default  values  for  MatchOptions are
+                                   EQUALS and CASE_SENSITIVE .
 
                                    (string)
 
@@ -481,23 +603,35 @@ OUTPUT
                             Key -> (string)
                                The names of the metadata types  that  you  can
                                use to filter and group your results. For exam-
-                               ple, AZ returns a list of  Availability  Zones.
-                               LINK_ACCOUNT_NAME  and SERVICE_CODE can only be
-                               used in CostCategoryRule .
+                               ple, AZ returns a list of Availability Zones.
+
+                               Not all dimensions are supported in  each  API.
+                               Refer  to  the  documentation for each specific
+                               API to see what is supported.
+                                   LINK_ACCOUNT_NAME and SERVICE_CODE can only
+                                   be used in CostCategoryRule .
+
+                                   ANOMALY_TOTAL_IMPACT_ABSOLUTE   and   ANOM-
+                                   ALY_TOTAL_IMPACT_PERCENTAGE  can  only   be
+                                   used in AnomalySubscriptions .
 
                             Values -> (list)
-                               The metadata values that you can use to  filter
-                               and  group  your results. You can use GetDimen-
+                               The  metadata values that you can use to filter
+                               and group your results. You can  use  GetDimen-
                                sionValues to find specific values.
 
                                (string)
 
                             MatchOptions -> (list)
-                               The match options that you can  use  to  filter
-                               your  results.  MatchOptions is only applicable
-                               for actions related to Cost Category.  The  de-
-                               fault  values  for  MatchOptions are EQUALS and
-                               CASE_SENSITIVE .
+                               The  match  options  that you can use to filter
+                               your results.
+                                   MatchOptions is only applicable for actions
+                                   related  to  Cost Category and Anomaly Sub-
+                                   scriptions. Refer to the documentation  for
+                                   each specific API to see what is supported.
+
+                               The  default values for MatchOptions are EQUALS
+                               and CASE_SENSITIVE .
 
                                (string)
 
@@ -547,9 +681,17 @@ OUTPUT
                         Key -> (string)
                             The names of the metadata types that you  can  use
                             to  filter and group your results. For example, AZ
-                            returns a list  of  Availability  Zones.  LINK_AC-
-                            COUNT_NAME  and  SERVICE_CODE  can only be used in
-                            CostCategoryRule .
+                            returns a list of Availability Zones.
+
+                            Not all dimensions are supported in each API.  Re-
+                            fer  to the documentation for each specific API to
+                            see what is supported.
+                               LINK_ACCOUNT_NAME and SERVICE_CODE can only  be
+                               used in CostCategoryRule .
+
+                               ANOMALY_TOTAL_IMPACT_ABSOLUTE  and  ANOMALY_TO-
+                               TAL_IMPACT_PERCENTAGE  can  only  be  used   in
+                               AnomalySubscriptions .
 
                         Values -> (list)
                             The metadata values that you can use to filter and
@@ -559,10 +701,15 @@ OUTPUT
                             (string)
 
                         MatchOptions -> (list)
-                            The match options that you can use to filter  your
-                            results.  MatchOptions  is only applicable for ac-
-                            tions related to Cost Category. The default values
-                            for MatchOptions are EQUALS and CASE_SENSITIVE .
+                            The  match options that you can use to filter your
+                            results.
+                               MatchOptions is only applicable for actions re-
+                               lated  to  Cost  Category and Anomaly Subscrip-
+                               tions. Refer to the documentation for each spe-
+                               cific API to see what is supported.
+
+                            The default values for MatchOptions are EQUALS and
+                            CASE_SENSITIVE .
 
                             (string)
 
@@ -578,8 +725,8 @@ OUTPUT
                             (string)
 
                         MatchOptions -> (list)
-                            The  match options that you can use to filter your
-                            results. MatchOptions is only applicable  for  ac-
+                            The match options that you can use to filter  your
+                            results.  MatchOptions  is only applicable for ac-
                             tions related to Cost Category. The default values
                             for MatchOptions are EQUALS and CASE_SENSITIVE .
 
@@ -597,42 +744,42 @@ OUTPUT
                             (string)
 
                         MatchOptions -> (list)
-                            The match options that you can use to filter  your
-                            results.  MatchOptions  is only applicable for ac-
+                            The  match options that you can use to filter your
+                            results. MatchOptions is only applicable  for  ac-
                             tions related to cost category. The default values
                             for MatchOptions is EQUALS and CASE_SENSITIVE .
 
                             (string)
 
                  InheritedValue -> (structure)
-                     The  value  the  line  item is categorized as if the line
+                     The value the line item is categorized  as  if  the  line
                      item contains the matched dimension.
 
                      DimensionName -> (string)
                         The name of the dimension that's used to group costs.
 
                         If you specify LINKED_ACCOUNT_NAME , the cost category
-                        value  is  based on account name. If you specify TAG ,
-                        the cost category value is based on the value  of  the
+                        value is based on account name. If you specify  TAG  ,
+                        the  cost  category value is based on the value of the
                         specified tag key.
 
                      DimensionKey -> (string)
                         The key to extract cost category values.
 
                  Type -> (string)
-                     You  can  define the CostCategoryRule rule type as either
-                     REGULAR or INHERITED_VALUE  .  The  INHERITED_VALUE  rule
-                     type  adds  the flexibility to define a rule that dynami-
-                     cally inherits the cost category  value.  This  value  is
-                     from  the dimension value that's defined by CostCategory-
-                     InheritedValueDimension . For example, suppose  that  you
-                     want  to  costs  to  be  dynamically grouped based on the
-                     value of a specific tag key. First, choose  an  inherited
-                     value  rule  type,  and then choose the tag dimension and
+                     You can define the CostCategoryRule rule type  as  either
+                     REGULAR  or  INHERITED_VALUE  .  The INHERITED_VALUE rule
+                     type adds the flexibility to define a rule  that  dynami-
+                     cally  inherits  the  cost  category value. This value is
+                     from the dimension value that's defined by  CostCategory-
+                     InheritedValueDimension  .  For example, suppose that you
+                     want to costs to be  dynamically  grouped  based  on  the
+                     value  of  a specific tag key. First, choose an inherited
+                     value rule type, and then choose the  tag  dimension  and
                      specify the tag key to use.
 
           SplitChargeRules -> (list)
-              The split charge rules that are used to  allocate  your  charges
+              The  split  charge  rules that are used to allocate your charges
               between your Cost Category values.
 
               (structure)
@@ -640,14 +787,14 @@ OUTPUT
                  gory value across several other target values.
 
                  Source -> (string)
-                     The Cost Category value that  you  want  to  split.  That
-                     value  can't  be  used  as  a source or a target in other
-                     split charge rules. To indicate uncategorized costs,  you
+                     The  Cost  Category  value  that  you want to split. That
+                     value can't be used as a source  or  a  target  in  other
+                     split  charge rules. To indicate uncategorized costs, you
                      can use an empty string as the source.
 
                  Targets -> (list)
-                     The  Cost  Category  values  that you want to split costs
-                     across. These values can't be used as a source  in  other
+                     The Cost Category values that you  want  to  split  costs
+                     across.  These  values can't be used as a source in other
                      split charge rules.
 
                      (string)
@@ -655,8 +802,8 @@ OUTPUT
                  Method -> (string)
                      The method that's used to define how to split your source
                      costs across your targets.
-                        Proportional - Allocates charges across  your  targets
-                        based  on  the proportional weighted cost of each tar-
+                        Proportional  -  Allocates charges across your targets
+                        based on the proportional weighted cost of  each  tar-
                         get.
 
                         Fixed - Allocates charges across your targets based on
@@ -665,7 +812,7 @@ OUTPUT
                      >``Even`` - Allocates costs evenly across all targets.
 
                  Parameters -> (list)
-                     The  parameters  for  a split charge method. This is only
+                     The parameters for a split charge method.  This  is  only
                      required for the FIXED method.
 
                      (structure)
@@ -684,7 +831,7 @@ OUTPUT
               a specific cost category.
 
               (structure)
-                 The  list of processing statuses for Cost Management products
+                 The list of processing statuses for Cost Management  products
                  for a specific cost category.
 
                  Component -> (string)
