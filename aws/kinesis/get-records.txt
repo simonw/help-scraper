@@ -8,64 +8,68 @@ NAME
 DESCRIPTION
        Gets data records from a Kinesis data stream's shard.
 
-       Specify  a  shard iterator using the ShardIterator parameter. The shard
-       iterator specifies the position in the shard from  which  you  want  to
+       NOTE:
+          When  invoking this API, it is recommended you use the StreamARN in-
+          put parameter in addition to the ShardIterator parameter.
+
+       Specify a shard iterator using the ShardIterator parameter.  The  shard
+       iterator  specifies  the  position  in the shard from which you want to
        start reading data records sequentially. If there are no records avail-
-       able in the portion of the shard that  the  iterator  points  to,   Ge-
-       tRecords  returns an empty list. It might take multiple calls to get to
+       able  in  the  portion  of  the shard that the iterator points to,  Ge-
+       tRecords returns an empty list. It might take multiple calls to get  to
        a portion of the shard that contains records.
 
-       You can scale by provisioning multiple shards per stream while  consid-
-       ering  service  limits  (for  more information, see Amazon Kinesis Data
-       Streams Limits in the Amazon Kinesis Data Streams  Developer  Guide  ).
+       You  can scale by provisioning multiple shards per stream while consid-
+       ering service limits (for more information,  see  Amazon  Kinesis  Data
+       Streams  Limits  in  the Amazon Kinesis Data Streams Developer Guide ).
        Your application should have one thread per shard, each reading contin-
-       uously from its stream. To read from a stream  continually,  call   Ge-
-       tRecords  in a loop. Use  GetShardIterator to get the shard iterator to
-       specify in the first  GetRecords call.  GetRecords returns a new  shard
-       iterator  in NextShardIterator . Specify the shard iterator returned in
+       uously  from  its  stream. To read from a stream continually, call  Ge-
+       tRecords in a loop. Use  GetShardIterator to get the shard iterator  to
+       specify  in the first  GetRecords call.  GetRecords returns a new shard
+       iterator in NextShardIterator . Specify the shard iterator returned  in
        NextShardIterator in subsequent calls to  GetRecords . If the shard has
-       been  closed, the shard iterator can't return more data and  GetRecords
+       been closed, the shard iterator can't return more data and   GetRecords
        returns null in NextShardIterator . You can terminate the loop when the
        shard is closed, or when the shard iterator reaches the record with the
-       sequence number or other attribute that marks it as the last record  to
+       sequence  number or other attribute that marks it as the last record to
        process.
 
        Each data record can be up to 1 MiB in size, and each shard can read up
-       to 2 MiB per second. You can ensure that your calls  don't  exceed  the
-       maximum  supported  size  or throughput by using the Limit parameter to
+       to  2  MiB  per second. You can ensure that your calls don't exceed the
+       maximum supported size or throughput by using the  Limit  parameter  to
        specify the maximum number of records that  GetRecords can return. Con-
        sider your average record size when determining this limit. The maximum
        number of records that can be returned per call is 10,000.
 
-       The size of the data returned by  GetRecords varies  depending  on  the
-       utilization  of the shard. It is recommended that consumer applications
-       retrieve records via the GetRecords command using the 5  TPS  limit  to
-       remain  caught  up. Retrieving records less frequently can lead to con-
-       sumer applications falling behind. The maximum size of data  that   Ge-
-       tRecords  can  return is 10 MiB. If a call returns this amount of data,
-       subsequent  calls  made  within  the  next  5  seconds   throw   Provi-
-       sionedThroughputExceededException  .  If  there  is insufficient provi-
-       sioned throughput on the stream, subsequent calls made within the  next
-       1  second  throw  ProvisionedThroughputExceededException  .  GetRecords
-       doesn't return any data when it throws an exception. For  this  reason,
+       The  size  of  the data returned by  GetRecords varies depending on the
+       utilization of the shard. It is recommended that consumer  applications
+       retrieve  records  via  the GetRecords command using the 5 TPS limit to
+       remain caught up. Retrieving records less frequently can lead  to  con-
+       sumer  applications  falling behind. The maximum size of data that  Ge-
+       tRecords can return is 10 MiB. If a call returns this amount  of  data,
+       subsequent   calls   made  within  the  next  5  seconds  throw  Provi-
+       sionedThroughputExceededException . If  there  is  insufficient  provi-
+       sioned  throughput on the stream, subsequent calls made within the next
+       1 second  throw  ProvisionedThroughputExceededException  .   GetRecords
+       doesn't  return  any data when it throws an exception. For this reason,
        we recommend that you wait 1 second between calls to  GetRecords . How-
        ever, it's possible that the application will get exceptions for longer
        than 1 second.
 
-       To  detect whether the application is falling behind in processing, you
+       To detect whether the application is falling behind in processing,  you
        can use the MillisBehindLatest response attribute. You can also monitor
-       the   stream   using  CloudWatch  metrics  and  other  mechanisms  (see
+       the  stream  using  CloudWatch  metrics  and  other   mechanisms   (see
        Monitoring in the Amazon Kinesis Data Streams Developer Guide ).
 
-       Each Amazon Kinesis record includes a  value,  ApproximateArrivalTimes-
-       tamp  ,  that  is  set when a stream successfully receives and stores a
-       record. This is commonly referred  to  as  a  server-side  time  stamp,
+       Each  Amazon  Kinesis record includes a value, ApproximateArrivalTimes-
+       tamp , that is set when a stream successfully  receives  and  stores  a
+       record.  This  is  commonly  referred  to  as a server-side time stamp,
        whereas a client-side time stamp is set when a data producer creates or
-       sends the record to a stream  (a  data  producer  is  any  data  source
+       sends  the  record  to  a  stream  (a  data producer is any data source
        putting data records into a stream, for example with  PutRecords ). The
        time stamp has millisecond precision. There are no guarantees about the
-       time  stamp  accuracy, or that the time stamp is always increasing. For
-       example, records in a shard or across a stream might have  time  stamps
+       time stamp accuracy, or that the time stamp is always  increasing.  For
+       example,  records  in a shard or across a stream might have time stamps
        that are out of order.
 
        This operation has a limit of five transactions per second per shard.
@@ -76,6 +80,7 @@ SYNOPSIS
             get-records
           --shard-iterator <value>
           [--limit <value>]
+          [--stream-arn <value>]
           [--cli-input-json <value>]
           [--generate-cli-skeleton <value>]
           [--debug]
@@ -95,27 +100,30 @@ SYNOPSIS
 
 OPTIONS
        --shard-iterator (string)
-          The  position in the shard from which you want to start sequentially
+          The position in the shard from which you want to start  sequentially
           reading data records. A shard iterator specifies this position using
           the sequence number of a data record in the shard.
 
        --limit (integer)
-          The  maximum  number  of records to return. Specify a value of up to
-          10,000. If you specify a value that is  greater  than  10,000,   Ge-
-          tRecords  throws  InvalidArgumentException  .  The  default value is
+          The maximum number of records to return. Specify a value  of  up  to
+          10,000.  If  you  specify  a value that is greater than 10,000,  Ge-
+          tRecords throws InvalidArgumentException  .  The  default  value  is
           10,000.
 
-       --cli-input-json (string) Performs service operation based on the  JSON
-       string  provided. The JSON string follows the format provided by --gen-
-       erate-cli-skeleton. If other arguments  are  provided  on  the  command
-       line,  the CLI values will override the JSON-provided values. It is not
+       --stream-arn (string)
+          The ARN of the stream.
+
+       --cli-input-json  (string) Performs service operation based on the JSON
+       string provided. The JSON string follows the format provided by  --gen-
+       erate-cli-skeleton.  If  other  arguments  are  provided on the command
+       line, the CLI values will override the JSON-provided values. It is  not
        possible to pass arbitrary binary values using a JSON-provided value as
        the string will be taken literally.
 
-       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
+       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
        output without sending an API request. If provided with no value or the
        value input, prints a sample input JSON that can be used as an argument
-       for --cli-input-json. If provided with the value output,  it  validates
+       for  --cli-input-json.  If provided with the value output, it validates
        the command inputs and returns a sample output JSON for that command.
 
 GLOBAL OPTIONS
@@ -129,7 +137,7 @@ GLOBAL OPTIONS
 
        --no-verify-ssl (boolean)
 
-       By  default, the AWS CLI uses SSL when communicating with AWS services.
+       By default, the AWS CLI uses SSL when communicating with AWS  services.
        For each SSL connection, the AWS CLI will verify SSL certificates. This
        option overrides the default behavior of verifying SSL certificates.
 
@@ -175,7 +183,7 @@ GLOBAL OPTIONS
 
        --no-sign-request (boolean)
 
-       Do  not  sign requests. Credentials will not be loaded if this argument
+       Do not sign requests. Credentials will not be loaded if  this  argument
        is provided.
 
        --ca-bundle (string)
@@ -185,24 +193,24 @@ GLOBAL OPTIONS
 
        --cli-read-timeout (int)
 
-       The  maximum socket read time in seconds. If the value is set to 0, the
-       socket read will be blocking and not timeout. The default value  is  60
+       The maximum socket read time in seconds. If the value is set to 0,  the
+       socket  read  will be blocking and not timeout. The default value is 60
        seconds.
 
        --cli-connect-timeout (int)
 
-       The  maximum  socket connect time in seconds. If the value is set to 0,
-       the socket connect will be blocking and not timeout. The default  value
+       The maximum socket connect time in seconds. If the value is set  to  0,
+       the  socket connect will be blocking and not timeout. The default value
        is 60 seconds.
 
 EXAMPLES
        NOTE:
-          To  use  the following examples, you must have the AWS CLI installed
-          and configured. See the Getting started guide in the  AWS  CLI  User
+          To use the following examples, you must have the AWS  CLI  installed
+          and  configured.  See  the Getting started guide in the AWS CLI User
           Guide for more information.
 
-          Unless  otherwise  stated,  all  examples  have  unix-like quotation
-          rules. These examples will need to be  adapted  to  your  terminal's
+          Unless otherwise  stated,  all  examples  have  unix-like  quotation
+          rules.  These  examples  will  need to be adapted to your terminal's
           quoting rules. See Using quotation marks with strings in the AWS CLI
           User Guide .
 
@@ -221,8 +229,8 @@ EXAMPLES
               "MillisBehindLatest": 80742000
           }
 
-       For  more  information, see Developing Consumers Using the Kinesis Data
-       Streams API with the AWS SDK  for  Java  in  the  Amazon  Kinesis  Data
+       For more information, see Developing Consumers Using the  Kinesis  Data
+       Streams  API  with  the  AWS  SDK  for  Java in the Amazon Kinesis Data
        Streams Developer Guide.
 
 OUTPUT
@@ -230,26 +238,26 @@ OUTPUT
           The data records retrieved from the shard.
 
           (structure)
-              The  unit  of data of the Kinesis data stream, which is composed
+              The unit of data of the Kinesis data stream, which  is  composed
               of a sequence number, a partition key, and a data blob.
 
               SequenceNumber -> (string)
                  The unique identifier of the record within its shard.
 
               ApproximateArrivalTimestamp -> (timestamp)
-                 The approximate time that the record was  inserted  into  the
+                 The  approximate  time  that the record was inserted into the
                  stream.
 
               Data -> (blob)
-                 The  data  blob.  The data in the blob is both opaque and im-
-                 mutable to Kinesis Data Streams, which does not inspect,  in-
-                 terpret,  or change the data in the blob in any way. When the
-                 data blob (the payload before base64-encoding)  is  added  to
-                 the  partition  key  size, the total size must not exceed the
+                 The data blob. The data in the blob is both  opaque  and  im-
+                 mutable  to Kinesis Data Streams, which does not inspect, in-
+                 terpret, or change the data in the blob in any way. When  the
+                 data  blob  (the  payload before base64-encoding) is added to
+                 the partition key size, the total size must  not  exceed  the
                  maximum record size (1 MiB).
 
               PartitionKey -> (string)
-                 Identifies which shard in the stream the data record  is  as-
+                 Identifies  which  shard in the stream the data record is as-
                  signed to.
 
               EncryptionType -> (string)
@@ -258,24 +266,24 @@ OUTPUT
 
                  o NONE : Do not encrypt the records in the stream.
 
-                 o KMS : Use server-side encryption  on  the  records  in  the
-                   stream  using  a  customer-managed  Amazon Web Services KMS
+                 o KMS  :  Use  server-side  encryption  on the records in the
+                   stream using a customer-managed  Amazon  Web  Services  KMS
                    key.
 
        NextShardIterator -> (string)
-          The next position in the shard  from  which  to  start  sequentially
+          The  next  position  in  the  shard from which to start sequentially
           reading data records. If set to null , the shard has been closed and
           the requested iterator does not return any more data.
 
        MillisBehindLatest -> (long)
-          The number of milliseconds the  GetRecords response is from the  tip
-          of  the  stream, indicating how far behind current time the consumer
-          is. A value of zero indicates that record processing is  caught  up,
+          The  number of milliseconds the  GetRecords response is from the tip
+          of the stream, indicating how far behind current time  the  consumer
+          is.  A  value of zero indicates that record processing is caught up,
           and there are no new records to process at this moment.
 
        ChildShards -> (list)
-          The  list  of  the current shard's child shards, returned in the Ge-
-          tRecords API's response only when the end of the  current  shard  is
+          The list of the current shard's child shards, returned  in  the  Ge-
+          tRecords  API's  response  only when the end of the current shard is
           reached.
 
           (structure)
@@ -283,11 +291,11 @@ OUTPUT
               of the current shard.
 
               ShardId -> (string)
-                 The shard ID of the  existing  child  shard  of  the  current
+                 The  shard  ID  of  the  existing  child shard of the current
                  shard.
 
               ParentShards -> (list)
-                 The  current  shard  that is the parent of the existing child
+                 The current shard that is the parent of  the  existing  child
                  shard.
 
                  (string)

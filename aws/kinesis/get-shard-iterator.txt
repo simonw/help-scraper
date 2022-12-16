@@ -9,40 +9,44 @@ DESCRIPTION
        Gets  an Amazon Kinesis shard iterator. A shard iterator expires 5 min-
        utes after it is returned to the requester.
 
+       NOTE:
+          When invoking this API, it is recommended you use the StreamARN  in-
+          put parameter rather than the StreamName input parameter.
+
        A shard iterator specifies the shard position from which to start read-
-       ing  data records sequentially. The position is specified using the se-
-       quence number of a data record in a shard. A  sequence  number  is  the
-       identifier  associated with every record ingested in the stream, and is
-       assigned when a record is put into the stream. Each stream has  one  or
+       ing data records sequentially. The position is specified using the  se-
+       quence  number  of  a  data record in a shard. A sequence number is the
+       identifier associated with every record ingested in the stream, and  is
+       assigned  when  a record is put into the stream. Each stream has one or
        more shards.
 
-       You  must specify the shard iterator type. For example, you can set the
-       ShardIteratorType parameter to read exactly from the  position  denoted
+       You must specify the shard iterator type. For example, you can set  the
+       ShardIteratorType  parameter  to read exactly from the position denoted
        by a specific sequence number by using the AT_SEQUENCE_NUMBER shard it-
-       erator type. Alternatively, the parameter can read right after the  se-
-       quence  number  by using the AFTER_SEQUENCE_NUMBER shard iterator type,
-       using sequence numbers returned by earlier calls to  PutRecord  ,   Pu-
-       tRecords  ,   GetRecords , or  DescribeStream . In the request, you can
-       specify the shard iterator type AT_TIMESTAMP to read  records  from  an
-       arbitrary  point  in time, TRIM_HORIZON to cause ShardIterator to point
-       to the last untrimmed record in the shard in  the  system  (the  oldest
-       data  record  in the shard), or LATEST so that you always read the most
+       erator  type. Alternatively, the parameter can read right after the se-
+       quence number by using the AFTER_SEQUENCE_NUMBER shard  iterator  type,
+       using  sequence  numbers returned by earlier calls to  PutRecord ,  Pu-
+       tRecords ,  GetRecords , or  DescribeStream . In the request,  you  can
+       specify  the  shard  iterator type AT_TIMESTAMP to read records from an
+       arbitrary point in time, TRIM_HORIZON to cause ShardIterator  to  point
+       to  the  last  untrimmed  record in the shard in the system (the oldest
+       data record in the shard), or LATEST so that you always read  the  most
        recent data in the shard.
 
        When you read repeatedly from a stream, use a  GetShardIterator request
-       to  get  the first shard iterator for use in your first  GetRecords re-
-       quest and for subsequent reads use the shard iterator returned  by  the
-       GetRecords  request  in NextShardIterator . A new shard iterator is re-
-       turned by every  GetRecords request in NextShardIterator  ,  which  you
+       to get the first shard iterator for use in your first   GetRecords  re-
+       quest  and  for subsequent reads use the shard iterator returned by the
+       GetRecords request in NextShardIterator . A new shard iterator  is  re-
+       turned  by  every   GetRecords request in NextShardIterator , which you
        use in the ShardIterator parameter of the next  GetRecords request.
 
-       If  a  GetShardIterator request is made too often, you receive a Provi-
+       If a  GetShardIterator request is made too often, you receive a  Provi-
        sionedThroughputExceededException . For more information about through-
-       put  limits, see  GetRecords , and Streams Limits in the Amazon Kinesis
+       put limits, see  GetRecords , and Streams Limits in the Amazon  Kinesis
        Data Streams Developer Guide .
 
-       If the shard is closed,  GetShardIterator returns a valid iterator  for
-       the  last  sequence number of the shard. A shard can be closed as a re-
+       If  the shard is closed,  GetShardIterator returns a valid iterator for
+       the last sequence number of the shard. A shard can be closed as  a  re-
        sult of using  SplitShard or  MergeShards .
           GetShardIterator has a limit of five transactions per second per ac-
           count per open shard.
@@ -51,11 +55,12 @@ DESCRIPTION
 
 SYNOPSIS
             get-shard-iterator
-          --stream-name <value>
+          [--stream-name <value>]
           --shard-id <value>
           --shard-iterator-type <value>
           [--starting-sequence-number <value>]
           [--timestamp <value>]
+          [--stream-arn <value>]
           [--cli-input-json <value>]
           [--generate-cli-skeleton <value>]
           [--debug]
@@ -78,30 +83,30 @@ OPTIONS
           The name of the Amazon Kinesis data stream.
 
        --shard-id (string)
-          The  shard  ID of the Kinesis Data Streams shard to get the iterator
+          The shard ID of the Kinesis Data Streams shard to get  the  iterator
           for.
 
        --shard-iterator-type (string)
-          Determines how the shard iterator is  used  to  start  reading  data
+          Determines  how  the  shard  iterator  is used to start reading data
           records from the shard.
 
           The following are the valid Amazon Kinesis shard iterator types:
 
-          o AT_SEQUENCE_NUMBER  - Start reading from the position denoted by a
-            specific sequence number, provided in  the  value  StartingSequen-
+          o AT_SEQUENCE_NUMBER - Start reading from the position denoted by  a
+            specific  sequence  number,  provided in the value StartingSequen-
             ceNumber .
 
           o AFTER_SEQUENCE_NUMBER - Start reading right after the position de-
-            noted by a specific sequence number, provided in the value  Start-
+            noted  by a specific sequence number, provided in the value Start-
             ingSequenceNumber .
 
-          o AT_TIMESTAMP  -  Start reading from the position denoted by a spe-
+          o AT_TIMESTAMP - Start reading from the position denoted by  a  spe-
             cific time stamp, provided in the value Timestamp .
 
-          o TRIM_HORIZON - Start reading at the last untrimmed record  in  the
+          o TRIM_HORIZON  -  Start reading at the last untrimmed record in the
             shard in the system, which is the oldest data record in the shard.
 
-          o LATEST  -  Start  reading just after the most recent record in the
+          o LATEST - Start reading just after the most recent  record  in  the
             shard, so that you always read the most recent data in the shard.
 
           Possible values:
@@ -117,31 +122,34 @@ OPTIONS
           o AT_TIMESTAMP
 
        --starting-sequence-number (string)
-          The sequence number of the data record in the shard  from  which  to
-          start  reading. Used with shard iterator type AT_SEQUENCE_NUMBER and
+          The  sequence  number  of the data record in the shard from which to
+          start reading. Used with shard iterator type AT_SEQUENCE_NUMBER  and
           AFTER_SEQUENCE_NUMBER.
 
        --timestamp (timestamp)
-          The time stamp of the data record from which to start reading.  Used
-          with  shard  iterator  type  AT_TIMESTAMP.  A time stamp is the Unix
-          epoch  date   with   precision   in   milliseconds.   For   example,
-          2016-04-04T19:58:46.480-00:00  or  1459799926.480 . If a record with
-          this exact time stamp does not exist, the iterator returned  is  for
+          The  time stamp of the data record from which to start reading. Used
+          with shard iterator type AT_TIMESTAMP. A  time  stamp  is  the  Unix
+          epoch   date   with   precision   in   milliseconds.   For  example,
+          2016-04-04T19:58:46.480-00:00 or 1459799926.480 . If a  record  with
+          this  exact  time stamp does not exist, the iterator returned is for
           the next (later) record. If the time stamp is older than the current
           trim horizon, the iterator returned is for the oldest untrimmed data
           record (TRIM_HORIZON).
 
-       --cli-input-json  (string) Performs service operation based on the JSON
-       string provided. The JSON string follows the format provided by  --gen-
-       erate-cli-skeleton.  If  other  arguments  are  provided on the command
-       line, the CLI values will override the JSON-provided values. It is  not
+       --stream-arn (string)
+          The ARN of the stream.
+
+       --cli-input-json (string) Performs service operation based on the  JSON
+       string  provided. The JSON string follows the format provided by --gen-
+       erate-cli-skeleton. If other arguments  are  provided  on  the  command
+       line,  the CLI values will override the JSON-provided values. It is not
        possible to pass arbitrary binary values using a JSON-provided value as
        the string will be taken literally.
 
-       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
+       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
        output without sending an API request. If provided with no value or the
        value input, prints a sample input JSON that can be used as an argument
-       for  --cli-input-json.  If provided with the value output, it validates
+       for --cli-input-json. If provided with the value output,  it  validates
        the command inputs and returns a sample output JSON for that command.
 
 GLOBAL OPTIONS
@@ -155,7 +163,7 @@ GLOBAL OPTIONS
 
        --no-verify-ssl (boolean)
 
-       By default, the AWS CLI uses SSL when communicating with AWS  services.
+       By  default, the AWS CLI uses SSL when communicating with AWS services.
        For each SSL connection, the AWS CLI will verify SSL certificates. This
        option overrides the default behavior of verifying SSL certificates.
 
@@ -201,7 +209,7 @@ GLOBAL OPTIONS
 
        --no-sign-request (boolean)
 
-       Do not sign requests. Credentials will not be loaded if  this  argument
+       Do  not  sign requests. Credentials will not be loaded if this argument
        is provided.
 
        --ca-bundle (string)
@@ -211,32 +219,32 @@ GLOBAL OPTIONS
 
        --cli-read-timeout (int)
 
-       The maximum socket read time in seconds. If the value is set to 0,  the
-       socket  read  will be blocking and not timeout. The default value is 60
+       The  maximum socket read time in seconds. If the value is set to 0, the
+       socket read will be blocking and not timeout. The default value  is  60
        seconds.
 
        --cli-connect-timeout (int)
 
-       The maximum socket connect time in seconds. If the value is set  to  0,
-       the  socket connect will be blocking and not timeout. The default value
+       The  maximum  socket connect time in seconds. If the value is set to 0,
+       the socket connect will be blocking and not timeout. The default  value
        is 60 seconds.
 
 EXAMPLES
        NOTE:
-          To use the following examples, you must have the AWS  CLI  installed
-          and  configured.  See  the Getting started guide in the AWS CLI User
+          To  use  the following examples, you must have the AWS CLI installed
+          and configured. See the Getting started guide in the  AWS  CLI  User
           Guide for more information.
 
-          Unless otherwise  stated,  all  examples  have  unix-like  quotation
-          rules.  These  examples  will  need to be adapted to your terminal's
+          Unless  otherwise  stated,  all  examples  have  unix-like quotation
+          rules. These examples will need to be  adapted  to  your  terminal's
           quoting rules. See Using quotation marks with strings in the AWS CLI
           User Guide .
 
        To obtain a shard iterator
 
-       The  following  get-shard-iterator  example uses the AT_SEQUENCE_NUMBER
-       shard iterator type and generates a shard  iterator  to  start  reading
-       data  records  exactly  from  the position denoted by the specified se-
+       The following get-shard-iterator example  uses  the  AT_SEQUENCE_NUMBER
+       shard  iterator  type  and  generates a shard iterator to start reading
+       data records exactly from the position denoted  by  the  specified  se-
        quence number.
 
           aws kinesis get-shard-iterator \
@@ -250,13 +258,13 @@ EXAMPLES
               "ShardIterator": "AAAAAAAAAAFEvJjIYI+3jw/4aqgH9FifJ+n48XWTh/IFIsbILP6o5eDueD39NXNBfpZ10WL5K6ADXk8w+5H+Qhd9cFA9k268CPXCz/kebq1TGYI7Vy+lUkA9BuN3xvATxMBGxRY3zYK05gqgvaIRn94O8SqeEqwhigwZxNWxID3Ej7YYYcxQi8Q/fIrCjGAy/n2r5Z9G864YpWDfN9upNNQAR/iiOWKs"
           }
 
-       For more information, see Developing Consumers Using the  Kinesis  Data
-       Streams  API  with  the  AWS  SDK  for  Java in the Amazon Kinesis Data
+       For  more  information, see Developing Consumers Using the Kinesis Data
+       Streams API with the AWS SDK  for  Java  in  the  Amazon  Kinesis  Data
        Streams Developer Guide.
 
 OUTPUT
        ShardIterator -> (string)
-          The position in the shard from which to start reading  data  records
+          The  position  in the shard from which to start reading data records
           sequentially. A shard iterator specifies this position using the se-
           quence number of a data record in a shard.
 
