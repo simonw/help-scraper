@@ -356,19 +356,21 @@ OUTPUT
               dio components, like compute farms, shared file systems, managed
               file systems, and license server configurations, as well as  in-
               stance types and Amazon Machine Images (AMIs).
-                 <p>Studio administrators create launch profiles in the Nimble
-                 Studio console. Artists can  use  their  launch  profiles  to
-                 launch  an instance from the Nimble Studio portal. Each users
-                 launch profile defines how they can launch a  streaming  ses-
-                 sion.  By  default,  studio  admins  can  use all launch pro-
-                 files.</p>
+
+              Studio  administrators create launch profiles in the Nimble Stu-
+              dio console. Artists can use their launch profiles to launch  an
+              instance  from  the Nimble Studio portal. Each users launch pro-
+              file defines how they can launch a  streaming  session.  By  de-
+              fault, studio admins can use all launch profiles.
 
               arn -> (string)
-                 The ARN of the resource.
+                 The  Amazon  Resource Name (ARN) that is assigned to a studio
+                 resource and uniquely identifies it. ARNs are  unique  across
+                 all Regions.
 
               createdAt -> (timestamp)
-                 The Unix epoch timestamp in seconds for when the resource was
-                 created.
+                 The  ISO  timestamp in seconds for when the resource was cre-
+                 ated.
 
               createdBy -> (string)
                  The user ID of the user that created the launch profile.
@@ -382,7 +384,8 @@ OUTPUT
                  (string)
 
               launchProfileId -> (string)
-                 The launch profile ID.
+                 The ID of the launch profile used to control access from  the
+                 streaming session.
 
               launchProfileProtocolVersions -> (list)
                  The version number of the protocol that is used by the launch
@@ -407,35 +410,54 @@ OUTPUT
               streamConfiguration -> (structure)
                  A configuration for a streaming session.
 
+                 automaticTerminationMode -> (string)
+                     Indicates if a streaming session created from this launch
+                     profile should be terminated  automatically  or  retained
+                     without termination after being in a STOPPED state.
+
+                     o When ACTIVATED , the streaming session is scheduled for
+                       termination after being in the STOPPED  state  for  the
+                       time specified in maxStoppedSessionLengthInMinutes .
+
+                     o When  DEACTIVATED , the streaming session can remain in
+                       the STOPPED state indefinitely.
+
+                     This parameter is only allowed  when  sessionPersistence-
+                     Mode  is  ACTIVATED . When allowed, the default value for
+                     this parameter is DEACTIVATED .
+
                  clipboardMode -> (string)
-                     Enable or disable the use of the system clipboard to copy
-                     and paste between the  streaming  session  and  streaming
-                     client.
+                     Allows or deactivates the use of the system clipboard  to
+                     copy  and paste between the streaming session and stream-
+                     ing client.
 
                  ec2InstanceTypes -> (list)
-                     The  EC2  instance  types that users can select from when
+                     The EC2 instance types that users can  select  from  when
                      launching a streaming session with this launch profile.
 
                      (string)
 
                  maxSessionLengthInMinutes -> (integer)
-                     The length of time, in minutes, that a streaming  session
-                     can  be  active before it is stopped or terminated. After
-                     this point, Nimble  Studio  automatically  terminates  or
+                     The  length of time, in minutes, that a streaming session
+                     can be active before it is stopped or  terminated.  After
+                     this  point,  Nimble  Studio  automatically terminates or
                      stops the session. The default length of time is 690 min-
                      utes, and the maximum length of time is 30 days.
 
                  maxStoppedSessionLengthInMinutes -> (integer)
-                     Integer that determines if you can start  and  stop  your
-                     sessions  and  how long a session can stay in the STOPPED
+                     Integer  that  determines  if you can start and stop your
+                     sessions and how long a session can stay in  the  STOPPED
                      state. The default value is 0. The maximum value is 5760.
 
-                     If the value is missing or set to 0, your  sessions  cant
-                     be  stopped.  If you then call StopStreamingSession , the
-                     session fails. If the time that a session  stays  in  the
-                     READY  state exceeds the maxSessionLengthInMinutes value,
-                     the session will automatically be terminated (instead  of
-                     stopped).
+                     This field is allowed only when sessionPersistenceMode is
+                     ACTIVATED and automaticTerminationMode is ACTIVATED .
+
+                     If the value is set to 0, your sessions cant be STOPPED .
+                     If  you  then  call  StopStreamingSession  ,  the session
+                     fails. If the time that a  session  stays  in  the  READY
+                     state  exceeds  the  maxSessionLengthInMinutes value, the
+                     session will  automatically  be  terminated  (instead  of
+                     STOPPED ).
 
                      If the value is set to a positive number, the session can
                      be stopped. You can  call  StopStreamingSession  to  stop
@@ -444,32 +466,74 @@ OUTPUT
                      Minutes  value, the session will automatically be stopped
                      (instead of terminated).
 
+                 sessionBackup -> (structure)
+                     Information about the streaming session backup.
+
+                     maxBackupsToRetain -> (integer)
+                        The maximum number of backups that each streaming ses-
+                        sion created from this launch profile can have.
+
+                     mode -> (string)
+                        Specifies how artists sessions are backed up.
+
+                        Configures  backups  for  streaming  sessions launched
+                        with this launch profile. The default value is DEACTI-
+                        VATED  ,  which means that backups are deactivated. To
+                        allow backups, set this value to AUTOMATIC .
+
+                 sessionPersistenceMode -> (string)
+                     Determine if a streaming session created from this launch
+                     profile can configure persistent storage. This means that
+                     volumeConfiguration and automaticTerminationMode are con-
+                     figured.
+
                  sessionStorage -> (structure)
-                     (Optional) The upload storage for a streaming session.
+                     The upload storage for a streaming session.
 
                      mode -> (list)
-                        Allows artists to upload files to their  workstations.
+                        Allows  artists to upload files to their workstations.
                         The only valid option is UPLOAD .
 
                         (string)
 
                      root -> (structure)
-                        The  configuration  for the upload storage root of the
+                        The configuration for the upload storage root  of  the
                         streaming session.
 
                         linux -> (string)
-                            The folder path in Linux workstations where  files
+                            The  folder path in Linux workstations where files
                             are uploaded.
 
                         windows -> (string)
-                            The  folder  path  in  Windows  workstations where
+                            The folder  path  in  Windows  workstations  where
                             files are uploaded.
 
                  streamingImageIds -> (list)
-                     The streaming images that  users  can  select  from  when
+                     The  streaming  images  that  users  can select from when
                      launching a streaming session with this launch profile.
 
                      (string)
+
+                 volumeConfiguration -> (structure)
+                     Custom volume configuration for the root volumes that are
+                     attached to streaming sessions.
+
+                     This  parameter  is only allowed when sessionPersistence-
+                     Mode is ACTIVATED .
+
+                     iops -> (integer)
+                        The number of I/O operations per second for  the  root
+                        volume that is attached to streaming session.
+
+                     size -> (integer)
+                        The  size  of  the root volume that is attached to the
+                        streaming session. The root volume size is measured in
+                        GiBs.
+
+                     throughput -> (integer)
+                        The  throughput  to provision for the root volume that
+                        is attached to the streaming session.  The  throughput
+                        is measured in MiB/s.
 
               studioComponentIds -> (list)
                  Unique identifiers for a collection of studio components that
@@ -478,7 +542,7 @@ OUTPUT
                  (string)
 
               tags -> (map)
-                 A collection of labels, in the form of key:value pairs,  that
+                 A collection of labels, in the form of key-value pairs,  that
                  apply to this resource.
 
                  key -> (string)
@@ -486,8 +550,8 @@ OUTPUT
                  value -> (string)
 
               updatedAt -> (timestamp)
-                 The Unix epoch timestamp in seconds for when the resource was
-                 updated.
+                 The  ISO  timestamp  in seconds for when the resource was up-
+                 dated.
 
               updatedBy -> (string)
                  The user ID of the user that most recently  updated  the  re-

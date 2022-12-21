@@ -17,6 +17,7 @@ SYNOPSIS
           [--client-token <value>]
           --session-id <value>
           --studio-id <value>
+          [--volume-retention-mode <value>]
           [--cli-input-json <value>]
           [--generate-cli-skeleton <value>]
           [--debug]
@@ -38,26 +39,36 @@ OPTIONS
        --client-token (string)
           Unique,  case-sensitive  identifier  that  you provide to ensure the
           idempotency of the request. If you dont specify a client token,  the
-          AWS  SDK  automatically generates a client token and uses it for the
-          request to ensure idempotency.
+          Amazon  Web  Services SDK automatically generates a client token and
+          uses it for the request to ensure idempotency.
 
        --session-id (string)
-          The streaming session ID for the StopStreamingSessionRequest.
+          The streaming session ID for the StopStreamingSessionRequest .
 
        --studio-id (string)
           The studioId for the StopStreamingSessionRequest.
 
-       --cli-input-json (string) Performs service operation based on the  JSON
-       string  provided. The JSON string follows the format provided by --gen-
-       erate-cli-skeleton. If other arguments  are  provided  on  the  command
-       line,  the CLI values will override the JSON-provided values. It is not
+       --volume-retention-mode (string)
+          Adds additional instructions to a streaming session stop  action  to
+          either retain the EBS volumes or delete the EBS volumes.
+
+          Possible values:
+
+          o RETAIN
+
+          o DELETE
+
+       --cli-input-json  (string) Performs service operation based on the JSON
+       string provided. The JSON string follows the format provided by  --gen-
+       erate-cli-skeleton.  If  other  arguments  are  provided on the command
+       line, the CLI values will override the JSON-provided values. It is  not
        possible to pass arbitrary binary values using a JSON-provided value as
        the string will be taken literally.
 
-       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
+       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
        output without sending an API request. If provided with no value or the
        value input, prints a sample input JSON that can be used as an argument
-       for --cli-input-json. If provided with the value output,  it  validates
+       for  --cli-input-json.  If provided with the value output, it validates
        the command inputs and returns a sample output JSON for that command.
 
 GLOBAL OPTIONS
@@ -71,7 +82,7 @@ GLOBAL OPTIONS
 
        --no-verify-ssl (boolean)
 
-       By  default, the AWS CLI uses SSL when communicating with AWS services.
+       By default, the AWS CLI uses SSL when communicating with AWS  services.
        For each SSL connection, the AWS CLI will verify SSL certificates. This
        option overrides the default behavior of verifying SSL certificates.
 
@@ -117,7 +128,7 @@ GLOBAL OPTIONS
 
        --no-sign-request (boolean)
 
-       Do  not  sign requests. Credentials will not be loaded if this argument
+       Do not sign requests. Credentials will not be loaded if  this  argument
        is provided.
 
        --ca-bundle (string)
@@ -127,14 +138,14 @@ GLOBAL OPTIONS
 
        --cli-read-timeout (int)
 
-       The  maximum socket read time in seconds. If the value is set to 0, the
-       socket read will be blocking and not timeout. The default value  is  60
+       The maximum socket read time in seconds. If the value is set to 0,  the
+       socket  read  will be blocking and not timeout. The default value is 60
        seconds.
 
        --cli-connect-timeout (int)
 
-       The  maximum  socket connect time in seconds. If the value is set to 0,
-       the socket connect will be blocking and not timeout. The default  value
+       The maximum socket connect time in seconds. If the value is set  to  0,
+       the  socket connect will be blocking and not timeout. The default value
        is 60 seconds.
 
 OUTPUT
@@ -143,11 +154,31 @@ OUTPUT
           ular launch profile.
 
           arn -> (string)
-              The ARN of the resource.
+              The  Amazon Resource Name (ARN) that is assigned to a studio re-
+              source and uniquely identifies it. ARNs are  unique  across  all
+              Regions.
+
+          automaticTerminationMode -> (string)
+              Indicates  if  a streaming session created from this launch pro-
+              file should be terminated automatically or retained without ter-
+              mination after being in a STOPPED state.
+
+              o When ACTIVATED , the streaming session is scheduled for termi-
+                nation after being in the STOPPED state for the time specified
+                in maxStoppedSessionLengthInMinutes .
+
+              o When  DEACTIVATED  ,  the  streaming session can remain in the
+                STOPPED state indefinitely.
+
+              This parameter is only allowed  when  sessionPersistenceMode  is
+              ACTIVATED  .  When allowed, the default value for this parameter
+              is DEACTIVATED .
+
+          backupMode -> (string)
+              Shows the current backup setting of the session.
 
           createdAt -> (timestamp)
-              The Unix epoch timestamp in seconds for when  the  resource  was
-              created.
+              The ISO timestamp in seconds for when the resource was created.
 
           createdBy -> (string)
               The user ID of the user that created the streaming session.
@@ -156,22 +187,35 @@ OUTPUT
               The EC2 Instance type used for the streaming session.
 
           launchProfileId -> (string)
-              The  ID  of  the  launch profile used to control access from the
+              The ID of the launch profile used to  control  access  from  the
               streaming session.
 
+          maxBackupsToRetain -> (integer)
+              The  maximum  number  of backups of a streaming session that you
+              can have. When the maximum number of  backups  is  reached,  the
+              oldest backup is deleted.
+
           ownedBy -> (string)
-              The user ID of the user that owns  the  streaming  session.  The
-              user  that owns the session will be logging into the session and
+              The  user  ID  of  the user that owns the streaming session. The
+              user that owns the session will be logging into the session  and
               interacting with the virtual workstation.
 
           sessionId -> (string)
               The session ID.
+
+          sessionPersistenceMode -> (string)
+              Determine  if  a streaming session created from this launch pro-
+              file can configure persistent storage. This means  that  volume-
+              Configuration and automaticTerminationMode are configured.
 
           startedAt -> (timestamp)
               The time the session entered START_IN_PROGRESS state.
 
           startedBy -> (string)
               The user ID of the user that started the streaming session.
+
+          startedFromBackupId -> (string)
+              The backup ID used to restore a streaming session.
 
           state -> (string)
               The current state.
@@ -183,7 +227,7 @@ OUTPUT
               The status message for the streaming session.
 
           stopAt -> (timestamp)
-              The time the streaming session will automatically be stopped  if
+              The  time the streaming session will automatically be stopped if
               the user doesnt stop the session themselves.
 
           stoppedAt -> (timestamp)
@@ -196,7 +240,7 @@ OUTPUT
               The ID of the streaming image.
 
           tags -> (map)
-              A collection of labels, in the form of key:value pairs, that ap-
+              A collection of labels, in the form of key-value pairs, that ap-
               ply to this resource.
 
               key -> (string)
@@ -204,15 +248,38 @@ OUTPUT
               value -> (string)
 
           terminateAt -> (timestamp)
-              The time the streaming session will automatically  terminate  if
+              The  time  the streaming session will automatically terminate if
               not terminated by the user.
 
           updatedAt -> (timestamp)
-              The  Unix  epoch  timestamp in seconds for when the resource was
-              updated.
+              The ISO timestamp in seconds for when the resource was updated.
 
           updatedBy -> (string)
               The user ID of the user that most recently updated the resource.
+
+          volumeConfiguration -> (structure)
+              Custom volume configuration for the root volumes  that  are  at-
+              tached to streaming sessions.
+
+              This  parameter  is  only allowed when sessionPersistenceMode is
+              ACTIVATED .
+
+              iops -> (integer)
+                 The number of I/O operations per second for the  root  volume
+                 that is attached to streaming session.
+
+              size -> (integer)
+                 The size of the root volume that is attached to the streaming
+                 session. The root volume size is measured in GiBs.
+
+              throughput -> (integer)
+                 The throughput to provision for the root volume that  is  at-
+                 tached  to  the streaming session. The throughput is measured
+                 in MiB/s.
+
+          volumeRetentionMode -> (string)
+              Determine if an EBS volume created from this  streaming  session
+              will be backed up.
 
 
 
