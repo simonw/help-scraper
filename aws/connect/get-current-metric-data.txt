@@ -22,6 +22,7 @@ SYNOPSIS
           --current-metrics <value>
           [--next-token <value>]
           [--max-results <value>]
+          [--sort-criteria <value>]
           [--cli-input-json <value>]
           [--generate-cli-skeleton <value>]
           [--debug]
@@ -45,16 +46,27 @@ OPTIONS
           stanceId in the ARN of the instance.
 
        --filters (structure)
-          The queues, up to 100, or channels, to use to filter the metrics re-
-          turned.  Metric  data is retrieved only for the resources associated
-          with the queues or channels included in the filter. You can  include
-          both  queue IDs and queue ARNs in the same request. VOICE, CHAT, and
-          TASK channels are supported.
+          The filters to apply to returned metrics. You can filter up  to  the
+          following limits:
+
+          o Queues: 100
+
+          o Routing profiles: 100
+
+          o Channels: 3 (VOICE, CHAT, and TASK channels are supported.)
+
+          Metric  data is retrieved only for the resources associated with the
+          queues or routing profiles, and by any channels included in the fil-
+          ter.  (You cannot filter by both queue AND routing profile.) You can
+          include both resource IDs and resource ARNs in the same request.
+
+          Currently tagging is only supported on the resources that are passed
+          in the filter.
 
           Queues -> (list)
-              The queues to use to filter the metrics. You should  specify  at
-              least  one  queue, and can specify up to 100 queues per request.
-              The GetCurrentMetricsData API in  particular  requires  a  queue
+              The  queues  to use to filter the metrics. You should specify at
+              least one queue, and can specify up to 100 queues  per  request.
+              The  GetCurrentMetricsData  API  in  particular requires a queue
               when you include a Filter in your request.
 
               (string)
@@ -64,27 +76,35 @@ OPTIONS
 
               (string)
 
+          RoutingProfiles -> (list)
+              A list of up to 100 routing profile IDs or ARNs.
+
+              (string)
+
        Shorthand Syntax:
 
-          Queues=string,string,Channels=string,string
+          Queues=string,string,Channels=string,string,RoutingProfiles=string,string
 
        JSON Syntax:
 
           {
             "Queues": ["string", ...],
-            "Channels": ["VOICE"|"CHAT"|"TASK", ...]
+            "Channels": ["VOICE"|"CHAT"|"TASK", ...],
+            "RoutingProfiles": ["string", ...]
           }
 
        --groupings (list)
-          The  grouping  applied  to  the  metrics returned. For example, when
-          grouped by QUEUE , the metrics returned apply to each  queue  rather
+          The grouping applied to the  metrics  returned.  For  example,  when
+          grouped  by  QUEUE , the metrics returned apply to each queue rather
           than aggregated for all queues.
 
-          o If  you  group  by CHANNEL , you should include a Channels filter.
+          o If you group by CHANNEL , you should include  a  Channels  filter.
             VOICE, CHAT, and TASK channels are supported.
 
-          o If you group by ROUTING_PROFILE , you must include either a  queue
-            or routing profile filter.
+          o If  you group by ROUTING_PROFILE , you must include either a queue
+            or routing profile filter. In addition, a routing  profile  filter
+            is  required  for metrics CONTACTS_SCHEDULED , CONTACTS_IN_QUEUE ,
+            and OLDEST_CONTACT_AGE .
 
           o If no Grouping is included in the request, a summary of metrics is
             returned.
@@ -98,10 +118,11 @@ OPTIONS
           Where valid values are:
             QUEUE
             CHANNEL
+            ROUTING_PROFILE
 
        --current-metrics (list)
-          The metrics to retrieve. Specify the name and unit for each  metric.
-          The  following  metrics  are available. For a description of all the
+          The  metrics to retrieve. Specify the name and unit for each metric.
+          The following metrics are available. For a description  of  all  the
           metrics, see Real-time Metrics Definitions in the Amazon Connect Ad-
           ministrator Guide .
               AGENTS_AFTER_CONTACT_WORK
@@ -158,11 +179,11 @@ OPTIONS
 
           Unit: SECONDS
 
-          When  you use groupings, Unit says SECONDS and the Value is returned
+          When you use groupings, Unit says SECONDS and the Value is  returned
           in SECONDS.
 
-          When you do not use groupings, Unit says SECONDS but  the  Value  is
-          returned  in  MILLISECONDS.  For example, if you get a response like
+          When  you  do  not use groupings, Unit says SECONDS but the Value is
+          returned in MILLISECONDS. For example, if you get  a  response  like
           this:
               { "Metric": { "Name": "OLDEST_CONTACT_AGE", "Unit": "SECONDS" },
               "Value": 24113.0 }
@@ -183,7 +204,7 @@ OPTIONS
               (structure)
 
               Contains information about a real-time metric. For a description
-              of each metric, see Real-time Metrics Definitions in the  Amazon
+              of  each metric, see Real-time Metrics Definitions in the Amazon
               Connect Administrator Guide .
 
               Name -> (string)
@@ -208,15 +229,50 @@ OPTIONS
 
        --next-token (string)
           The token for the next set of results. Use the value returned in the
-          previous response in the next request to retrieve the  next  set  of
+          previous  response  in  the next request to retrieve the next set of
           results.
 
-          The  token expires after 5 minutes from the time it is created. Sub-
+          The token expires after 5 minutes from the time it is created.  Sub-
           sequent requests that use the token must use the same request param-
           eters as the request that generated the token.
 
        --max-results (integer)
           The maximum number of results to return per page.
+
+       --sort-criteria (list)
+          The way to sort the resulting response based on metrics. You can en-
+          ter  one  sort  criteria.  By  default resources are sorted based on
+          AGENTS_ONLINE , DESCENDING . The metric collection is  sorted  based
+          on the input metrics.
+
+          Note the following:
+
+          o Sorting on SLOTS_ACTIVE and SLOTS_AVAILABLE is not supported.
+
+          (structure)
+              The  way to sort the resulting response based on metrics. By de-
+              fault resources are sorted based on AGENTS_ONLINE , DESCENDING .
+              The metric collection is sorted based on the input metrics.
+
+              SortByMetric -> (string)
+                 The current metric names.
+
+              SortOrder -> (string)
+                 The way to sort.
+
+       Shorthand Syntax:
+
+          SortByMetric=string,SortOrder=string ...
+
+       JSON Syntax:
+
+          [
+            {
+              "SortByMetric": "AGENTS_ONLINE"|"AGENTS_AVAILABLE"|"AGENTS_ON_CALL"|"AGENTS_NON_PRODUCTIVE"|"AGENTS_AFTER_CONTACT_WORK"|"AGENTS_ERROR"|"AGENTS_STAFFED"|"CONTACTS_IN_QUEUE"|"OLDEST_CONTACT_AGE"|"CONTACTS_SCHEDULED"|"AGENTS_ON_CONTACT"|"SLOTS_ACTIVE"|"SLOTS_AVAILABLE",
+              "SortOrder": "ASCENDING"|"DESCENDING"
+            }
+            ...
+          ]
 
        --cli-input-json  (string) Performs service operation based on the JSON
        string provided. The JSON string follows the format provided by  --gen-
@@ -339,6 +395,16 @@ OUTPUT
                  Channel -> (string)
                      The channel used for grouping and filters.
 
+                 RoutingProfile -> (structure)
+                     Information about the routing  profile  assigned  to  the
+                     user.
+
+                     Id -> (string)
+                        The identifier of the routing profile.
+
+                     Arn -> (string)
+                        The Amazon Resource Name (ARN) of the routing profile.
+
               Collections -> (list)
                  The set of metrics.
 
@@ -358,8 +424,11 @@ OUTPUT
                         The value of the metric.
 
        DataSnapshotTime -> (timestamp)
-          The time at which the metrics were retrieved and cached for  pagina-
+          The  time at which the metrics were retrieved and cached for pagina-
           tion.
+
+       ApproximateTotalCount -> (long)
+          The total count of the result, regardless of the current page size.
 
 
 
