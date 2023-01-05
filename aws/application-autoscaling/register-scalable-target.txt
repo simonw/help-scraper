@@ -6,17 +6,23 @@ NAME
        register-scalable-target -
 
 DESCRIPTION
-       Registers or updates a scalable target.
+       Registers  or  updates a scalable target, the resource that you want to
+       scale.
 
-       A scalable target is a resource that Application Auto Scaling can scale
-       out and scale in. Scalable targets are uniquely identified by the  com-
-       bination of resource ID, scalable dimension, and namespace.
+       Scalable targets are uniquely identified by the combination of resource
+       ID,  scalable  dimension, and namespace, which represents some capacity
+       dimension of the underlying service.
 
-       When  you  register  a new scalable target, you must specify values for
-       minimum and maximum capacity. Current capacity will be adjusted  within
-       the specified range when scaling starts. Application Auto Scaling scal-
-       ing policies will not scale capacity to values that are outside of this
-       range.
+       When you register a new scalable target, you must  specify  values  for
+       the  minimum and maximum capacity. If the specified resource is not ac-
+       tive in the target service, this operation  does  not  change  the  re-
+       source's current capacity. Otherwise, it changes the resource's current
+       capacity to a value that is inside of this range.
+
+       If you choose to add a scaling policy, current capacity  is  adjustable
+       within  the specified range when scaling starts. Application Auto Scal-
+       ing scaling policies will not scale capacity to values that are outside
+       of the minimum and maximum range.
 
        After  you  register  a scalable target, you do not need to register it
        again to use other Application Auto Scaling operations.  To  see  which
@@ -207,7 +213,7 @@ OPTIONS
             and Aurora PostgreSQL-compatible edition.
 
           o sagemaker:variant:DesiredInstanceCount - The  number  of  EC2  in-
-            stances for an SageMaker model endpoint variant.
+            stances for a SageMaker model endpoint variant.
 
           o custom-resource:ResourceType:Property - The scalable dimension for
             a custom resource provided by your own application or service.
@@ -290,10 +296,34 @@ OPTIONS
           mand. This property is required when registering a new scalable tar-
           get.
 
-          For certain resources, the minimum value allowed is 0. This includes
-          Lambda provisioned concurrency, Spot Fleet, ECS services, Aurora  DB
-          clusters,  EMR  clusters,  and  custom  resources. For all other re-
-          sources, the minimum value allowed is 1.
+          For the following resources, the minimum value allowed is 0.
+
+          o AppStream 2.0 fleets
+
+          o Aurora DB clusters
+
+          o ECS services
+
+          o EMR clusters
+
+          o Lambda provisioned concurrency
+
+          o SageMaker endpoint variants
+
+          o Spot Fleets
+
+          o custom resources
+
+          It's strongly recommended that you specify a value greater than 0. A
+          value greater than 0 means that data  points  are  continuously  re-
+          ported  to  CloudWatch  that  scaling policies can use to scale on a
+          metric like average CPU utilization.
+
+          For all other resources, the minimum allowed value  depends  on  the
+          type  of resource that you are using. If you provide a value that is
+          lower than what a resource can accept, an  error  occurs.  In  which
+          case,  the error message will provide the minimum value that the re-
+          source can accept.
 
        --max-capacity (integer)
           The maximum value that you plan to scale out to. When a scaling pol-
@@ -306,8 +336,8 @@ OPTIONS
           quotas  for  the  maximum  capacity  of the resource. If you want to
           specify a higher limit, you can request an increase. For more infor-
           mation,  consult the documentation for that service. For information
-          about the default quotas for each service, see Service Endpoints and
-          Quotas in the Amazon Web Services General Reference .
+          about the default quotas for each service, see Service endpoints and
+          quotas in the Amazon Web Services General Reference .
 
        --role-arn (string)
           This  parameter  is  required  for services that do not support ser-

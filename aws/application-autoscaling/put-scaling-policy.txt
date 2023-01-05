@@ -73,6 +73,10 @@ OPTIONS
        --policy-name (string)
           The name of the scaling policy.
 
+          You  cannot  change the name of a scaling policy, but you can delete
+          the original scaling policy and create a new scaling policy with the
+          same settings and a different name.
+
        --service-namespace (string)
           The  namespace  of the Amazon Web Services service that provides the
           resource. For a resource provided by your own  application  or  ser-
@@ -211,7 +215,7 @@ OPTIONS
             and Aurora PostgreSQL-compatible edition.
 
           o sagemaker:variant:DesiredInstanceCount  -  The  number  of EC2 in-
-            stances for an SageMaker model endpoint variant.
+            stances for a SageMaker model endpoint variant.
 
           o custom-resource:ResourceType:Property - The scalable dimension for
             a custom resource provided by your own application or service.
@@ -288,8 +292,8 @@ OPTIONS
           o neptune:cluster:ReadReplicaCount
 
        --policy-type (string)
-          The policy type. This parameter is required if you  are  creating  a
-          scaling policy.
+          The scaling policy type. This parameter is required if you are  cre-
+          ating a scaling policy.
 
           The following policy types are supported:
               TargetTrackingScaling Not supported for Amazon EMR
@@ -505,23 +509,29 @@ OPTIONS
               target  value is a percent value that represents how much of the
               CPU can be used before scaling out.
 
+              NOTE:
+                 If the scaling policy specifies the  ALBRequestCountPerTarget
+                 predefined  metric, specify the target utilization as the op-
+                 timal average request count per target during any  one-minute
+                 interval.
+
           PredefinedMetricSpecification -> (structure)
-              A predefined metric. You can specify either a predefined  metric
+              A  predefined metric. You can specify either a predefined metric
               or a customized metric.
 
               PredefinedMetricType -> (string)
                  The metric type. The ALBRequestCountPerTarget metric type ap-
-                 plies only to Spot Fleet requests and ECS services.
+                 plies only to Spot Fleets and ECS services.
 
               ResourceLabel -> (string)
-                 Identifies the resource associated with the metric type.  You
-                 can't  specify a resource label unless the metric type is AL-
-                 BRequestCountPerTarget and there is a target  group  attached
-                 to the Spot Fleet request or ECS service.
+                 Identifies  the resource associated with the metric type. You
+                 can't specify a resource label unless the metric type is  AL-
+                 BRequestCountPerTarget  and  there is a target group attached
+                 to the Spot Fleet or ECS service.
 
-                 You  create the resource label by appending the final portion
-                 of the load balancer ARN and the final portion of the  target
-                 group  ARN  into a single value, separated by a forward slash
+                 You create the resource label by appending the final  portion
+                 of  the load balancer ARN and the final portion of the target
+                 group ARN into a single value, separated by a  forward  slash
                  (/). The format of the resource label is:
                      app/my-alb/778d41231b141a0f/targetgroup/my-alb-tar-
                      get-group/943f017f100becff .
@@ -531,19 +541,21 @@ OPTIONS
                  o app/<load-balancer-name>/<load-balancer-id>  is  the  final
                    portion of the load balancer ARN
 
-                 o targetgroup/<target-group-name>/<target-group-id>  is   the
+                 o targetgroup/<target-group-name>/<target-group-id>   is  the
                    final portion of the target group ARN.
 
-                 To  find  the  ARN  for an Application Load Balancer, use the
-                 DescribeLoadBalancers API operation. To find the ARN for  the
+                 To find the ARN for an Application  Load  Balancer,  use  the
+                 DescribeLoadBalancers  API operation. To find the ARN for the
                  target group, use the DescribeTargetGroups API operation.
 
           CustomizedMetricSpecification -> (structure)
-              A  customized metric. You can specify either a predefined metric
+              A customized metric. You can specify either a predefined  metric
               or a customized metric.
 
               MetricName -> (string)
-                 The name of the metric.
+                 The  name  of the metric. To get the exact metric name, name-
+                 space, and dimensions, inspect the Metric object that is  re-
+                 turned by a call to ListMetrics .
 
               Namespace -> (string)
                  The namespace of the metric.
@@ -551,11 +563,11 @@ OPTIONS
               Dimensions -> (list)
                  The dimensions of the metric.
 
-                 Conditional: If you published your  metric  with  dimensions,
+                 Conditional:  If  you  published your metric with dimensions,
                  you must specify the same dimensions in your scaling policy.
 
                  (structure)
-                     Describes  the dimension names and values associated with
+                     Describes the dimension names and values associated  with
                      a metric.
 
                      Name -> (string)
@@ -568,23 +580,25 @@ OPTIONS
                  The statistic of the metric.
 
               Unit -> (string)
-                 The unit of the metric.
+                 The unit of the metric. For a complete list of the units that
+                 CloudWatch supports, see the MetricDatum  data  type  in  the
+                 Amazon CloudWatch API Reference .
 
           ScaleOutCooldown -> (integer)
               The amount of time, in seconds, to wait for a previous scale-out
               activity to take effect.
 
               With the scale-out cooldown period , the intention is to contin-
-              uously (but not excessively) scale out. After  Application  Auto
-              Scaling  successfully scales out using a target tracking scaling
-              policy, it starts to calculate the cooldown  time.  The  scaling
+              uously  (but  not excessively) scale out. After Application Auto
+              Scaling successfully scales out using a target tracking  scaling
+              policy,  it  starts  to calculate the cooldown time. The scaling
               policy won't increase the desired capacity again unless either a
               larger scale out is triggered or the cooldown period ends. While
               the cooldown period is in effect, the capacity added by the ini-
-              tiating scale-out activity is calculated as part of the  desired
+              tiating  scale-out activity is calculated as part of the desired
               capacity for the next scale-out activity.
 
-              Application  Auto  Scaling  provides  a default value of 600 for
+              Application Auto Scaling provides a default  value  of  600  for
               Amazon ElastiCache replication groups and a default value of 300
               for the following scalable targets:
 
@@ -606,7 +620,7 @@ OPTIONS
 
               For all other scalable targets, the default value is 0:
 
-              o Amazon  Comprehend  document  classification and entity recog-
+              o Amazon Comprehend document classification  and  entity  recog-
                 nizer endpoints
 
               o DynamoDB tables and global secondary indexes
@@ -618,18 +632,18 @@ OPTIONS
               o Amazon MSK broker storage
 
           ScaleInCooldown -> (integer)
-              The amount of time, in seconds, after a scale-in  activity  com-
+              The  amount  of time, in seconds, after a scale-in activity com-
               pletes before another scale-in activity can start.
 
               With the scale-in cooldown period , the intention is to scale in
-              conservatively to protect  your  applications  availability,  so
-              scale-in  activities  are  blocked until the cooldown period has
+              conservatively  to  protect  your  applications availability, so
+              scale-in activities are blocked until the  cooldown  period  has
               expired. However, if another alarm triggers a scale-out activity
-              during  the  scale-in  cooldown period, Application Auto Scaling
-              scales out the target immediately. In this  case,  the  scale-in
+              during the scale-in cooldown period,  Application  Auto  Scaling
+              scales  out  the  target immediately. In this case, the scale-in
               cooldown period stops and doesn't complete.
 
-              Application  Auto  Scaling  provides  a default value of 600 for
+              Application Auto Scaling provides a default  value  of  600  for
               Amazon ElastiCache replication groups and a default value of 300
               for the following scalable targets:
 
@@ -651,7 +665,7 @@ OPTIONS
 
               For all other scalable targets, the default value is 0:
 
-              o Amazon  Comprehend  document  classification and entity recog-
+              o Amazon Comprehend document classification  and  entity  recog-
                 nizer endpoints
 
               o DynamoDB tables and global secondary indexes
@@ -665,9 +679,9 @@ OPTIONS
           DisableScaleIn -> (boolean)
               Indicates whether scale in by the target tracking scaling policy
               is disabled. If the value is true , scale in is disabled and the
-              target tracking scaling policy won't remove  capacity  from  the
-              scalable  target.  Otherwise, scale in is enabled and the target
-              tracking scaling policy can remove capacity  from  the  scalable
+              target  tracking  scaling  policy won't remove capacity from the
+              scalable target. Otherwise, scale in is enabled and  the  target
+              tracking  scaling  policy  can remove capacity from the scalable
               target. The default value is false .
 
        JSON Syntax:
@@ -696,17 +710,17 @@ OPTIONS
             "DisableScaleIn": true|false
           }
 
-       --cli-input-json  (string) Performs service operation based on the JSON
-       string provided. The JSON string follows the format provided by  --gen-
-       erate-cli-skeleton.  If  other  arguments  are  provided on the command
-       line, the CLI values will override the JSON-provided values. It is  not
+       --cli-input-json (string) Performs service operation based on the  JSON
+       string  provided. The JSON string follows the format provided by --gen-
+       erate-cli-skeleton. If other arguments  are  provided  on  the  command
+       line,  the CLI values will override the JSON-provided values. It is not
        possible to pass arbitrary binary values using a JSON-provided value as
        the string will be taken literally.
 
-       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
+       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
        output without sending an API request. If provided with no value or the
        value input, prints a sample input JSON that can be used as an argument
-       for  --cli-input-json.  If provided with the value output, it validates
+       for --cli-input-json. If provided with the value output,  it  validates
        the command inputs and returns a sample output JSON for that command.
 
 GLOBAL OPTIONS
@@ -720,7 +734,7 @@ GLOBAL OPTIONS
 
        --no-verify-ssl (boolean)
 
-       By default, the AWS CLI uses SSL when communicating with AWS  services.
+       By  default, the AWS CLI uses SSL when communicating with AWS services.
        For each SSL connection, the AWS CLI will verify SSL certificates. This
        option overrides the default behavior of verifying SSL certificates.
 
@@ -766,7 +780,7 @@ GLOBAL OPTIONS
 
        --no-sign-request (boolean)
 
-       Do not sign requests. Credentials will not be loaded if  this  argument
+       Do  not  sign requests. Credentials will not be loaded if this argument
        is provided.
 
        --ca-bundle (string)
@@ -776,35 +790,35 @@ GLOBAL OPTIONS
 
        --cli-read-timeout (int)
 
-       The maximum socket read time in seconds. If the value is set to 0,  the
-       socket  read  will be blocking and not timeout. The default value is 60
+       The  maximum socket read time in seconds. If the value is set to 0, the
+       socket read will be blocking and not timeout. The default value  is  60
        seconds.
 
        --cli-connect-timeout (int)
 
-       The maximum socket connect time in seconds. If the value is set  to  0,
-       the  socket connect will be blocking and not timeout. The default value
+       The  maximum  socket connect time in seconds. If the value is set to 0,
+       the socket connect will be blocking and not timeout. The default  value
        is 60 seconds.
 
 EXAMPLES
        NOTE:
-          To use the following examples, you must have the AWS  CLI  installed
-          and  configured.  See  the Getting started guide in the AWS CLI User
+          To  use  the following examples, you must have the AWS CLI installed
+          and configured. See the Getting started guide in the  AWS  CLI  User
           Guide for more information.
 
-          Unless otherwise  stated,  all  examples  have  unix-like  quotation
-          rules.  These  examples  will  need to be adapted to your terminal's
+          Unless  otherwise  stated,  all  examples  have  unix-like quotation
+          rules. These examples will need to be  adapted  to  your  terminal's
           quoting rules. See Using quotation marks with strings in the AWS CLI
           User Guide .
 
-       Example  1: To apply a target tracking scaling policy with a predefined
+       Example 1: To apply a target tracking scaling policy with a  predefined
        metric specification
 
-       The following put-scaling-policy  example  applies  a  target  tracking
-       scaling  policy with a predefined metric specification to an Amazon ECS
+       The  following  put-scaling-policy  example  applies  a target tracking
+       scaling policy with a predefined metric specification to an Amazon  ECS
        service called web-app in the default cluster. The policy keeps the av-
-       erage  CPU utilization of the service at 75 percent, with scale-out and
-       scale-in cooldown periods of 60 seconds. The output contains  the  ARNs
+       erage CPU utilization of the service at 75 percent, with scale-out  and
+       scale-in  cooldown  periods of 60 seconds. The output contains the ARNs
        and names of the two CloudWatch alarms created on your behalf.
 
           aws application-autoscaling put-scaling-policy --service-namespace ecs \
@@ -813,7 +827,7 @@ EXAMPLES
           --policy-name cpu75-target-tracking-scaling-policy --policy-type TargetTrackingScaling \
           --target-tracking-scaling-policy-configuration file://config.json
 
-       This  example  assumes  that you have a config.json file in the current
+       This example assumes that you have a config.json file  in  the  current
        directory with the following contents:
 
           {
@@ -841,14 +855,14 @@ EXAMPLES
               ]
           }
 
-       Example 2: To apply a target tracking scaling policy with a  customized
+       Example  2: To apply a target tracking scaling policy with a customized
        metric specification
 
-       The  following  put-scaling-policy  example  applies  a target tracking
-       scaling policy with a customized metric specification to an Amazon  ECS
+       The following put-scaling-policy  example  applies  a  target  tracking
+       scaling  policy with a customized metric specification to an Amazon ECS
        service called web-app in the default cluster. The policy keeps the av-
-       erage utilization of the service at  75  percent,  with  scale-out  and
-       scale-in  cooldown  periods of 60 seconds. The output contains the ARNs
+       erage  utilization  of  the  service  at 75 percent, with scale-out and
+       scale-in cooldown periods of 60 seconds. The output contains  the  ARNs
        and names of the two CloudWatch alarms created on your behalf.
 
           aws application-autoscaling put-scaling-policy --service-namespace ecs \
@@ -858,7 +872,7 @@ EXAMPLES
           --policy-type TargetTrackingScaling \
           --target-tracking-scaling-policy-configuration file://config.json
 
-       This example assumes that you have a config.json file  in  the  current
+       This  example  assumes  that you have a config.json file in the current
        directory with the following contents:
 
           {
@@ -897,11 +911,11 @@ EXAMPLES
 
        Example 3: To apply a target tracking scaling policy for scale out only
 
-       The  following  put-scaling-policy  example  applies  a target tracking
-       scaling policy to an Amazon ECS service called web-app in  the  default
-       cluster.  The  policy is used to scale out the ECS service when the Re-
-       questCountPerTarget metric from the Application Load  Balancer  exceeds
-       the  threshold.  The output contains the ARN and name of the CloudWatch
+       The following put-scaling-policy  example  applies  a  target  tracking
+       scaling  policy  to an Amazon ECS service called web-app in the default
+       cluster. The policy is used to scale out the ECS service when  the  Re-
+       questCountPerTarget  metric  from the Application Load Balancer exceeds
+       the threshold. The output contains the ARN and name of  the  CloudWatch
        alarm created on your behalf.
 
           aws application-autoscaling put-scaling-policy \
@@ -945,7 +959,7 @@ OUTPUT
           The Amazon Resource Name (ARN) of the resulting scaling policy.
 
        Alarms -> (list)
-          The  CloudWatch  alarms created for the target tracking scaling pol-
+          The CloudWatch alarms created for the target tracking  scaling  pol-
           icy.
 
           (structure)
