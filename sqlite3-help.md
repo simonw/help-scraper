@@ -164,7 +164,7 @@ Version: `3.41.0`
 
 .prompt MAIN CONTINUE    Replace the standard prompts
 
-.quit                    Exit this program
+.quit                    Stop interpreting input stream, exit if primary.
 
 .read FILE               Read input from FILE or command output
     If FILE begins with "|", it is a command that generates the input.
