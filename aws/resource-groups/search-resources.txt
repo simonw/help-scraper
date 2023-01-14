@@ -6,9 +6,9 @@ NAME
        search-resources -
 
 DESCRIPTION
-       Returns  a  list of AWS resource identifiers that matches the specified
-       query. The query uses the same format as a resource query in a  Create-
-       Group or UpdateGroupQuery operation.
+       Returns a list of Amazon Web Services resource identifiers that matches
+       the specified query. The query uses the same format as a resource query
+       in a  CreateGroup or  UpdateGroupQuery operation.
           Minimum permissions
 
        To run this command, you must have the following permissions:
@@ -59,62 +59,93 @@ OPTIONS
           source group definition. For more information, see  CreateGroup .
 
           Type -> (string)
-              The type of the query. You can use the following values:
+              The  type of the query to perform. This can have one of two val-
+              ues:
 
               o
 
                 *
-                CLOUDFORMATION_STACK_1_0:  * Specifies that the Query contains
-                an ARN for a CloudFormation stack.
+                CLOUDFORMATION_STACK_1_0: * Specifies that you want the  group
+                to  contain  the members of an CloudFormation stack. The Query
+                contains a StackIdentifier element with an ARN for a CloudFor-
+                mation stack.
 
               System Message: WARNING/2 (<string>:, line 98)
                 Inline emphasis start-string without end-string.
 
-              o ``TAG_FILTERS_1_0:`` * Specifies that the ``Query``  parameter
-                contains  a JSON string that represents a collection of simple
-                tag filters for resource types and tags. The JSON string  uses
-                a     syntax     similar     to     the    ``    `GetResources
-                <https://docs.aws.amazon.com/resourcegroupstagging/lat-
-                est/APIReference/API_GetResources.html>`__  ``  operation, but
-                uses only the ``  `ResourceTypeFilters  <https://docs.aws.ama-
-                zon.com/resourcegroupstagging/latest/APIReference/API_GetRe-
-                sources.html#resourcegrouptagging-GetResources-request-Re-
-                sourceTypeFilters>`__      ``      and      ``     `TagFilters
-                <https://docs.aws.amazon.com/resourcegroupstagging/lat-
-                est/APIReference/API_GetResources.html#resourcegrouptag-
-                ging-GetResources-request-TagFiltersTagFilters>`__ ``  fields.
-                If  you  specify  more  than  one tag key, only resources that
-                match all tag keys, and at least one value of  each  specified
-                tag  key, are returned in your query. If you specify more than
-                one value for a tag key, a resource matches the filter  if  it
-                has a tag key value that matches *any of the specified values.
-                For example, consider the following sample query for resources
-                that  have two tags, Stage and Version , with two values each:
-                [{"Stage":["Test","Deploy"]},{"Version":["1","2"]}]   The  re-
-                sults of this query could include the following.
+              o
 
-                o An   EC2   instance   that   has  the  following  two  tags:
-                  {"Stage":"Deploy"} , and {"Version":"2"}
+                *
+                TAG_FILTERS_1_0:  *  Specifies  that you want the group to in-
+                clude resource that have tags that match the query.
 
-                o An  S3   bucket   that   has   the   following   two   tags:
-                  {"Stage":"Test"} , and {"Version":"1"}
-
-              The  query would not include the following items in the results,
-              however.
-
-                 o An  EC2  instance  that  has  only   the   following   tag:
-                   {"Stage":"Deploy"}  . The instance does not have all of the
-                   tag keys specified in the filter, so it  is  excluded  from
-                   the results.
-
-                 o An   RDS   database   that  has  the  following  two  tags:
-                   {"Stage":"Archived"} and {"Version":"4"}   The database has
-                   all  of the tag keys, but none of those keys has an associ-
-                   ated value that matches at least one of the specified  val-
-                   ues in the filter.
+              System Message: WARNING/2 (<string>:, line 100)
+                Inline emphasis start-string without end-string.
 
           Query -> (string)
-              The query that defines a group or a search.
+              The query that defines a group or a search. The contents depends
+              on the value of the Type element.
+
+              o ResourceTypeFilters   Applies  to all ResourceQuery objects of
+                either Type . This element contains one of the  following  two
+                items:
+
+                o The  value AWS::AllSupported . This causes the ResourceQuery
+                  to match resources of any resource type that also match  the
+                  query.
+
+                o A  list  (a  JSON  array)  of resource type identifiers that
+                  limit the query to only resources of  the  specified  types.
+                  For  the complete list of resource types that you can use in
+                  the array value for ResourceTypeFilters , see Resources  you
+                  can  use with Resource Groups and Tag Editor in the Resource
+                  Groups User Guide .
+
+              Example: "ResourceTypeFilters":  ["AWS::AllSupported"]  or  "Re-
+              sourceTypeFilters": ["AWS::EC2::Instance", "AWS::S3::Bucket"]
+
+              o TagFilters   applicable  only  if Type = TAG_FILTERS_1_0 . The
+                Query contains a JSON string that represents a  collection  of
+                simple  tag  filters. The JSON string uses a syntax similar to
+                the ``  GetResources  ``  operation,  but  uses  only  the  ``
+                ResourceTypeFilters  ``  and  ``  TagFilters `` fields. If you
+                specify more than one tag key, only resources that  match  all
+                tag  keys,  and  at least one value of each specified tag key,
+                are returned in your query. If you specify more than one value
+                for  a  tag key, a resource matches the filter if it has a tag
+                key value that matches any of the specified values. For  exam-
+                ple,  consider  the  following sample query for resources that
+                have two tags, Stage and  Version  ,  with  two  values  each:
+                [{"Stage":["Test","Deploy"]},{"Version":["1","2"]}]    The re-
+                sults of this resource query could include the following.
+
+                o An Amazon EC2 instance that  has  the  following  two  tags:
+                  {"Stage":"Deploy"} , and {"Version":"2"}
+
+                o An   S3   bucket   that   has   the   following   two  tags:
+                  {"Stage":"Test"} , and {"Version":"1"}
+
+              The resource query results would not include the following items
+              in the results, however.
+
+                 o An  Amazon  EC2  instance  that has only the following tag:
+                   {"Stage":"Deploy"} . The instance does not have all of  the
+                   tag  keys  specified  in the filter, so it is excluded from
+                   the results.
+
+                 o An  RDS  database  that  has  the   following   two   tags:
+                   {"Stage":"Archived"} and {"Version":"4"}   The database has
+                   all of the tag keys, but none of those keys has an  associ-
+                   ated  value that matches at least one of the specified val-
+                   ues in the filter.
+
+              Example: "TagFilters": [ { "Key": "Stage", "Values": [  "Gamma",
+              "Beta" ] }
+
+              o StackIdentifier    applicable   only  if  Type  =  CLOUDFORMA-
+                TION_STACK_1_0 . The value of this parameter is the Amazon Re-
+                source  Name (ARN) of the CloudFormation stack whose resources
+                you want included in the group.
 
        Shorthand Syntax:
 
@@ -127,45 +158,45 @@ OPTIONS
             "Query": "string"
           }
 
-       --cli-input-json  (string) Performs service operation based on the JSON
-       string provided. The JSON string follows the format provided by  --gen-
-       erate-cli-skeleton.  If  other  arguments  are  provided on the command
-       line, the CLI values will override the JSON-provided values. It is  not
+       --cli-input-json (string) Performs service operation based on the  JSON
+       string  provided. The JSON string follows the format provided by --gen-
+       erate-cli-skeleton. If other arguments  are  provided  on  the  command
+       line,  the CLI values will override the JSON-provided values. It is not
        possible to pass arbitrary binary values using a JSON-provided value as
        the string will be taken literally.
 
        --starting-token (string)
-          A token to specify where to start paginating. This is the  NextToken
+          A  token to specify where to start paginating. This is the NextToken
           from a previously truncated response.
 
           For usage examples, see Pagination in the AWS Command Line Interface
           User Guide .
 
        --page-size (integer)
-          The size of each page to get in the AWS service call. This does  not
+          The  size of each page to get in the AWS service call. This does not
           affect the number of items returned in the command's output. Setting
-          a smaller page size results in more calls to the  AWS  service,  re-
-          trieving  fewer  items  in  each call. This can help prevent the AWS
+          a  smaller  page  size results in more calls to the AWS service, re-
+          trieving fewer items in each call. This can  help  prevent  the  AWS
           service calls from timing out.
 
           For usage examples, see Pagination in the AWS Command Line Interface
           User Guide .
 
        --max-items (integer)
-          The  total number of items to return in the command's output. If the
-          total number of items available is more than the value specified,  a
+          The total number of items to return in the command's output. If  the
+          total  number of items available is more than the value specified, a
           NextToken is provided in the command's output. To resume pagination,
           provide the NextToken value in the starting-token argument of a sub-
-          sequent  command. Do not use the NextToken response element directly
+          sequent command. Do not use the NextToken response element  directly
           outside of the AWS CLI.
 
           For usage examples, see Pagination in the AWS Command Line Interface
           User Guide .
 
-       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
+       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
        output without sending an API request. If provided with no value or the
        value input, prints a sample input JSON that can be used as an argument
-       for --cli-input-json. If provided with the value output,  it  validates
+       for  --cli-input-json.  If provided with the value output, it validates
        the command inputs and returns a sample output JSON for that command.
 
 GLOBAL OPTIONS
@@ -179,7 +210,7 @@ GLOBAL OPTIONS
 
        --no-verify-ssl (boolean)
 
-       By  default, the AWS CLI uses SSL when communicating with AWS services.
+       By default, the AWS CLI uses SSL when communicating with AWS  services.
        For each SSL connection, the AWS CLI will verify SSL certificates. This
        option overrides the default behavior of verifying SSL certificates.
 
@@ -225,7 +256,7 @@ GLOBAL OPTIONS
 
        --no-sign-request (boolean)
 
-       Do  not  sign requests. Credentials will not be loaded if this argument
+       Do not sign requests. Credentials will not be loaded if  this  argument
        is provided.
 
        --ca-bundle (string)
@@ -235,30 +266,30 @@ GLOBAL OPTIONS
 
        --cli-read-timeout (int)
 
-       The  maximum socket read time in seconds. If the value is set to 0, the
-       socket read will be blocking and not timeout. The default value  is  60
+       The maximum socket read time in seconds. If the value is set to 0,  the
+       socket  read  will be blocking and not timeout. The default value is 60
        seconds.
 
        --cli-connect-timeout (int)
 
-       The  maximum  socket connect time in seconds. If the value is set to 0,
-       the socket connect will be blocking and not timeout. The default  value
+       The maximum socket connect time in seconds. If the value is set  to  0,
+       the  socket connect will be blocking and not timeout. The default value
        is 60 seconds.
 
 EXAMPLES
        NOTE:
-          To  use  the following examples, you must have the AWS CLI installed
-          and configured. See the Getting started guide in the  AWS  CLI  User
+          To use the following examples, you must have the AWS  CLI  installed
+          and  configured.  See  the Getting started guide in the AWS CLI User
           Guide for more information.
 
-          Unless  otherwise  stated,  all  examples  have  unix-like quotation
-          rules. These examples will need to be  adapted  to  your  terminal's
+          Unless otherwise  stated,  all  examples  have  unix-like  quotation
+          rules.  These  examples  will  need to be adapted to your terminal's
           quoting rules. See Using quotation marks with strings in the AWS CLI
           User Guide .
 
        To find resources that match a query
 
-       The following search-resources example retrieves a list of all AWS  re-
+       The  following search-resources example retrieves a list of all AWS re-
        sources that match the specified query.
 
           aws resource-groups search-resources \
@@ -284,7 +315,7 @@ EXAMPLES
 
 OUTPUT
        ResourceIdentifiers -> (list)
-          The  ARNs  and  resource  types of resources that are members of the
+          The ARNs and resource types of resources that  are  members  of  the
           group that you specified.
 
           (structure)
@@ -300,37 +331,39 @@ OUTPUT
        NextToken -> (string)
           If present, indicates that more output is available than is included
           in the current response. Use this value in the NextToken request pa-
-          rameter  in  a subsequent call to the operation to get the next part
-          of the output. You should repeat this until the  NextToken  response
+          rameter in a subsequent call to the operation to get the  next  part
+          of  the  output. You should repeat this until the NextToken response
           element comes back as null .
 
        QueryErrors -> (list)
-          A  list of QueryError objects. Each error is an object that contains
-          ErrorCode and Message structures. Possible values for ErrorCode  are
-          CLOUDFORMATION_STACK_INACTIVE  and CLOUDFORMATION_STACK_NOT_EXISTING
-          .
+          A list of QueryError objects. Each error is an object that  contains
+          ErrorCode and Message structures.
+
+          Possible values for ErrorCode :
+
+          o CLOUDFORMATION_STACK_INACTIVE
+
+          o CLOUDFORMATION_STACK_NOT_EXISTING
 
           (structure)
-              A two-part error structure that can occur in  ListGroupResources
-              or  SearchResources  operations  on  CloudFormation  stack-based
-              queries. The error occurs if the CloudFormation stack  on  which
-              the  query  is based either does not exist, or has a status that
-              renders the stack inactive. A  QueryError  occurrence  does  not
-              necessarily mean that AWS Resource Groups could not complete the
-              operation, but the resulting group  might  have  no  member  re-
-              sources.
+              A  two-part error structure that can occur in ListGroupResources
+              or SearchResources operations on CloudFront stack-based queries.
+              The  error  occurs if the CloudFront stack on which the query is
+              based either does not exist, or has a status  that  renders  the
+              stack  inactive.  A  QueryError  occurrence does not necessarily
+              mean that Resource Groups could not complete the operation,  but
+              the resulting group might have no member resources.
 
               ErrorCode -> (string)
-                 Possible  values are CLOUDFORMATION_STACK_INACTIVE and CLOUD-
-                 FORMATION_STACK_NOT_EXISTING .
+                 Specifies the error code that was raised.
 
               Message -> (string)
-                 A message that explains the ErrorCode value.  Messages  might
-                 state  that the specified CloudFormation stack does not exist
-                 (or no longer exists).  For  CLOUDFORMATION_STACK_INACTIVE  ,
-                 the  message  typically  states that the CloudFormation stack
-                 has a status that is not (or no longer) active, such as  CRE-
-                 ATE_FAILED .
+                 A  message  that explains the ErrorCode value. Messages might
+                 state that the specified CloudFront stack does not exist  (or
+                 no  longer  exists).  For CLOUDFORMATION_STACK_INACTIVE , the
+                 message typically states that the CloudFront stack has a sta-
+                 tus  that is not (or no longer) active, such as CREATE_FAILED
+                 .
 
 
 
