@@ -231,6 +231,8 @@ Version: `3.41.0`
     --row                   Trace each row (SQLITE_TRACE_ROW)
     --close                 Trace connection close (SQLITE_TRACE_CLOSE)
 
+.version                 Show source, library and compiler versions
+
 .vfsinfo ?AUX?           Information about the top-level VFS
 
 .vfslist                 List all available VFSes
