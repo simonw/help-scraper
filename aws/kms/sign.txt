@@ -281,17 +281,23 @@ EXAMPLES
        short message. The output of the command  includes  a  base-64  encoded
        Signature field that you can verify by using the verify command.
 
-       You  must also specify a signing algorithm that your asymmetric KMS key
-       supports. To get the signing algorithms for your KMS key, use  the  de-
-       scribe-key command.
+       You  must  specify  a message to sign and a signing algorithm that your
+       asymmetric KMS key supports. To get the signing algorithms for your KMS
+       key, use the describe-key command.
+
+       In  AWS  CLI 2.0, the value of the message parameter must be Base64-en-
+       coded. Or, you can save the message in a file and use the fileb:// pre-
+       fix, which tells the AWS CLI to read binary data from the file.
 
        Before  running  this  command, replace the example key ID with a valid
        key ID from your AWS account. The key ID must represent  an  asymmetric
        KMS key with a key usage of SIGN_VERIFY.
 
+          msg=(echo 'Hello World' | base64)
+
           aws kms sign \
               --key-id 1234abcd-12ab-34cd-56ef-1234567890ab \
-              --message 'hello world' \
+              --message fileb://UnsignedMessage \
               --message-type RAW \
               --signing-algorithm RSASSA_PKCS1_V1_5_SHA_256
 
@@ -315,46 +321,49 @@ EXAMPLES
        ExampleSignature file. You can use the signature file in a verify  com-
        mand that verifies the signature.
 
-       The sign command requires a signing algorithm. To get the signing algo-
+       The  sign command requires a Base64-encoded message and a signing algo-
+       rithm that your asymmetric KMS key supports. To get the  signing  algo-
        rithms that your KMS key supports, use the describe-key command.
 
-       Before running this command, replace the example key ID  with  a  valid
-       key  ID  from your AWS account. The key ID must represent an asymmetric
+       Before  running  this  command, replace the example key ID with a valid
+       key ID from your AWS account. The key ID must represent  an  asymmetric
        KMS key with a key usage of SIGN_VERIFY.
+
+          echo 'hello world' | base64 > EncodedMessage
 
           aws kms sign \
               --key-id 1234abcd-12ab-34cd-56ef-1234567890ab \
-              --message fileb://originalString \
+              --message fileb://EncodedMessage \
               --message-type RAW \
               --signing-algorithm RSASSA_PKCS1_V1_5_SHA_256 \
               --output text \
               --query Signature | base64 --decode > ExampleSignature
 
-       This command produces no output. This example  extracts  the  Signature
+       This  command  produces  no output. This example extracts the Signature
        property of the output and saves it in a file.
 
-       For  more  information  about using asymmetric KMS keys in AWS KMS, see
-       Asymmetric keys in AWS KMS in the AWS Key Management Service  Developer
+       For more information about using asymmetric KMS keys in  AWS  KMS,  see
+       Asymmetric  keys in AWS KMS in the AWS Key Management Service Developer
        Guide.
 
 OUTPUT
        KeyId -> (string)
-          The  Amazon  Resource Name (key ARN ) of the asymmetric KMS key that
+          The Amazon Resource Name (key ARN ) of the asymmetric KMS  key  that
           was used to sign the message.
 
        Signature -> (blob)
           The cryptographic signature that was generated for the message.
 
-          o When used with the supported RSA signing algorithms, the  encoding
+          o When  used with the supported RSA signing algorithms, the encoding
             of this value is defined by PKCS #1 in RFC 8017 .
 
-          o When   used   with   the   ECDSA_SHA_256   ,  ECDSA_SHA_384  ,  or
-            ECDSA_SHA_512 signing algorithms, this value is a DER-encoded  ob-
+          o When  used  with  the   ECDSA_SHA_256   ,   ECDSA_SHA_384   ,   or
+            ECDSA_SHA_512  signing algorithms, this value is a DER-encoded ob-
             ject as defined by ANS X9.622005 and RFC 3279 Section 2.2.3 . This
-            is the most commonly used signature format and is appropriate  for
+            is  the most commonly used signature format and is appropriate for
             most uses.
 
-          When  you use the HTTP API or the Amazon Web Services CLI, the value
+          When you use the HTTP API or the Amazon Web Services CLI, the  value
           is Base64-encoded. Otherwise, it is not Base64-encoded.
 
        SigningAlgorithm -> (string)
