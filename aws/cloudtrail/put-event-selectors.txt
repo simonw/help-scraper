@@ -165,7 +165,7 @@ OPTIONS
                         The  total  number  of  allowed data resources is 250.
                         This number can be distributed between 1 and  5  event
                         selectors,  but the total cannot exceed 250 across all
-                        selectors.
+                        selectors for the trail.
 
                         If you are using advanced event selectors, the maximum
                         total  number of values for all conditions, across all
@@ -234,6 +234,8 @@ OPTIONS
                         valid  in basic event selectors. For more information,
                         see  AdvancedFieldSelector$Field .
 
+                        o AWS::CloudTrail::Channel
+
                         o AWS::S3Outposts::Object
 
                         o AWS::ManagedBlockchain::Node
@@ -247,6 +249,12 @@ OPTIONS
                         o AWS::DynamoDB::Stream
 
                         o AWS::Glue::Table
+
+                        o AWS::FinSpace::Environment
+
+                        o AWS::SageMaker::ExperimentTrialComponent
+
+                        o AWS::SageMaker::FeatureGroup
 
                      Values -> (list)
                         An array of Amazon Resource Name (ARN) strings or par-
@@ -380,10 +388,20 @@ OPTIONS
                      tor.
 
                      Field -> (string)
-                        A  field  in an event record on which to filter events
-                        to be logged.  Supported  fields  include  readOnly  ,
-                        eventCategory  ,  eventSource (for management events),
-                        eventName , resources.type , and resources.ARN .
+                        A  field in a CloudTrail event record on which to fil-
+                        ter events to be logged. For  event  data  stores  for
+                        Config configuration items, Audit Manager evidence, or
+                        non-Amazon Web Services events, the field is used only
+                        for selecting events as filtering is not supported.
+
+                        For CloudTrail event records, supported fields include
+                        readOnly , eventCategory , eventSource (for management
+                        events),   eventName   ,   resources.type  ,  and  re-
+                        sources.ARN .
+
+                        For event data stores for Config configuration  items,
+                        Audit  Manager  evidence,  or  non-Amazon Web Services
+                        events, the only supported field is eventCategory .
 
                         o
 
@@ -394,7 +412,7 @@ OPTIONS
                           of true logs only read events. A value of false logs
                           only write events.
 
-                        System Message: WARNING/2 (<string>:, line 449)
+                        System Message: WARNING/2 (<string>:, line 465)
                           Inline strong start-string without end-string.
 
                         o
@@ -404,7 +422,7 @@ OPTIONS
                           only. This can be set only to NotEquals  kms.amazon-
                           aws.com .
 
-                        System Message: WARNING/2 (<string>:, line 451)
+                        System Message: WARNING/2 (<string>:, line 467)
                           Inline strong start-string without end-string.
 
                         o
@@ -416,28 +434,42 @@ OPTIONS
                           You can have multiple values for this eld, separated
                           by commas.
 
-                        System Message: WARNING/2 (<string>:, line 453)
+                        System Message: WARNING/2 (<string>:, line 469)
                           Inline strong start-string without end-string.
 
                         o
 
                           **
-                          eventCategory ** - This is required. It must be  set
-                          to Equals , and the value must be Management or Data
-                          .
+                          eventCategory ** - This is required and must be  set
+                          to Equals .
 
-                        System Message: WARNING/2 (<string>:, line 455)
+                        System Message: WARNING/2 (<string>:, line 471)
                           Inline strong start-string without end-string.
+
+                          o For  CloudTrail  event  records, the value must be
+                            Management or Data .
+
+                          o For Config configuration items, the value must  be
+                            ConfigurationItem .
+
+                          o For Audit Manager evidence, the value must be Evi-
+                            dence .
+
+                          o For non-Amazon Web Services events, the value must
+                            be ActivityAuditLog .
 
                         o
 
                           **
-                          resources.type  **  -  This  eld  is  required.  re-
-                          sources.type  can  only use the Equals operator, and
-                          the value can be one of the following:
+                          resources.type  ** - This eld is required for Cloud-
+                          Trail data events. resources.type can only  use  the
+                          Equals  operator,  and  the  value can be one of the
+                          following:
 
-                        System Message: WARNING/2 (<string>:, line 457)
+                        System Message: WARNING/2 (<string>:, line 485)
                           Inline strong start-string without end-string.
+
+                          o AWS::CloudTrail::Channel
 
                           o AWS::S3::Object
 
@@ -458,6 +490,12 @@ OPTIONS
                           o AWS::DynamoDB::Stream
 
                           o AWS::Glue::Table
+
+                          o AWS::FinSpace::Environment
+
+                          o AWS::SageMaker::ExperimentTrialComponent
+
+                          o AWS::SageMaker::FeatureGroup
 
                         You can have only one resources.type eld per selector.
                         To log data events on more than one resource type, add
@@ -480,7 +518,7 @@ OPTIONS
                           tween  less  than and greater than symbols (<>) with
                           resource-specific information.
 
-                        System Message: WARNING/2 (<string>:, line 487)
+                        System Message: WARNING/2 (<string>:, line 523)
                           Inline strong start-string without end-string.
 
                           o arn:<partition>:s3:::<bucket_name>/
@@ -515,16 +553,23 @@ OPTIONS
                             o arn:<partition>:dynamodb:<region>:<ac-
                               count_ID>:table/<table_name>
 
-                        When resources.type equals  AWS::S3Outposts::Object  ,
+                        When resources.type equals AWS::CloudTrail::Channel  ,
                         and  the  operator is set to Equals or NotEquals , the
+                        ARN must be in the following format:
+
+                            o arn:<partition>:cloudtrail:<region>:<ac-
+                              count_ID>:channel/<channel_UUID>
+
+                        When  resources.type  equals AWS::S3Outposts::Object ,
+                        and the operator is set to Equals or NotEquals  ,  the
                         ARN must be in the following format:
 
                             o arn:<partition>:s3-outposts:<region>:<ac-
                               count_ID>:<object_path>
 
-                        When      resources.type      equals     AWS::Managed-
-                        Blockchain::Node , and the operator is set  to  Equals
-                        or  NotEquals  , the ARN must be in the following for-
+                        When     resources.type      equals      AWS::Managed-
+                        Blockchain::Node  ,  and the operator is set to Equals
+                        or NotEquals , the ARN must be in the  following  for-
                         mat:
 
                             o arn:<partition>:managedblockchain:<region>:<ac-
@@ -537,67 +582,89 @@ OPTIONS
                             o arn:<partition>:s3-object-lambda:<region>:<ac-
                               count_ID>:accesspoint/<access_point_name>
 
-                        When resources.type equals  AWS::EC2::Snapshot  ,  and
-                        the  operator  is set to Equals or NotEquals , the ARN
+                        When  resources.type  equals  AWS::EC2::Snapshot , and
+                        the operator is set to Equals or NotEquals ,  the  ARN
                         must be in the following format:
 
                             o arn:<partition>:ec2:<region>::snapshot/<snap-
                               shot_ID>
 
                         When resources.type equals AWS::DynamoDB::Stream , and
-                        the operator is set to Equals or NotEquals ,  the  ARN
+                        the  operator  is set to Equals or NotEquals , the ARN
                         must be in the following format:
 
                             o arn:<partition>:dynamodb:<region>:<ac-
                               count_ID>:table/<table_name>/stream/<date_time>
 
-                        When resources.type equals AWS::Glue::Table , and  the
-                        operator  is set to Equals or NotEquals , the ARN must
+                        When  resources.type equals AWS::Glue::Table , and the
+                        operator is set to Equals or NotEquals , the ARN  must
                         be in the following format:
 
                             o arn:<partition>:glue:<region>:<account_ID>:ta-
                               ble/<database_name>/<table_name>
 
+                        When resources.type equals  AWS::FinSpace::Environment
+                        , and the operator is set to Equals or NotEquals , the
+                        ARN must be in the following format:
+
+                            o arn:<partition>:finspace:<region>:<ac-
+                              count_ID>:environment/<environment_ID>
+
+                        When resources.type equals AWS::SageMaker::Experiment-
+                        TrialComponent , and the operator is set to Equals  or
+                        NotEquals , the ARN must be in the following format:
+
+                            o arn:<partition>:sagemaker:<region>:<ac-
+                              count_ID>:experiment-trial-component/<experi-
+                              ment_trial_component_name>
+
+                        When  resources.type  equals  AWS::SageMaker::Feature-
+                        Group , and the operator is set to Equals or NotEquals
+                        , the ARN must be in the following format:
+
+                            o arn:<partition>:sagemaker:<region>:<ac-
+                              count_ID>:feature-group/<feature_group_name>
+
                      Equals -> (list)
-                        An  operator that includes events that match the exact
+                        An operator that includes events that match the  exact
                         value of the event record field specified as the value
-                        of  Field  .  This is the only valid operator that you
-                        can use with the readOnly , eventCategory  ,  and  re-
+                        of Field . This is the only valid  operator  that  you
+                        can  use  with  the readOnly , eventCategory , and re-
                         sources.type fields.
 
                         (string)
 
                      StartsWith -> (list)
-                        An  operator that includes events that match the first
-                        few characters of the event record field specified  as
+                        An operator that includes events that match the  first
+                        few  characters of the event record field specified as
                         the value of Field .
 
                         (string)
 
                      EndsWith -> (list)
-                        An  operator  that includes events that match the last
-                        few characters of the event record field specified  as
+                        An operator that includes events that match  the  last
+                        few  characters of the event record field specified as
                         the value of Field .
 
                         (string)
 
                      NotEquals -> (list)
-                        An  operator that excludes events that match the exact
+                        An operator that excludes events that match the  exact
                         value of the event record field specified as the value
                         of Field .
 
                         (string)
 
                      NotStartsWith -> (list)
-                        An  operator that excludes events that match the first
-                        few characters of the event record field specified  as
+                        An operator that excludes events that match the  first
+                        few  characters of the event record field specified as
                         the value of Field .
 
                         (string)
 
                      NotEndsWith -> (list)
-                        An  operator  that excludes events that match the last
-                        few characters of the event record field specified  as
+                        An operator that excludes events that match  the  last
+                        few  characters of the event record field specified as
                         the value of Field .
 
                         (string)
@@ -623,17 +690,17 @@ OPTIONS
             ...
           ]
 
-       --cli-input-json  (string) Performs service operation based on the JSON
-       string provided. The JSON string follows the format provided by  --gen-
-       erate-cli-skeleton.  If  other  arguments  are  provided on the command
-       line, the CLI values will override the JSON-provided values. It is  not
+       --cli-input-json (string) Performs service operation based on the  JSON
+       string  provided. The JSON string follows the format provided by --gen-
+       erate-cli-skeleton. If other arguments  are  provided  on  the  command
+       line,  the CLI values will override the JSON-provided values. It is not
        possible to pass arbitrary binary values using a JSON-provided value as
        the string will be taken literally.
 
-       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
+       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
        output without sending an API request. If provided with no value or the
        value input, prints a sample input JSON that can be used as an argument
-       for  --cli-input-json.  If provided with the value output, it validates
+       for --cli-input-json. If provided with the value output,  it  validates
        the command inputs and returns a sample output JSON for that command.
 
 GLOBAL OPTIONS
@@ -647,7 +714,7 @@ GLOBAL OPTIONS
 
        --no-verify-ssl (boolean)
 
-       By default, the AWS CLI uses SSL when communicating with AWS  services.
+       By  default, the AWS CLI uses SSL when communicating with AWS services.
        For each SSL connection, the AWS CLI will verify SSL certificates. This
        option overrides the default behavior of verifying SSL certificates.
 
@@ -693,7 +760,7 @@ GLOBAL OPTIONS
 
        --no-sign-request (boolean)
 
-       Do not sign requests. Credentials will not be loaded if  this  argument
+       Do  not  sign requests. Credentials will not be loaded if this argument
        is provided.
 
        --ca-bundle (string)
@@ -703,39 +770,39 @@ GLOBAL OPTIONS
 
        --cli-read-timeout (int)
 
-       The maximum socket read time in seconds. If the value is set to 0,  the
-       socket  read  will be blocking and not timeout. The default value is 60
+       The  maximum socket read time in seconds. If the value is set to 0, the
+       socket read will be blocking and not timeout. The default value  is  60
        seconds.
 
        --cli-connect-timeout (int)
 
-       The maximum socket connect time in seconds. If the value is set  to  0,
-       the  socket connect will be blocking and not timeout. The default value
+       The  maximum  socket connect time in seconds. If the value is set to 0,
+       the socket connect will be blocking and not timeout. The default  value
        is 60 seconds.
 
 EXAMPLES
        NOTE:
-          To use the following examples, you must have the AWS  CLI  installed
-          and  configured.  See  the Getting started guide in the AWS CLI User
+          To  use  the following examples, you must have the AWS CLI installed
+          and configured. See the Getting started guide in the  AWS  CLI  User
           Guide for more information.
 
-          Unless otherwise  stated,  all  examples  have  unix-like  quotation
-          rules.  These  examples  will  need to be adapted to your terminal's
+          Unless  otherwise  stated,  all  examples  have  unix-like quotation
+          rules. These examples will need to be  adapted  to  your  terminal's
           quoting rules. See Using quotation marks with strings in the AWS CLI
           User Guide .
 
        To configure event selectors for a trail
 
-       To  create  an event selector, run the ''put-event-selectors'' command.
+       To create an event selector, run the  ''put-event-selectors''  command.
        When an event occurs in your account, CloudTrail evaluates the configu-
-       ration  for  your trails. If the event matches any event selector for a
+       ration for your trails. If the event matches any event selector  for  a
        trail, the trail processes and logs the event.  You can configure up to
        5 event selectors for a trail and up to 250 data resources for a trail.
 
-       The  following  example  creates  an  event  selector for a trail named
-       ''TrailName'' to include read-only and  write-only  management  events,
-       data  events  for  two  Amazon  S3 bucket/prefix combinations, and data
-       events    for    a     single     AWS     Lambda     function     named
+       The following example creates an  event  selector  for  a  trail  named
+       ''TrailName''  to  include  read-only and write-only management events,
+       data events for two Amazon  S3  bucket/prefix  combinations,  and  data
+       events     for     a     single     AWS     Lambda    function    named
        ''hello-world-python-function'':
 
           aws cloudtrail put-event-selectors --trail-name TrailName --event-selectors '[{"ReadWriteType": "All","IncludeManagementEvents": true,"DataResources": [{"Type":"AWS::S3::Object", "Values": ["arn:aws:s3:::mybucket/prefix","arn:aws:s3:::mybucket2/prefix2"]},{"Type": "AWS::Lambda::Function","Values": ["arn:aws:lambda:us-west-2:999999999999:function:hello-world-python-function"]}]}]'
@@ -767,9 +834,9 @@ EXAMPLES
             "TrailARN": "arn:aws:cloudtrail:us-east-2:123456789012:trail/TrailName"
           }
 
-       The  following  example  creates  an  event  selector for a trail named
+       The following example creates an  event  selector  for  a  trail  named
        ''TrailName2''  that  includes  all  events,  including  read-only  and
-       write-only  management  events,  and  all data events for all Amazon S3
+       write-only management events, and all data events  for  all  Amazon  S3
        buckets and AWS Lambda functions in the AWS account:
 
           aws cloudtrail put-event-selectors --trail-name TrailName2 --event-selectors '[{"ReadWriteType": "All","IncludeManagementEvents": true,"DataResources": [{"Type":"AWS::S3::Object", "Values": ["arn:aws:s3:::"]},{"Type": "AWS::Lambda::Function","Values": ["arn:aws:lambda"]}]}]'
@@ -802,7 +869,7 @@ EXAMPLES
 
 OUTPUT
        TrailARN -> (string)
-          Specifies the ARN of the trail that was updated  with  event  selec-
+          Specifies  the  ARN  of the trail that was updated with event selec-
           tors. The following is the format of a trail ARN.
               arn:aws:cloudtrail:us-east-2:123456789012:trail/MyTrail
 
@@ -810,25 +877,25 @@ OUTPUT
           Specifies the event selectors configured for your trail.
 
           (structure)
-              Use  event  selectors to further specify the management and data
-              event settings for your trail. By default, trails created  with-
-              out  specific event selectors will be configured to log all read
-              and write management events, and no data events. When  an  event
-              occurs  in your account, CloudTrail evaluates the event selector
-              for all trails. For each trail, if the event matches  any  event
-              selector,  the  trail processes and logs the event. If the event
-              doesn't match any event selector,  the  trail  doesn't  log  the
+              Use event selectors to further specify the management  and  data
+              event  settings for your trail. By default, trails created with-
+              out specific event selectors will be configured to log all  read
+              and  write  management events, and no data events. When an event
+              occurs in your account, CloudTrail evaluates the event  selector
+              for  all  trails. For each trail, if the event matches any event
+              selector, the trail processes and logs the event. If  the  event
+              doesn't  match  any  event  selector,  the trail doesn't log the
               event.
 
               You can configure up to five event selectors for a trail.
 
-              You  cannot apply both event selectors and advanced event selec-
+              You cannot apply both event selectors and advanced event  selec-
               tors to a trail.
 
               ReadWriteType -> (string)
-                 Specify if you want  your  trail  to  log  read-only  events,
-                 write-only  events,  or all. For example, the EC2 GetConsole-
-                 Output is a read-only API operation  and  RunInstances  is  a
+                 Specify  if  you  want  your  trail  to log read-only events,
+                 write-only events, or all. For example, the  EC2  GetConsole-
+                 Output  is  a  read-only  API operation and RunInstances is a
                  write-only API operation.
 
                  By default, the value is All .
@@ -842,90 +909,90 @@ OUTPUT
 
                  By default, the value is true .
 
-                 The  first copy of management events is free. You are charged
-                 for additional copies of management events that you are  log-
+                 The first copy of management events is free. You are  charged
+                 for  additional copies of management events that you are log-
                  ging on any subsequent trail in the same region. For more in-
                  formation about CloudTrail pricing, see CloudTrail Pricing .
 
               DataResources -> (list)
                  CloudTrail supports data event logging for Amazon S3 objects,
                  Lambda functions, and Amazon DynamoDB tables with basic event
-                 selectors. You can specify up to 250 resources for  an  indi-
+                 selectors.  You  can specify up to 250 resources for an indi-
                  vidual event selector, but the total number of data resources
                  cannot exceed 250 across all event selectors in a trail. This
-                 limit  does  not  apply if you configure resource logging for
+                 limit does not apply if you configure  resource  logging  for
                  all data events.
 
-                 For more information, see Data Events and  Limits  in  Cloud-
+                 For  more  information,  see Data Events and Limits in Cloud-
                  Trail in the CloudTrail User Guide .
 
                  (structure)
-                     The  Amazon  S3  buckets, Lambda functions, or Amazon Dy-
-                     namoDB tables that you specify in  your  event  selectors
-                     for  your  trail  to log data events. Data events provide
+                     The Amazon S3 buckets, Lambda functions,  or  Amazon  Dy-
+                     namoDB  tables  that  you specify in your event selectors
+                     for your trail to log data events.  Data  events  provide
                      information about the resource operations performed on or
-                     within  a  resource  itself. These are also known as data
-                     plane operations. You can specify  up  to  250  data  re-
+                     within a resource itself. These are also  known  as  data
+                     plane  operations.  You  can  specify  up to 250 data re-
                      sources for a trail.
 
                      NOTE:
-                        The  total  number  of  allowed data resources is 250.
-                        This number can be distributed between 1 and  5  event
-                        selectors,  but the total cannot exceed 250 across all
-                        selectors.
+                        The total number of allowed  data  resources  is  250.
+                        This  number  can be distributed between 1 and 5 event
+                        selectors, but the total cannot exceed 250 across  all
+                        selectors for the trail.
 
                         If you are using advanced event selectors, the maximum
-                        total  number of values for all conditions, across all
+                        total number of values for all conditions, across  all
                         advanced event selectors for the trail, is 500.
 
                      The following example demonstrates how logging works when
                      you configure logging of all data events for an S3 bucket
-                     named bucket-1 . In this  example,  the  CloudTrail  user
-                     specified  an  empty  prefix,  and the option to log both
+                     named  bucket-1  .  In  this example, the CloudTrail user
+                     specified an empty prefix, and the  option  to  log  both
                      Read and Write data events.
 
                      o A user uploads an image file to bucket-1 .
 
                      o The  PutObject  API  operation  is  an  Amazon  S3  ob-
-                       ject-level  API.  It  is  recorded  as  a data event in
+                       ject-level API. It is  recorded  as  a  data  event  in
                        CloudTrail. Because the CloudTrail user specified an S3
-                       bucket  with  an empty prefix, events that occur on any
-                       object in that bucket are logged. The  trail  processes
+                       bucket with an empty prefix, events that occur  on  any
+                       object  in  that bucket are logged. The trail processes
                        and logs the event.
 
-                     o A  user  uploads an object to an Amazon S3 bucket named
+                     o A user uploads an object to an Amazon S3  bucket  named
                        arn:aws:s3:::bucket-2 .
 
-                     o The PutObject API operation occurred for an  object  in
-                       an  S3  bucket  that the CloudTrail user didn't specify
+                     o The  PutObject  API operation occurred for an object in
+                       an S3 bucket that the CloudTrail  user  didn't  specify
                        for the trail. The trail doesnt log the event.
 
                      The following example demonstrates how logging works when
-                     you  configure logging of Lambda data events for a Lambda
-                     function named MyLambdaFunction , but not for all  Lambda
+                     you configure logging of Lambda data events for a  Lambda
+                     function  named MyLambdaFunction , but not for all Lambda
                      functions.
 
-                     o A  user  runs  a script that includes a call to the My-
-                       LambdaFunction function and  the  MyOtherLambdaFunction
+                     o A user runs a script that includes a call  to  the  My-
+                       LambdaFunction  function  and the MyOtherLambdaFunction
                        function.
 
-                     o The  Invoke  API  operation  on  MyLambdaFunction is an
-                       Lambda API. It is recorded as a data  event  in  Cloud-
-                       Trail.  Because  the  CloudTrail user specified logging
-                       data events for MyLambdaFunction , any  invocations  of
-                       that  function are logged. The trail processes and logs
+                     o The Invoke API  operation  on  MyLambdaFunction  is  an
+                       Lambda  API.  It  is recorded as a data event in Cloud-
+                       Trail. Because the CloudTrail  user  specified  logging
+                       data  events  for MyLambdaFunction , any invocations of
+                       that function are logged. The trail processes and  logs
                        the event.
 
                      o The Invoke API operation on MyOtherLambdaFunction is an
                        Lambda API. Because the CloudTrail user did not specify
-                       logging data events for all Lambda functions,  the  In-
+                       logging  data  events for all Lambda functions, the In-
                        voke operation for MyOtherLambdaFunction does not match
-                       the function specified for the trail. The trail  doesnt
+                       the  function specified for the trail. The trail doesnt
                        log the event.
 
                      Type -> (string)
-                        The  resource  type  in  which  you  want  to log data
-                        events. You can specify the following basic event  se-
+                        The resource type  in  which  you  want  to  log  data
+                        events.  You can specify the following basic event se-
                         lector resource types:
 
                         o AWS::S3::Object
@@ -934,12 +1001,14 @@ OUTPUT
 
                         o AWS::DynamoDB::Table
 
-                        The   following  resource  types  are  also  available
+                        The  following  resource  types  are  also   available
                         through advanced event selectors. Basic event selector
-                        resource  types are valid in advanced event selectors,
-                        but advanced event selector  resource  types  are  not
-                        valid  in basic event selectors. For more information,
+                        resource types are valid in advanced event  selectors,
+                        but  advanced  event  selector  resource types are not
+                        valid in basic event selectors. For more  information,
                         see  AdvancedFieldSelector$Field .
+
+                        o AWS::CloudTrail::Channel
 
                         o AWS::S3Outposts::Object
 
@@ -955,71 +1024,77 @@ OUTPUT
 
                         o AWS::Glue::Table
 
+                        o AWS::FinSpace::Environment
+
+                        o AWS::SageMaker::ExperimentTrialComponent
+
+                        o AWS::SageMaker::FeatureGroup
+
                      Values -> (list)
                         An array of Amazon Resource Name (ARN) strings or par-
                         tial ARN strings for the specified objects.
 
                         o To log data events for all objects in all S3 buckets
-                          in your Amazon Web  Services  account,  specify  the
+                          in  your  Amazon  Web  Services account, specify the
                           prefix as arn:aws:s3 .
 
                         NOTE:
-                            This  also  enables logging of data event activity
-                            performed by any user or role in your  Amazon  Web
-                            Services  account,  even  if that activity is per-
-                            formed on a bucket that belongs to another  Amazon
+                            This also enables logging of data  event  activity
+                            performed  by  any user or role in your Amazon Web
+                            Services account, even if that  activity  is  per-
+                            formed  on a bucket that belongs to another Amazon
                             Web Services account.
 
-                        o To  log data events for all objects in an S3 bucket,
-                          specify the bucket and an empty object  prefix  such
-                          as  arn:aws:s3:::bucket-1/  .  The  trail  logs data
+                        o To log data events for all objects in an S3  bucket,
+                          specify  the  bucket and an empty object prefix such
+                          as arn:aws:s3:::bucket-1/  .  The  trail  logs  data
                           events for all objects in this S3 bucket.
 
                         o To log data events for specific objects, specify the
-                          S3    bucket    and    object    prefix    such   as
-                          arn:aws:s3:::bucket-1/example-images  .  The   trail
-                          logs  data events for objects in this S3 bucket that
+                          S3   bucket    and    object    prefix    such    as
+                          arn:aws:s3:::bucket-1/example-images   .  The  trail
+                          logs data events for objects in this S3 bucket  that
                           match the prefix.
 
-                        o To log data events for all Lambda functions in  your
-                          Amazon  Web  Services account, specify the prefix as
+                        o To  log data events for all Lambda functions in your
+                          Amazon Web Services account, specify the  prefix  as
                           arn:aws:lambda .
 
                         NOTE:
-                            This also enables logging of Invoke activity  per-
+                            This  also enables logging of Invoke activity per-
                             formed by any user or role in your Amazon Web Ser-
-                            vices account, even if that activity is  performed
-                            on  a  function that belongs to another Amazon Web
+                            vices  account, even if that activity is performed
+                            on a function that belongs to another  Amazon  Web
                             Services account.
 
-                        o To log data events for a specific  Lambda  function,
+                        o To  log  data events for a specific Lambda function,
                           specify the function ARN.
 
                         NOTE:
-                            Lambda  function  ARNs  are exact. For example, if
+                            Lambda function ARNs are exact.  For  example,  if
                             you       specify       a       function       ARN
                             arn:aws:lambda:us-west-2:111111111111:func-
-                            tion:helloworld , data events will only be  logged
+                            tion:helloworld  , data events will only be logged
                             for    arn:aws:lambda:us-west-2:111111111111:func-
-                            tion:helloworld . They  will  not  be  logged  for
+                            tion:helloworld  .  They  will  not  be logged for
                             arn:aws:lambda:us-west-2:111111111111:func-
                             tion:helloworld2 .
 
-                        o To log data events for all DynamoDB tables  in  your
-                          Amazon  Web  Services account, specify the prefix as
+                        o To  log  data events for all DynamoDB tables in your
+                          Amazon Web Services account, specify the  prefix  as
                           arn:aws:dynamodb .
 
                         (string)
 
               ExcludeManagementEventSources -> (list)
-                 An optional list of service event sources from which  you  do
-                 not  want  management  events  to be logged on your trail. In
+                 An  optional  list of service event sources from which you do
+                 not want management events to be logged  on  your  trail.  In
                  this release, the list can be empty (disables the filter), or
-                 it  can  filter out Key Management Service or Amazon RDS Data
+                 it can filter out Key Management Service or Amazon  RDS  Data
                  API events by containing kms.amazonaws.com or rdsdata.amazon-
                  aws.com . By default, ExcludeManagementEventSources is empty,
-                 and KMS and Amazon RDS Data API events  are  logged  to  your
-                 trail.  You  can exclude management event sources only in re-
+                 and  KMS  and  Amazon  RDS Data API events are logged to your
+                 trail. You can exclude management event sources only  in  re-
                  gions that support the event source.
 
                  (string)
@@ -1028,10 +1103,10 @@ OUTPUT
           Specifies the advanced event selectors configured for your trail.
 
           (structure)
-              Advanced event selectors let you create  fine-grained  selectors
-              for  the  following  CloudTrail event record elds. They help you
+              Advanced  event  selectors let you create fine-grained selectors
+              for the following CloudTrail event record elds.  They  help  you
               control costs by logging only those events that are important to
-              you.  For  more  information about advanced event selectors, see
+              you. For more information about advanced  event  selectors,  see
               Logging data events for trails in the CloudTrail User Guide .
 
               o readOnly
@@ -1046,7 +1121,7 @@ OUTPUT
 
               o resources.ARN
 
-              You cannot apply both event selectors and advanced event  selec-
+              You  cannot apply both event selectors and advanced event selec-
               tors to a trail.
 
               Name -> (string)
@@ -1054,72 +1129,96 @@ OUTPUT
                  such as "Log data events for only two S3 buckets".
 
               FieldSelectors -> (list)
-                 Contains all selector statements in an advanced event  selec-
+                 Contains  all selector statements in an advanced event selec-
                  tor.
 
                  (structure)
-                     A  single  selector statement in an advanced event selec-
+                     A single selector statement in an advanced  event  selec-
                      tor.
 
                      Field -> (string)
-                        A field in an event record on which to  filter  events
-                        to  be  logged.  Supported  fields  include readOnly ,
-                        eventCategory , eventSource (for  management  events),
-                        eventName , resources.type , and resources.ARN .
+                        A  field in a CloudTrail event record on which to fil-
+                        ter events to be logged. For  event  data  stores  for
+                        Config configuration items, Audit Manager evidence, or
+                        non-Amazon Web Services events, the field is used only
+                        for selecting events as filtering is not supported.
+
+                        For CloudTrail event records, supported fields include
+                        readOnly , eventCategory , eventSource (for management
+                        events),   eventName   ,   resources.type  ,  and  re-
+                        sources.ARN .
+
+                        For event data stores for Config configuration  items,
+                        Audit  Manager  evidence,  or  non-Amazon Web Services
+                        events, the only supported field is eventCategory .
 
                         o
 
                           **
                           readOnly ** - Optional. Can be set to Equals a value
-                          of true or false . If you do  not  add  this  field,
-                          CloudTrail  logs both read and write events. A value
+                          of  true  or  false  . If you do not add this field,
+                          CloudTrail logs both read and write events. A  value
                           of true logs only read events. A value of false logs
                           only write events.
 
-                        System Message: WARNING/2 (<string>:, line 1227)
+                        System Message: WARNING/2 (<string>:, line 1319)
                           Inline strong start-string without end-string.
 
                         o
 
                           **
-                          eventSource  **  -  For  filtering management events
+                          eventSource ** -  For  filtering  management  events
                           only. This can be set only to NotEquals  kms.amazon-
                           aws.com .
 
-                        System Message: WARNING/2 (<string>:, line 1229)
+                        System Message: WARNING/2 (<string>:, line 1321)
                           Inline strong start-string without end-string.
 
                         o
 
                           **
-                          eventName  ** - Can use any operator. You can use it
-                          to lter in or lter out  any  data  event  logged  to
-                          CloudTrail,  such as PutBucket or GetSnapshotBlock .
+                          eventName ** - Can use any operator. You can use  it
+                          to  lter  in  or  lter  out any data event logged to
+                          CloudTrail, such as PutBucket or GetSnapshotBlock  .
                           You can have multiple values for this eld, separated
                           by commas.
 
-                        System Message: WARNING/2 (<string>:, line 1231)
+                        System Message: WARNING/2 (<string>:, line 1323)
                           Inline strong start-string without end-string.
 
                         o
 
                           **
-                          eventCategory  ** - This is required. It must be set
-                          to Equals , and the value must be Management or Data
-                          .
+                          eventCategory ** - This is required and must be  set
+                          to Equals .
 
-                        System Message: WARNING/2 (<string>:, line 1233)
+                        System Message: WARNING/2 (<string>:, line 1325)
                           Inline strong start-string without end-string.
+
+                          o For  CloudTrail  event  records, the value must be
+                            Management or Data .
+
+                          o For Config configuration items, the value must  be
+                            ConfigurationItem .
+
+                          o For Audit Manager evidence, the value must be Evi-
+                            dence .
+
+                          o For non-Amazon Web Services events, the value must
+                            be ActivityAuditLog .
 
                         o
 
                           **
-                          resources.type  **  -  This  eld  is  required.  re-
-                          sources.type can only use the Equals  operator,  and
-                          the value can be one of the following:
+                          resources.type  ** - This eld is required for Cloud-
+                          Trail data events. resources.type can only  use  the
+                          Equals  operator,  and  the  value can be one of the
+                          following:
 
-                        System Message: WARNING/2 (<string>:, line 1235)
+                        System Message: WARNING/2 (<string>:, line 1339)
                           Inline strong start-string without end-string.
+
+                          o AWS::CloudTrail::Channel
 
                           o AWS::S3::Object
 
@@ -1141,6 +1240,12 @@ OUTPUT
 
                           o AWS::Glue::Table
 
+                          o AWS::FinSpace::Environment
+
+                          o AWS::SageMaker::ExperimentTrialComponent
+
+                          o AWS::SageMaker::FeatureGroup
+
                         You can have only one resources.type eld per selector.
                         To log data events on more than one resource type, add
                         another selector.
@@ -1149,32 +1254,32 @@ OUTPUT
 
                           **
                           resources.ARN ** - You can use any operator with re-
-                          sources.ARN , but if you use Equals or  NotEquals  ,
-                          the  value must exactly match the ARN of a valid re-
+                          sources.ARN  ,  but if you use Equals or NotEquals ,
+                          the value must exactly match the ARN of a valid  re-
                           source of the type you've specied in the template as
-                          the  value  of  resources.type.  For example, if re-
-                          sources.type equals AWS::S3::Object , the  ARN  must
-                          be  in one of the following formats. To log all data
-                          events for all objects in a specific S3 bucket,  use
+                          the value of resources.type.  For  example,  if  re-
+                          sources.type  equals  AWS::S3::Object , the ARN must
+                          be in one of the following formats. To log all  data
+                          events  for all objects in a specific S3 bucket, use
                           the StartsWith operator, and include only the bucket
                           ARN as the matching value. The trailing slash is in-
-                          tentional;  do  not exclude it. Replace the text be-
-                          tween less than and greater than symbols  (<>)  with
+                          tentional; do not exclude it. Replace the  text  be-
+                          tween  less  than and greater than symbols (<>) with
                           resource-specific information.
 
-                        System Message: WARNING/2 (<string>:, line 1265)
+                        System Message: WARNING/2 (<string>:, line 1377)
                           Inline strong start-string without end-string.
 
                           o arn:<partition>:s3:::<bucket_name>/
 
                           o arn:<partition>:s3:::<bucket_name>/<object_path>/
 
-                        When  resources.type equals AWS::S3::AccessPoint , and
-                        the operator is set to Equals or NotEquals ,  the  ARN
+                        When resources.type equals AWS::S3::AccessPoint ,  and
+                        the  operator  is set to Equals or NotEquals , the ARN
                         must be in one of the following formats. To log events
-                        on all objects in an S3  access  point,  we  recommend
-                        that  you  use only the access point ARN, dont include
-                        the object  path,  and  use  the  StartsWith  or  Not-
+                        on  all  objects  in  an S3 access point, we recommend
+                        that you use only the access point ARN,  dont  include
+                        the  object  path,  and  use  the  StartsWith  or Not-
                         StartsWith operators.
 
                             o arn:<partition>:s3:<region>:<account_ID>:access-
@@ -1184,18 +1289,25 @@ OUTPUT
                               point/<access_point_name>/object/<object_path>
 
                         When resources.type equals AWS::Lambda::Function , and
-                        the operator is set to Equals or NotEquals ,  the  ARN
+                        the  operator  is set to Equals or NotEquals , the ARN
                         must be in the following format:
 
                             o arn:<partition>:lambda:<region>:<ac-
                               count_ID>:function:<function_name>
 
-                        When resources.type equals AWS::DynamoDB::Table ,  and
-                        the  operator  is set to Equals or NotEquals , the ARN
+                        When  resources.type equals AWS::DynamoDB::Table , and
+                        the operator is set to Equals or NotEquals ,  the  ARN
                         must be in the following format:
 
                             o arn:<partition>:dynamodb:<region>:<ac-
                               count_ID>:table/<table_name>
+
+                        When resources.type equals AWS::CloudTrail::Channel  ,
+                        and  the  operator is set to Equals or NotEquals , the
+                        ARN must be in the following format:
+
+                            o arn:<partition>:cloudtrail:<region>:<ac-
+                              count_ID>:channel/<channel_UUID>
 
                         When  resources.type  equals AWS::S3Outposts::Object ,
                         and the operator is set to Equals or NotEquals  ,  the
@@ -1239,6 +1351,28 @@ OUTPUT
 
                             o arn:<partition>:glue:<region>:<account_ID>:ta-
                               ble/<database_name>/<table_name>
+
+                        When resources.type equals  AWS::FinSpace::Environment
+                        , and the operator is set to Equals or NotEquals , the
+                        ARN must be in the following format:
+
+                            o arn:<partition>:finspace:<region>:<ac-
+                              count_ID>:environment/<environment_ID>
+
+                        When resources.type equals AWS::SageMaker::Experiment-
+                        TrialComponent , and the operator is set to Equals  or
+                        NotEquals , the ARN must be in the following format:
+
+                            o arn:<partition>:sagemaker:<region>:<ac-
+                              count_ID>:experiment-trial-component/<experi-
+                              ment_trial_component_name>
+
+                        When  resources.type  equals  AWS::SageMaker::Feature-
+                        Group , and the operator is set to Equals or NotEquals
+                        , the ARN must be in the following format:
+
+                            o arn:<partition>:sagemaker:<region>:<ac-
+                              count_ID>:feature-group/<feature_group_name>
 
                      Equals -> (list)
                         An operator that includes events that match the  exact
