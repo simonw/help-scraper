@@ -990,7 +990,7 @@ OUTPUT
                                       Glue Studio schema.
 
                  RelationalCatalogSource -> (structure)
-                     Specifies  a  Relational database data source in the Glue
+                     Specifies  a  relational  catalog  data store in the Glue
                      Data Catalog.
 
                      Name -> (string)
@@ -1003,8 +1003,8 @@ OUTPUT
                         The name of the table in the database to read from.
 
                  DynamoDBCatalogSource -> (structure)
-                     Specifies a DynamoDB data source in the Glue  Data  Cata-
-                     log.
+                     Specifies a DynamoDBC Catalog data store in the Glue Data
+                     Catalog.
 
                      Name -> (string)
                         The name of the data source.
@@ -1845,6 +1845,23 @@ OUTPUT
                             accessing a data stream in  a  different  account.
                             Used in conjunction with "awsSTSRoleARN" .
 
+                        AddRecordTimestamp -> (string)
+                            When this option is set to 'true', the data output
+                            will   contain   an   additional   column    named
+                            "__src_timestamp" that indicates the time when the
+                            corresponding record received by the  stream.  The
+                            default value is 'false'. This option is supported
+                            in Glue version 4.0 or later.
+
+                        EmitConsumerLagMetrics -> (string)
+                            When this option is set to 'true', for each batch,
+                            it  will emit the metrics for the duration between
+                            the oldest record received by the stream  and  the
+                            time  it  arrives  in Glue to CloudWatch. The met-
+                            ric's name is  "glue.driver.streaming.maxConsumer-
+                            LagInMs".  The  default value is 'false'. This op-
+                            tion is supported in Glue version 4.0 or later.
+
                      DataPreviewOptions -> (structure)
                         Additional options for data preview.
 
@@ -1864,10 +1881,10 @@ OUTPUT
                         Specifies the streaming options.
 
                         BootstrapServers -> (string)
-                            A  list  of bootstrap server URLs, for example, as
+                            A list of bootstrap server URLs, for  example,  as
                             b-1.vpc-test-2.o4q88o.c6.kafka.us-east-1.amazon-
-                            aws.com:9094  .  This  option must be specified in
-                            the API call or defined in the table  metadata  in
+                            aws.com:9094 . This option must  be  specified  in
+                            the  API  call or defined in the table metadata in
                             the Data Catalog.
 
                         SecurityProtocol -> (string)
@@ -1878,18 +1895,18 @@ OUTPUT
                             The name of the connection.
 
                         TopicName -> (string)
-                            The topic name as specified in Apache  Kafka.  You
-                            must  specify  at  least one of "topicName" , "as-
+                            The  topic  name as specified in Apache Kafka. You
+                            must specify at least one of  "topicName"  ,  "as-
                             sign" or "subscribePattern" .
 
                         Assign -> (string)
-                            The specific TopicPartitions to consume. You  must
-                            specify  at least one of "topicName" , "assign" or
+                            The  specific TopicPartitions to consume. You must
+                            specify at least one of "topicName" , "assign"  or
                             "subscribePattern" .
 
                         SubscribePattern -> (string)
                             A Java regex string that identifies the topic list
-                            to  subscribe to. You must specify at least one of
+                            to subscribe to. You must specify at least one  of
                             "topicName" , "assign" or "subscribePattern" .
 
                         Classification -> (string)
@@ -1899,43 +1916,69 @@ OUTPUT
                             Specifies the delimiter character.
 
                         StartingOffsets -> (string)
-                            The starting position in the Kafka topic  to  read
-                            data  from.  The possible values are "earliest" or
+                            The  starting  position in the Kafka topic to read
+                            data from. The possible values are  "earliest"  or
                             "latest" . The default value is "latest" .
 
                         EndingOffsets -> (string)
-                            The end point when a batch query is ended.  Possi-
-                            ble  values  are  either "latest" or a JSON string
+                            The  end point when a batch query is ended. Possi-
+                            ble values are either "latest" or  a  JSON  string
                             that specifies an ending offset for each TopicPar-
                             tition .
 
                         PollTimeoutMs -> (long)
-                            The  timeout  in  milliseconds  to  poll data from
+                            The timeout in  milliseconds  to  poll  data  from
                             Kafka in Spark job executors. The default value is
                             512 .
 
                         NumRetries -> (integer)
-                            The  number  of  times  to retry before failing to
+                            The number of times to  retry  before  failing  to
                             fetch Kafka offsets. The default value is 3 .
 
                         RetryIntervalMs -> (long)
-                            The time in milliseconds to wait  before  retrying
+                            The  time  in milliseconds to wait before retrying
                             to fetch Kafka offsets. The default value is 10 .
 
                         MaxOffsetsPerTrigger -> (long)
-                            The  rate  limit  on the maximum number of offsets
+                            The rate limit on the maximum  number  of  offsets
                             that are processed per trigger interval. The spec-
-                            ified  total  number  of offsets is proportionally
+                            ified total number of  offsets  is  proportionally
                             split across topicPartitions of different volumes.
-                            The  default  value  is null, which means that the
-                            consumer reads all offsets until the known  latest
+                            The default value is null, which  means  that  the
+                            consumer  reads all offsets until the known latest
                             offset.
 
                         MinPartitions -> (integer)
-                            The  desired  minimum number of partitions to read
+                            The desired minimum number of partitions  to  read
                             from Kafka. The default value is null, which means
-                            that  the  number  of spark partitions is equal to
+                            that the number of spark partitions  is  equal  to
                             the number of Kafka partitions.
+
+                        IncludeHeaders -> (boolean)
+                            Whether to include the Kafka headers. When the op-
+                            tion is set to "true", the data output  will  con-
+                            tain  an  additional  column  named  "glue_stream-
+                            ing_kafka_headers"  with  type   Array[Struct(key:
+                            String,  value:  String)]  .  The default value is
+                            "false". This option is available in Glue  version
+                            3.0 or later only.
+
+                        AddRecordTimestamp -> (string)
+                            When this option is set to 'true', the data output
+                            will   contain   an   additional   column    named
+                            "__src_timestamp" that indicates the time when the
+                            corresponding record received by  the  topic.  The
+                            default value is 'false'. This option is supported
+                            in Glue version 4.0 or later.
+
+                        EmitConsumerLagMetrics -> (string)
+                            When this option is set to 'true', for each batch,
+                            it  will emit the metrics for the duration between
+                            the oldest record received by the  topic  and  the
+                            time  it  arrives  in Glue to CloudWatch. The met-
+                            ric's name is  "glue.driver.streaming.maxConsumer-
+                            LagInMs".  The  default value is 'false'. This op-
+                            tion is supported in Glue version 4.0 or later.
 
                      WindowSize -> (integer)
                         The amount of time  to  spend  processing  each  micro
@@ -2069,6 +2112,23 @@ OUTPUT
                             accessing  a  data  stream in a different account.
                             Used in conjunction with "awsSTSRoleARN" .
 
+                        AddRecordTimestamp -> (string)
+                            When this option is set to 'true', the data output
+                            will    contain   an   additional   column   named
+                            "__src_timestamp" that indicates the time when the
+                            corresponding  record  received by the stream. The
+                            default value is 'false'. This option is supported
+                            in Glue version 4.0 or later.
+
+                        EmitConsumerLagMetrics -> (string)
+                            When this option is set to 'true', for each batch,
+                            it will emit the metrics for the duration  between
+                            the  oldest  record received by the stream and the
+                            time it arrives in Glue to  CloudWatch.  The  met-
+                            ric's  name is "glue.driver.streaming.maxConsumer-
+                            LagInMs". The default value is 'false'.  This  op-
+                            tion is supported in Glue version 4.0 or later.
+
                      DataPreviewOptions -> (structure)
                         Additional options for data preview.
 
@@ -2085,7 +2145,7 @@ OUTPUT
                         The name of the data store.
 
                      WindowSize -> (integer)
-                        The amount of time  to  spend  processing  each  micro
+                        The  amount  of  time  to  spend processing each micro
                         batch.
 
                      DetectSchema -> (boolean)
@@ -2102,10 +2162,10 @@ OUTPUT
                         Specifies the streaming options.
 
                         BootstrapServers -> (string)
-                            A list of bootstrap server URLs, for  example,  as
+                            A  list  of bootstrap server URLs, for example, as
                             b-1.vpc-test-2.o4q88o.c6.kafka.us-east-1.amazon-
-                            aws.com:9094 . This option must  be  specified  in
-                            the  API  call or defined in the table metadata in
+                            aws.com:9094  .  This  option must be specified in
+                            the API call or defined in the table  metadata  in
                             the Data Catalog.
 
                         SecurityProtocol -> (string)
@@ -2116,18 +2176,18 @@ OUTPUT
                             The name of the connection.
 
                         TopicName -> (string)
-                            The  topic  name as specified in Apache Kafka. You
-                            must specify at least one of  "topicName"  ,  "as-
+                            The topic name as specified in Apache  Kafka.  You
+                            must  specify  at  least one of "topicName" , "as-
                             sign" or "subscribePattern" .
 
                         Assign -> (string)
-                            The  specific TopicPartitions to consume. You must
-                            specify at least one of "topicName" , "assign"  or
+                            The specific TopicPartitions to consume. You  must
+                            specify  at least one of "topicName" , "assign" or
                             "subscribePattern" .
 
                         SubscribePattern -> (string)
                             A Java regex string that identifies the topic list
-                            to subscribe to. You must specify at least one  of
+                            to  subscribe to. You must specify at least one of
                             "topicName" , "assign" or "subscribePattern" .
 
                         Classification -> (string)
@@ -2137,43 +2197,69 @@ OUTPUT
                             Specifies the delimiter character.
 
                         StartingOffsets -> (string)
-                            The  starting  position in the Kafka topic to read
-                            data from. The possible values are  "earliest"  or
+                            The starting position in the Kafka topic  to  read
+                            data  from.  The possible values are "earliest" or
                             "latest" . The default value is "latest" .
 
                         EndingOffsets -> (string)
-                            The  end point when a batch query is ended. Possi-
-                            ble values are either "latest" or  a  JSON  string
+                            The end point when a batch query is ended.  Possi-
+                            ble  values  are  either "latest" or a JSON string
                             that specifies an ending offset for each TopicPar-
                             tition .
 
                         PollTimeoutMs -> (long)
-                            The timeout in  milliseconds  to  poll  data  from
+                            The  timeout  in  milliseconds  to  poll data from
                             Kafka in Spark job executors. The default value is
                             512 .
 
                         NumRetries -> (integer)
-                            The number of times to  retry  before  failing  to
+                            The  number  of  times  to retry before failing to
                             fetch Kafka offsets. The default value is 3 .
 
                         RetryIntervalMs -> (long)
-                            The  time  in milliseconds to wait before retrying
+                            The time in milliseconds to wait  before  retrying
                             to fetch Kafka offsets. The default value is 10 .
 
                         MaxOffsetsPerTrigger -> (long)
-                            The rate limit on the maximum  number  of  offsets
+                            The  rate  limit  on the maximum number of offsets
                             that are processed per trigger interval. The spec-
-                            ified total number of  offsets  is  proportionally
+                            ified  total  number  of offsets is proportionally
                             split across topicPartitions of different volumes.
-                            The default value is null, which  means  that  the
-                            consumer  reads all offsets until the known latest
+                            The  default  value  is null, which means that the
+                            consumer reads all offsets until the known  latest
                             offset.
 
                         MinPartitions -> (integer)
-                            The desired minimum number of partitions  to  read
+                            The  desired  minimum number of partitions to read
                             from Kafka. The default value is null, which means
-                            that the number of spark partitions  is  equal  to
+                            that  the  number  of spark partitions is equal to
                             the number of Kafka partitions.
+
+                        IncludeHeaders -> (boolean)
+                            Whether to include the Kafka headers. When the op-
+                            tion  is  set to "true", the data output will con-
+                            tain  an  additional  column  named  "glue_stream-
+                            ing_kafka_headers"   with  type  Array[Struct(key:
+                            String, value: String)] .  The  default  value  is
+                            "false".  This option is available in Glue version
+                            3.0 or later only.
+
+                        AddRecordTimestamp -> (string)
+                            When this option is set to 'true', the data output
+                            will    contain   an   additional   column   named
+                            "__src_timestamp" that indicates the time when the
+                            corresponding  record  received  by the topic. The
+                            default value is 'false'. This option is supported
+                            in Glue version 4.0 or later.
+
+                        EmitConsumerLagMetrics -> (string)
+                            When this option is set to 'true', for each batch,
+                            it will emit the metrics for the duration  between
+                            the  oldest  record  received by the topic and the
+                            time it arrives in Glue to  CloudWatch.  The  met-
+                            ric's  name is "glue.driver.streaming.maxConsumer-
+                            LagInMs". The default value is 'false'.  This  op-
+                            tion is supported in Glue version 4.0 or later.
 
                      DataPreviewOptions -> (structure)
                         Specifies  options related to data preview for viewing
@@ -2792,15 +2878,14 @@ OUTPUT
                         value -> (string)
 
                      AdditionalOptions -> (structure)
-                        Specifies additional connection options for the Amazon
-                        S3 data store.
+                        Specifies additional options for the connector.
 
                         BoundedSize -> (long)
-                            Sets  the  upper  limit for the target size of the
+                            Sets the upper limit for the target  size  of  the
                             dataset in bytes that will be processed.
 
                         BoundedFiles -> (long)
-                            Sets the upper limit  for  the  target  number  of
+                            Sets  the  upper  limit  for  the target number of
                             files that will be processed.
 
                         EnableSamplePath -> (boolean)
@@ -2821,19 +2906,19 @@ OUTPUT
                                Glue schema.
 
                                (structure)
-                                   Specifies  a single column in a Glue schema
+                                   Specifies a single column in a Glue  schema
                                    definition.
 
                                    Name -> (string)
-                                      The name of the column in the Glue  Stu-
+                                      The  name of the column in the Glue Stu-
                                       dio schema.
 
                                    Type -> (string)
-                                      The  hive  type  for  this column in the
+                                      The hive type for  this  column  in  the
                                       Glue Studio schema.
 
                  S3HudiCatalogTarget -> (structure)
-                     Specifies a target that writes to a Hudi data  source  in
+                     Specifies  a  target that writes to a Hudi data source in
                      the Glue Data Catalog.
 
                      Name -> (string)
@@ -2845,7 +2930,7 @@ OUTPUT
                         (string)
 
                      PartitionKeys -> (list)
-                        Specifies  native  partitioning  using  a  sequence of
+                        Specifies native  partitioning  using  a  sequence  of
                         keys.
 
                         (list)
@@ -2858,7 +2943,7 @@ OUTPUT
                         The name of the database to write to.
 
                      AdditionalOptions -> (map)
-                        Specifies additional connection options for  the  con-
+                        Specifies  additional  connection options for the con-
                         nector.
 
                         key -> (string)
@@ -2870,15 +2955,15 @@ OUTPUT
                         crawler.
 
                         EnableUpdateCatalog -> (boolean)
-                            Whether to use the specified update behavior  when
+                            Whether  to use the specified update behavior when
                             the crawler finds a changed schema.
 
                         UpdateBehavior -> (string)
-                            The  update  behavior  when  the  crawler  finds a
+                            The update  behavior  when  the  crawler  finds  a
                             changed schema.
 
                  S3HudiDirectTarget -> (structure)
-                     Specifies a target that writes to a Hudi data  source  in
+                     Specifies  a  target that writes to a Hudi data source in
                      Amazon S3.
 
                      Name -> (string)
@@ -2890,16 +2975,16 @@ OUTPUT
                         (string)
 
                      Path -> (string)
-                        The  Amazon  S3 path of your Hudi data source to write
+                        The Amazon S3 path of your Hudi data source  to  write
                         to.
 
                      Compression -> (string)
-                        Specifies how the data is compressed. This  is  gener-
+                        Specifies  how  the data is compressed. This is gener-
                         ally not necessary if the data has a standard file ex-
                         tension. Possible values are "gzip" and "bzip" ).
 
                      PartitionKeys -> (list)
-                        Specifies native  partitioning  using  a  sequence  of
+                        Specifies  native  partitioning  using  a  sequence of
                         keys.
 
                         (list)
@@ -2909,6 +2994,9 @@ OUTPUT
                         Specifies the data output format for the target.
 
                      AdditionalOptions -> (map)
+                        Specifies additional connection options for  the  con-
+                        nector.
+
                         key -> (string)
 
                         value -> (string)
