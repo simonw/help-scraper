@@ -13,28 +13,14 @@ DESCRIPTION
        Auto  Scaling,  which  helps  you update instances in your Auto Scaling
        group after you make configuration changes.
 
-       To help you determine the status of an instance refresh, this operation
-       returns  information about the instance refreshes you previously initi-
-       ated, including their status, end time, the percentage of the  instance
-       refresh  that is complete, and the number of instances remaining to up-
-       date before the instance refresh is complete.
-
-       The following are the possible statuses:
-
-       o Pending - The request was created, but the operation has not started.
-
-       o InProgress - The operation is in progress.
-
-       o Successful - The operation completed successfully.
-
-       o Failed - The operation failed to complete. You can troubleshoot using
-         the status reason and the scaling activities.
-
-       o Cancelling  -  An  ongoing operation is being cancelled. Cancellation
-         does not roll back any replacements that have already been completed,
-         but it prevents new replacements from being started.
-
-       o Cancelled - The operation is cancelled.
+       To help you determine the status of an  instance  refresh,  Amazon  EC2
+       Auto  Scaling returns information about the instance refreshes you pre-
+       viously initiated, including their status, start time,  end  time,  the
+       percentage  of the instance refresh that is complete, and the number of
+       instances remaining to update before the instance refresh is  complete.
+       If  a  rollback  is initiated while an instance refresh is in progress,
+       Amazon EC2 Auto Scaling also returns information about the rollback  of
+       the instance refresh.
 
        See also: AWS API Documentation
 
@@ -236,27 +222,34 @@ OUTPUT
               Status -> (string)
                  The current status for the instance refresh operation:
 
-                 o Pending  -  The  request was created, but the operation has
-                   not started.
+                 o Pending - The request was created, but the instance refresh
+                   has not started.
 
-                 o InProgress - The operation is in progress.
+                 o InProgress - An instance refresh is in progress.
 
-                 o Successful - The operation completed successfully.
+                 o Successful - An instance refresh completed successfully.
 
-                 o Failed - The operation failed to complete.  You  can  trou-
-                   bleshoot  using  the  status reason and the scaling activi-
-                   ties.
+                 o Failed - An instance refresh failed to  complete.  You  can
+                   troubleshoot using the status reason and the scaling activ-
+                   ities.
 
-                 o Cancelling - An ongoing operation is being cancelled.  Can-
-                   cellation does not roll back any replacements that have al-
-                   ready been completed, but it prevents new replacements from
-                   being started.
+                 o Cancelling - An ongoing  instance  refresh  is  being  can-
+                   celled.
 
-                 o Cancelled - The operation is cancelled.
+                 o Cancelled - The instance refresh is cancelled.
+
+                 o RollbackInProgress  -  An  instance refresh is being rolled
+                   back.
+
+                 o RollbackFailed - The rollback failed to complete.  You  can
+                   troubleshoot using the status reason and the scaling activ-
+                   ities.
+
+                 o RollbackSuccessful - The rollback completed successfully.
 
               StatusReason -> (string)
-                 Provides  more  details  about  the current status of the in-
-                 stance refresh.
+                 The explanation for the specific status assigned to this  op-
+                 eration.
 
               StartTime -> (timestamp)
                  The date and time at which the instance refresh began.
@@ -265,24 +258,35 @@ OUTPUT
                  The date and time at which the instance refresh ended.
 
               PercentageComplete -> (integer)
-                 The percentage of the instance refresh that is complete.  For
+                 The  percentage of the instance refresh that is complete. For
                  each instance replacement, Amazon EC2 Auto Scaling tracks the
-                 instance's health status  and  warm-up  time.  When  the  in-
-                 stance's  health  status changes to healthy and the specified
-                 warm-up time passes, the instance is considered  updated  and
+                 instance's  health  status  and  warm-up  time.  When the in-
+                 stance's health status changes to healthy and  the  specified
+                 warm-up  time  passes, the instance is considered updated and
                  is added to the percentage complete.
 
+                 NOTE:
+                     PercentageComplete does not include  instances  that  are
+                     replaced  during  a  rollback.  This value gradually goes
+                     back down to zero during a rollback.
+
               InstancesToUpdate -> (integer)
-                 The  number  of  instances remaining to update before the in-
+                 The number of instances remaining to update  before  the  in-
                  stance refresh is complete.
+
+                 NOTE:
+                     If  you roll back the instance refresh, InstancesToUpdate
+                     shows you the number of instances that were not  yet  up-
+                     dated by the instance refresh. Therefore, these instances
+                     don't need to be replaced as part of the rollback.
 
               ProgressDetails -> (structure)
                  Additional progress details for an Auto  Scaling  group  that
                  has a warm pool.
 
                  LivePoolProgress -> (structure)
-                     Indicates  the  progress  of  an  instance refresh on in-
-                     stances that are in the Auto Scaling group.
+                     Reports  progress  on replacing instances that are in the
+                     Auto Scaling group.
 
                      PercentageComplete -> (integer)
                         The percentage of instances in the Auto Scaling  group
@@ -297,8 +301,8 @@ OUTPUT
                         The number of instances remaining to update.
 
                  WarmPoolProgress -> (structure)
-                     Indicates the progress of  an  instance  refresh  on  in-
-                     stances that are in the warm pool.
+                     Reports progress on replacing instances that are  in  the
+                     warm pool.
 
                      PercentageComplete -> (integer)
                         The percentage of instances in the warm pool that have
@@ -328,22 +332,26 @@ OUTPUT
                      replacing all instances at the same time.
 
                  InstanceWarmup -> (integer)
-                        Not needed if the default instance warmup  is  defined
-                        for the group.
+                     A time period, in seconds, during which an  instance  re-
+                     fresh  waits  before  moving on to replacing the next in-
+                     stance after a new instance enters the InService state.
 
-                     The duration of the instance warmup, in seconds.
+                     This property is not required for normal usage.  Instead,
+                     use  the DefaultInstanceWarmup property of the Auto Scal-
+                     ing group. The InstanceWarmup  and  DefaultInstanceWarmup
+                     properties  work the same way. Only specify this property
+                     if you must override the DefaultInstanceWarmup property.
 
-                     NOTE:
-                        The  default  is  to use the value for the default in-
-                        stance warmup defined for the group.  If  default  in-
-                        stance  warmup is null, then InstanceWarmup falls back
-                        to the value of the health check grace period.
+                     If you do not specify this property, the instance  warmup
+                     by  default  is  the  value  of the DefaultInstanceWarmup
+                     property, if defined (which is recommended in all cases),
+                     or the HealthCheckGracePeriod property otherwise.
 
                  CheckpointPercentages -> (list)
-                     Threshold values for each checkpoint in ascending  order.
-                     Each  number  must be unique. To replace all instances in
-                     the Auto Scaling group, the last number in the array must
-                     be 100 .
+                     (Optional)  Threshold  values  for each checkpoint in as-
+                     cending order. Each number must be unique. To replace all
+                     instances  in  the Auto Scaling group, the last number in
+                     the array must be 100 .
 
                      For usage examples, see Adding checkpoints to an instance
                      refresh in the Amazon EC2 Auto Scaling User Guide .
@@ -351,94 +359,147 @@ OUTPUT
                      (integer)
 
                  CheckpointDelay -> (integer)
-                     The amount of time, in seconds, to wait  after  a  check-
-                     point  before  continuing. This property is optional, but
-                     if you specify a value for it, you must  also  specify  a
-                     value  for CheckpointPercentages . If you specify a value
-                     for CheckpointPercentages and not for  CheckpointDelay  ,
-                     the CheckpointDelay defaults to 3600 (1 hour).
+                     (Optional)  The amount of time, in seconds, to wait after
+                     a checkpoint before  continuing.  This  property  is  op-
+                     tional,  but if you specify a value for it, you must also
+                     specify a value for CheckpointPercentages . If you  spec-
+                     ify  a value for CheckpointPercentages and not for Check-
+                     pointDelay , the  CheckpointDelay  defaults  to  3600  (1
+                     hour).
 
                  SkipMatching -> (boolean)
-                     A  boolean  value that indicates whether skip matching is
-                     enabled. If true, then Amazon EC2 Auto Scaling skips  re-
+                     (Optional) Indicates whether skip matching is enabled. If
+                     enabled (true ), then Amazon EC2 Auto Scaling  skips  re-
                      placing  instances  that match the desired configuration.
                      If no desired configuration is specified, then  it  skips
-                     replacing instances that have the same configuration that
-                     is already set on the group. The default is false .
+                     replacing  instances  that  have the same launch template
+                     and instance types that the Auto Scaling group was  using
+                     before  the start of the instance refresh. The default is
+                     false .
+
+                     For more information, see Use an  instance  refresh  with
+                     skip matching in the Amazon EC2 Auto Scaling User Guide .
+
+                 AutoRollback -> (boolean)
+                     (Optional)  Indicates whether to roll back the Auto Scal-
+                     ing group to its previous configuration if  the  instance
+                     refresh fails. The default is false .
+
+                     A rollback is not supported in the following situations:
+
+                     o There is no desired configuration specified for the in-
+                       stance refresh.
+
+                     o The Auto Scaling group has a launch template that  uses
+                       an  Amazon  Web  Services Systems Manager parameter in-
+                       stead of an AMI ID for the ImageId property.
+
+                     o The Auto Scaling group uses the launch template's $Lat-
+                       est or $Default version.
+
+                 ScaleInProtectedInstances -> (string)
+                     Choose the behavior that you want Amazon EC2 Auto Scaling
+                     to use if instances protected from scale in are found.
+
+                     The following lists the valid values:
+                        Refresh
+
+                     Amazon EC2 Auto Scaling replaces instances that are  pro-
+                     tected from scale in.
+                        Ignore
+
+                     Amazon  EC2  Auto Scaling ignores instances that are pro-
+                     tected from scale in and continues to  replace  instances
+                     that are not protected.
+                        Wait (default)
+
+                     Amazon  EC2 Auto Scaling waits one hour for you to remove
+                     scale-in protection. Otherwise, the instance refresh will
+                     fail.
+
+                 StandbyInstances -> (string)
+                     Choose the behavior that you want Amazon EC2 Auto Scaling
+                     to use if instances in Standby state are found.
+
+                     The following lists the valid values:
+                        Terminate
+
+                     Amazon EC2 Auto Scaling terminates instances that are  in
+                     Standby .
+                        Ignore
+
+                     Amazon  EC2  Auto  Scaling  ignores instances that are in
+                     Standby and continues to replace instances  that  are  in
+                     the InService state.
+                        Wait (default)
+
+                     Amazon  EC2 Auto Scaling waits one hour for you to return
+                     the instances to service. Otherwise, the instance refresh
+                     will fail.
 
               DesiredConfiguration -> (structure)
-                 Describes the specific update you want to deploy.
+                 Describes the desired configuration for the instance refresh.
 
                  LaunchTemplate -> (structure)
-                     Describes the launch template  and  the  version  of  the
-                     launch  template  that  Amazon  EC2  Auto Scaling uses to
-                     launch Amazon EC2 instances. For more  information  about
-                     launch  templates, see Launch templates in the Amazon EC2
+                     Describes  the  launch  template  and  the version of the
+                     launch template that Amazon  EC2  Auto  Scaling  uses  to
+                     launch  Amazon  EC2 instances. For more information about
+                     launch templates, see Launch templates in the Amazon  EC2
                      Auto Scaling User Guide .
 
                      LaunchTemplateId -> (string)
                         The ID of the launch template. To get the template ID,
-                        use  the Amazon EC2 DescribeLaunchTemplates API opera-
-                        tion. New launch templates can be  created  using  the
+                        use the Amazon EC2 DescribeLaunchTemplates API  opera-
+                        tion.  New  launch  templates can be created using the
                         Amazon EC2 CreateLaunchTemplate API.
 
-                        Conditional:  You  must  specify  either  a LaunchTem-
+                        Conditional: You  must  specify  either  a  LaunchTem-
                         plateId or a LaunchTemplateName .
 
                      LaunchTemplateName -> (string)
-                        The name of the launch template. To get  the  template
-                        name,  use  the Amazon EC2 DescribeLaunchTemplates API
-                        operation. New launch templates can be  created  using
+                        The  name  of the launch template. To get the template
+                        name, use the Amazon EC2  DescribeLaunchTemplates  API
+                        operation.  New  launch templates can be created using
                         the Amazon EC2 CreateLaunchTemplate API.
 
-                        Conditional:  You  must  specify  either  a LaunchTem-
+                        Conditional: You  must  specify  either  a  LaunchTem-
                         plateId or a LaunchTemplateName .
 
                      Version -> (string)
                         The version number, $Latest , or $Default . To get the
                         version     number,     use     the     Amazon     EC2
-                        DescribeLaunchTemplateVersions  API   operation.   New
+                        DescribeLaunchTemplateVersions   API   operation.  New
                         launch template versions can be created using the Ama-
-                        zon EC2 CreateLaunchTemplateVersion API. If the  value
-                        is  $Latest , Amazon EC2 Auto Scaling selects the lat-
-                        est version of the launch template when launching  in-
-                        stances.  If  the  value is $Default , Amazon EC2 Auto
+                        zon  EC2 CreateLaunchTemplateVersion API. If the value
+                        is $Latest , Amazon EC2 Auto Scaling selects the  lat-
+                        est  version of the launch template when launching in-
+                        stances. If the value is $Default ,  Amazon  EC2  Auto
                         Scaling selects the default version of the launch tem-
-                        plate  when  launching instances. The default value is
+                        plate when launching instances. The default  value  is
                         $Default .
 
                  MixedInstancesPolicy -> (structure)
-                     Use this structure to launch multiple instance types  and
-                     On-Demand  Instances  and  Spot Instances within a single
+                     Use  this structure to launch multiple instance types and
+                     On-Demand Instances and Spot Instances  within  a  single
                      Auto Scaling group.
 
                      A mixed instances policy contains information that Amazon
                      EC2 Auto Scaling can use to launch instances and help op-
                      timize your costs. For more information, see Auto Scaling
-                     groups  with multiple instance types and purchase options
+                     groups with multiple instance types and purchase  options
                      in the Amazon EC2 Auto Scaling User Guide .
 
                      LaunchTemplate -> (structure)
-                        One or more launch templates and  the  instance  types
-                        (overrides)  that  are used to launch EC2 instances to
+                        One  or  more  launch templates and the instance types
+                        (overrides) that are used to launch EC2  instances  to
                         fulfill On-Demand and Spot capacities.
 
                         LaunchTemplateSpecification -> (structure)
                             The launch template.
 
                             LaunchTemplateId -> (string)
-                               The ID of the launch template. To get the  tem-
-                               plate     ID,     use     the     Amazon    EC2
-                               DescribeLaunchTemplates  API   operation.   New
-                               launch  templates can be created using the Ama-
-                               zon EC2 CreateLaunchTemplate API.
-
-                               Conditional:  You   must   specify   either   a
-                               LaunchTemplateId or a LaunchTemplateName .
-
-                            LaunchTemplateName -> (string)
-                               The  name  of  the  launch template. To get the
-                               template   name,    use    the    Amazon    EC2
+                               The  ID of the launch template. To get the tem-
+                               plate    ID,     use     the     Amazon     EC2
                                DescribeLaunchTemplates   API   operation.  New
                                launch templates can be created using the  Ama-
                                zon EC2 CreateLaunchTemplate API.
@@ -446,137 +507,135 @@ OUTPUT
                                Conditional:   You   must   specify   either  a
                                LaunchTemplateId or a LaunchTemplateName .
 
+                            LaunchTemplateName -> (string)
+                               The name of the launch  template.  To  get  the
+                               template    name,    use    the    Amazon   EC2
+                               DescribeLaunchTemplates  API   operation.   New
+                               launch  templates can be created using the Ama-
+                               zon EC2 CreateLaunchTemplate API.
+
+                               Conditional:  You   must   specify   either   a
+                               LaunchTemplateId or a LaunchTemplateName .
+
                             Version -> (string)
-                               The version number, $Latest , or $Default .  To
-                               get  the  version  number,  use  the Amazon EC2
+                               The  version number, $Latest , or $Default . To
+                               get the version  number,  use  the  Amazon  EC2
                                DescribeLaunchTemplateVersions  API  operation.
                                New launch template versions can be created us-
-                               ing the Amazon EC2  CreateLaunchTemplateVersion
-                               API.  If the value is $Latest , Amazon EC2 Auto
+                               ing  the Amazon EC2 CreateLaunchTemplateVersion
+                               API. If the value is $Latest , Amazon EC2  Auto
                                Scaling  selects  the  latest  version  of  the
-                               launch  template  when  launching instances. If
+                               launch template when  launching  instances.  If
                                the value is $Default , Amazon EC2 Auto Scaling
-                               selects  the default version of the launch tem-
-                               plate when  launching  instances.  The  default
+                               selects the default version of the launch  tem-
+                               plate  when  launching  instances.  The default
                                value is $Default .
 
                         Overrides -> (list)
-                            Any  properties that you specify override the same
+                            Any properties that you specify override the  same
                             properties in the launch template.
 
                             (structure)
                                Use this structure to let Amazon EC2 Auto Scal-
-                               ing  do  the  following  when  the Auto Scaling
+                               ing do the  following  when  the  Auto  Scaling
                                group has a mixed instances policy:
 
-                               o Override the instance type that is  specified
+                               o Override  the instance type that is specified
                                  in the launch template.
 
                                o Use multiple instance types.
 
-                               Specify  the  instance  types that you want, or
-                               define your instance requirements  instead  and
+                               Specify the instance types that  you  want,  or
+                               define  your  instance requirements instead and
                                let  Amazon  EC2  Auto  Scaling  provision  the
-                               available instance types  that  meet  your  re-
-                               quirements.  This  can  provide Amazon EC2 Auto
-                               Scaling with a  larger  selection  of  instance
-                               types  to  choose from when fulfilling Spot and
-                               On-Demand capacities. You can  view  which  in-
-                               stance  types  are matched before you apply the
+                               available  instance  types  that  meet your re-
+                               quirements. This can provide  Amazon  EC2  Auto
+                               Scaling  with  a  larger  selection of instance
+                               types to choose from when fulfilling  Spot  and
+                               On-Demand  capacities.  You  can view which in-
+                               stance types are matched before you  apply  the
                                instance  requirements  to  your  Auto  Scaling
                                group.
 
-                               After  you  define  your instance requirements,
-                               you don't have to keep updating these  settings
-                               to  get  new  EC2 instance types automatically.
-                               Amazon EC2 Auto Scaling uses the  instance  re-
-                               quirements  of the Auto Scaling group to deter-
-                               mine whether a new EC2  instance  type  can  be
+                               After you define  your  instance  requirements,
+                               you  don't have to keep updating these settings
+                               to get new EC2  instance  types  automatically.
+                               Amazon  EC2  Auto Scaling uses the instance re-
+                               quirements of the Auto Scaling group to  deter-
+                               mine  whether  a  new  EC2 instance type can be
                                used.
 
                                InstanceType -> (string)
-                                   The  instance type, such as m3.xlarge . You
-                                   must specify an instance type that is  sup-
-                                   ported  in your requested Region and Avail-
-                                   ability Zones. For  more  information,  see
-                                   Instance  types  in the Amazon Elastic Com-
+                                   The instance type, such as m3.xlarge .  You
+                                   must  specify an instance type that is sup-
+                                   ported in your requested Region and  Avail-
+                                   ability  Zones.  For  more information, see
+                                   Instance types in the Amazon  Elastic  Com-
                                    pute Cloud User Guide .
 
                                    You can specify up to 40 instance types per
                                    Auto Scaling group.
 
                                WeightedCapacity -> (string)
-                                   If  you provide a list of instance types to
+                                   If you provide a list of instance types  to
                                    use, you can specify the number of capacity
-                                   units  provided  by  each  instance type in
-                                   terms of  virtual  CPUs,  memory,  storage,
-                                   throughput,  or  other relative performance
-                                   characteristic. When a  Spot  or  On-Demand
-                                   Instance  is  launched,  the capacity units
-                                   count toward the desired  capacity.  Amazon
-                                   EC2  Auto  Scaling launches instances until
-                                   the desired capacity is totally  fulfilled,
+                                   units provided by  each  instance  type  in
+                                   terms  of  virtual  CPUs,  memory, storage,
+                                   throughput, or other  relative  performance
+                                   characteristic.  When  a  Spot or On-Demand
+                                   Instance is launched,  the  capacity  units
+                                   count  toward  the desired capacity. Amazon
+                                   EC2 Auto Scaling launches  instances  until
+                                   the  desired capacity is totally fulfilled,
                                    even if this results in an overage. For ex-
-                                   ample, if there are two units remaining  to
+                                   ample,  if there are two units remaining to
                                    fulfill capacity, and Amazon EC2 Auto Scal-
-                                   ing can only  launch  an  instance  with  a
-                                   WeightedCapacity  of  five  units,  the in-
-                                   stance is launched, and the desired  capac-
-                                   ity  is  exceeded  by three units. For more
+                                   ing  can  only  launch  an  instance with a
+                                   WeightedCapacity of  five  units,  the  in-
+                                   stance  is launched, and the desired capac-
+                                   ity is exceeded by three  units.  For  more
                                    information,   see   Configuring   instance
-                                   weighting  for  Amazon  EC2 Auto Scaling in
-                                   the Amazon EC2 Auto Scaling  User  Guide  .
+                                   weighting for Amazon EC2  Auto  Scaling  in
+                                   the  Amazon  EC2  Auto Scaling User Guide .
                                    Value must be in the range of 1999.
 
                                    If you specify a value for WeightedCapacity
-                                   for one instance type, you must  specify  a
+                                   for  one  instance type, you must specify a
                                    value for WeightedCapacity for all of them.
 
                                    WARNING:
-                                      Every  Auto Scaling group has three size
-                                      parameters (DesiredCapacity , MaxSize  ,
-                                      and  MinSize  ).  Usually, you set these
-                                      sizes based on a specific number of  in-
-                                      stances.  However,  if  you  configure a
-                                      mixed  instances  policy  that   defines
+                                      Every Auto Scaling group has three  size
+                                      parameters  (DesiredCapacity , MaxSize ,
+                                      and MinSize ). Usually,  you  set  these
+                                      sizes  based on a specific number of in-
+                                      stances. However,  if  you  configure  a
+                                      mixed   instances  policy  that  defines
                                       weights for the instance types, you must
-                                      specify these sizes with the same  units
+                                      specify  these sizes with the same units
                                       that you use for weighting instances.
 
                                LaunchTemplateSpecification -> (structure)
-                                   Provides  a  launch template for the speci-
-                                   fied instance type or set of  instance  re-
-                                   quirements.   For  example,  some  instance
-                                   types might require a launch template  with
-                                   a  different  AMI.  If not provided, Amazon
-                                   EC2 Auto Scaling uses the  launch  template
+                                   Provides a launch template for  the  speci-
+                                   fied  instance  type or set of instance re-
+                                   quirements.  For  example,  some   instance
+                                   types  might require a launch template with
+                                   a different AMI. If  not  provided,  Amazon
+                                   EC2  Auto  Scaling uses the launch template
                                    that's specified in the LaunchTemplate def-
-                                   inition.   For   more   information,    see
-                                   Specifying  a different launch template for
-                                   an instance type in  the  Amazon  EC2  Auto
+                                   inition.    For   more   information,   see
+                                   Specifying a different launch template  for
+                                   an  instance  type  in  the Amazon EC2 Auto
                                    Scaling User Guide .
 
-                                   You  can  specify up to 20 launch templates
-                                   per Auto Scaling  group.  The  launch  tem-
-                                   plates  specified  in  the overrides and in
+                                   You can specify up to 20  launch  templates
+                                   per  Auto  Scaling  group.  The launch tem-
+                                   plates specified in the  overrides  and  in
                                    the LaunchTemplate definition count towards
                                    this limit.
 
                                    LaunchTemplateId -> (string)
-                                      The  ID  of  the launch template. To get
-                                      the template  ID,  use  the  Amazon  EC2
-                                      DescribeLaunchTemplates  API  operation.
-                                      New launch templates can be created  us-
-                                      ing  the Amazon EC2 CreateLaunchTemplate
-                                      API.
-
-                                      Conditional: You must specify  either  a
-                                      LaunchTemplateId or a LaunchTemplateName
-                                      .
-
-                                   LaunchTemplateName -> (string)
-                                      The name of the launch template. To  get
-                                      the  template  name,  use the Amazon EC2
+                                      The ID of the launch  template.  To  get
+                                      the  template  ID,  use  the  Amazon EC2
                                       DescribeLaunchTemplates  API  operation.
                                       New  launch templates can be created us-
                                       ing the Amazon EC2  CreateLaunchTemplate
@@ -586,46 +645,58 @@ OUTPUT
                                       LaunchTemplateId or a LaunchTemplateName
                                       .
 
+                                   LaunchTemplateName -> (string)
+                                      The  name of the launch template. To get
+                                      the template name, use  the  Amazon  EC2
+                                      DescribeLaunchTemplates  API  operation.
+                                      New launch templates can be created  us-
+                                      ing  the Amazon EC2 CreateLaunchTemplate
+                                      API.
+
+                                      Conditional: You must specify  either  a
+                                      LaunchTemplateId or a LaunchTemplateName
+                                      .
+
                                    Version -> (string)
-                                      The  version  number,  $Latest , or $De-
-                                      fault . To get the version  number,  use
+                                      The version number, $Latest  ,  or  $De-
+                                      fault  .  To get the version number, use
                                       the              Amazon              EC2
                                       DescribeLaunchTemplateVersions API oper-
-                                      ation.  New launch template versions can
-                                      be  created   using   the   Amazon   EC2
-                                      CreateLaunchTemplateVersion  API. If the
+                                      ation. New launch template versions  can
+                                      be   created   using   the   Amazon  EC2
+                                      CreateLaunchTemplateVersion API. If  the
                                       value is $Latest , Amazon EC2 Auto Scal-
-                                      ing  selects  the  latest version of the
-                                      launch  template  when   launching   in-
+                                      ing selects the latest  version  of  the
+                                      launch   template   when  launching  in-
                                       stances. If the value is $Default , Ama-
                                       zon EC2 Auto Scaling selects the default
                                       version  of  the  launch  template  when
-                                      launching instances. The  default  value
+                                      launching  instances.  The default value
                                       is $Default .
 
                                InstanceRequirements -> (structure)
-                                   The  instance requirements. Amazon EC2 Auto
+                                   The instance requirements. Amazon EC2  Auto
                                    Scaling uses your specified requirements to
                                    identify instance types. Then, it uses your
                                    On-Demand and Spot allocation strategies to
                                    launch instances from these instance types.
 
                                    You can specify up to four separate sets of
-                                   instance  requirements  per  Auto   Scaling
-                                   group.  This is useful for provisioning in-
-                                   stances from different Amazon  Machine  Im-
+                                   instance   requirements  per  Auto  Scaling
+                                   group. This is useful for provisioning  in-
+                                   stances  from  different Amazon Machine Im-
                                    ages (AMIs) in the same Auto Scaling group.
-                                   To do this, create the AMIs  and  create  a
-                                   new  launch  template  for  each AMI. Then,
-                                   create a compatible  set  of  instance  re-
+                                   To  do  this,  create the AMIs and create a
+                                   new launch template  for  each  AMI.  Then,
+                                   create  a  compatible  set  of instance re-
                                    quirements for each launch template.
 
                                    NOTE:
-                                      If  you  specify  InstanceRequirements ,
+                                      If you  specify  InstanceRequirements  ,
                                       you can't specify InstanceType .
 
                                    VCpuCount -> (structure)
-                                      The minimum and maximum number of  vCPUs
+                                      The  minimum and maximum number of vCPUs
                                       for an instance type.
 
                                       Min -> (integer)
@@ -635,7 +706,7 @@ OUTPUT
                                           The maximum number of vCPUs.
 
                                    MemoryMiB -> (structure)
-                                      The  minimum and maximum instance memory
+                                      The minimum and maximum instance  memory
                                       size for an instance type, in MiB.
 
                                       Min -> (integer)
@@ -645,26 +716,26 @@ OUTPUT
                                           The memory maximum in MiB.
 
                                    CpuManufacturers -> (list)
-                                      Lists which specific  CPU  manufacturers
+                                      Lists  which  specific CPU manufacturers
                                       to include.
 
-                                      o For  instance  types  with Intel CPUs,
+                                      o For instance types  with  Intel  CPUs,
                                         specify intel .
 
                                       o For  instance  types  with  AMD  CPUs,
                                         specify amd .
 
-                                      o For  instance  types  with  Amazon Web
+                                      o For instance  types  with  Amazon  Web
                                         Services CPUs, specify amazon-web-ser-
                                         vices .
 
                                       NOTE:
                                           Don't confuse the CPU hardware manu-
-                                          facturer with the CPU  hardware  ar-
-                                          chitecture.    Instances   will   be
-                                          launched with a compatible  CPU  ar-
-                                          chitecture  based  on the Amazon Ma-
-                                          chine Image (AMI) that  you  specify
+                                          facturer  with  the CPU hardware ar-
+                                          chitecture.   Instances   will    be
+                                          launched  with  a compatible CPU ar-
+                                          chitecture based on the  Amazon  Ma-
+                                          chine  Image  (AMI) that you specify
                                           in your launch template.
 
                                       Default: Any manufacturer
@@ -684,19 +755,19 @@ OUTPUT
                                           The memory maximum in GiB.
 
                                    ExcludedInstanceTypes -> (list)
-                                      The instance types to exclude.  You  can
+                                      The  instance  types to exclude. You can
                                       use strings with one or more wild cards,
-                                      represented by an asterisk (* ), to  ex-
+                                      represented  by an asterisk (* ), to ex-
                                       clude an instance family, type, size, or
-                                      generation. The following are  examples:
+                                      generation.  The following are examples:
                                       m5.8xlarge , c5*.* , m5a.* , r* , *3* .
 
-                                      For  example,  if  you specify c5* , you
-                                      are excluding  the  entire  C5  instance
-                                      family,  which  includes all C5a and C5n
-                                      instance types. If you specify  m5a.*  ,
+                                      For example, if you specify  c5*  ,  you
+                                      are  excluding  the  entire  C5 instance
+                                      family, which includes all C5a  and  C5n
+                                      instance  types.  If you specify m5a.* ,
                                       Amazon EC2 Auto Scaling will exclude all
-                                      the M5a instance types, but not the  M5n
+                                      the  M5a instance types, but not the M5n
                                       instance types.
 
                                       NOTE:
@@ -709,15 +780,15 @@ OUTPUT
                                       (string)
 
                                    InstanceGenerations -> (list)
-                                      Indicates  whether  current  or previous
+                                      Indicates whether  current  or  previous
                                       generation instance types are included.
 
                                       o For current generation instance types,
-                                        specify  current . The current genera-
-                                        tion includes EC2 instance types  cur-
+                                        specify current . The current  genera-
+                                        tion  includes EC2 instance types cur-
                                         rently recommended for use. This typi-
                                         cally includes the latest two to three
-                                        generations  in  each instance family.
+                                        generations in each  instance  family.
                                         For  more  information,  see  Instance
                                         types in the Amazon EC2 User Guide for
                                         Linux Instances .
@@ -732,46 +803,20 @@ OUTPUT
 
                                    SpotMaxPricePercentageOverLowestPrice    ->
                                    (integer)
-                                      The  price protection threshold for Spot
+                                      The price protection threshold for  Spot
                                       Instances. This is the maximum youll pay
                                       for a Spot Instance, expressed as a per-
-                                      centage higher than the least  expensive
-                                      current  generation  M, C, or R instance
+                                      centage  higher than the least expensive
+                                      current generation M, C, or  R  instance
                                       type  with  your  specified  attributes.
                                       When Amazon EC2 Auto Scaling selects in-
-                                      stance types with  your  attributes,  we
-                                      will  exclude instance types whose price
-                                      is higher than your threshold.  The  pa-
+                                      stance  types  with  your attributes, we
+                                      will exclude instance types whose  price
+                                      is  higher  than your threshold. The pa-
                                       rameter accepts an integer, which Amazon
-                                      EC2 Auto Scaling interprets  as  a  per-
-                                      centage.  To  turn off price protection,
+                                      EC2  Auto  Scaling  interprets as a per-
+                                      centage. To turn off  price  protection,
                                       specify a high value, such as 999999 .
-
-                                      If you set DesiredCapacityType  to  vcpu
-                                      or  memory-mib  ,  the  price protection
-                                      threshold is applied based  on  the  per
-                                      vCPU  or per memory price instead of the
-                                      per instance price.
-
-                                      Default: 100
-
-                                   OnDemandMaxPricePercentageOverLowestPrice
-                                   -> (integer)
-                                      The   price   protection  threshold  for
-                                      On-Demand Instances. This is the maximum
-                                      youll pay for an On-Demand Instance, ex-
-                                      pressed as a percentage higher than  the
-                                      least expensive current generation M, C,
-                                      or R instance type with  your  specified
-                                      attributes. When Amazon EC2 Auto Scaling
-                                      selects instance  types  with  your  at-
-                                      tributes, we will exclude instance types
-                                      whose price is higher than your  thresh-
-                                      old.  The  parameter accepts an integer,
-                                      which Amazon EC2 Auto Scaling interprets
-                                      as  a percentage. To turn off price pro-
-                                      tection, specify a high value,  such  as
-                                      999999 .
 
                                       If  you  set DesiredCapacityType to vcpu
                                       or memory-mib  ,  the  price  protection
@@ -779,34 +824,60 @@ OUTPUT
                                       vCPU or per memory price instead of  the
                                       per instance price.
 
+                                      Default: 100
+
+                                   OnDemandMaxPricePercentageOverLowestPrice
+                                   -> (integer)
+                                      The  price  protection   threshold   for
+                                      On-Demand Instances. This is the maximum
+                                      youll pay for an On-Demand Instance, ex-
+                                      pressed  as a percentage higher than the
+                                      least expensive current generation M, C,
+                                      or  R  instance type with your specified
+                                      attributes. When Amazon EC2 Auto Scaling
+                                      selects  instance  types  with  your at-
+                                      tributes, we will exclude instance types
+                                      whose  price is higher than your thresh-
+                                      old. The parameter accepts  an  integer,
+                                      which Amazon EC2 Auto Scaling interprets
+                                      as a percentage. To turn off price  pro-
+                                      tection,  specify  a high value, such as
+                                      999999 .
+
+                                      If you set DesiredCapacityType  to  vcpu
+                                      or  memory-mib  ,  the  price protection
+                                      threshold is applied based  on  the  per
+                                      vCPU  or per memory price instead of the
+                                      per instance price.
+
                                       Default: 20
 
                                    BareMetal -> (string)
-                                      Indicates  whether  bare  metal instance
-                                      types are  included,  excluded,  or  re-
+                                      Indicates whether  bare  metal  instance
+                                      types  are  included,  excluded,  or re-
                                       quired.
 
                                       Default: excluded
 
                                    BurstablePerformance -> (string)
-                                      Indicates  whether burstable performance
-                                      instance types are  included,  excluded,
-                                      or  required.  For more information, see
-                                      Burstable performance instances  in  the
-                                      Amazon  EC2  User  Guide  for  Linux In-
+                                      Indicates whether burstable  performance
+                                      instance  types  are included, excluded,
+                                      or required. For more  information,  see
+                                      Burstable  performance  instances in the
+                                      Amazon EC2  User  Guide  for  Linux  In-
                                       stances .
 
                                       Default: excluded
 
                                    RequireHibernateSupport -> (boolean)
-                                      Indicates whether  instance  types  must
-                                      provide  On-Demand  Instance hibernation
+                                      Indicates  whether  instance  types must
+                                      provide On-Demand  Instance  hibernation
                                       support.
 
                                       Default: false
 
                                    NetworkInterfaceCount -> (structure)
-                                      The minimum and maximum number  of  net-
+                                      The  minimum  and maximum number of net-
                                       work interfaces for an instance type.
 
                                       Default: No minimum or maximum limits
@@ -820,11 +891,11 @@ OUTPUT
                                           faces.
 
                                    LocalStorage -> (string)
-                                      Indicates  whether  instance  types with
+                                      Indicates whether  instance  types  with
                                       instance store volumes are included, ex-
-                                      cluded,  or  required. For more informa-
-                                      tion, see Amazon EC2 instance  store  in
-                                      the  Amazon EC2 User Guide for Linux In-
+                                      cluded, or required. For  more  informa-
+                                      tion,  see  Amazon EC2 instance store in
+                                      the Amazon EC2 User Guide for Linux  In-
                                       stances .
 
                                       Default: included
@@ -836,7 +907,7 @@ OUTPUT
                                       o For  instance  types  with  hard  disk
                                         drive (HDD) storage, specify hdd .
 
-                                      o For instance types  with  solid  state
+                                      o For  instance  types  with solid state
                                         drive (SSD) storage, specify ssd .
 
                                       Default: Any local storage type
@@ -845,7 +916,7 @@ OUTPUT
 
                                    TotalLocalStorageGB -> (structure)
                                       The  minimum  and  maximum  total  local
-                                      storage size for an  instance  type,  in
+                                      storage  size  for  an instance type, in
                                       GB.
 
                                       Default: No minimum or maximum limits
@@ -857,11 +928,11 @@ OUTPUT
                                           The storage maximum in GB.
 
                                    BaselineEbsBandwidthMbps -> (structure)
-                                      The  minimum  and maximum baseline band-
-                                      width performance for an instance  type,
-                                      in   Mbps.  For  more  information,  see
+                                      The minimum and maximum  baseline  band-
+                                      width  performance for an instance type,
+                                      in  Mbps.  For  more  information,   see
                                       Amazon  EBSoptimized  instances  in  the
-                                      Amazon  EC2  User  Guide  for  Linux In-
+                                      Amazon EC2  User  Guide  for  Linux  In-
                                       stances .
 
                                       Default: No minimum or maximum limits
@@ -876,13 +947,13 @@ OUTPUT
                                       Lists the accelerator types that must be
                                       on an instance type.
 
-                                      o For  instance types with GPU accelera-
+                                      o For instance types with GPU  accelera-
                                         tors, specify gpu .
 
                                       o For instance types with FPGA accelera-
                                         tors, specify fpga .
 
-                                      o For  instance types with inference ac-
+                                      o For instance types with inference  ac-
                                         celerators, specify inference .
 
                                       Default: Any accelerator type
@@ -892,10 +963,10 @@ OUTPUT
                                    AcceleratorCount -> (structure)
                                       The minimum and maximum number of accel-
                                       erators (GPUs, FPGAs, or Amazon Web Ser-
-                                      vices Inferentia chips) for an  instance
+                                      vices  Inferentia chips) for an instance
                                       type.
 
-                                      To  exclude accelerator-enabled instance
+                                      To exclude accelerator-enabled  instance
                                       types, set Max to 0 .
 
                                       Default: No minimum or maximum limits
@@ -907,21 +978,21 @@ OUTPUT
                                           The maximum value.
 
                                    AcceleratorManufacturers -> (list)
-                                      Indicates whether  instance  types  must
-                                      have  accelerators  by specific manufac-
+                                      Indicates  whether  instance  types must
+                                      have accelerators by  specific  manufac-
                                       turers.
 
-                                      o For instance  types  with  NVIDIA  de-
+                                      o For  instance  types  with  NVIDIA de-
                                         vices, specify nvidia .
 
-                                      o For  instance  types with AMD devices,
+                                      o For instance types with  AMD  devices,
                                         specify amd .
 
-                                      o For instance  types  with  Amazon  Web
-                                        Services    devices,    specify   ama-
+                                      o For  instance  types  with  Amazon Web
+                                        Services   devices,    specify    ama-
                                         zon-web-services .
 
-                                      o For instance  types  with  Xilinx  de-
+                                      o For  instance  types  with  Xilinx de-
                                         vices, specify xilinx .
 
                                       Default: Any manufacturer
@@ -929,28 +1000,28 @@ OUTPUT
                                       (string)
 
                                    AcceleratorNames -> (list)
-                                      Lists  the  accelerators that must be on
+                                      Lists the accelerators that must  be  on
                                       an instance type.
 
-                                      o For instance types  with  NVIDIA  A100
+                                      o For  instance  types  with NVIDIA A100
                                         GPUs, specify a100 .
 
-                                      o For  instance  types  with NVIDIA V100
+                                      o For instance types  with  NVIDIA  V100
                                         GPUs, specify v100 .
 
-                                      o For instance  types  with  NVIDIA  K80
+                                      o For  instance  types  with  NVIDIA K80
                                         GPUs, specify k80 .
 
                                       o For  instance  types  with  NVIDIA  T4
                                         GPUs, specify t4 .
 
-                                      o For instance  types  with  NVIDIA  M60
+                                      o For  instance  types  with  NVIDIA M60
                                         GPUs, specify m60 .
 
                                       o For instance types with AMD Radeon Pro
                                         V520 GPUs, specify radeon-pro-v520 .
 
-                                      o For instance types  with  Xilinx  VU9P
+                                      o For  instance  types  with Xilinx VU9P
                                         FPGAs, specify vu9p .
 
                                       Default: Any accelerator
@@ -958,7 +1029,7 @@ OUTPUT
                                       (string)
 
                                    AcceleratorTotalMemoryMiB -> (structure)
-                                      The  minimum  and  maximum  total memory
+                                      The minimum  and  maximum  total  memory
                                       size for the accelerators on an instance
                                       type, in MiB.
 
@@ -971,46 +1042,46 @@ OUTPUT
                                           The memory maximum in MiB.
 
                                    NetworkBandwidthGbps -> (structure)
-                                      The  minimum  and maximum amount of net-
-                                      work bandwidth, in gigabits  per  second
+                                      The minimum and maximum amount  of  net-
+                                      work  bandwidth,  in gigabits per second
                                       (Gbps).
 
                                       Default: No minimum or maximum limits
 
                                       Min -> (double)
-                                          The  minimum amount of network band-
-                                          width,  in   gigabits   per   second
+                                          The minimum amount of network  band-
+                                          width,   in   gigabits   per  second
                                           (Gbps).
 
                                       Max -> (double)
-                                          The  maximum amount of network band-
-                                          width,  in   gigabits   per   second
+                                          The maximum amount of network  band-
+                                          width,   in   gigabits   per  second
                                           (Gbps).
 
                                    AllowedInstanceTypes -> (list)
-                                      The  instance types to apply your speci-
-                                      fied attributes against. All  other  in-
-                                      stance  types  are ignored, even if they
+                                      The instance types to apply your  speci-
+                                      fied  attributes  against. All other in-
+                                      stance types are ignored, even  if  they
                                       match your specified attributes.
 
-                                      You can use strings  with  one  or  more
-                                      wild  cards,  represented by an asterisk
-                                      (* ), to allow an instance  type,  size,
-                                      or  generation.  The following are exam-
-                                      ples: m5.8xlarge , c5*.* , m5a.* , r*  ,
+                                      You  can  use  strings  with one or more
+                                      wild cards, represented by  an  asterisk
+                                      (*  ),  to allow an instance type, size,
+                                      or generation. The following  are  exam-
+                                      ples:  m5.8xlarge , c5*.* , m5a.* , r* ,
                                       *3* .
 
                                       For example, if you specify c5* , Amazon
-                                      EC2 Auto Scaling will allow  the  entire
-                                      C5  instance  family, which includes all
+                                      EC2  Auto  Scaling will allow the entire
+                                      C5 instance family, which  includes  all
                                       C5a and C5n instance types. If you spec-
                                       ify m5a.* , Amazon EC2 Auto Scaling will
-                                      allow all the M5a  instance  types,  but
+                                      allow  all  the  M5a instance types, but
                                       not the M5n instance types.
 
                                       NOTE:
-                                          If  you specify AllowedInstanceTypes
-                                          ,  you  can't  specify   ExcludedIn-
+                                          If you specify  AllowedInstanceTypes
+                                          ,   you  can't  specify  ExcludedIn-
                                           stanceTypes .
 
                                       Default: All instance types
@@ -1022,43 +1093,43 @@ OUTPUT
 
                         OnDemandAllocationStrategy -> (string)
                             The allocation strategy to apply to your On-Demand
-                            Instances when they  are  launched.  Possible  in-
+                            Instances  when  they  are  launched. Possible in-
                             stance types are determined by the launch template
                             overrides that you specify.
 
                             The following lists the valid values:
                                lowest-price
 
-                            Uses price to determine which instance  types  are
-                            the  highest priority, launching the lowest priced
-                            instance types within an Availability Zone  first.
-                            This  is the default value for Auto Scaling groups
+                            Uses  price  to determine which instance types are
+                            the highest priority, launching the lowest  priced
+                            instance  types within an Availability Zone first.
+                            This is the default value for Auto Scaling  groups
                             that specify  InstanceRequirements .
                                prioritized
 
                             You set the order of instance types for the launch
                             template overrides from highest to lowest priority
-                            (from first to last in the list). Amazon EC2  Auto
-                            Scaling  launches  your  highest priority instance
+                            (from  first to last in the list). Amazon EC2 Auto
+                            Scaling launches your  highest  priority  instance
                             types first. If all your On-Demand capacity cannot
-                            be  fulfilled using your highest priority instance
-                            type, then Amazon EC2 Auto  Scaling  launches  the
-                            remaining  capacity  using the second priority in-
-                            stance type, and so on. This is the default  value
-                            for  Auto  Scaling  groups that don't specify  In-
-                            stanceRequirements and cannot be used  for  groups
+                            be fulfilled using your highest priority  instance
+                            type,  then  Amazon  EC2 Auto Scaling launches the
+                            remaining capacity using the second  priority  in-
+                            stance  type, and so on. This is the default value
+                            for Auto Scaling groups that  don't  specify   In-
+                            stanceRequirements  and  cannot be used for groups
                             that do.
 
                         OnDemandBaseCapacity -> (integer)
                             The minimum amount of the Auto Scaling group's ca-
-                            pacity that must be  fulfilled  by  On-Demand  In-
-                            stances.  This  base  portion is launched first as
+                            pacity  that  must  be  fulfilled by On-Demand In-
+                            stances. This base portion is  launched  first  as
                             your group scales.
 
-                            This number has the same unit  of  measurement  as
-                            the  group's  desired  capacity. If you change the
-                            default unit of measurement (number of  instances)
-                            by  specifying  weighted  capacity  values in your
+                            This  number  has  the same unit of measurement as
+                            the group's desired capacity. If  you  change  the
+                            default  unit of measurement (number of instances)
+                            by specifying weighted  capacity  values  in  your
                             launch template overrides list, or by changing the
                             default  desired  capacity  type  setting  of  the
                             group, you must specify this number using the same
@@ -1067,19 +1138,19 @@ OUTPUT
                             Default: 0
 
                         OnDemandPercentageAboveBaseCapacity -> (integer)
-                            Controls  the  percentages  of On-Demand Instances
-                            and Spot Instances for  your  additional  capacity
-                            beyond  OnDemandBaseCapacity . Expressed as a num-
-                            ber (for example, 20 specifies 20%  On-Demand  In-
-                            stances,  80% Spot Instances). If set to 100, only
+                            Controls the percentages  of  On-Demand  Instances
+                            and  Spot  Instances  for your additional capacity
+                            beyond OnDemandBaseCapacity . Expressed as a  num-
+                            ber  (for  example, 20 specifies 20% On-Demand In-
+                            stances, 80% Spot Instances). If set to 100,  only
                             On-Demand Instances are used.
 
                             Default: 100
 
                         SpotAllocationStrategy -> (string)
-                            The allocation strategy to apply to your Spot  In-
-                            stances  when they are launched. Possible instance
-                            types are determined by the launch template  over-
+                            The  allocation strategy to apply to your Spot In-
+                            stances when they are launched. Possible  instance
+                            types  are determined by the launch template over-
                             rides that you specify.
 
                             The following lists the valid values:
@@ -1088,68 +1159,127 @@ OUTPUT
                             Requests Spot Instances using pools that are opti-
                             mally chosen based on the available Spot capacity.
                             This strategy has the lowest risk of interruption.
-                            To give certain instance types a higher chance  of
+                            To  give certain instance types a higher chance of
                             launching  first,  use  capacity-optimized-priori-
                             tized .
                                capacity-optimized-prioritized
 
                             You set the order of instance types for the launch
                             template overrides from highest to lowest priority
-                            (from first to last in the list). Amazon EC2  Auto
-                            Scaling  honors  the instance type priorities on a
+                            (from  first to last in the list). Amazon EC2 Auto
+                            Scaling honors the instance type priorities  on  a
                             best  effort  basis  but  optimizes  for  capacity
                             first.  Note  that  if  the  On-Demand  allocation
                             strategy is set to prioritized , the same priority
-                            is  applied  when  fulfilling  On-Demand capacity.
-                            This is not a valid value for Auto Scaling  groups
+                            is applied  when  fulfilling  On-Demand  capacity.
+                            This  is not a valid value for Auto Scaling groups
                             that specify  InstanceRequirements .
                                lowest-price
 
-                            Requests  Spot  Instances  using the lowest priced
+                            Requests Spot Instances using  the  lowest  priced
                             pools within an Availability Zone, across the num-
                             ber of Spot pools that you specify for the SpotIn-
-                            stancePools property. To ensure that your  desired
-                            capacity  is met, you might receive Spot Instances
+                            stancePools  property. To ensure that your desired
+                            capacity is met, you might receive Spot  Instances
                             from several pools. This is the default value, but
-                            it  might  lead to high interruption rates because
-                            this strategy only considers  instance  price  and
+                            it might lead to high interruption  rates  because
+                            this  strategy  only  considers instance price and
                             not available capacity.
                                price-capacity-optimized (recommended)
 
                             The price and capacity optimized allocation strat-
                             egy looks at both price and capacity to select the
-                            Spot  Instance  pools that are the least likely to
+                            Spot Instance pools that are the least  likely  to
                             be interrupted and have the lowest possible price.
 
                         SpotInstancePools -> (integer)
-                            The number of Spot Instance pools across which  to
-                            allocate  your  Spot Instances. The Spot pools are
-                            determined from the different  instance  types  in
+                            The  number of Spot Instance pools across which to
+                            allocate your Spot Instances. The Spot  pools  are
+                            determined  from  the  different instance types in
                             the overrides. Valid only when the SpotAllocation-
-                            Strategy is lowest-price . Value must  be  in  the
+                            Strategy  is  lowest-price  . Value must be in the
                             range of 120.
 
                             Default: 2
 
                         SpotMaxPrice -> (string)
                             The maximum price per unit hour that you are will-
-                            ing to pay for a Spot Instance.  If  your  maximum
-                            price  is  lower  than  the Spot price for the in-
-                            stance types that  you  selected,  your  Spot  In-
-                            stances  are  not  launched.  We  do not recommend
-                            specifying a maximum price because it can lead  to
-                            increased   interruptions.   When  Spot  Instances
-                            launch, you pay the current Spot price. To  remove
-                            a  maximum  price that you previously set, include
-                            the property but specify an empty string ("")  for
+                            ing  to  pay  for a Spot Instance. If your maximum
+                            price is lower than the Spot  price  for  the  in-
+                            stance  types  that  you  selected,  your Spot In-
+                            stances are not  launched.  We  do  not  recommend
+                            specifying  a maximum price because it can lead to
+                            increased  interruptions.  When   Spot   Instances
+                            launch,  you pay the current Spot price. To remove
+                            a maximum price that you previously  set,  include
+                            the  property but specify an empty string ("") for
                             the value.
 
                             WARNING:
-                               If  you specify a maximum price, your instances
+                               If you specify a maximum price, your  instances
                                will be interrupted more frequently than if you
                                do not specify one.
 
                             Valid Range: Minimum value of 0.001
+
+              RollbackDetails -> (structure)
+                 The rollback details.
+
+                 RollbackReason -> (string)
+                     The reason for this instance refresh rollback (for  exam-
+                     ple,  whether  a  manual or automatic rollback was initi-
+                     ated).
+
+                 RollbackStartTime -> (timestamp)
+                     The date and time at which the rollback began.
+
+                 PercentageCompleteOnRollback -> (integer)
+                     Indicates the value of PercentageComplete at the time the
+                     rollback started.
+
+                 InstancesToUpdateOnRollback -> (integer)
+                     Indicates  the value of InstancesToUpdate at the time the
+                     rollback started.
+
+                 ProgressDetailsOnRollback -> (structure)
+                     Reports progress on replacing instances in an Auto  Scal-
+                     ing  group  that  has a warm pool. This includes separate
+                     details for instances in the warm pool and  instances  in
+                     the Auto Scaling group (the live pool).
+
+                     LivePoolProgress -> (structure)
+                        Reports  progress  on  replacing instances that are in
+                        the Auto Scaling group.
+
+                        PercentageComplete -> (integer)
+                            The percentage of instances in  the  Auto  Scaling
+                            group  that  have been replaced. For each instance
+                            replacement, Amazon EC2 Auto  Scaling  tracks  the
+                            instance's  health  status  and warm-up time. When
+                            the instance's health status  changes  to  healthy
+                            and  the  specified  warm-up  time passes, the in-
+                            stance is considered updated and is added  to  the
+                            percentage complete.
+
+                        InstancesToUpdate -> (integer)
+                            The number of instances remaining to update.
+
+                     WarmPoolProgress -> (structure)
+                        Reports  progress  on  replacing instances that are in
+                        the warm pool.
+
+                        PercentageComplete -> (integer)
+                            The percentage of instances in the warm pool  that
+                            have been replaced. For each instance replacement,
+                            Amazon EC2  Auto  Scaling  tracks  the  instance's
+                            health  status  and  warm-up  time.  When  the in-
+                            stance's health status changes to healthy and  the
+                            specified  warm-up  time  passes,  the instance is
+                            considered updated and is added to the  percentage
+                            complete.
+
+                        InstancesToUpdate -> (integer)
+                            The number of instances remaining to update.
 
        NextToken -> (string)
           A  string  that indicates that the response contains more items than

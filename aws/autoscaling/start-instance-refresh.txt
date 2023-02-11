@@ -6,10 +6,10 @@ NAME
        start-instance-refresh -
 
 DESCRIPTION
-       Starts a new instance refresh operation. An instance refresh performs a
-       rolling replacement of all or some instances in an Auto Scaling  group.
-       Each  instance is terminated first and then replaced, which temporarily
-       reduces the capacity available within your Auto Scaling group.
+       Starts an instance refresh. During an instance refresh, Amazon EC2 Auto
+       Scaling performs a rolling update  of  instances  in  an  Auto  Scaling
+       group.  Instances  are terminated first and then replaced, which tempo-
+       rarily reduces the capacity available within your Auto Scaling group.
 
        This operation is part of the instance refresh feature  in  Amazon  EC2
        Auto  Scaling,  which  helps  you update instances in your Auto Scaling
@@ -19,11 +19,25 @@ DESCRIPTION
        refresh  to  immediately begin the process of updating instances in the
        group.
 
-       If the call succeeds, it creates a new instance refresh request with  a
-       unique  ID that you can use to track its progress. To query its status,
+       If successful, the request's response contains a unique ID that you can
+       use to track the progress of the instance refresh. To query its status,
        call the  DescribeInstanceRefreshes API. To describe the  instance  re-
        freshes that have already run, call the  DescribeInstanceRefreshes API.
-       To cancel an instance refresh operation in progress, use the  CancelIn-
+       To cancel an instance refresh that is in progress, use  the   CancelIn-
+       stanceRefresh API.
+
+       An  instance refresh might fail for several reasons, such as EC2 launch
+       failures, misconfigured health checks, or not ignoring or allowing  the
+       termination  of  instances  that are in Standby state or protected from
+       scale in. You can monitor for failed EC2 launches using the scaling ac-
+       tivities.  To find the scaling activities, call the  DescribeScalingAc-
+       tivities API.
+
+       If you enable auto rollback, your Auto Scaling  group  will  be  rolled
+       back automatically when the instance refresh fails. You can enable this
+       feature before starting an instance refresh by specifying the AutoRoll-
+       back  property  in the instance refresh preferences. Otherwise, to roll
+       back an instance refresh  before  it  finishes,  use  the   RollbackIn-
        stanceRefresh API.
 
        See also: AWS API Documentation
@@ -59,12 +73,6 @@ OPTIONS
           The  strategy  to use for the instance refresh. The only valid value
           is Rolling .
 
-          A rolling update  helps  you  update  your  instances  gradually.  A
-          rolling  update can fail due to failed health checks or if instances
-          are on standby or are protected from scale in. If the rolling update
-          process  fails,  any instances that are replaced are not rolled back
-          to their previous configuration.
-
           Possible values:
 
           o Rolling
@@ -83,9 +91,9 @@ OPTIONS
               current launch template for your desired configuration, consider
               enabling the SkipMatching property in preferences. If  it's  en-
               abled,  Amazon  EC2  Auto Scaling skips replacing instances that
-              already use the specified launch template and version. This  can
-              help  you reduce the number of replacements that are required to
-              apply updates.
+              already use the specified launch template  and  instance  types.
+              This can help you reduce the number of replacements that are re-
+              quired to apply updates.
 
           LaunchTemplate -> (structure)
               Describes the launch template and the version of the launch tem-
@@ -895,8 +903,18 @@ OPTIONS
           }
 
        --preferences (structure)
-          Set  of preferences associated with the instance refresh request. If
-          not provided, the default values are used.
+          Sets  your  preferences for the instance refresh so that it performs
+          as expected when you start it. Includes the  instance  warmup  time,
+          the minimum healthy percentage, and the behaviors that you want Ama-
+          zon EC2 Auto Scaling to use if instances that are in  Standby  state
+          or  protected from scale in are found. You can also choose to enable
+          additional features, such as the following:
+
+          o Auto rollback
+
+          o Checkpoints
+
+          o Skip matching
 
           MinHealthyPercentage -> (integer)
               The amount of capacity in the Auto Scaling group that must  pass
@@ -911,46 +929,109 @@ OPTIONS
               at the same time.
 
           InstanceWarmup -> (integer)
-                 Not  needed if the default instance warmup is defined for the
-                 group.
+              A  time  period,  in  seconds,  during which an instance refresh
+              waits before moving on to replacing the next  instance  after  a
+              new instance enters the InService state.
 
-              The duration of the instance warmup, in seconds.
+              This property is not required for normal usage. Instead, use the
+              DefaultInstanceWarmup property of the Auto  Scaling  group.  The
+              InstanceWarmup  and  DefaultInstanceWarmup  properties  work the
+              same way. Only specify this property if you  must  override  the
+              DefaultInstanceWarmup property.
 
-              NOTE:
-                 The default is to use the  value  for  the  default  instance
-                 warmup  defined  for the group. If default instance warmup is
-                 null, then InstanceWarmup falls back  to  the  value  of  the
-                 health check grace period.
+              If  you do not specify this property, the instance warmup by de-
+              fault is the value of the DefaultInstanceWarmup property, if de-
+              fined  (which  is recommended in all cases), or the HealthCheck-
+              GracePeriod property otherwise.
 
           CheckpointPercentages -> (list)
-              Threshold  values  for  each checkpoint in ascending order. Each
-              number must be unique. To replace  all  instances  in  the  Auto
-              Scaling group, the last number in the array must be 100 .
+              (Optional) Threshold values for each checkpoint in ascending or-
+              der. Each number must be unique. To replace all instances in the
+              Auto Scaling group, the last number in the array must be 100 .
 
-              For  usage  examples,  see Adding checkpoints to an instance re-
+              For usage examples, see Adding checkpoints to  an  instance  re-
               fresh in the Amazon EC2 Auto Scaling User Guide .
 
               (integer)
 
           CheckpointDelay -> (integer)
-              The amount of time, in seconds, to wait after a  checkpoint  be-
-              fore continuing. This property is optional, but if you specify a
-              value for it, you must also specify a value  for  CheckpointPer-
-              centages  . If you specify a value for CheckpointPercentages and
-              not for CheckpointDelay , the CheckpointDelay defaults  to  3600
-              (1 hour).
+              (Optional)  The  amount  of  time,  in  seconds, to wait after a
+              checkpoint before continuing. This property is optional, but  if
+              you  specify  a  value for it, you must also specify a value for
+              CheckpointPercentages . If you specify a value  for  Checkpoint-
+              Percentages  and  not  for CheckpointDelay , the CheckpointDelay
+              defaults to 3600 (1 hour).
 
           SkipMatching -> (boolean)
-              A boolean value that indicates whether skip matching is enabled.
-              If true, then Amazon EC2 Auto Scaling skips replacing  instances
-              that  match  the desired configuration. If no desired configura-
-              tion is specified, then it skips replacing instances  that  have
-              the same configuration that is already set on the group. The de-
-              fault is false .
+              (Optional) Indicates whether skip matching is  enabled.  If  en-
+              abled  (true ), then Amazon EC2 Auto Scaling skips replacing in-
+              stances that match the desired configuration. If no desired con-
+              figuration  is specified, then it skips replacing instances that
+              have the same launch template and instance types that  the  Auto
+              Scaling  group  was  using  before the start of the instance re-
+              fresh. The default is false .
+
+              For more information, see Use  an  instance  refresh  with  skip
+              matching in the Amazon EC2 Auto Scaling User Guide .
+
+          AutoRollback -> (boolean)
+              (Optional) Indicates whether to roll back the Auto Scaling group
+              to its previous configuration if the instance refresh fails. The
+              default is false .
+
+              A rollback is not supported in the following situations:
+
+              o There  is  no desired configuration specified for the instance
+                refresh.
+
+              o The Auto Scaling group has a launch template that uses an Ama-
+                zon  Web  Services Systems Manager parameter instead of an AMI
+                ID for the ImageId property.
+
+              o The Auto Scaling group uses the launch template's  $Latest  or
+                $Default version.
+
+          ScaleInProtectedInstances -> (string)
+              Choose the behavior that you want Amazon EC2 Auto Scaling to use
+              if instances protected from scale in are found.
+
+              The following lists the valid values:
+                 Refresh
+
+              Amazon EC2 Auto Scaling replaces instances  that  are  protected
+              from scale in.
+                 Ignore
+
+              Amazon  EC2  Auto  Scaling  ignores instances that are protected
+              from scale in and continues to replace instances  that  are  not
+              protected.
+                 Wait (default)
+
+              Amazon  EC2  Auto  Scaling  waits  one  hour  for  you to remove
+              scale-in protection. Otherwise, the instance refresh will fail.
+
+          StandbyInstances -> (string)
+              Choose the behavior that you want Amazon EC2 Auto Scaling to use
+              if instances in Standby state are found.
+
+              The following lists the valid values:
+                 Terminate
+
+              Amazon EC2 Auto Scaling terminates instances that are in Standby
+              .
+                 Ignore
+
+              Amazon EC2 Auto Scaling ignores instances that  are  in  Standby
+              and  continues  to  replace  instances that are in the InService
+              state.
+                 Wait (default)
+
+              Amazon EC2 Auto Scaling waits one hour for you to return the in-
+              stances to service. Otherwise, the instance refresh will fail.
 
        Shorthand Syntax:
 
-          MinHealthyPercentage=integer,InstanceWarmup=integer,CheckpointPercentages=integer,integer,CheckpointDelay=integer,SkipMatching=boolean
+          MinHealthyPercentage=integer,InstanceWarmup=integer,CheckpointPercentages=integer,integer,CheckpointDelay=integer,SkipMatching=boolean,AutoRollback=boolean,ScaleInProtectedInstances=string,StandbyInstances=string
 
        JSON Syntax:
 
@@ -959,20 +1040,23 @@ OPTIONS
             "InstanceWarmup": integer,
             "CheckpointPercentages": [integer, ...],
             "CheckpointDelay": integer,
-            "SkipMatching": true|false
+            "SkipMatching": true|false,
+            "AutoRollback": true|false,
+            "ScaleInProtectedInstances": "Refresh"|"Ignore"|"Wait",
+            "StandbyInstances": "Terminate"|"Ignore"|"Wait"
           }
 
-       --cli-input-json (string) Performs service operation based on the  JSON
-       string  provided. The JSON string follows the format provided by --gen-
-       erate-cli-skeleton. If other arguments  are  provided  on  the  command
-       line,  the CLI values will override the JSON-provided values. It is not
+       --cli-input-json  (string) Performs service operation based on the JSON
+       string provided. The JSON string follows the format provided by  --gen-
+       erate-cli-skeleton.  If  other  arguments  are  provided on the command
+       line, the CLI values will override the JSON-provided values. It is  not
        possible to pass arbitrary binary values using a JSON-provided value as
        the string will be taken literally.
 
-       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
+       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
        output without sending an API request. If provided with no value or the
        value input, prints a sample input JSON that can be used as an argument
-       for --cli-input-json. If provided with the value output,  it  validates
+       for  --cli-input-json.  If provided with the value output, it validates
        the command inputs and returns a sample output JSON for that command.
 
 GLOBAL OPTIONS
@@ -986,7 +1070,7 @@ GLOBAL OPTIONS
 
        --no-verify-ssl (boolean)
 
-       By  default, the AWS CLI uses SSL when communicating with AWS services.
+       By default, the AWS CLI uses SSL when communicating with AWS  services.
        For each SSL connection, the AWS CLI will verify SSL certificates. This
        option overrides the default behavior of verifying SSL certificates.
 
@@ -1032,7 +1116,7 @@ GLOBAL OPTIONS
 
        --no-sign-request (boolean)
 
-       Do  not  sign requests. Credentials will not be loaded if this argument
+       Do not sign requests. Credentials will not be loaded if  this  argument
        is provided.
 
        --ca-bundle (string)
@@ -1042,24 +1126,24 @@ GLOBAL OPTIONS
 
        --cli-read-timeout (int)
 
-       The  maximum socket read time in seconds. If the value is set to 0, the
-       socket read will be blocking and not timeout. The default value  is  60
+       The maximum socket read time in seconds. If the value is set to 0,  the
+       socket  read  will be blocking and not timeout. The default value is 60
        seconds.
 
        --cli-connect-timeout (int)
 
-       The  maximum  socket connect time in seconds. If the value is set to 0,
-       the socket connect will be blocking and not timeout. The default  value
+       The maximum socket connect time in seconds. If the value is set  to  0,
+       the  socket connect will be blocking and not timeout. The default value
        is 60 seconds.
 
 EXAMPLES
        NOTE:
-          To  use  the following examples, you must have the AWS CLI installed
-          and configured. See the Getting started guide in the  AWS  CLI  User
+          To use the following examples, you must have the AWS  CLI  installed
+          and  configured.  See  the Getting started guide in the AWS CLI User
           Guide for more information.
 
-          Unless  otherwise  stated,  all  examples  have  unix-like quotation
-          rules. These examples will need to be  adapted  to  your  terminal's
+          Unless otherwise  stated,  all  examples  have  unix-like  quotation
+          rules.  These  examples  will  need to be adapted to your terminal's
           quoting rules. See Using quotation marks with strings in the AWS CLI
           User Guide .
 
@@ -1067,7 +1151,7 @@ EXAMPLES
 
        The following start-instance-refresh example starts an instance refresh
        using command line arguments. The optional preferences parameter speci-
-       fies an InstanceWarmup of 400 seconds and a MinHealthyPercentage of  50
+       fies  an InstanceWarmup of 400 seconds and a MinHealthyPercentage of 50
        percent.
 
           aws autoscaling start-instance-refresh \
@@ -1080,13 +1164,13 @@ EXAMPLES
               "InstanceRefreshId": "08b91cf7-8fa6-48af-b6a6-d227f40f1b9b"
           }
 
-       For  more information, see Replacing Auto Scaling instances based on an
+       For more information, see Replacing Auto Scaling instances based on  an
        instance refresh in the Amazon EC2 Auto Scaling User Guide.
 
        Example 2: To start an instance refresh using a JSON file
 
        The following start-instance-refresh example starts an instance refresh
-       using  a  JSON  file. You can specify the Auto Scaling group and define
+       using a JSON file. You can specify the Auto Scaling  group  and  define
        your preferences in a JSON file, as shown in the following example.
 
           aws autoscaling start-instance-refresh \
@@ -1108,12 +1192,12 @@ EXAMPLES
               "InstanceRefreshId": "08b91cf7-8fa6-48af-b6a6-d227f40f1b9b"
           }
 
-       For more information, see Replacing Auto Scaling instances based on  an
+       For  more information, see Replacing Auto Scaling instances based on an
        instance refresh in the Amazon EC2 Auto Scaling User Guide.
 
 OUTPUT
        InstanceRefreshId -> (string)
-          A unique ID for tracking the progress of the request.
+          A unique ID for tracking the progress of the instance refresh.
 
 
 
