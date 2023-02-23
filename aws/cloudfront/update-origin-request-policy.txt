@@ -66,14 +66,14 @@ OPTIONS
                  Determines whether any HTTP headers are included in  requests
                  that CloudFront sends to the origin. Valid values are:
 
-                 o none  HTTP headers are not included in requests that Cloud-
-                   Front sends to the origin. Even when this field is  set  to
-                   none  ,  any  headers that are listed in a CachePolicy  are
-                   included in origin requests.
+                 o none   No  HTTP  headers in viewer requests are included in
+                   requests that CloudFront sends to  the  origin.  Even  when
+                   this  field is set to none , any headers that are listed in
+                   a CachePolicy  are included in origin requests.
 
-                 o whitelist  The HTTP headers that are listed in the  Headers
-                   type  are included in requests that CloudFront sends to the
-                   origin.
+                 o whitelist  Only the HTTP headers that  are  listed  in  the
+                   Headers type are included in requests that CloudFront sends
+                   to the origin.
 
                  o allViewer  All HTTP headers in viewer requests are included
                    in requests that CloudFront sends to the origin.
@@ -83,6 +83,11 @@ OPTIONS
                    listed  in  the  Headers type are included in requests that
                    CloudFront sends to the origin. The additional headers  are
                    added by CloudFront.
+
+                 o allExcept  All HTTP headers in viewer requests are included
+                   in requests that CloudFront sends to the origin, * except *
+                   for  those  listed  in  the Headers type, which are not in-
+                   cluded.
 
               Headers -> (structure)
                  Contains a list of HTTP header names.
@@ -100,20 +105,25 @@ OPTIONS
 
               CookieBehavior -> (string)
                  Determines whether cookies in viewer requests are included in
-                 requests that CloudFront sends to the  origin.  Valid  values
+                 requests  that  CloudFront  sends to the origin. Valid values
                  are:
 
-                 o none   Cookies  in  viewer requests are not included in re-
-                   quests that CloudFront sends to the origin. Even when  this
-                   field  is  set  to  none , any cookies that are listed in a
+                 o none  No cookies in viewer requests  are  included  in  re-
+                   quests  that CloudFront sends to the origin. Even when this
+                   field is set to none , any cookies that  are  listed  in  a
                    CachePolicy  are included in origin requests.
 
-                 o whitelist  The cookies in viewer requests that  are  listed
-                   in  the  CookieNames  type  are  included  in requests that
-                   CloudFront sends to the origin.
+                 o whitelist   Only  the  cookies  in viewer requests that are
+                   listed in the CookieNames type  are  included  in  requests
+                   that CloudFront sends to the origin.
 
-                 o all  All cookies in viewer requests  are  included  in  re-
+                 o all   All  cookies  in  viewer requests are included in re-
                    quests that CloudFront sends to the origin.
+
+                 o allExcept  All cookies in viewer requests are  included  in
+                   requests  that  CloudFront  sends to the origin, * except *
+                   for those listed in the CookieNames type, which are not in-
+                   cluded.
 
               Cookies -> (structure)
                  Contains a list of cookie names.
@@ -135,21 +145,32 @@ OPTIONS
                  are included in requests that CloudFront sends to the origin.
                  Valid values are:
 
-                 o none  Query strings in viewer requests are not included  in
+                 o none  No query strings in viewer requests are  included  in
                    requests  that  CloudFront  sends  to the origin. Even when
                    this field is set to none ,  any  query  strings  that  are
                    listed in a CachePolicy  are included in origin requests.
 
-                 o whitelist   The  query  strings in viewer requests that are
-                   listed in the QueryStringNames type  are  included  in  re-
+                 o whitelist   Only  the query strings in viewer requests that
+                   are listed in the QueryStringNames type are included in re-
                    quests that CloudFront sends to the origin.
 
                  o all   All  query strings in viewer requests are included in
                    requests that CloudFront sends to the origin.
 
+                 o allExcept  All query strings in  viewer  requests  are  in-
+                   cluded  in  requests that CloudFront sends to the origin, *
+                   except * for those listed  in  the  QueryStringNames  type,
+                   which are not included.
+
               QueryStrings -> (structure)
-                 Contains a list of the query strings in viewer requests  that
-                 are included in requests that CloudFront sends to the origin.
+                 Contains  the  specific query strings in viewer requests that
+                 either * are * or * are  not  *  included  in  requests  that
+                 CloudFront  sends  to  the  origin.  The  behavior depends on
+                 whether the QueryStringBehavior field in  the  OriginRequest-
+                 PolicyQueryStringsConfig type is set to whitelist (the listed
+                 query strings * are *  included)  or  allExcept  (the  listed
+                 query  strings  *  are  not  *  included, but all other query
+                 strings are).
 
                  Quantity -> (integer)
                      The number of query string names in the Items list.
@@ -165,21 +186,21 @@ OPTIONS
             "Comment": "string",
             "Name": "string",
             "HeadersConfig": {
-              "HeaderBehavior": "none"|"whitelist"|"allViewer"|"allViewerAndWhitelistCloudFront",
+              "HeaderBehavior": "none"|"whitelist"|"allViewer"|"allViewerAndWhitelistCloudFront"|"allExcept",
               "Headers": {
                 "Quantity": integer,
                 "Items": ["string", ...]
               }
             },
             "CookiesConfig": {
-              "CookieBehavior": "none"|"whitelist"|"all",
+              "CookieBehavior": "none"|"whitelist"|"all"|"allExcept",
               "Cookies": {
                 "Quantity": integer,
                 "Items": ["string", ...]
               }
             },
             "QueryStringsConfig": {
-              "QueryStringBehavior": "none"|"whitelist"|"all",
+              "QueryStringBehavior": "none"|"whitelist"|"all"|"allExcept",
               "QueryStrings": {
                 "Quantity": integer,
                 "Items": ["string", ...]
@@ -189,25 +210,25 @@ OPTIONS
 
        --id (string)
           The unique identifier for the origin request policy that you are up-
-          dating. The identifier is returned in a cache  behavior's  OriginRe-
+          dating.  The  identifier is returned in a cache behavior's OriginRe-
           questPolicyId field in the response to GetDistributionConfig .
 
        --if-match (string)
-          The  version of the origin request policy that you are updating. The
+          The version of the origin request policy that you are updating.  The
           version is returned in the origin request policy's ETag field in the
           response to GetOriginRequestPolicyConfig .
 
-       --cli-input-json  (string) Performs service operation based on the JSON
-       string provided. The JSON string follows the format provided by  --gen-
-       erate-cli-skeleton.  If  other  arguments  are  provided on the command
-       line, the CLI values will override the JSON-provided values. It is  not
+       --cli-input-json (string) Performs service operation based on the  JSON
+       string  provided. The JSON string follows the format provided by --gen-
+       erate-cli-skeleton. If other arguments  are  provided  on  the  command
+       line,  the CLI values will override the JSON-provided values. It is not
        possible to pass arbitrary binary values using a JSON-provided value as
        the string will be taken literally.
 
-       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
+       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
        output without sending an API request. If provided with no value or the
        value input, prints a sample input JSON that can be used as an argument
-       for  --cli-input-json.  If provided with the value output, it validates
+       for --cli-input-json. If provided with the value output,  it  validates
        the command inputs and returns a sample output JSON for that command.
 
 GLOBAL OPTIONS
@@ -221,7 +242,7 @@ GLOBAL OPTIONS
 
        --no-verify-ssl (boolean)
 
-       By default, the AWS CLI uses SSL when communicating with AWS  services.
+       By  default, the AWS CLI uses SSL when communicating with AWS services.
        For each SSL connection, the AWS CLI will verify SSL certificates. This
        option overrides the default behavior of verifying SSL certificates.
 
@@ -267,7 +288,7 @@ GLOBAL OPTIONS
 
        --no-sign-request (boolean)
 
-       Do not sign requests. Credentials will not be loaded if  this  argument
+       Do  not  sign requests. Credentials will not be loaded if this argument
        is provided.
 
        --ca-bundle (string)
@@ -277,14 +298,14 @@ GLOBAL OPTIONS
 
        --cli-read-timeout (int)
 
-       The maximum socket read time in seconds. If the value is set to 0,  the
-       socket  read  will be blocking and not timeout. The default value is 60
+       The  maximum socket read time in seconds. If the value is set to 0, the
+       socket read will be blocking and not timeout. The default value  is  60
        seconds.
 
        --cli-connect-timeout (int)
 
-       The maximum socket connect time in seconds. If the value is set  to  0,
-       the  socket connect will be blocking and not timeout. The default value
+       The  maximum  socket connect time in seconds. If the value is set to 0,
+       the socket connect will be blocking and not timeout. The default  value
        is 60 seconds.
 
 OUTPUT
@@ -295,14 +316,14 @@ OUTPUT
               The unique identifier for the origin request policy.
 
           LastModifiedTime -> (timestamp)
-              The date and time when the origin request policy was last  modi-
+              The  date and time when the origin request policy was last modi-
               fied.
 
           OriginRequestPolicyConfig -> (structure)
               The origin request policy configuration.
 
               Comment -> (string)
-                 A  comment to describe the origin request policy. The comment
+                 A comment to describe the origin request policy. The  comment
                  cannot be longer than 128 characters.
 
               Name -> (string)
@@ -310,20 +331,21 @@ OUTPUT
 
               HeadersConfig -> (structure)
                  The HTTP headers to include in origin requests. These can in-
-                 clude  headers  from  viewer  requests and additional headers
+                 clude headers from viewer  requests  and  additional  headers
                  added by CloudFront.
 
                  HeaderBehavior -> (string)
-                     Determines whether any HTTP headers are included  in  re-
-                     quests  that CloudFront sends to the origin. Valid values
+                     Determines  whether  any HTTP headers are included in re-
+                     quests that CloudFront sends to the origin. Valid  values
                      are:
 
-                     o none  HTTP headers are not included  in  requests  that
-                       CloudFront sends to the origin. Even when this field is
-                       set to none , any headers that are listed in a  CacheP-
-                       olicy  are included in origin requests.
+                     o none   No  HTTP headers in viewer requests are included
+                       in requests that CloudFront sends to the  origin.  Even
+                       when  this  field is set to none , any headers that are
+                       listed in a CachePolicy  are  included  in  origin  re-
+                       quests.
 
-                     o whitelist   The  HTTP  headers  that  are listed in the
+                     o whitelist  Only the HTTP headers that are listed in the
                        Headers type are included in requests  that  CloudFront
                        sends to the origin.
 
@@ -335,6 +357,11 @@ OUTPUT
                        that are listed in the Headers type are included in re-
                        quests  that  CloudFront sends to the origin. The addi-
                        tional headers are added by CloudFront.
+
+                     o allExcept  All HTTP headers in viewer requests are  in-
+                       cluded in requests that CloudFront sends to the origin,
+                       * except * for those listed in the Headers type,  which
+                       are not included.
 
                  Headers -> (structure)
                      Contains a list of HTTP header names.
@@ -348,25 +375,30 @@ OUTPUT
                         (string)
 
               CookiesConfig -> (structure)
-                 The cookies from viewer requests to  include  in  origin  re-
+                 The  cookies  from  viewer  requests to include in origin re-
                  quests.
 
                  CookieBehavior -> (string)
-                     Determines  whether  cookies  in  viewer requests are in-
-                     cluded in requests that CloudFront sends to  the  origin.
+                     Determines whether cookies in  viewer  requests  are  in-
+                     cluded  in  requests that CloudFront sends to the origin.
                      Valid values are:
 
-                     o none   Cookies  in  viewer requests are not included in
-                       requests that CloudFront sends to the origin. Even when
+                     o none  No cookies in viewer requests are included in re-
+                       quests  that  CloudFront sends to the origin. Even when
                        this field is set to none , any cookies that are listed
                        in a CachePolicy  are included in origin requests.
 
-                     o whitelist  The cookies  in  viewer  requests  that  are
+                     o whitelist  Only the cookies in viewer requests that are
                        listed in the CookieNames type are included in requests
                        that CloudFront sends to the origin.
 
                      o all  All cookies in viewer requests are included in re-
                        quests that CloudFront sends to the origin.
+
+                     o allExcept  All cookies in viewer requests are  included
+                       in  requests that CloudFront sends to the origin, * ex-
+                       cept * for those listed in the CookieNames type,  which
+                       are not included.
 
                  Cookies -> (structure)
                      Contains a list of cookie names.
@@ -388,23 +420,33 @@ OUTPUT
                      quests  are included in requests that CloudFront sends to
                      the origin. Valid values are:
 
-                     o none  Query strings in viewer requests are not included
+                     o none  No query strings in viewer requests are  included
                        in  requests  that CloudFront sends to the origin. Even
                        when this field is set to none , any query strings that
                        are listed in a CachePolicy  are included in origin re-
                        quests.
 
-                     o whitelist  The query strings in  viewer  requests  that
-                       are listed in the QueryStringNames type are included in
-                       requests that CloudFront sends to the origin.
+                     o whitelist  Only the query strings  in  viewer  requests
+                       that  are  listed  in the QueryStringNames type are in-
+                       cluded in requests that CloudFront sends to the origin.
 
                      o all  All query strings in viewer requests are  included
                        in requests that CloudFront sends to the origin.
 
+                     o allExcept  All query strings in viewer requests are in-
+                       cluded in requests that CloudFront sends to the origin,
+                       *  except  *  for  those listed in the QueryStringNames
+                       type, which are not included.
+
                  QueryStrings -> (structure)
-                     Contains  a  list of the query strings in viewer requests
-                     that are included in requests that  CloudFront  sends  to
-                     the origin.
+                     Contains the specific query strings  in  viewer  requests
+                     that  either  * are * or * are not * included in requests
+                     that CloudFront sends to the origin. The behavior depends
+                     on whether the QueryStringBehavior field in the OriginRe-
+                     questPolicyQueryStringsConfig type is  set  to  whitelist
+                     (the  listed query strings * are * included) or allExcept
+                     (the listed query strings * are not * included,  but  all
+                     other query strings are).
 
                      Quantity -> (integer)
                         The number of query string names in the Items list.

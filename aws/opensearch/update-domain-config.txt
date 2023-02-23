@@ -29,6 +29,8 @@ SYNOPSIS
           [--auto-tune-options <value>]
           [--dry-run | --no-dry-run]
           [--dry-run-mode <value>]
+          [--off-peak-window-options <value>]
+          [--software-update-options <value>]
           [--cli-input-json <value>]
           [--generate-cli-skeleton <value>]
           [--debug]
@@ -298,7 +300,7 @@ OPTIONS
           ted string.
 
        --log-publishing-options (map)
-          Options to publish OpenSearch lots to Amazon CloudWatch Logs.
+          Options to publish OpenSearch logs to Amazon CloudWatch Logs.
 
           key -> (string)
               The type of log file. Can be one of the following:
@@ -419,7 +421,7 @@ OPTIONS
           }
 
        --node-to-node-encryption-options (structure)
-          Node-To-Node Encryption options for the domain.
+          Node-to-node encryption options for the domain.
 
           Enabled -> (boolean)
               True to enable node-to-node encryption.
@@ -543,19 +545,28 @@ OPTIONS
               wise, OpenSearch Service is unable to perform the rollback.
 
           MaintenanceSchedules -> (list)
+              DEPRECATED. Use off-peak window instead.
+
               A  list  of maintenance schedules during which Auto-Tune can de-
               ploy changes.
 
               (structure)
+
+                 NOTE:
+                     This object is deprecated. Use the domain's off-peak win-
+                     dow  to  schedule  Auto-Tune optimizations. For migration
+                     instructions, see Migrating  from  Auto-Tune  maintenance
+                     windows .
+
                  The Auto-Tune maintenance schedule. For more information, see
                  Auto-Tune for Amazon OpenSearch Service .
 
                  StartAt -> (timestamp)
-                     The  Epoch  timestamp  at which the Auto-Tune maintenance
+                     The Epoch timestamp at which  the  Auto-Tune  maintenance
                      schedule starts.
 
                  Duration -> (structure)
-                     The duration of the maintenance  schedule.  For  example,
+                     The  duration  of  the maintenance schedule. For example,
                      "Duration": {"Value": 2, "Unit": "HOURS"} .
 
                      Value -> (long)
@@ -563,12 +574,16 @@ OPTIONS
                         duration.
 
                      Unit -> (string)
-                        The unit of measurement for the duration of a  mainte-
+                        The  unit of measurement for the duration of a mainte-
                         nance schedule.
 
                  CronExpressionForRecurrence -> (string)
-                     A  cron  expression  for a recurring maintenance schedule
+                     A cron expression for a  recurring  maintenance  schedule
                      during which Auto-Tune can deploy changes.
+
+          UseOffPeakWindow -> (boolean)
+              Whether to use the domain's off-peak window to deploy configura-
+              tion changes on the domain rather than a maintenance schedule.
 
        JSON Syntax:
 
@@ -585,7 +600,8 @@ OPTIONS
                 "CronExpressionForRecurrence": "string"
               }
               ...
-            ]
+            ],
+            "UseOffPeakWindow": true|false
           }
 
        --dry-run | --no-dry-run (boolean)
@@ -609,17 +625,80 @@ OPTIONS
 
           o Verbose
 
-       --cli-input-json  (string) Performs service operation based on the JSON
-       string provided. The JSON string follows the format provided by  --gen-
-       erate-cli-skeleton.  If  other  arguments  are  provided on the command
-       line, the CLI values will override the JSON-provided values. It is  not
+       --off-peak-window-options (structure)
+          Off-peak window options for the domain.
+
+          Enabled -> (boolean)
+              Whether to enable an off-peak window.
+
+              This  option  is  only available when modifying a domain created
+              prior to February 13, 2023, not when creating a new domain.  All
+              domains created after this date have the off-peak window enabled
+              by default. You can't disable the off-peak window after it's en-
+              abled for a domain.
+
+          OffPeakWindow -> (structure)
+              Off-peak window settings for the domain.
+
+              WindowStartTime -> (structure)
+                 A  custom  start time for the off-peak window, in Coordinated
+                 Universal Time (UTC). The window length  will  always  be  10
+                 hours,  so you can't specify an end time. For example, if you
+                 specify 11:00 P.M. UTC as a start time, the end time will au-
+                 tomatically be set to 9:00 A.M.
+
+                 Hours -> (long)
+                     The  start  hour  of  the window in Coordinated Universal
+                     Time (UTC), using 24-hour time. For example, 17 refers to
+                     5:00 P.M. UTC.
+
+                 Minutes -> (long)
+                     The start minute of the window, in UTC.
+
+       Shorthand Syntax:
+
+          Enabled=boolean,OffPeakWindow={WindowStartTime={Hours=long,Minutes=long}}
+
+       JSON Syntax:
+
+          {
+            "Enabled": true|false,
+            "OffPeakWindow": {
+              "WindowStartTime": {
+                "Hours": long,
+                "Minutes": long
+              }
+            }
+          }
+
+       --software-update-options (structure)
+          Service software update options for the domain.
+
+          AutoSoftwareUpdateEnabled -> (boolean)
+              Whether  automatic  service software updates are enabled for the
+              domain.
+
+       Shorthand Syntax:
+
+          AutoSoftwareUpdateEnabled=boolean
+
+       JSON Syntax:
+
+          {
+            "AutoSoftwareUpdateEnabled": true|false
+          }
+
+       --cli-input-json (string) Performs service operation based on the  JSON
+       string  provided. The JSON string follows the format provided by --gen-
+       erate-cli-skeleton. If other arguments  are  provided  on  the  command
+       line,  the CLI values will override the JSON-provided values. It is not
        possible to pass arbitrary binary values using a JSON-provided value as
        the string will be taken literally.
 
-       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
+       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
        output without sending an API request. If provided with no value or the
        value input, prints a sample input JSON that can be used as an argument
-       for  --cli-input-json.  If provided with the value output, it validates
+       for --cli-input-json. If provided with the value output,  it  validates
        the command inputs and returns a sample output JSON for that command.
 
 GLOBAL OPTIONS
@@ -633,7 +712,7 @@ GLOBAL OPTIONS
 
        --no-verify-ssl (boolean)
 
-       By default, the AWS CLI uses SSL when communicating with AWS  services.
+       By  default, the AWS CLI uses SSL when communicating with AWS services.
        For each SSL connection, the AWS CLI will verify SSL certificates. This
        option overrides the default behavior of verifying SSL certificates.
 
@@ -679,7 +758,7 @@ GLOBAL OPTIONS
 
        --no-sign-request (boolean)
 
-       Do not sign requests. Credentials will not be loaded if  this  argument
+       Do  not  sign requests. Credentials will not be loaded if this argument
        is provided.
 
        --ca-bundle (string)
@@ -689,14 +768,14 @@ GLOBAL OPTIONS
 
        --cli-read-timeout (int)
 
-       The maximum socket read time in seconds. If the value is set to 0,  the
-       socket  read  will be blocking and not timeout. The default value is 60
+       The  maximum socket read time in seconds. If the value is set to 0, the
+       socket read will be blocking and not timeout. The default value  is  60
        seconds.
 
        --cli-connect-timeout (int)
 
-       The maximum socket connect time in seconds. If the value is set  to  0,
-       the  socket connect will be blocking and not timeout. The default value
+       The  maximum  socket connect time in seconds. If the value is set to 0,
+       the socket connect will be blocking and not timeout. The default  value
        is 60 seconds.
 
 OUTPUT
@@ -704,7 +783,7 @@ OUTPUT
           The status of the updated domain.
 
           EngineVersion -> (structure)
-              The OpenSearch or Elasticsearch version that the domain is  run-
+              The  OpenSearch or Elasticsearch version that the domain is run-
               ning.
 
               Options -> (string)
@@ -739,38 +818,38 @@ OUTPUT
                      Instance type of data nodes in the cluster.
 
                  InstanceCount -> (integer)
-                     Number of dedicated master nodes  in  the  cluster.  This
-                     number  must  be  greater than 1, otherwise you receive a
+                     Number  of  dedicated  master  nodes in the cluster. This
+                     number must be greater than 1, otherwise  you  receive  a
                      validation exception.
 
                  DedicatedMasterEnabled -> (boolean)
-                     Indicates whether dedicated master nodes are enabled  for
-                     the  cluster.``True`` if the cluster will use a dedicated
+                     Indicates  whether dedicated master nodes are enabled for
+                     the cluster.``True`` if the cluster will use a  dedicated
                      master node.``False`` if the cluster will not.
 
                  ZoneAwarenessEnabled -> (boolean)
-                     Indicates whether multiple  Availability  Zones  are  en-
-                     abled.  For  more information, see Configuring a multi-AZ
+                     Indicates  whether  multiple  Availability  Zones are en-
+                     abled. For more information, see Configuring  a  multi-AZ
                      domain in Amazon OpenSearch Service .
 
                  ZoneAwarenessConfig -> (structure)
-                     Container for zone awareness configuration options.  Only
+                     Container  for zone awareness configuration options. Only
                      required if ZoneAwarenessEnabled is true .
 
                      AvailabilityZoneCount -> (integer)
                         If you enabled multiple Availability Zones, this value
-                        is the number of zones that you  want  the  domain  to
+                        is  the  number  of  zones that you want the domain to
                         use. Valid values are 2 and 3 . If your domain is pro-
-                        visioned within a VPC, this value be equal  to  number
+                        visioned  within  a VPC, this value be equal to number
                         of subnets.
 
                  DedicatedMasterType -> (string)
-                     OpenSearch  Service instance type of the dedicated master
+                     OpenSearch Service instance type of the dedicated  master
                      nodes in the cluster.
 
                  DedicatedMasterCount -> (integer)
-                     Number of dedicated master nodes  in  the  cluster.  This
-                     number  must  be  greater than 1, otherwise you receive a
+                     Number  of  dedicated  master  nodes in the cluster. This
+                     number must be greater than 1, otherwise  you  receive  a
                      validation exception.
 
                  WarmEnabled -> (boolean)
@@ -786,7 +865,7 @@ OUTPUT
                      Container for cold storage configuration options.
 
                      Enabled -> (boolean)
-                        Whether to enable or disable cold storage on  the  do-
+                        Whether  to  enable or disable cold storage on the do-
                         main.
 
               Status -> (structure)
@@ -809,8 +888,7 @@ OUTPUT
                      Indicates whether the entity is being deleted.
 
           EBSOptions -> (structure)
-              Container for EBS options configured for an  OpenSearch  Service
-              domain.
+              Container for EBS options configured for the domain.
 
               Options -> (structure)
                  The configured EBS options for the specified domain.
@@ -1289,11 +1367,20 @@ OUTPUT
                      to perform the rollback.
 
                  MaintenanceSchedules -> (list)
+                     DEPRECATED. Use off-peak window instead.
+
                      A  list  of  maintenance schedules during which Auto-Tune
                      can deploy changes.
 
                      (structure)
-                        The Auto-Tune maintenance schedule. For more  informa-
+
+                        NOTE:
+                            This  object  is  deprecated.  Use  the   domain's
+                            off-peak  window  to  schedule Auto-Tune optimiza-
+                            tions. For migration instructions,  see  Migrating
+                            from Auto-Tune maintenance windows .
+
+                        The  Auto-Tune maintenance schedule. For more informa-
                         tion, see Auto-Tune for Amazon OpenSearch Service .
 
                         StartAt -> (timestamp)
@@ -1301,21 +1388,26 @@ OUTPUT
                             nance schedule starts.
 
                         Duration -> (structure)
-                            The duration of the maintenance schedule. For  ex-
+                            The  duration of the maintenance schedule. For ex-
                             ample, "Duration": {"Value": 2, "Unit": "HOURS"} .
 
                             Value -> (long)
-                               Integer  to  specify the value of a maintenance
+                               Integer to specify the value of  a  maintenance
                                schedule duration.
 
                             Unit -> (string)
-                               The unit of measurement for the duration  of  a
+                               The  unit  of measurement for the duration of a
                                maintenance schedule.
 
                         CronExpressionForRecurrence -> (string)
-                            A  cron  expression  for  a  recurring maintenance
-                            schedule  during  which   Auto-Tune   can   deploy
+                            A cron  expression  for  a  recurring  maintenance
+                            schedule   during   which   Auto-Tune  can  deploy
                             changes.
+
+                 UseOffPeakWindow -> (boolean)
+                     Whether to use the domain's  off-peak  window  to  deploy
+                     configuration changes on the domain rather than a mainte-
+                     nance schedule.
 
               Status -> (structure)
                  The current status of Auto-Tune for a domain.
@@ -1324,7 +1416,7 @@ OUTPUT
                      Date and time when Auto-Tune was enabled for the domain.
 
                  UpdateDate -> (timestamp)
-                     Date  and  time  when the Auto-Tune options were last up-
+                     Date and time when the Auto-Tune options  were  last  up-
                      dated for the domain.
 
                  UpdateVersion -> (integer)
@@ -1334,7 +1426,7 @@ OUTPUT
                      The current state of Auto-Tune on the domain.
 
                  ErrorMessage -> (string)
-                     Any errors that  occurred  while  enabling  or  disabling
+                     Any  errors  that  occurred  while  enabling or disabling
                      Auto-Tune.
 
                  PendingDeletion -> (boolean)
@@ -1348,8 +1440,89 @@ OUTPUT
                  The ID of the configuration change.
 
               Message -> (string)
-                 A message corresponding to the status  of  the  configuration
+                 A  message  corresponding  to the status of the configuration
                  change.
+
+          OffPeakWindowOptions -> (structure)
+              Container for off-peak window options for the domain.
+
+              Options -> (structure)
+                 The domain's off-peak window configuration.
+
+                 Enabled -> (boolean)
+                     Whether to enable an off-peak window.
+
+                     This option is only available  when  modifying  a  domain
+                     created  prior  to February 13, 2023, not when creating a
+                     new domain. All domains created after this date have  the
+                     off-peak window enabled by default. You can't disable the
+                     off-peak window after it's enabled for a domain.
+
+                 OffPeakWindow -> (structure)
+                     Off-peak window settings for the domain.
+
+                     WindowStartTime -> (structure)
+                        A custom start time for the off-peak window, in  Coor-
+                        dinated  Universal  Time (UTC). The window length will
+                        always be 10 hours, so you can't specify an end  time.
+                        For  example, if you specify 11:00 P.M. UTC as a start
+                        time, the end time will automatically be set  to  9:00
+                        A.M.
+
+                        Hours -> (long)
+                            The  start  hour of the window in Coordinated Uni-
+                            versal Time (UTC), using 24-hour time.  For  exam-
+                            ple, 17 refers to 5:00 P.M. UTC.
+
+                        Minutes -> (long)
+                            The start minute of the window, in UTC.
+
+              Status -> (structure)
+                 The current status of off-peak window options.
+
+                 CreationDate -> (timestamp)
+                     The timestamp when the entity was created.
+
+                 UpdateDate -> (timestamp)
+                     The timestamp of the last time the entity was updated.
+
+                 UpdateVersion -> (integer)
+                     The latest version of the entity.
+
+                 State -> (string)
+                     The state of the entity.
+
+                 PendingDeletion -> (boolean)
+                     Indicates whether the entity is being deleted.
+
+          SoftwareUpdateOptions -> (structure)
+              Software update options for the domain.
+
+              Options -> (structure)
+                 The service software update options for a domain.
+
+                 AutoSoftwareUpdateEnabled -> (boolean)
+                     Whether  automatic  service  software updates are enabled
+                     for the domain.
+
+              Status -> (structure)
+                 The status of service software update options, including cre-
+                 ation date and last updated date.
+
+                 CreationDate -> (timestamp)
+                     The timestamp when the entity was created.
+
+                 UpdateDate -> (timestamp)
+                     The timestamp of the last time the entity was updated.
+
+                 UpdateVersion -> (integer)
+                     The latest version of the entity.
+
+                 State -> (string)
+                     The state of the entity.
+
+                 PendingDeletion -> (boolean)
+                     Indicates whether the entity is being deleted.
 
        DryRunResults -> (structure)
           Results of the dry run performed in the update domain request.

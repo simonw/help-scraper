@@ -29,6 +29,8 @@ SYNOPSIS
           [--advanced-security-options <value>]
           [--tag-list <value>]
           [--auto-tune-options <value>]
+          [--off-peak-window-options <value>]
+          [--software-update-options <value>]
           [--cli-input-json <value>]
           [--generate-cli-skeleton <value>]
           [--debug]
@@ -577,13 +579,17 @@ OPTIONS
 
           MaintenanceSchedules -> (list)
               A list of maintenance schedules during which Auto-Tune  can  de-
-              ploy  changes.  Maintenance schedules are overwrite, not append.
-              If your request includes no schedules, the request  deletes  all
-              existing  schedules. To preserve existing schedules, make a call
-              to DescribeDomainConfig first and use  the  MaintenanceSchedules
-              portion of the response as the basis for this section.
+              ploy  changes.  Maintenance windows are deprecated and have been
+              replaced with off-peak windows .
 
               (structure)
+
+                 NOTE:
+                     This object is deprecated. Use the domain's off-peak win-
+                     dow  to  schedule  Auto-Tune optimizations. For migration
+                     instructions, see Migrating  from  Auto-Tune  maintenance
+                     windows .
+
                  The Auto-Tune maintenance schedule. For more information, see
                  Auto-Tune for Amazon OpenSearch Service .
 
@@ -607,6 +613,11 @@ OPTIONS
                      A cron expression for a  recurring  maintenance  schedule
                      during which Auto-Tune can deploy changes.
 
+          UseOffPeakWindow -> (boolean)
+              Whether   to   schedule  Auto-Tune  optimizations  that  require
+              blue/green deployments  during  the  domain's  configured  daily
+              off-peak window.
+
        JSON Syntax:
 
           {
@@ -621,7 +632,76 @@ OPTIONS
                 "CronExpressionForRecurrence": "string"
               }
               ...
-            ]
+            ],
+            "UseOffPeakWindow": true|false
+          }
+
+       --off-peak-window-options (structure)
+          Specifies a daily 10-hour time block during which OpenSearch Service
+          can perform configuration changes on the domain,  including  service
+          software   updates   and   Auto-Tune  enhancements  that  require  a
+          blue/green deployment. If no  options  are  specified,  the  default
+          start  time of 10:00 P.M. local time (for the Region that the domain
+          is created in) is used.
+
+          Enabled -> (boolean)
+              Whether to enable an off-peak window.
+
+              This option is only available when modifying  a  domain  created
+              prior  to February 13, 2023, not when creating a new domain. All
+              domains created after this date have the off-peak window enabled
+              by default. You can't disable the off-peak window after it's en-
+              abled for a domain.
+
+          OffPeakWindow -> (structure)
+              Off-peak window settings for the domain.
+
+              WindowStartTime -> (structure)
+                 A custom start time for the off-peak window,  in  Coordinated
+                 Universal  Time  (UTC).  The  window length will always be 10
+                 hours, so you can't specify an end time. For example, if  you
+                 specify 11:00 P.M. UTC as a start time, the end time will au-
+                 tomatically be set to 9:00 A.M.
+
+                 Hours -> (long)
+                     The start hour of the  window  in  Coordinated  Universal
+                     Time (UTC), using 24-hour time. For example, 17 refers to
+                     5:00 P.M. UTC.
+
+                 Minutes -> (long)
+                     The start minute of the window, in UTC.
+
+       Shorthand Syntax:
+
+          Enabled=boolean,OffPeakWindow={WindowStartTime={Hours=long,Minutes=long}}
+
+       JSON Syntax:
+
+          {
+            "Enabled": true|false,
+            "OffPeakWindow": {
+              "WindowStartTime": {
+                "Hours": long,
+                "Minutes": long
+              }
+            }
+          }
+
+       --software-update-options (structure)
+          Software update options for the domain.
+
+          AutoSoftwareUpdateEnabled -> (boolean)
+              Whether automatic service software updates are enabled  for  the
+              domain.
+
+       Shorthand Syntax:
+
+          AutoSoftwareUpdateEnabled=boolean
+
+       JSON Syntax:
+
+          {
+            "AutoSoftwareUpdateEnabled": true|false
           }
 
        --cli-input-json  (string) Performs service operation based on the JSON
@@ -1094,16 +1174,59 @@ OUTPUT
                  Any  errors  that  occurred  while  enabling   or   disabling
                  Auto-Tune.
 
+              UseOffPeakWindow -> (boolean)
+                 Whether  the  domain's off-peak window will be used to deploy
+                 Auto-Tune changes rather than a maintenance schedule.
+
           ChangeProgressDetails -> (structure)
-              Information  about  a  configuration change happening on the do-
+              Information about a configuration change happening  on  the  do-
               main.
 
               ChangeId -> (string)
                  The ID of the configuration change.
 
               Message -> (string)
-                 A message corresponding to the status  of  the  configuration
+                 A  message  corresponding  to the status of the configuration
                  change.
+
+          OffPeakWindowOptions -> (structure)
+              Options that  specify  a  custom  10-hour  window  during  which
+              OpenSearch  Service can perform configuration changes on the do-
+              main.
+
+              Enabled -> (boolean)
+                 Whether to enable an off-peak window.
+
+                 This option is only available when modifying a domain created
+                 prior  to  February 13, 2023, not when creating a new domain.
+                 All domains created after this date have the off-peak  window
+                 enabled by default. You can't disable the off-peak window af-
+                 ter it's enabled for a domain.
+
+              OffPeakWindow -> (structure)
+                 Off-peak window settings for the domain.
+
+                 WindowStartTime -> (structure)
+                     A custom start time for the off-peak window,  in  Coordi-
+                     nated Universal Time (UTC). The window length will always
+                     be 10 hours, so you can't specify an end time. For  exam-
+                     ple,  if  you specify 11:00 P.M. UTC as a start time, the
+                     end time will automatically be set to 9:00 A.M.
+
+                     Hours -> (long)
+                        The start hour of the window in Coordinated  Universal
+                        Time (UTC), using 24-hour time. For example, 17 refers
+                        to 5:00 P.M. UTC.
+
+                     Minutes -> (long)
+                        The start minute of the window, in UTC.
+
+          SoftwareUpdateOptions -> (structure)
+              Service software update options for the domain.
+
+              AutoSoftwareUpdateEnabled -> (boolean)
+                 Whether automatic service software updates  are  enabled  for
+                 the domain.
 
 
 
