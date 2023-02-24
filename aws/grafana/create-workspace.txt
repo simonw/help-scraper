@@ -166,22 +166,23 @@ OPTIONS
           channels in other accounts in an organization.
 
        --permission-type (string)
-          If you specify SERVICE_MANAGED on AWS Grafana console,  Amazon  Man-
-          aged  Grafana automatically creates the IAM roles and provisions the
-          permissions that the workspace needs to use Amazon Web Services data
-          sources  and notification channels. In the CLI mode, the permission-
-          Type SERVICE_MANAGED will not create the IAM role for you. The abil-
-          ity  for the Amazon Managed Grafana to create the IAM role on behalf
-          of the user is supported only in the Amazon Managed Grafana AWS con-
-          sole.  Use only the CUSTOMER_MANAGED permission type when creating a
-          workspace in the CLI.
+          When creating a workspace through the Amazon Web Services  API,  CLI
+          or Amazon Web Services CloudFormation, you must manage IAM roles and
+          provision the permissions that the workspace needs to use Amazon Web
+          Services data sources and notification channels.
 
-          If you specify CUSTOMER_MANAGED , you will manage  those  roles  and
-          permissions yourself. If you are creating this workspace in a member
-          account of an organization that is not a delegated administrator ac-
-          count,  and  you  want the workspace to access data sources in other
-          Amazon Web Services accounts in the organization,  you  must  choose
-          CUSTOMER_MANAGED .
+          You  must  also  specify a workspaceRoleArn for a role that you will
+          manage for the workspace to use when accessing those datasources and
+          notification channels.
+
+          The  ability  for  Amazon  Managed  Grafana to create and update IAM
+          roles on behalf of the user is supported only in the Amazon  Managed
+          Grafana console, where this value may be set to SERVICE_MANAGED .
+
+          NOTE:
+              Use  only  the  CUSTOMER_MANAGED permission type when creating a
+              workspace with the API, CLI or Amazon Web  Services  CloudForma-
+              tion.
 
           For  more  information,  see  Amazon Managed Grafana permissions and
           policies for Amazon Web Services data sources and notification chan-
@@ -242,16 +243,7 @@ OPTIONS
           }
 
        --workspace-data-sources (list)
-          Specify the Amazon Web Services data sources that  you  want  to  be
-          queried  in  this  workspace. Specifying these data sources here en-
-          ables Amazon Managed Grafana to create  IAM  roles  and  permissions
-          that  allow  Amazon Managed Grafana to read data from these sources.
-          You must still add them as data sources in the  Grafana  console  in
-          the workspace.
-
-          If  you  don't specify a data source here, you can still add it as a
-          data source in the workspace console later. However, you  will  then
-          have to manually configure permissions for it.
+          This parameter is for internal use only, and should not be used.
 
           (string)
 
@@ -280,9 +272,9 @@ OPTIONS
           The name for the workspace. It does not have to be unique.
 
        --workspace-notification-destinations (list)
-          Specify the Amazon Web Services notification channels that you  plan
+          Specify  the Amazon Web Services notification channels that you plan
           to use in this workspace. Specifying these data sources here enables
-          Amazon Managed Grafana to create IAM roles and permissions that  al-
+          Amazon  Managed Grafana to create IAM roles and permissions that al-
           low Amazon Managed Grafana to use these channels.
 
           (string)
@@ -296,7 +288,7 @@ OPTIONS
 
        --workspace-organizational-units (list)
           Specifies the organizational units that this workspace is allowed to
-          use data sources from, if this workspace is in an  account  that  is
+          use  data  sources  from, if this workspace is in an account that is
           part of an organization.
 
           (string)
@@ -306,10 +298,11 @@ OPTIONS
           "string" "string" ...
 
        --workspace-role-arn (string)
-          The  workspace needs an IAM role that grants permissions to the Ama-
-          zon Web Services resources that the workspace will view  data  from.
-          If  you  already  have a role that you want to use, specify it here.
-          The permission type should be set to CUSTOMER_MANAGED .
+          Specified the IAM role that grants permissions  to  the  Amazon  Web
+          Services resources that the workspace will view data from, including
+          both data sources and notification channels. You are responsible for
+          managing  the permissions for this role as new data sources or noti-
+          fication channels are added.
 
        --cli-input-json (string) Performs service operation based on the  JSON
        string  provided. The JSON string follows the format provided by --gen-
@@ -435,6 +428,10 @@ OUTPUT
               configured to have IAM roles and permissions  created  to  allow
               Amazon Managed Grafana to read data from these sources.
 
+              This  list  is  only used when the workspace was created through
+              the Amazon Web Services console, and the permissionType is  SER-
+              VICE_MANAGED .
+
               (string)
 
           description -> (string)
@@ -488,7 +485,7 @@ OUTPUT
                  ``
                  pl-1a2b3c4d `` .
 
-                 System Message: WARNING/2 (<string>:, line 756)
+                 System Message: WARNING/2 (<string>:, line 770)
                         Inline literal start-string without end-string.
 
                         For more information about  prefix  lists,  see  Group
@@ -508,7 +505,7 @@ OUTPUT
                  ``
                  vpce-1a2b3c4d `` .
 
-                 System Message: WARNING/2 (<string>:, line 780)
+                 System Message: WARNING/2 (<string>:, line 794)
                         Inline literal start-string without end-string.
 
                         For more information about creating an  interface  VPC
@@ -542,21 +539,27 @@ OUTPUT
               (string)
 
           permissionType -> (string)
-              If this is SERVICE_MANAGED , Amazon  Managed  Grafana  automati-
-              cally  creates the IAM roles and provisions the permissions that
-              the workspace needs to use Amazon Web Services data sources  and
-              notification channels.
+              If this is SERVICE_MANAGED  ,  and  the  workplace  was  created
+              through  the Amazon Managed Grafana console, then Amazon Managed
+              Grafana automatically creates the IAM roles and  provisions  the
+              permissions  that the workspace needs to use Amazon Web Services
+              data sources and notification channels.
 
-              If this is CUSTOMER_MANAGED , you manage those roles and permis-
-              sions yourself. If you are creating this workspace in  a  member
-              account  of  an organization and that account is not a delegated
-              administrator account, and you want the workspace to access data
-              sources  in  other Amazon Web Services accounts in the organiza-
-              tion, you must choose CUSTOMER_MANAGED .
+              If this is CUSTOMER_MANAGED , you must manage  those  roles  and
+              permissions yourself.
 
-              For more information, see Amazon Managed Grafana permissions and
-              policies  for  Amazon Web Services data sources and notification
-              channels
+              If  you  are  working with a workspace in a member account of an
+              organization and that account is not a  delegated  administrator
+              account,  and  you  want the workspace to access data sources in
+              other Amazon Web Services accounts in the organization, this pa-
+              rameter must be set to CUSTOMER_MANAGED .
+
+              For  more information about converting between customer and ser-
+              vice managed, see Managing permissions for data sources and  no-
+              tification  channels  . For more information about the roles and
+              permissions  that  must  be   managed   for   customer   managed
+              workspaces,  see Amazon Managed Grafana permissions and policies
+              for Amazon Web Services data sources and notification channels
 
           stackSetName -> (string)
               The name of the CloudFormation stack set that is used to  gener-
