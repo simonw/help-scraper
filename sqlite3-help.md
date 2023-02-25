@@ -91,7 +91,7 @@ Version: `3.42.0`
 
 .load FILE ?ENTRY?       Load an extension library
 
-.log FILE|off            Turn logging on or off.  FILE can be stderr/stdout
+.log FILE|on|off         Turn logging on or off.  FILE can be stderr/stdout
 
 .mode MODE ?OPTIONS?     Set output mode
    MODE is one of:
