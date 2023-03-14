@@ -12,19 +12,19 @@ DESCRIPTION
           When using this API, you cannot reuse Amazon AppIntegrations DataIn-
           tegrations with external knowledge bases such as Salesforce and Ser-
           viceNow. If you do, you'll get an InvalidRequestException error.
-              <p>For  example,  you're programmatically managing your external
-              knowledge base, and you want to add or remove one of the  fields
-              that  is  being  ingested from Salesforce. Do the following:</p>
-              <ol>  <li>  <p>Call  <a   href="https://docs.aws.amazon.com/wis-
-              dom/latest/APIReference/API_DeleteKnowledgeBase.html">Delete-
-              KnowledgeBase</a>.</p>      </li>      <li>      <p>Call      <a
-              href="https://docs.aws.amazon.com/appintegrations/latest/APIRef-
-              erence/API_DeleteDataIntegration.html">DeleteDataIntegra-
-              tion</a>.</p>  </li> <li> <p>Call <a href="https://docs.aws.ama-
-              zon.com/appintegrations/latest/APIReference/API_CreateDataInte-
-              gration.html">CreateDataIntegration</a>  to recreate the DataIn-
-              tegration or a create different one.</p> </li> <li> <p>Call Cre-
-              ateKnowledgeBase.</p> </li> </ol> </note>
+
+          For  example,  you're programmatically managing your external knowl-
+          edge base, and you want to add or remove one of the fields  that  is
+          being ingested from Salesforce. Do the following:
+
+          o Call DeleteKnowledgeBase .
+
+          o Call DeleteDataIntegration .
+
+          o Call  CreateDataIntegration  to  recreate the DataIntegration or a
+            create different one.
+
+          o Call CreateKnowledgeBase.
 
        See also: AWS API Documentation
 
@@ -57,16 +57,18 @@ SYNOPSIS
 
 OPTIONS
        --client-token (string)
-          A  unique,  case-sensitive identifier that you provide to ensure the
-          idempotency of the request.
+          A unique, case-sensitive identifier that you provide to  ensure  the
+          idempotency of the request. If not provided, the Amazon Web Services
+          SDK populates this field. For more  information  about  idempotency,
+          see Making retries safe with idempotent APIs .
 
        --description (string)
           The description.
 
        --knowledge-base-type (string)
           The type of knowledge base. Only CUSTOM knowledge bases allow you to
-          upload  your  own content. EXTERNAL knowledge bases support integra-
-          tions with third-party systems whose content is  synchronized  auto-
+          upload your own content. EXTERNAL knowledge bases  support  integra-
+          tions  with  third-party systems whose content is synchronized auto-
           matically.
 
           Possible values:
@@ -82,20 +84,21 @@ OPTIONS
           Information about how to render the content.
 
           templateUri -> (string)
-              A  URI  template  containing exactly one variable in ${variable-
+              A URI template containing exactly one  variable  in  ${variable-
               Name} format. This can only be set for EXTERNAL knowledge bases.
-              For  Salesforce  and ServiceNow, the variable must be one of the
-              following:
+              For Salesforce, ServiceNow, and Zendesk, the  variable  must  be
+              one of the following:
 
-              o Salesforce: Id , ArticleNumber , VersionNumber , Title ,  Pub-
+              o Salesforce:  Id , ArticleNumber , VersionNumber , Title , Pub-
                 lishStatus , or IsDeleted
 
               o ServiceNow: number , short_description , sys_mod_count , work-
                 flow_state , or active
-                 <p>The variable is replaced with the actual value for a piece
-                 of   content   when  calling  <a  href="https://docs.aws.ama-
-                 zon.com/wisdom/latest/APIReference/API_GetContent.html">Get-
-                 Content</a>. </p>
+
+              o Zendesk: id , title , updated_at , or draft
+
+              The  variable  is  replaced with the actual value for a piece of
+              content when calling GetContent .
 
        Shorthand Syntax:
 
@@ -111,7 +114,7 @@ OPTIONS
           The KMS key used for encryption.
 
           kmsKeyId -> (string)
-              The  KMS  key.  For  information  about valid ID values, see Key
+              The KMS key. For information about  valid  ID  values,  see  Key
               identifiers (KeyId) .
 
        Shorthand Syntax:
@@ -129,7 +132,7 @@ OPTIONS
           EXTERNAL knowledge bases.
 
           NOTE:
-              This  is a Tagged Union structure. Only one of the following top
+              This is a Tagged Union structure. Only one of the following  top
               level keys can be set: appIntegrations.
 
           appIntegrations -> (structure)
@@ -140,17 +143,42 @@ OPTIONS
                  The Amazon Resource Name (ARN) of the AppIntegrations DataIn-
                  tegration to use for ingesting content.
 
+                 o For  Salesforce , your AppIntegrations DataIntegration must
+                   have an ObjectConfiguration if  objectFields  is  not  pro-
+                   vided,  including at least Id , ArticleNumber , VersionNum-
+                   ber , Title ,  PublishStatus  ,  and  IsDeleted  as  source
+                   fields.
+
+                 o For  ServiceNow , your AppIntegrations DataIntegration must
+                   have an ObjectConfiguration if  objectFields  is  not  pro-
+                   vided,  including  at  least  number  , short_description ,
+                   sys_mod_count ,  workflow_state  ,  and  active  as  source
+                   fields.
+
+                 o For  Zendesk  ,  your  AppIntegrations DataIntegration must
+                   have an ObjectConfiguration if  objectFields  is  not  pro-
+                   vided,  including  at  least  id , title , updated_at , and
+                   draft as source fields.
+
+                 o For SharePoint , your AppIntegrations DataIntegration  must
+                   have  a  FileConfiguration,  including only file extensions
+                   that are among docx , pdf , html , htm , and txt .
+
               objectFields -> (list)
                  The fields from the source that are made  available  to  your
-                 agents in Wisdom.
+                 agents in Wisdom. Optional if ObjectConfiguration is included
+                 in the provided DataIntegration.
 
                  o For Salesforce , you must include at least Id , ArticleNum-
                    ber , VersionNumber , Title , PublishStatus , and IsDeleted
                    .
 
-                 o For  ServiceNow  ,  you  must  include  at  least  number ,
-                   short_description , sys_mod_count ,  workflow_state  ,  and
+                 o For ServiceNow  ,  you  must  include  at  least  number  ,
+                   short_description  ,  sys_mod_count  , workflow_state , and
                    active .
+
+                 o For Zendesk , you must include at least id ,  title  ,  up-
+                   dated_at , and draft .
 
                  Make  sure to include additional fields. These fields are in-
                  dexed and used to source recommendations.
@@ -307,18 +335,19 @@ OUTPUT
               templateUri -> (string)
                  A URI template containing exactly one variable in ${variable-
                  Name}  format.  This  can  only be set for EXTERNAL knowledge
-                 bases. For Salesforce and ServiceNow, the  variable  must  be
-                 one of the following:
+                 bases. For Salesforce, ServiceNow, and Zendesk, the  variable
+                 must be one of the following:
 
                  o Salesforce:  Id  ,  ArticleNumber , VersionNumber , Title ,
                    PublishStatus , or IsDeleted
 
                  o ServiceNow: number , short_description  ,  sys_mod_count  ,
                    workflow_state , or active
-                     <p>The  variable  is replaced with the actual value for a
-                     piece      of      content      when      calling      <a
-                     href="https://docs.aws.amazon.com/wisdom/latest/APIRefer-
-                     ence/API_GetContent.html">GetContent</a>. </p>
+
+                 o Zendesk: id , title , updated_at , or draft
+
+                 The variable is replaced with the actual value for a piece of
+                 content when calling GetContent .
 
           serverSideEncryptionConfiguration -> (structure)
               The KMS key used for encryption.
@@ -342,17 +371,43 @@ OUTPUT
                      The  Amazon  Resource  Name  (ARN) of the AppIntegrations
                      DataIntegration to use for ingesting content.
 
+                     o For Salesforce , your  AppIntegrations  DataIntegration
+                       must have an ObjectConfiguration if objectFields is not
+                       provided, including at least Id , ArticleNumber ,  Ver-
+                       sionNumber  ,  Title , PublishStatus , and IsDeleted as
+                       source fields.
+
+                     o For ServiceNow , your  AppIntegrations  DataIntegration
+                       must have an ObjectConfiguration if objectFields is not
+                       provided, including at least number , short_description
+                       , sys_mod_count , workflow_state , and active as source
+                       fields.
+
+                     o For Zendesk , your AppIntegrations DataIntegration must
+                       have an ObjectConfiguration if objectFields is not pro-
+                       vided, including at least id , title , updated_at , and
+                       draft as source fields.
+
+                     o For  SharePoint  , your AppIntegrations DataIntegration
+                       must have a FileConfiguration, including only file  ex-
+                       tensions  that  are among docx , pdf , html , htm , and
+                       txt .
+
                  objectFields -> (list)
                      The fields from the source that  are  made  available  to
-                     your agents in Wisdom.
+                     your agents in Wisdom. Optional if ObjectConfiguration is
+                     included in the provided DataIntegration.
 
-                     o For  Salesforce  , you must include at least Id , Arti-
+                     o For Salesforce , you must include at least Id  ,  Arti-
                        cleNumber , VersionNumber , Title , PublishStatus , and
                        IsDeleted .
 
-                     o For  ServiceNow  ,  you  must include at least number ,
-                       short_description , sys_mod_count  ,  workflow_state  ,
+                     o For ServiceNow , you must include  at  least  number  ,
+                       short_description  ,  sys_mod_count  , workflow_state ,
                        and active .
+
+                     o For Zendesk , you must include at least id  ,  title  ,
+                       updated_at , and draft .
 
                      Make  sure to include additional fields. These fields are
                      indexed and used to source recommendations.
