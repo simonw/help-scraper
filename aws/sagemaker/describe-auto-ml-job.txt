@@ -153,24 +153,42 @@ OUTPUT
                      S3DataType -> (string)
                         The data type.
 
-                        A ManifestFile should have the format shown below:
-                            [  {"prefix":   "s3://DOC-EXAMPLE-BUCKET/DOC-EXAM-
-                            PLE-FOLDER/DOC-EXAMPLE-PREFIX/"},
+                        o If you choose S3Prefix , S3Uri identifies a key name
+                          prefix.  SageMaker  uses  all objects that match the
+                          specified key name prefix for  model  training.  The
+                          S3Prefix   should   have   the   following   format:
+                          s3://DOC-EXAMPLE-BUCKET/DOC-EXAMPLE-FOLDER-OR-FILE
 
-                            "DOC-EXAMPLE-RELATIVE-PATH/DOC-EXAM-
-                            PLE-FOLDER/DATA-1",
+                        o If you choose ManifestFile , S3Uri identifies an ob-
+                          ject  that  is  a manifest file containing a list of
+                          object keys that you want SageMaker to use for model
+                          training.  A  ManifestFile  should  have  the format
+                          shown   below:    [    {"prefix":    "s3://DOC-EXAM-
+                          PLE-BUCKET/DOC-EXAMPLE-FOLDER/DOC-EXAMPLE-PREFIX/"},
+                          "DOC-EXAMPLE-RELATIVE-PATH/DOC-EXAM-
+                          PLE-FOLDER/DATA-1",               "DOC-EXAMPLE-RELA-
+                          TIVE-PATH/DOC-EXAMPLE-FOLDER/DATA-2",            ...
+                          "DOC-EXAMPLE-RELATIVE-PATH/DOC-EXAM-
+                          PLE-FOLDER/DATA-N" ]
 
-                            "DOC-EXAMPLE-RELATIVE-PATH/DOC-EXAM-
-                            PLE-FOLDER/DATA-2",
-
-                            ...           "DOC-EXAMPLE-RELATIVE-PATH/DOC-EXAM-
-                            PLE-FOLDER/DATA-N" ]
-
-                        An S3Prefix should have the following format:
-                            s3://DOC-EXAMPLE-BUCKET/DOC-EXAMPLE-FOLDER-OR-FILE
+                        o If you choose AugmentedManifestFile , S3Uri  identi-
+                          fies an object that is an augmented manifest file in
+                          JSON lines format. This file contains the  data  you
+                          want  to  use for model training. AugmentedManifest-
+                          File is available for V2 API jobs only (for example,
+                          for  jobs  created  by  calling CreateAutoMLJobV2 ).
+                          Here is a minimal, single-record example of an  Aug-
+                          mentedManifestFile :  {"source-ref": "s3://DOC-EXAM-
+                          PLE-BUCKET/DOC-EXAMPLE-FOLDER/cats/cat.jpg",    "la-
+                          bel-metadata":  {"class-name":  "cat" } For more in-
+                          formation on  AugmentedManifestFile  ,  see  Provide
+                          Dataset  Metadata to Training Jobs with an Augmented
+                          Manifest File .
 
                      S3Uri -> (string)
-                        The URL to the Amazon S3 data source.
+                        The URL to the Amazon S3 data source. The  Uri  refers
+                        to  the  Amazon S3 prefix or ManifestFile depending on
+                        the data type.
 
               CompressionType -> (string)
                  You can use Gzip or None . The default value is None .
@@ -395,11 +413,17 @@ OUTPUT
               MaxCandidates -> (integer)
                  The maximum number of times a training job is allowed to run.
 
+                 For V2 jobs (jobs created by calling CreateAutoMLJobV2 ), the
+                 supported value is 1.
+
               MaxRuntimePerTrainingJobInSeconds -> (integer)
                  The maximum time, in seconds, that each training job executed
-                 inside  hyperparameter  tuning is allowed to run as part of a
+                 inside hyperparameter tuning is allowed to run as part  of  a
                  hyperparameter tuning job. For more information, see the used
                  by the action.
+
+                 For V2 jobs (jobs created  by  calling  CreateAutoMLJobV2  ),
+                 this field controls the runtime of the job candidate.
 
               MaxAutoMLJobRuntimeInSeconds -> (integer)
                  The  maximum  runtime,  in seconds, an AutoML job has to com-
@@ -655,23 +679,24 @@ OUTPUT
               The candidate's status.
 
           InferenceContainers -> (list)
-              Information about the inference container definitions.
+              Information about the recommended  inference  container  defini-
+              tions.
 
               (structure)
-                 A list of container definitions that describe  the  different
-                 containers  that make up an AutoML candidate. For more infor-
+                 A  list  of container definitions that describe the different
+                 containers that make up an AutoML candidate. For more  infor-
                  mation, see .
 
                  Image -> (string)
-                     The Amazon Elastic Container Registry (Amazon  ECR)  path
+                     The  Amazon  Elastic Container Registry (Amazon ECR) path
                      of the container. For more information, see .
 
                  ModelDataUrl -> (string)
-                     The  location  of  the model artifacts. For more informa-
+                     The location of the model artifacts.  For  more  informa-
                      tion, see .
 
                  Environment -> (map)
-                     The environment variables to set in  the  container.  For
+                     The  environment  variables  to set in the container. For
                      more information, see .
 
                      key -> (string)
@@ -702,14 +727,14 @@ OUTPUT
                      erated for the AutoML candidate.
 
                  ModelInsights -> (string)
-                     The  Amazon S3 prefix to the model insight artifacts gen-
+                     The Amazon S3 prefix to the model insight artifacts  gen-
                      erated for the AutoML candidate.
 
               CandidateMetrics -> (list)
                  Information about the candidate metrics for an AutoML job.
 
                  (structure)
-                     Information about the metric for a candidate produced  by
+                     Information  about the metric for a candidate produced by
                      an AutoML job.
 
                      MetricName -> (string)
@@ -719,7 +744,7 @@ OUTPUT
                         The value of the metric.
 
                      Set -> (string)
-                        The  dataset  split from which the AutoML job produced
+                        The dataset split from which the AutoML  job  produced
                         the metric.
 
                      StandardMetricName -> (string)
@@ -727,9 +752,44 @@ OUTPUT
 
                         NOTE:
                             For definitions of the standard metrics, see ` Au-
-                            topilot              candidate             metrics
+                            topilot             candidate              metrics
                             https://docs.aws.amazon.com/sagemaker/latest/dg/autopilot-model-support-validation.html#autopilot-metrics`__
                             .
+
+          InferenceContainerDefinitions -> (map)
+              The mapping of all supported processing unit (CPU, GPU,  etc...)
+              to inference container definitions for the candidate. This field
+              is populated for the V2 API only (for example, for jobs  created
+              by calling CreateAutoMLJobV2 ).
+
+              key -> (string)
+                 Processing unit for an inference container. Currently Autopi-
+                 lot only supports CPU or GPU .
+
+              value -> (list)
+                 Information about the recommended inference container defini-
+                 tions.
+
+                 (structure)
+                     A list of container definitions that describe the differ-
+                     ent containers that make up an AutoML candidate. For more
+                     information, see .
+
+                     Image -> (string)
+                        The  Amazon  Elastic  Container  Registry (Amazon ECR)
+                        path of the container. For more information, see .
+
+                     ModelDataUrl -> (string)
+                        The location of the model artifacts. For more informa-
+                        tion, see .
+
+                     Environment -> (map)
+                        The environment variables to set in the container. For
+                        more information, see .
+
+                        key -> (string)
+
+                        value -> (string)
 
        AutoMLJobStatus -> (string)
           Returns the status of the AutoML job.
@@ -738,11 +798,11 @@ OUTPUT
           Returns the secondary status of the AutoML job.
 
        GenerateCandidateDefinitionsOnly -> (boolean)
-          Indicates  whether  the output for an AutoML job generates candidate
+          Indicates whether the output for an AutoML job  generates  candidate
           definitions only.
 
        AutoMLJobArtifacts -> (structure)
-          Returns information on the job's artifacts found  in  AutoMLJobArti-
+          Returns  information  on the job's artifacts found in AutoMLJobArti-
           facts .
 
           CandidateDefinitionNotebookLocation -> (string)
@@ -753,12 +813,13 @@ OUTPUT
 
        ResolvedAttributes -> (structure)
           Contains ProblemType , AutoMLJobObjective , and CompletionCriteria .
-          If you do not provide these values, they are auto-inferred.  If  you
+          If  you  do not provide these values, they are auto-inferred. If you
           do provide them, the values used are the ones you provide.
 
           AutoMLJobObjective -> (structure)
               Specifies a metric to minimize or maximize as the objective of a
-              job.
+              job.  V2 API jobs (for example jobs created by calling CreateAu-
+              toMLJobV2 ), support Accuracy only.
 
               MetricName -> (string)
                  The name of the objective metric used to measure the  predic-
@@ -947,11 +1008,17 @@ OUTPUT
               MaxCandidates -> (integer)
                  The maximum number of times a training job is allowed to run.
 
+                 For V2 jobs (jobs created by calling CreateAutoMLJobV2 ), the
+                 supported value is 1.
+
               MaxRuntimePerTrainingJobInSeconds -> (integer)
                  The maximum time, in seconds, that each training job executed
-                 inside  hyperparameter  tuning is allowed to run as part of a
+                 inside hyperparameter tuning is allowed to run as part  of  a
                  hyperparameter tuning job. For more information, see the used
                  by the action.
+
+                 For V2 jobs (jobs created  by  calling  CreateAutoMLJobV2  ),
+                 this field controls the runtime of the job candidate.
 
               MaxAutoMLJobRuntimeInSeconds -> (integer)
                  The  maximum  runtime,  in seconds, an AutoML job has to com-

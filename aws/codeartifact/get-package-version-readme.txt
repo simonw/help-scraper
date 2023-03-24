@@ -73,8 +73,6 @@ OPTIONS
           The  package  version component that specifies its namespace depends
           on its type. For example:
 
-          o The namespace of a Maven package version is its groupId .
-
           o The namespace of an npm package version is its scope .
 
           o Python and NuGet package versions do not contain  a  corresponding

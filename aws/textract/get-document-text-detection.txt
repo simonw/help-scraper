@@ -320,8 +320,20 @@ OUTPUT
                    is grid-based information with two or more rows or columns,
                    with a cell span of one row and one column each.
 
+                 o TABLE_TITLE - The title of a table. A title is typically  a
+                   line  of  text  above  or below a table, or embedded as the
+                   first row of a table.
+
+                 o TABLE_FOOTER - The footer associated with a table. A footer
+                   is  typically  a line or lines of text below a table or em-
+                   bedded as the last row of a table.
+
                  o CELL - A cell within a detected table. The cell is the par-
                    ent of the block that contains the text in the cell.
+
+                 o MERGED_CELL  -  A  cell in a table whose content spans more
+                   than one row or column. The Relationships  array  for  this
+                   cell contain data from individual cells.
 
                  o SELECTION_ELEMENT  -  A selection element such as an option
                    button (radio button) or a check box that's detected  on  a
@@ -365,29 +377,26 @@ OUTPUT
                  Text and GetDocumentTextDetection .
 
               RowSpan -> (integer)
-                 The  number  of  rows that a table cell spans. Currently this
-                 value is always 1, even if the  number  of  rows  spanned  is
-                 greater  than 1. RowSpan isn't returned by DetectDocumentText
-                 and GetDocumentTextDetection .
+                 The number of rows that a table cell spans. RowSpan isn't re-
+                 turned by DetectDocumentText and GetDocumentTextDetection .
 
               ColumnSpan -> (integer)
-                 The number of columns that a table cell spans. Currently this
-                 value  is  always 1, even if the number of columns spanned is
-                 greater than 1. ColumnSpan isn't returned by  DetectDocument-
-                 Text and GetDocumentTextDetection .
+                 The number of columns that a  table  cell  spans.  ColumnSpan
+                 isn't  returned  by DetectDocumentText and GetDocumentTextDe-
+                 tection .
 
               Geometry -> (structure)
                  The location of the recognized text on the image. It includes
                  an axis-aligned, coarse bounding box that surrounds the text,
-                 and  a finer-grain polygon for more accurate spatial informa-
+                 and a finer-grain polygon for more accurate spatial  informa-
                  tion.
 
                  BoundingBox -> (structure)
-                     An axis-aligned coarse representation of the location  of
+                     An  axis-aligned coarse representation of the location of
                      the recognized item on the document page.
 
                      Width -> (float)
-                        The  width of the bounding box as a ratio of the over-
+                        The width of the bounding box as a ratio of the  over-
                         all document page width.
 
                      Height -> (float)
@@ -395,72 +404,87 @@ OUTPUT
                         all document page height.
 
                      Left -> (float)
-                        The  left coordinate of the bounding box as a ratio of
+                        The left coordinate of the bounding box as a ratio  of
                         overall document page width.
 
                      Top -> (float)
-                        The top coordinate of the bounding box as a  ratio  of
+                        The  top  coordinate of the bounding box as a ratio of
                         overall document page height.
 
                  Polygon -> (list)
-                     Within  the  bounding  box, a fine-grained polygon around
+                     Within the bounding box, a  fine-grained  polygon  around
                      the recognized item.
 
                      (structure)
                         The X and Y coordinates of a point on a document page.
                         The X and Y values that are returned are ratios of the
-                        overall document page size. For example, if the  input
-                        document  is 700 x 200 and the operation returns X=0.5
-                        and Y=0.25, then the point is at  the  (350,50)  pixel
+                        overall  document page size. For example, if the input
+                        document is 700 x 200 and the operation returns  X=0.5
+                        and  Y=0.25,  then  the point is at the (350,50) pixel
                         coordinate on the document page.
 
-                        An  array  of  Point objects, Polygon , is returned by
+                        An array of Point objects, Polygon ,  is  returned  by
                         DetectDocumentText . Polygon represents a fine-grained
-                        polygon  around  detected  text. For more information,
+                        polygon around detected text.  For  more  information,
                         see Geometry in the Amazon Textract Developer Guide.
 
                         X -> (float)
-                            The value of the X coordinate for  a  point  on  a
+                            The  value  of  the  X coordinate for a point on a
                             Polygon .
 
                         Y -> (float)
-                            The  value  of  the  Y coordinate for a point on a
+                            The value of the Y coordinate for  a  point  on  a
                             Polygon .
 
               Id -> (string)
-                 The identifier for the recognized  text.  The  identifier  is
+                 The  identifier  for  the  recognized text. The identifier is
                  only unique for a single operation.
 
               Relationships -> (list)
-                 A  list  of child blocks of the current block. For example, a
-                 LINE object has child blocks for each WORD block that's  part
-                 of the line of text. There aren't Relationship objects in the
-                 list for relationships that don't exist,  such  as  when  the
-                 current  block  has no child blocks. The list size can be the
-                 following:
-
-                 o 0 - The block has no child blocks.
-
-                 o 1 - The block has child blocks.
+                 A list of relationship objects that describe how  blocks  are
+                 related  to each other. For example, a LINE block object con-
+                 tains a CHILD relationship type with  the  WORD  blocks  that
+                 make  up  the line of text. There aren't Relationship objects
+                 in the list for relationships that don't exist, such as  when
+                 the current block has no child blocks.
 
                  (structure)
                      Information about how blocks are related to each other. A
-                     Block  object  contains  0  or more Relation objects in a
+                     Block object contains 0 or more  Relation  objects  in  a
                      list, Relationships . For more information, see  Block .
 
-                     The Type element provides the type  of  the  relationship
+                     The  Type  element  provides the type of the relationship
                      for all blocks in the IDs array.
 
                      Type -> (string)
-                        The  type  of  relationship that the blocks in the IDs
-                        array have with the current  block.  The  relationship
-                        can  be  VALUE or CHILD . A relationship of type VALUE
-                        is a list that contains the  ID  of  the  VALUE  block
-                        that's  associated with the KEY of a key-value pair. A
-                        relationship of type CHILD is a list of IDs that iden-
-                        tify  WORD  blocks in the case of lines Cell blocks in
-                        the case of Tables, and WORD blocks in the case of Se-
-                        lection Elements.
+                        The type of relationship between the blocks in the IDs
+                        array  and  the  current block. The following list de-
+                        scribes the relationship types that can be returned.
+
+                        o VALUE - A list that contains the  ID  of  the  VALUE
+                          block  that's associated with the KEY of a key-value
+                          pair.
+
+                        o CHILD - A list of IDs  that  identify  blocks  found
+                          within  the  current block object. For example, WORD
+                          blocks have a CHILD relationship to the  LINE  block
+                          type.
+
+                        o MERGED_CELL  -  A  list of IDs that identify each of
+                          the MERGED_CELL block types in a table.
+
+                        o ANSWER  -  A  list  that  contains  the  ID  of  the
+                          QUERY_RESULT  block thats associated with the corre-
+                          sponding QUERY block.
+
+                        o TABLE - A list of IDs that identify associated TABLE
+                          block types.
+
+                        o TABLE_TITLE  -  A  list that contains the ID for the
+                          TABLE_TITLE block type in a table.
+
+                        o TABLE_FOOTER - A list of IDs that identify  the  TA-
+                          BLE_FOOTER block types in a table.
 
                      Ids -> (list)
                         An  array  of  IDs for related blocks. You can get the
@@ -469,11 +493,39 @@ OUTPUT
                         (string)
 
               EntityTypes -> (list)
-                 The type of entity. The following can be returned:
+                 The type of entity.
+
+                 The following entity types can be returned by FORMS analysis:
 
                  o KEY - An identifier for a field on the document.
 
                  o VALUE - The field text.
+
+                 The following entity types can be returned by  TABLES  analy-
+                 sis:
+
+                 o COLUMN_HEADER  -  Identifies  a  cell that is a header of a
+                   column.
+
+                 o TABLE_TITLE - Identifies a cell that is a title within  the
+                   table.
+
+                 o TABLE_SECTION_TITLE  - Identifies a cell that is a title of
+                   a section within a table. A section title is  a  cell  that
+                   typically spans an entire row above a section.
+
+                 o TABLE_FOOTER  - Identifies a cell that is a footer of a ta-
+                   ble.
+
+                 o TABLE_SUMMARY - Identifies a summary cell  of  a  table.  A
+                   summary  cell  can  be  a  row of a table or an additional,
+                   smaller table that contains summary information for another
+                   table.
+
+                 o STRUCTURED_TABLE  -  Identifies a table with column headers
+                   where the content of each row corresponds to the headers.
+
+                 o SEMI_STRUCTURED_TABLE - Identifies a non-structured table.
                      EntityTypes isn't returned by DetectDocumentText and Get-
                      DocumentTextDetection .
 
@@ -491,9 +543,8 @@ OUTPUT
                  asynchronous operation, even if it contains multiple document
                  pages,  is considered a single-page document. This means that
                  for scanned images the value of Page is always 1. Synchronous
-                 operations  operations will also return a Page value of 1 be-
-                 cause every input document is considered to be a  single-page
-                 document.
+                 operations  will  also return a Page value of 1 because every
+                 input document is considered to be a single-page document.
 
               Query -> (structure)
                  Text -> (string)
@@ -504,21 +555,21 @@ OUTPUT
                      Alias attached to the query, for ease of location.
 
                  Pages -> (list)
-                     Pages is a parameter that  the  user  inputs  to  specify
-                     which  pages to apply a query to. The following is a list
+                     Pages  is  a  parameter  that  the user inputs to specify
+                     which pages to apply a query to. The following is a  list
                      of rules for using this parameter.
 
-                     o If a page is not specified, it is set to ["1"]  by  de-
+                     o If  a  page is not specified, it is set to ["1"] by de-
                        fault.
 
                      o The following characters are allowed in the parameter's
-                       string: 0 1 2 3 4 5 6 7 8 9 - * . No whitespace is  al-
+                       string:  0 1 2 3 4 5 6 7 8 9 - * . No whitespace is al-
                        lowed.
 
                      o When using * to indicate all pages, it must be the only
                        element in the list.
 
-                     o You can use page intervals, such as [1-3, 1-1,  4-*]  .
+                     o You  can  use page intervals, such as [1-3, 1-1, 4-*] .
                        Where * indicates last page of document.
 
                      o Specified pages must be greater than 0 and less than or
@@ -531,7 +582,7 @@ OUTPUT
           for the document.
 
           (structure)
-              A  warning about an issue that occurred during asynchronous text
+              A warning about an issue that occurred during asynchronous  text
               analysis ( StartDocumentAnalysis ) or asynchronous document text
               detection ( StartDocumentTextDetection ).
 
