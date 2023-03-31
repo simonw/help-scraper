@@ -6,19 +6,22 @@ NAME
        describe-traffic-sources -
 
 DESCRIPTION
-          Reserved  for  use  with Amazon VPC Lattice, which is in preview and
-          subject to change. Do not use this  API  for  production  workloads.
-          This API is also subject to change.
-
        Gets information about the traffic sources for the specified Auto Scal-
        ing group.
+
+       You can optionally provide a traffic source  type.  If  you  provide  a
+       traffic  source type, then the results only include that traffic source
+       type.
+
+       If you do not provide a traffic source type, then the  results  include
+       all the traffic sources for the specified Auto Scaling group.
 
        See also: AWS API Documentation
 
 SYNOPSIS
             describe-traffic-sources
           --auto-scaling-group-name <value>
-          --traffic-source-type <value>
+          [--traffic-source-type <value>]
           [--next-token <value>]
           [--max-records <value>]
           [--cli-input-json <value>]
@@ -43,28 +46,36 @@ OPTIONS
           The name of the Auto Scaling group.
 
        --traffic-source-type (string)
-          The type of traffic source you are describing. Currently,  the  only
-          valid value is vpc-lattice .
+          The traffic source type that you want to describe.
+
+          The following lists the valid values:
+
+          o elb if the traffic source is a Classic Load Balancer.
+
+          o elbv2  if the traffic source is a Application Load Balancer, Gate-
+            way Load Balancer, or Network Load Balancer.
+
+          o vpc-lattice if the traffic source is VPC Lattice.
 
        --next-token (string)
-          The  token  for  the next set of items to return. (You received this
+          The token for the next set of items to return.  (You  received  this
           token from a previous call.)
 
        --max-records (integer)
-          The maximum number of items to return with this  call.  The  maximum
+          The  maximum  number  of items to return with this call. The maximum
           value is 50 .
 
-       --cli-input-json  (string) Performs service operation based on the JSON
-       string provided. The JSON string follows the format provided by  --gen-
-       erate-cli-skeleton.  If  other  arguments  are  provided on the command
-       line, the CLI values will override the JSON-provided values. It is  not
+       --cli-input-json (string) Performs service operation based on the  JSON
+       string  provided. The JSON string follows the format provided by --gen-
+       erate-cli-skeleton. If other arguments  are  provided  on  the  command
+       line,  the CLI values will override the JSON-provided values. It is not
        possible to pass arbitrary binary values using a JSON-provided value as
        the string will be taken literally.
 
-       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
+       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
        output without sending an API request. If provided with no value or the
        value input, prints a sample input JSON that can be used as an argument
-       for  --cli-input-json.  If provided with the value output, it validates
+       for --cli-input-json. If provided with the value output,  it  validates
        the command inputs and returns a sample output JSON for that command.
 
 GLOBAL OPTIONS
@@ -78,7 +89,7 @@ GLOBAL OPTIONS
 
        --no-verify-ssl (boolean)
 
-       By default, the AWS CLI uses SSL when communicating with AWS  services.
+       By  default, the AWS CLI uses SSL when communicating with AWS services.
        For each SSL connection, the AWS CLI will verify SSL certificates. This
        option overrides the default behavior of verifying SSL certificates.
 
@@ -124,7 +135,7 @@ GLOBAL OPTIONS
 
        --no-sign-request (boolean)
 
-       Do not sign requests. Credentials will not be loaded if  this  argument
+       Do  not  sign requests. Credentials will not be loaded if this argument
        is provided.
 
        --ca-bundle (string)
@@ -134,14 +145,14 @@ GLOBAL OPTIONS
 
        --cli-read-timeout (int)
 
-       The maximum socket read time in seconds. If the value is set to 0,  the
-       socket  read  will be blocking and not timeout. The default value is 60
+       The  maximum socket read time in seconds. If the value is set to 0, the
+       socket read will be blocking and not timeout. The default value  is  60
        seconds.
 
        --cli-connect-timeout (int)
 
-       The maximum socket connect time in seconds. If the value is set  to  0,
-       the  socket connect will be blocking and not timeout. The default value
+       The  maximum  socket connect time in seconds. If the value is set to 0,
+       the socket connect will be blocking and not timeout. The default  value
        is 60 seconds.
 
 OUTPUT
@@ -152,30 +163,52 @@ OUTPUT
               Describes the state of a traffic source.
 
               TrafficSource -> (string)
-                 The unique identifier of the traffic source. Currently,  this
-                 is  the  Amazon  Resource Name (ARN) for a VPC Lattice target
-                 group.
+                 This is replaced by Identifier .
 
               State -> (string)
-                 The following are the possible states for a VPC Lattice  tar-
-                 get group:
+                 Describes the current state of a traffic source.
+
+                 The state values are as follows:
 
                  o Adding  -  The  Auto Scaling instances are being registered
-                   with the target group.
+                   with the load balancer or target group.
 
                  o Added - All Auto Scaling instances are registered with  the
-                   target group.
+                   load balancer or target group.
 
-                 o InService  -  At least one Auto Scaling instance passed the
-                   VPC_LATTICE health check.
+                 o InService  - For an Elastic Load Balancing load balancer or
+                   target group, at least one Auto Scaling instance passed  an
+                   ELB  health check. For VPC Lattice, at least one Auto Scal-
+                   ing instance passed an VPC_LATTICE health check.
 
                  o Removing - The Auto Scaling instances  are  being  deregis-
-                   tered  from the target group. If connection draining is en-
-                   abled, VPC Lattice waits for in-flight requests to complete
-                   before deregistering the instances.
+                   tered from the load balancer or target group. If connection
+                   draining (deregistration delay) is  enabled,  Elastic  Load
+                   Balancing  or  VPC  Lattice waits for in-flight requests to
+                   complete before deregistering the instances.
 
-                 o Removed  - All Auto Scaling instances are deregistered from
-                   the target group.
+                 o Removed - All Auto Scaling instances are deregistered  from
+                   the load balancer or target group.
+
+              Identifier -> (string)
+                 The unique identifier of the traffic source.
+
+              Type -> (string)
+                 Provides additional context for the value of Identifier .
+
+                 The following lists the valid values:
+
+                 o elb if Identifier is the name of a Classic Load Balancer.
+
+                 o elbv2  if Identifier is the ARN of an Application Load Bal-
+                   ancer, Gateway Load Balancer, or Network Load Balancer tar-
+                   get group.
+
+                 o vpc-lattice  if Identifier is the ARN of a VPC Lattice tar-
+                   get group.
+
+                 Required if the identifier is the name of a Classic Load Bal-
+                 ancer.
 
        NextToken -> (string)
           This string indicates that the response contains more items than can
