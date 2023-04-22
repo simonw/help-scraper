@@ -211,6 +211,31 @@ OUTPUT
                      99.  Valid  values  for postProcessRuleGroups are between
                      9901 and 10000.
 
+                 o Example: IMPORT_NETWORK_FIREWALL   "{\"type\":\"IMPORT_NET-
+                   WORK_FIREWALL\",\"awsNetworkFirewallConfig\":{\"network-
+                   FirewallStatelessRuleGroupReferences\":[{\"re-
+                   sourceARN\":\"arn:aws:network-fire-
+                   wall:us-west-2:000000000000:stateless-rule-
+                   group\/rg1\",\"priority\":1}],\"networkFirewallStatelessDe-
+                   faultActions\":[\"aws:drop\"],\"networkFirewallStateless-
+                   FragmentDefaultActions\":[\"aws:pass\"],\"networkFirewall-
+                   StatelessCustomActions\":[],\"networkFirewallStatefulRule-
+                   GroupReferences\":[{\"resourceARN\":\"arn:aws:network-fire-
+                   wall:us-west-2:aws-managed:stateful-rulegroup\/ThreatSigna-
+                   turesEmergingEventsStrictOrder\",\"priority\":8}],\"net-
+                   workFirewallStatefulEngineOptions\":{\"rule-
+                   Order\":\"STRICT_ORDER\"},\"networkFirewallStatefulDefault-
+                   Actions\":[\"aws:drop_strict\"]}}"
+                   "{\"type\":\"DNS_FIREWALL\",\"preProcessRule-
+                   Groups\":[{\"ruleGroupId\":\"rslvr-frg-1\",\"prior-
+                   ity\":10}],\"postProcessRuleGroups\":[{\"rule-
+                   GroupId\":\"rslvr-frg-2\",\"priority\":9911}]}"
+
+                 NOTE:
+                     Valid values for preProcessRuleGroups are between  1  and
+                     99.  Valid  values  for postProcessRuleGroups are between
+                     9901 and 10000.
+
                  o Example: NETWORK_FIREWALL -  Centralized  deployment  model
                    "{\"type\":\"NETWORK_FIREWALL\",\"awsNetworkFirewallCon-
                    fig\":{\"networkFirewallStatelessRuleGroupRefer-
@@ -460,24 +485,82 @@ OUTPUT
                    can protect with a Shield Advanced policy, this ManagedSer-
                    viceData configuration is an empty string.
 
-                 o Example:   WAFV2     "{\"type\":\"WAFV2\",\"preProcessRule-
-                   Groups\":[{\"ruleGroupArn\":null,\"overrideAc-
+                 o Example:  WAFV2  - Account takeover prevention and Bot Con-
+                   trol  managed  rule  groups,  and  rule   action   override
+                   "{\"type\":\"WAFV2\",\"preProcessRuleGroups\":[{\"rule-
+                   GroupArn\":null,\"overrideAc-
                    tion\":{\"type\":\"NONE\"},\"managedRuleGroupIdenti-
-                   fier\":{\"version\":null,\"vendorName\":\"AWS\",\"manage-
-                   dRuleGroupName\":\"AWSManagedRulesAmazonIpReputation-
-                   List\"},\"ruleGroupType\":\"ManagedRuleGroup\",\"ex-
-                   cludeRules\":[{\"name\":\"NoUserAgent_HEADER\"}]}],\"post-
-                   ProcessRuleGroups\":[],\"defaultAction\":{\"type\":\"AL-
-                   LOW\"},\"overrideCustomerWebACLAssociation\":false,\"log-
-                   gingConfiguration\":{\"logDestinationCon-
-                   figs\":[\"arn:aws:firehose:us-west-2:12345678912:deliverys-
-                   tream/aws-waf-logs-fms-admin-destination\"],\"redacted-
-                   Fields\":[{\"redactedFieldType\":\"SingleHeader\",\"redact-
-                   edFieldValue\":\"Cookies\"},{\"redactedField-
-                   Type\":\"Method\"}]}}"    In the loggingConfiguration , you
-                   can specify one logDestinationConfigs , you can  optionally
-                   provide up to 20 redactedFields , and the RedactedFieldType
-                   must be one of URI , QUERY_STRING , HEADER , or METHOD .
+                   fier\":{\"versionEnabled\":null,\"version\":null,\"vendor-
+                   Name\":\"AWS\",\"managedRuleGroupName\":\"AWSManagedRule-
+                   sATPRuleSet\",\"managedRuleGroupConfigs\":[{\"awsmanage-
+                   dRulesATPRuleSet\":{\"loginPath\":\"/loginpath\",\"re-
+                   questInspection\":{\"payloadType\":\"FORM_EN-
+                   CODED|JSON\",\"usernameField\":{\"identi-
+                   fier\":\"/form/username\"},\"passwordField\":{\"identi-
+                   fier\":\"/form/password\"}}}}]},\"ruleGroupType\":\"Manage-
+                   dRuleGroup\",\"excludeRules\":[],\"sampledRequestsEn-
+                   abled\":true},{\"ruleGroupArn\":null,\"overrideAc-
+                   tion\":{\"type\":\"NONE\"},\"managedRuleGroupIdenti-
+                   fier\":{\"versionEnabled\":null,\"version\":null,\"vendor-
+                   Name\":\"AWS\",\"managedRuleGroupName\":\"AWSManagedRules-
+                   BotControlRuleSet\",\"managedRuleGroupConfigs\":[{\"awsman-
+                   agedRulesBotControlRuleSet\":{\"inspectionLevel\":\"TAR-
+                   GETED|COMMON\"}}]},\"ruleGroupType\":\"ManagedRule-
+                   Group\",\"excludeRules\":[],\"sampledRequestsEn-
+                   abled\":true,\"ruleActionOver-
+                   rides\":[{\"name\":\"Rule1\",\"actionToUse\":{\"al-
+                   low|block|count|captcha|chal-
+                   lenge\":{}}},{\"name\":\"Rule2\",\"actionToUse\":{\"al-
+                   low|block|count|captcha|challenge\":{}}}]}],\"postProcess-
+                   RuleGroups\":[],\"defaultAction\":{\"type\":\"AL-
+                   LOW\"},\"customRequestHandling\":null,\"customRe-
+                   sponse\":null,\"overrideCustomerWebACLAssocia-
+                   tion\":false,\"loggingConfiguration\":null,\"sample-
+                   dRequestsEnabledForDefaultActions\":true}"
+
+                   o Fraud Control account takeover prevention (ATP) - For in-
+                     formation  about  the properties available for AWSManage-
+                     dRulesATPRuleSet     managed     rule     groups,     see
+                     AWSManagedRulesATPRuleSet in the WAF API Reference .
+
+                   o Bot  Control  - For information about AWSManagedRulesBot-
+                     ControlRuleSet     managed     rule      groups,      see
+                     AWSManagedRulesBotControlRuleSet in the WAF API Reference
+                     .
+
+                   o Rule action overrides - Firewall  Manager  supports  rule
+                     action overrides only for managed rule groups. To config-
+                     ure a RuleActionOverrides add the Name  of  the  rule  to
+                     override,  and  ActionToUse  , which is the new action to
+                     use for the rule. For information about using rule action
+                     override, see RuleActionOverride in the WAF API Reference
+                     .
+
+                 o Example:   WAFV2   -   CAPTCHA   and   Challenge    configs
+                   "{\"type\":\"WAFV2\",\"preProcessRuleGroups\":[{\"rule-
+                   GroupArn\":null,\"overrideAc-
+                   tion\":{\"type\":\"NONE\"},\"managedRuleGroupIdenti-
+                   fier\":{\"versionEnabled\":null,\"version\":null,\"vendor-
+                   Name\":\"AWS\",\"managedRuleGroupName\":\"AWSManagedRule-
+                   sAdminProtectionRuleSet\"},\"ruleGroupType\":\"ManagedRule-
+                   Group\",\"excludeRules\":[],\"sampledRequestsEn-
+                   abled\":true}],\"postProcessRuleGroups\":[],\"defaultAc-
+                   tion\":{\"type\":\"ALLOW\"},\"customRe-
+                   questHandling\":null,\"customResponse\":null,\"overrideCus-
+                   tomerWebACLAssociation\":false,\"loggingConfigura-
+                   tion\":null,\"sampledRequestsEnabledForDefaultAc-
+                   tions\":true,\"captchaConfig\":{\"immunityTimeProp-
+                   erty\":{\"immunityTime\":500}},\"challengeConfig\":{\"immu-
+                   nityTimeProperty\":{\"immunityTime\":800}},\"tokenDo-
+                   mains\":[\"google.com\",\"amazon.com\"]}"   If  you  update
+                   the  policy's  values for captchaConfig , challengeConfig ,
+                   or tokenDomains , Firewall Manager will overwrite your  lo-
+                   cal  web  ACLs to contain the new value(s). However, if you
+                   don't update the policy's captchaConfig , challengeConfig ,
+                   or  tokenDomains  values, the values in your local web ACLs
+                   will remain unchanged. For information  about  CAPTCHA  and
+                   Challenge configs, see CaptchaConfig and ChallengeConfig in
+                   the WAF API Reference .
 
                  o Example: WAFV2 - Firewall Manager support for  WAF  managed
                    rule  group versioning   "{\"type\":\"WAFV2\",\"preProcess-
@@ -502,6 +585,34 @@ OUTPUT
                    to true , or if you omit  versionEnabled  ,  then  Firewall
                    Manager  uses  the  default version of the WAF managed rule
                    group.
+
+                 o Example:      WAFV2      -      Logging      configurations
+                   "{\"type\":\"WAFV2\",\"preProcessRuleGroups\":[{\"rule-
+                   GroupArn\":null,                              \"overrideAc-
+                   tion\":{\"type\":\"NONE\"},\"managedRuleGroupIdentifier\":
+                   {\"versionEnabled\":null,\"version\":null,\"vendor-
+                   Name\":\"AWS\",  \"managedRuleGroupName\":\"AWSManagedRule-
+                   sAdminProtectionRuleSet\"}     ,\"ruleGroupType\":\"Manage-
+                   dRuleGroup\",\"excludeRules\":[],      \"sampledRequestsEn-
+                   abled\":true}],\"postProcessRuleGroups\":[],   \"defaultAc-
+                   tion\":{\"type\":\"ALLOW\"},\"customRequestHandling\"
+                   :null,\"customResponse\":null,\"overrideCustomerWebACLAsso-
+                   ciation\"    :false,\"loggingConfiguration\":{\"logDestina-
+                   tionConfigs\":           [\"arn:aws:s3:::aws-waf-logs-exam-
+                   ple-bucket\"]    ,\"redactedFields\":[],\"loggingFilterCon-
+                   figs\":{\"defaultBehavior\":\"KEEP\",   \"filters\":[{\"be-
+                   havior\":\"KEEP\",\"requirement\":\"MEETS_ALL\",   \"condi-
+                   tions\":[{\"actionCondition\":\"CAPTCHA\"},{\"actionCondi-
+                   tion\":      \"CHALLENGE\"},     {\"actionCondition\":\"EX-
+                   CLUDED_AS_COUNT\"}]}]}},\"sampledRequestsEnabledForDefault-
+                   Actions\":true}"   Firewall Manager supports Amazon Kinesis
+                   Data Firehose and Amazon S3 as the logDestinationConfigs in
+                   your  loggingConfiguration . For information about WAF log-
+                   ging configurations, see LoggingConfiguration  in  the  WAF
+                   API Reference   In the loggingConfiguration , you can spec-
+                   ify one logDestinationConfigs . Optionally provide as  many
+                   as 20 redactedFields . The RedactedFieldType must be one of
+                   URI , QUERY_STRING , HEADER , or METHOD .
 
                  o Example:  WAF  Classic     "{\"type\":   \"WAF\",   \"rule-
                    Groups\":
@@ -674,6 +785,17 @@ OUTPUT
 
           PolicyDescription -> (string)
               The definition of the Network Firewall firewall policy.
+
+          PolicyStatus -> (string)
+              Indicates whether the policy is in or out of an  admin's  policy
+              or Region scope.
+
+              o ACTIVE - The administrator can manage and delete the policy.
+
+              o OUT_OF_ADMIN_SCOPE  -  The  administrator can view the policy,
+                but they can't edit or delete the policy. Existing policy pro-
+                tections stay in place. Any new resources that come into scope
+                of the policy won't be protected.
 
        PolicyArn -> (string)
           The Amazon Resource Name (ARN) of the specified policy.
