@@ -77,8 +77,6 @@ Version: `3.42.0`
      *  If FILE begins with "|" then it is a command that generates the
         input text.
 
-.imposter INDEX TABLE    Create imposter table TABLE on index INDEX
-
 .indexes ?TABLE?         Show names of indexes
                            If TABLE is specified, only show indexes for
                            tables matching TABLE using the LIKE operator.
@@ -180,11 +178,6 @@ Version: `3.42.0`
       --indent             Try to pretty-print the schema
       --nosys              Omit objects whose names start with "sqlite_"
 
-.selftest ?OPTIONS?      Run tests defined in the SELFTEST table
-    Options:
-       --init               Create a new SELFTEST table
-       -v                   Verbose output
-
 .separator COL ?ROW?     Change the column and row separators
 
 .sha3sum ...             Compute a SHA3 hash of database content
@@ -209,11 +202,6 @@ Version: `3.42.0`
 .system CMD ARGS...      Run CMD ARGS... in a system shell
 
 .tables ?TABLE?          List names of tables matching LIKE pattern TABLE
-
-.testcase NAME           Begin redirecting output to 'testcase-out.txt'
-
-.testctrl CMD ...        Run various sqlite3_test_control() operations
-                           Run ".testctrl" with no arguments for details
 
 .timeout MS              Try opening locked tables for MS milliseconds
 
