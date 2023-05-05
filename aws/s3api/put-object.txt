@@ -9,14 +9,17 @@ DESCRIPTION
        Adds an object to a bucket. You must have WRITE permissions on a bucket
        to add an object to it.
 
-       Amazon S3 never adds partial objects; if  you  receive  a  success  re-
-       sponse, Amazon S3 added the entire object to the bucket.
+       NOTE:
+          Amazon S3 never adds partial objects; if you receive a  success  re-
+          sponse,  Amazon S3 added the entire object to the bucket. You cannot
+          use PutObject to only update a single piece of metadata for  an  ex-
+          isting  object. You must put the entire object with updated metadata
+          if you want to update some values.
 
-       Amazon  S3  is  a distributed system. If it receives multiple write re-
-       quests for the same object simultaneously, it overwrites  all  but  the
-       last  object written. Amazon S3 does not provide object locking; if you
-       need this, make sure to build it into your  application  layer  or  use
-       versioning instead.
+       Amazon S3 is a distributed system. If it receives  multiple  write  re-
+       quests  for  the  same object simultaneously, it overwrites all but the
+       last object written. To prevent objects from being deleted or overwrit-
+       ten, you can use Amazon S3 Object Lock .
 
        To  ensure  that  data is not corrupted traversing the network, use the
        Content-MD5 header. When you use this header, Amazon S3 checks the  ob-
@@ -27,41 +30,36 @@ DESCRIPTION
 
        NOTE:
 
-              o To successfully complete the PutObject request, you must  have
-                the s3:PutObject in your IAM permissions.
+          o To successfully complete the PutObject request, you must have  the
+            s3:PutObject in your IAM permissions.
 
-              o To  successfully  change the objects acl of your PutObject re-
-                quest, you must have the s3:PutObjectAcl in your  IAM  permis-
-                sions.
+          o To  successfully change the objects acl of your PutObject request,
+            you must have the s3:PutObjectAcl in your IAM permissions.
 
-              o The  Content-MD5  header is required for any request to upload
-                an object with a retention period configured using  Amazon  S3
-                Object Lock. For more information about Amazon S3 Object Lock,
-                see Amazon S3 Object Lock Overview in the Amazon S3 User Guide
-                .
+          o To successfully set the tag-set with your PutObject  request,  you
+            must have the s3:PutObjectTagging in your IAM permissions.
 
-          Server-side Encryption
+          o The  Content-MD5  header  is required for any request to upload an
+            object with a retention period configured using Amazon  S3  Object
+            Lock. For more information about Amazon S3 Object Lock, see Amazon
+            S3 Object Lock Overview in the Amazon S3 User Guide .
 
-       You can optionally request server-side encryption. With server-side en-
-       cryption, Amazon S3 encrypts your data as it writes it to disks in  its
-       data centers and decrypts the data when you access it. You have the op-
-       tion to provide your own encryption key or use Amazon Web Services man-
-       aged  encryption  keys  (SSE-S3  or SSE-KMS). For more information, see
-       Using Server-Side Encryption .
+       You have  three  mutually  exclusive  options  to  protect  data  using
+       server-side  encryption  in  Amazon  S3, depending on how you choose to
+       manage the encryption keys. Specifically, the  encryption  key  options
+       are  Amazon  S3  managed  keys  (SSE-S3),  Amazon Web Services KMS keys
+       (SSE-KMS), and customer-provided keys (SSE-C). Amazon S3 encrypts  data
+       with server-side encryption by using Amazon S3 managed keys (SSE-S3) by
+       default. You can optionally tell Amazon S3 to encrypt data at  by  rest
+       using  server-side encryption with other key options. For more informa-
+       tion, see Using Server-Side Encryption .
 
-       If you request server-side encryption using  Amazon  Web  Services  Key
-       Management  Service  (SSE-KMS),  you can enable an S3 Bucket Key at the
-       object-level. For more information, see Amazon S3 Bucket  Keys  in  the
-       Amazon S3 User Guide .
-          Access Control List (ACL)-Specific Request Headers
-
-       You  can  use  headers to grant ACL- based permissions. By default, all
-       objects are private. Only the  owner  has  full  access  control.  When
-       adding a new object, you can grant permissions to individual Amazon Web
-       Services accounts or to predefined groups defined by Amazon  S3.  These
-       permissions  are then added to the ACL on the object. For more informa-
-       tion, see Access Control List (ACL) Overview and  Managing  ACLs  Using
-       the REST API .
+       When adding a new object, you can use headers to grant  ACL-based  per-
+       missions  to  individual  Amazon Web Services accounts or to predefined
+       groups defined by Amazon S3. These permissions are then  added  to  the
+       ACL  on the object. By default, all objects are private. Only the owner
+       has full access control. For more information, see Access Control  List
+       (ACL) Overview and Managing ACLs Using the REST API .
 
        If  the  bucket  that you're uploading objects to uses the bucket owner
        enforced setting for S3 Object Ownership,  ACLs  are  disabled  and  no
@@ -71,36 +69,32 @@ DESCRIPTION
        canned ACL or an equivalent form of this ACL expressed in the XML  for-
        mat.  PUT  requests that contain other ACLs (for example, custom grants
        to certain Amazon Web Services accounts) fail and return  a  400  error
-       with the error code AccessControlListNotSupported .
-
-       For  more  information,  see  Controlling ownership of objects and dis-
-       abling ACLs in the Amazon S3 User Guide .
+       with  the  error code AccessControlListNotSupported . For more informa-
+       tion, see Controlling ownership of objects and disabling  ACLs  in  the
+       Amazon S3 User Guide .
 
        NOTE:
-              If your bucket uses the bucket owner enforced setting for Object
-              Ownership, all objects written to the bucket by any account will
-              be owned by the bucket owner.
+          If  your  bucket  uses  the bucket owner enforced setting for Object
+          Ownership, all objects written to the bucket by any account will  be
+          owned by the bucket owner.
 
-          Storage Class Options
-
-       By default, Amazon S3 uses the STANDARD Storage Class  to  store  newly
-       created  objects.  The  STANDARD storage class provides high durability
-       and high availability. Depending on performance needs, you can  specify
+       By  default,  Amazon  S3 uses the STANDARD Storage Class to store newly
+       created objects. The STANDARD storage class  provides  high  durability
+       and  high availability. Depending on performance needs, you can specify
        a different Storage Class. Amazon S3 on Outposts only uses the OUTPOSTS
-       Storage Class. For more information, see Storage Classes in the  Amazon
+       Storage  Class. For more information, see Storage Classes in the Amazon
        S3 User Guide .
-          Versioning
 
-       If  you  enable versioning for a bucket, Amazon S3 automatically gener-
+       If you enable versioning for a bucket, Amazon S3  automatically  gener-
        ates a unique version ID for the object being stored. Amazon S3 returns
-       this  ID  in  the response. When you enable versioning for a bucket, if
+       this ID in the response. When you enable versioning for  a  bucket,  if
        Amazon S3 receives multiple write requests for the same object simulta-
-       neously, it stores all of the objects.
+       neously, it stores all of the objects. For more information about  ver-
+       sioning,  see Adding Objects to Versioning-Enabled Buckets . For infor-
+       mation  about  returning  the  versioning  state  of  a   bucket,   see
+       GetBucketVersioning .
 
-       For more information about versioning, see Adding Objects to Versioning
-       Enabled Buckets . For information about returning the versioning  state
-       of a bucket, see GetBucketVersioning .
-          Related Resources
+       For more information about related Amazon S3 APIs, see the following:
 
        o CopyObject
 
@@ -206,14 +200,14 @@ OPTIONS
           of  the  bucket  name. For more information about access point ARNs,
           see Using access points in the Amazon S3 User Guide .
 
-          When using this action with Amazon S3 on Outposts, you  must  direct
+          When you use this action with Amazon S3 on Outposts, you must direct
           requests to the S3 on Outposts hostname. The S3 on Outposts hostname
           takes the form `` AccessPointName -AccountId  .*outpostID*  .s3-out-
-          posts.*Region*  .amazonaws.com`` . When using this action with S3 on
-          Outposts through the Amazon Web Services SDKs, you provide the  Out-
-          posts  bucket  ARN in place of the bucket name. For more information
-          about S3 on Outposts ARNs, see Using Amazon S3 on  Outposts  in  the
-          Amazon S3 User Guide .
+          posts.*Region*  .amazonaws.com``  . When you use this action with S3
+          on Outposts through the Amazon Web Services SDKs,  you  provide  the
+          Outposts  access point ARN in place of the bucket name. For more in-
+          formation about S3 on Outposts ARNs, see What is S3 on  Outposts  in
+          the Amazon S3 User Guide .
 
        --cache-control (string)
           Can  be  used  to  specify  caching behavior along the request/reply
@@ -222,30 +216,29 @@ OPTIONS
 
        --content-disposition (string)
           Specifies presentational information for the object. For more infor-
-          mation,                                                          see
-          http://www.w3.org/Protocols/rfc2616/rfc2616-sec19.html#sec19.5.1 .
+          mation, see https://www.rfc-editor.org/rfc/rfc6266#section-4 .
 
        --content-encoding (string)
           Specifies what content encodings have been applied to the object and
-          thus what decoding mechanisms must be  applied  to  obtain  the  me-
-          dia-type  referenced  by the Content-Type header field. For more in-
+          thus  what  decoding  mechanisms  must  be applied to obtain the me-
+          dia-type referenced by the Content-Type header field. For  more  in-
           formation,                                                       see
-          http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.11 .
+          https://www.rfc-editor.org/rfc/rfc9110.html#field.content-encoding .
 
        --content-language (string)
           The language the content is in.
 
        --content-length (long)
           Size of the body in bytes. This parameter is useful when the size of
-          the body cannot be determined automatically. For  more  information,
-          see  http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.13
+          the  body  cannot be determined automatically. For more information,
+          see  https://www.rfc-editor.org/rfc/rfc9110.html#name-content-length
           .
 
        --content-md5 (string)
-          The base64-encoded 128-bit MD5 digest of the  message  (without  the
+          The  base64-encoded  128-bit  MD5 digest of the message (without the
           headers) according to RFC 1864. This header can be used as a message
-          integrity check to verify that the data is the same  data  that  was
-          originally  sent.  Although  it  is optional, we recommend using the
+          integrity  check  to  verify that the data is the same data that was
+          originally sent. Although it is optional,  we  recommend  using  the
           Content-MD5 mechanism as an end-to-end integrity check. For more in-
           formation about REST request authentication, see REST Authentication
           .
@@ -253,18 +246,18 @@ OPTIONS
        --content-type (string)
           A standard MIME type describing the format of the contents. For more
           information,                                                     see
-          http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.17 .
+          https://www.rfc-editor.org/rfc/rfc9110.html#name-content-type .
 
        --checksum-algorithm (string)
-          Indicates the algorithm used to create the checksum for  the  object
-          when  using  the  SDK.  This  header will not provide any additional
-          functionality if not using the SDK. When sending this header,  there
+          Indicates  the  algorithm used to create the checksum for the object
+          when using the SDK. This header  will  not  provide  any  additional
+          functionality  if not using the SDK. When sending this header, there
           must be a corresponding x-amz-checksum or x-amz-trailer header sent.
           Otherwise, Amazon S3 fails the request with the HTTP status code 400
           Bad Request . For more information, see Checking object integrity in
           the Amazon S3 User Guide .
 
-          If you provide an individual checksum, Amazon S3  ignores  any  pro-
+          If  you  provide  an individual checksum, Amazon S3 ignores any pro-
           vided ChecksumAlgorithm parameter.
 
           Possible values:
@@ -280,38 +273,38 @@ OPTIONS
        --checksum-crc32 (string)
           This header can be used as a data integrity check to verify that the
           data received is the same data that was originally sent. This header
-          specifies  the  base64-encoded, 32-bit CRC32 checksum of the object.
+          specifies the base64-encoded, 32-bit CRC32 checksum of  the  object.
           For more information, see Checking object integrity in the Amazon S3
           User Guide .
 
        --checksum-crc32-c (string)
           This header can be used as a data integrity check to verify that the
           data received is the same data that was originally sent. This header
-          specifies  the base64-encoded, 32-bit CRC32C checksum of the object.
+          specifies the base64-encoded, 32-bit CRC32C checksum of the  object.
           For more information, see Checking object integrity in the Amazon S3
           User Guide .
 
        --checksum-sha1 (string)
           This header can be used as a data integrity check to verify that the
           data received is the same data that was originally sent. This header
-          specifies  the  base64-encoded,  160-bit SHA-1 digest of the object.
+          specifies the base64-encoded, 160-bit SHA-1 digest  of  the  object.
           For more information, see Checking object integrity in the Amazon S3
           User Guide .
 
        --checksum-sha256 (string)
           This header can be used as a data integrity check to verify that the
           data received is the same data that was originally sent. This header
-          specifies  the base64-encoded, 256-bit SHA-256 digest of the object.
+          specifies the base64-encoded, 256-bit SHA-256 digest of the  object.
           For more information, see Checking object integrity in the Amazon S3
           User Guide .
 
        --expires (timestamp)
-          The  date  and  time at which the object is no longer cacheable. For
-          more                        information,                         see
-          http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.21 .
+          The date and time at which the object is no  longer  cacheable.  For
+          more                         information,                        see
+          https://www.rfc-editor.org/rfc/rfc7234#section-5.3 .
 
        --grant-full-control (string)
-          Gives  the  grantee READ, READ_ACP, and WRITE_ACP permissions on the
+          Gives the grantee READ, READ_ACP, and WRITE_ACP permissions  on  the
           object.
 
           This action is not supported by Amazon S3 on Outposts.
@@ -351,8 +344,8 @@ OPTIONS
             ...}
 
        --server-side-encryption (string)
-          The server-side encryption algorithm used when storing  this  object
-          in Amazon S3 (for example, AES256, aws:kms).
+          The  server-side  encryption algorithm used when storing this object
+          in Amazon S3 (for example, AES256, aws:kms ).
 
           Possible values:
 
@@ -364,7 +357,7 @@ OPTIONS
           By default, Amazon S3 uses the STANDARD Storage Class to store newly
           created objects. The STANDARD storage class provides high durability
           and high availability. Depending on performance needs, you can spec-
-          ify a different Storage Class. Amazon S3 on Outposts only  uses  the
+          ify  a  different Storage Class. Amazon S3 on Outposts only uses the
           OUTPOSTS Storage Class. For more information, see Storage Classes in
           the Amazon S3 User Guide .
 
@@ -391,17 +384,17 @@ OPTIONS
           o SNOW
 
        --website-redirect-location (string)
-          If the bucket is configured as a  website,  redirects  requests  for
-          this  object  to another object in the same bucket or to an external
-          URL. Amazon S3 stores the value of this header in the  object  meta-
-          data.  For  information  about  object  metadata, see Object Key and
+          If  the  bucket  is  configured as a website, redirects requests for
+          this object to another object in the same bucket or to  an  external
+          URL.  Amazon  S3 stores the value of this header in the object meta-
+          data. For information about object  metadata,  see  Object  Key  and
           Metadata .
 
           In the following example, the request header sets the redirect to an
           object (anotherPage.html) in the same bucket:
               x-amz-website-redirect-location: /anotherPage.html
 
-          In  the  following example, the request header sets the object redi-
+          In the following example, the request header sets the  object  redi-
           rect to another website:
               x-amz-website-redirect-location: http://www.example.com/
 
@@ -409,52 +402,54 @@ OPTIONS
           Websites on Amazon S3 and How to Configure Website Page Redirects .
 
        --sse-customer-algorithm (string)
-          Specifies  the  algorithm  to use to when encrypting the object (for
+          Specifies the algorithm to use to when encrypting  the  object  (for
           example, AES256).
 
        --sse-customer-key (string)
-          Specifies the customer-provided encryption key for Amazon S3 to  use
-          in  encrypting data. This value is used to store the object and then
-          it is discarded; Amazon S3 does not store the  encryption  key.  The
-          key  must be appropriate for use with the algorithm specified in the
+          Specifies  the customer-provided encryption key for Amazon S3 to use
+          in encrypting data. This value is used to store the object and  then
+          it  is  discarded;  Amazon S3 does not store the encryption key. The
+          key must be appropriate for use with the algorithm specified in  the
           x-amz-server-side-encryption-customer-algorithm header.
 
        --sse-customer-key-md5 (string)
-          Specifies the 128-bit MD5 digest of the encryption key according  to
-          RFC  1321.  Amazon S3 uses this header for a message integrity check
+          Specifies  the 128-bit MD5 digest of the encryption key according to
+          RFC 1321. Amazon S3 uses this header for a message  integrity  check
           to ensure that the encryption key was transmitted without error.
 
        --ssekms-key-id (string)
-          If x-amz-server-side-encryption is present  and  has  the  value  of
-          aws:kms  ,  this  header specifies the ID of the Amazon Web Services
-          Key Management Service (Amazon Web Services  KMS)  symmetrical  cus-
-          tomer  managed  key  that  was  used  for the object. If you specify
-          x-amz-server-side-encryption:aws:kms   ,    but    do    not    pro-
+          If  x-amz-server-side-encryption has a valid value of aws:kms , this
+          header specifies the ID of the Amazon Web  Services  Key  Management
+          Service (Amazon Web Services KMS) symmetric encryption customer man-
+          aged  key  that  was  used  for   the   object.   If   you   specify
+          x-amz-server-side-encryption:aws:kms    ,    but    do    not   pro-
           vide``x-amz-server-side-encryption-aws-kms-key-id`` , Amazon S3 uses
-          the Amazon Web Services managed key to protect the data. If the  KMS
+          the  Amazon Web Services managed key to protect the data. If the KMS
           key does not exist in the same account issuing the command, you must
           use the full ARN and not just the ID.
 
        --ssekms-encryption-context (string)
-          Specifies the Amazon Web Services KMS Encryption Context to use  for
-          object  encryption.  The  value  of  this header is a base64-encoded
-          UTF-8 string holding JSON  with  the  encryption  context  key-value
-          pairs.
+          Specifies  the Amazon Web Services KMS Encryption Context to use for
+          object encryption. The value of  this  header  is  a  base64-encoded
+          UTF-8  string  holding  JSON  with  the encryption context key-value
+          pairs. This value is stored as  object  metadata  and  automatically
+          gets  passed  on  to Amazon Web Services KMS for future GetObject or
+          CopyObject operations on this object.
 
        --bucket-key-enabled | --no-bucket-key-enabled (boolean)
-          Specifies  whether  Amazon S3 should use an S3 Bucket Key for object
+          Specifies whether Amazon S3 should use an S3 Bucket Key  for  object
           encryption with server-side encryption using AWS KMS (SSE-KMS). Set-
-          ting  this  header  to true causes Amazon S3 to use an S3 Bucket Key
+          ting this header to true causes Amazon S3 to use an  S3  Bucket  Key
           for object encryption with SSE-KMS.
 
-          Specifying this header with a PUT action doesnt affect  bucket-level
+          Specifying  this header with a PUT action doesnt affect bucket-level
           settings for S3 Bucket Key.
 
        --request-payer (string)
-          Confirms  that the requester knows that they will be charged for the
-          request. Bucket owners need not specify this parameter in their  re-
-          quests.  For  information  about  downloading objects from Requester
-          Pays buckets, see Downloading Objects in Requester Pays  Buckets  in
+          Confirms that the requester knows that they will be charged for  the
+          request.  Bucket owners need not specify this parameter in their re-
+          quests. For information about  downloading  objects  from  Requester
+          Pays  buckets,  see Downloading Objects in Requester Pays Buckets in
           the Amazon S3 User Guide .
 
           Possible values:
@@ -479,7 +474,7 @@ OPTIONS
           Must be formatted as a timestamp parameter.
 
        --object-lock-legal-hold-status (string)
-          Specifies  whether  a legal hold will be applied to this object. For
+          Specifies whether a legal hold will be applied to this  object.  For
           more information about S3 Object Lock, see Object Lock .
 
           Possible values:
@@ -489,21 +484,21 @@ OPTIONS
           o OFF
 
        --expected-bucket-owner (string)
-          The account ID of the expected bucket owner. If the bucket is  owned
-          by  a different account, the request fails with the HTTP status code
+          The  account ID of the expected bucket owner. If the bucket is owned
+          by a different account, the request fails with the HTTP status  code
           403 Forbidden (access denied).
 
-       --cli-input-json (string) Performs service operation based on the  JSON
-       string  provided. The JSON string follows the format provided by --gen-
-       erate-cli-skeleton. If other arguments  are  provided  on  the  command
-       line,  the CLI values will override the JSON-provided values. It is not
+       --cli-input-json  (string) Performs service operation based on the JSON
+       string provided. The JSON string follows the format provided by  --gen-
+       erate-cli-skeleton.  If  other  arguments  are  provided on the command
+       line, the CLI values will override the JSON-provided values. It is  not
        possible to pass arbitrary binary values using a JSON-provided value as
        the string will be taken literally.
 
-       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
+       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
        output without sending an API request. If provided with no value or the
        value input, prints a sample input JSON that can be used as an argument
-       for --cli-input-json. If provided with the value output,  it  validates
+       for  --cli-input-json.  If provided with the value output, it validates
        the command inputs and returns a sample output JSON for that command.
 
 GLOBAL OPTIONS
@@ -517,7 +512,7 @@ GLOBAL OPTIONS
 
        --no-verify-ssl (boolean)
 
-       By  default, the AWS CLI uses SSL when communicating with AWS services.
+       By default, the AWS CLI uses SSL when communicating with AWS  services.
        For each SSL connection, the AWS CLI will verify SSL certificates. This
        option overrides the default behavior of verifying SSL certificates.
 
@@ -563,7 +558,7 @@ GLOBAL OPTIONS
 
        --no-sign-request (boolean)
 
-       Do  not  sign requests. Credentials will not be loaded if this argument
+       Do not sign requests. Credentials will not be loaded if  this  argument
        is provided.
 
        --ca-bundle (string)
@@ -573,117 +568,117 @@ GLOBAL OPTIONS
 
        --cli-read-timeout (int)
 
-       The  maximum socket read time in seconds. If the value is set to 0, the
-       socket read will be blocking and not timeout. The default value  is  60
+       The maximum socket read time in seconds. If the value is set to 0,  the
+       socket  read  will be blocking and not timeout. The default value is 60
        seconds.
 
        --cli-connect-timeout (int)
 
-       The  maximum  socket connect time in seconds. If the value is set to 0,
-       the socket connect will be blocking and not timeout. The default  value
+       The maximum socket connect time in seconds. If the value is set  to  0,
+       the  socket connect will be blocking and not timeout. The default value
        is 60 seconds.
 
 EXAMPLES
        NOTE:
-          To  use  the following examples, you must have the AWS CLI installed
-          and configured. See the Getting started guide in the  AWS  CLI  User
+          To use the following examples, you must have the AWS  CLI  installed
+          and  configured.  See  the Getting started guide in the AWS CLI User
           Guide for more information.
 
-          Unless  otherwise  stated,  all  examples  have  unix-like quotation
-          rules. These examples will need to be  adapted  to  your  terminal's
+          Unless otherwise  stated,  all  examples  have  unix-like  quotation
+          rules.  These  examples  will  need to be adapted to your terminal's
           quoting rules. See Using quotation marks with strings in the AWS CLI
           User Guide .
 
-       The following example uses the put-object command to upload  an  object
+       The  following  example uses the put-object command to upload an object
        to Amazon S3:
 
           aws s3api put-object --bucket text-content --key dir-1/my_images.tar.bz2 --body my_images.tar.bz2
 
-       The  following  example shows an upload of a video file (The video file
+       The following example shows an upload of a video file (The  video  file
        is specified using Windows file system syntax.):
 
           aws s3api put-object --bucket text-content --key dir-1/big-video-file.mp4 --body e:\media\videos\f-sharp-3-data-services.mp4
 
-       For more information about uploading objects, see Uploading Objects  in
+       For  more information about uploading objects, see Uploading Objects in
        the Amazon S3 Developer Guide.
 
 OUTPUT
        Expiration -> (string)
-          If    the   expiration   is   configured   for   the   object   (see
-          PutBucketLifecycleConfiguration  ),  the  response   includes   this
+          If   the   expiration   is   configured   for   the   object    (see
+          PutBucketLifecycleConfiguration   ),   the  response  includes  this
           header. It includes the expiry-date and rule-id key-value pairs that
-          provide information  about  object  expiration.  The  value  of  the
+          provide  information  about  object  expiration.  The  value  of the
           rule-id is URL-encoded.
 
        ETag -> (string)
           Entity tag for the uploaded object.
 
        ChecksumCRC32 -> (string)
-          The  base64-encoded,  32-bit CRC32 checksum of the object. This will
-          only be present if it was uploaded with the object.  With  multipart
-          uploads,  this  may  not be a checksum value of the object. For more
-          information about how checksums are calculated  with  multipart  up-
+          The base64-encoded, 32-bit CRC32 checksum of the object.  This  will
+          only  be  present if it was uploaded with the object. With multipart
+          uploads, this may not be a checksum value of the  object.  For  more
+          information  about  how  checksums are calculated with multipart up-
           loads, see Checking object integrity in the Amazon S3 User Guide .
 
        ChecksumCRC32C -> (string)
-          The  base64-encoded, 32-bit CRC32C checksum of the object. This will
-          only be present if it was uploaded with the object.  With  multipart
-          uploads,  this  may  not be a checksum value of the object. For more
-          information about how checksums are calculated  with  multipart  up-
+          The base64-encoded, 32-bit CRC32C checksum of the object. This  will
+          only  be  present if it was uploaded with the object. With multipart
+          uploads, this may not be a checksum value of the  object.  For  more
+          information  about  how  checksums are calculated with multipart up-
           loads, see Checking object integrity in the Amazon S3 User Guide .
 
        ChecksumSHA1 -> (string)
-          The  base64-encoded,  160-bit  SHA-1 digest of the object. This will
-          only be present if it was uploaded with the object.  With  multipart
-          uploads,  this  may  not be a checksum value of the object. For more
-          information about how checksums are calculated  with  multipart  up-
+          The base64-encoded, 160-bit SHA-1 digest of the  object.  This  will
+          only  be  present if it was uploaded with the object. With multipart
+          uploads, this may not be a checksum value of the  object.  For  more
+          information  about  how  checksums are calculated with multipart up-
           loads, see Checking object integrity in the Amazon S3 User Guide .
 
        ChecksumSHA256 -> (string)
-          The  base64-encoded, 256-bit SHA-256 digest of the object. This will
-          only be present if it was uploaded with the object.  With  multipart
-          uploads,  this  may  not be a checksum value of the object. For more
-          information about how checksums are calculated  with  multipart  up-
+          The base64-encoded, 256-bit SHA-256 digest of the object. This  will
+          only  be  present if it was uploaded with the object. With multipart
+          uploads, this may not be a checksum value of the  object.  For  more
+          information  about  how  checksums are calculated with multipart up-
           loads, see Checking object integrity in the Amazon S3 User Guide .
 
        ServerSideEncryption -> (string)
-          If  you  specified  server-side encryption either with an Amazon Web
-          Services KMS key or Amazon S3-managed encryption key in your PUT re-
-          quest, the response includes this header. It confirms the encryption
-          algorithm that Amazon S3 used to encrypt the object.
+          The server-side encryption algorithm used when storing  this  object
+          in Amazon S3 (for example, AES256, aws:kms ).
 
        VersionId -> (string)
           Version of the object.
 
        SSECustomerAlgorithm -> (string)
-          If server-side encryption with a  customer-provided  encryption  key
-          was  requested, the response will include this header confirming the
+          If  server-side  encryption  with a customer-provided encryption key
+          was requested, the response will include this header confirming  the
           encryption algorithm used.
 
        SSECustomerKeyMD5 -> (string)
-          If server-side encryption with a  customer-provided  encryption  key
-          was  requested,  the  response  will  include this header to provide
-          round-trip message integrity verification of  the  customer-provided
+          If  server-side  encryption  with a customer-provided encryption key
+          was requested, the response will  include  this  header  to  provide
+          round-trip  message  integrity verification of the customer-provided
           encryption key.
 
        SSEKMSKeyId -> (string)
-          If  x-amz-server-side-encryption  is  present  and  has the value of
-          aws:kms , this header specifies the ID of the  Amazon  Web  Services
-          Key  Management Service (Amazon Web Services KMS) symmetric customer
+          If x-amz-server-side-encryption is has a valid value  of  aws:kms  ,
+          this  header specifies the ID of the Amazon Web Services Key Manage-
+          ment Service (Amazon Web Services KMS) symmetric encryption customer
           managed key that was used for the object.
 
        SSEKMSEncryptionContext -> (string)
           If present, specifies the Amazon Web Services KMS Encryption Context
-          to  use  for  object  encryption.  The  value  of  this  header is a
+          to use for  object  encryption.  The  value  of  this  header  is  a
           base64-encoded UTF-8 string holding JSON with the encryption context
-          key-value pairs.
+          key-value pairs. This value is stored as object metadata  and  auto-
+          matically gets passed on to Amazon Web Services KMS for future GetO-
+          bject or CopyObject operations on this object.
 
        BucketKeyEnabled -> (boolean)
-          Indicates  whether  the  uploaded  object  uses an S3 Bucket Key for
+          Indicates whether the uploaded object uses  an  S3  Bucket  Key  for
           server-side encryption with Amazon Web Services KMS (SSE-KMS).
 
        RequestCharged -> (string)
-          If present, indicates that the requester  was  successfully  charged
+          If  present,  indicates  that the requester was successfully charged
           for the request.
 
 

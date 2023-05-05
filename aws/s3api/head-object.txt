@@ -14,12 +14,13 @@ DESCRIPTION
        A HEAD request has the same options as a GET action on an  object.  The
        response  is  identical to the GET response except that there is no re-
        sponse body. Because of this, if the HEAD request generates  an  error,
-       it  returns  a  generic  404 Not Found or 403 Forbidden code. It is not
-       possible to retrieve the exact exception beyond these error codes.
+       it  returns  a generic 400 Bad Request , 403 Forbidden or 404 Not Found
+       code. It is not possible to retrieve the exact exception  beyond  these
+       error codes.
 
-       If you encrypt an object by  using  server-side  encryption  with  cus-
-       tomer-provided  encryption  keys  (SSE-C)  when you store the object in
-       Amazon S3, then when you retrieve the metadata  from  the  object,  you
+       If  you  encrypt  an  object  by using server-side encryption with cus-
+       tomer-provided encryption keys (SSE-C) when you  store  the  object  in
+       Amazon  S3,  then  when  you retrieve the metadata from the object, you
        must use the following headers:
 
        o x-amz-server-side-encryption-customer-algorithm
@@ -28,27 +29,27 @@ DESCRIPTION
 
        o x-amz-server-side-encryption-customer-key-MD5
 
-       For  more  information  about  SSE-C, see Server-Side Encryption (Using
+       For more information about SSE-C,  see  Server-Side  Encryption  (Using
        Customer-Provided Encryption Keys) .
 
        NOTE:
 
-          o Encryption request headers,  like  x-amz-server-side-encryption  ,
-            should   not  be  sent  for  GET  requests  if  your  object  uses
-            server-side encryption with KMS keys (SSE-KMS) or server-side  en-
-            cryption  with  Amazon S3managed encryption keys (SSE-S3). If your
-            object does use these  types  of  keys,  youll  get  an  HTTP  400
+          o Encryption  request  headers,  like x-amz-server-side-encryption ,
+            should  not  be  sent  for  GET  requests  if  your  object   uses
+            server-side  encryption with KMS keys (SSE-KMS) or server-side en-
+            cryption with Amazon S3managed encryption keys (SSE-S3).  If  your
+            object  does  use  these  types  of  keys,  youll  get an HTTP 400
             BadRequest error.
 
-          o The  last  modified  property in this case is the creation date of
+          o The last modified property in this case is the  creation  date  of
             the object.
 
-       Request headers are limited to 8 KB in size. For more information,  see
+       Request  headers are limited to 8 KB in size. For more information, see
        Common Request Headers .
 
        Consider the following when using request headers:
 
-       o Consideration  1   If  both  of  the If-Match and If-Unmodified-Since
+       o Consideration 1  If both  of  the  If-Match  and  If-Unmodified-Since
          headers are present in the request as follows:
 
          o If-Match condition evaluates to true , and;
@@ -57,7 +58,7 @@ DESCRIPTION
 
        Then Amazon S3 returns 200 OK and the data requested.
 
-       o Consideration 2  If both of the If-None-Match  and  If-Modified-Since
+       o Consideration  2   If both of the If-None-Match and If-Modified-Since
          headers are present in the request as follows:
 
          o If-None-Match condition evaluates to false , and;
@@ -69,10 +70,11 @@ DESCRIPTION
        For more information about conditional requests, see RFC 7232 .
           Permissions
 
-       You  need the relevant read object (or version) permission for this op-
-       eration. For more information, see Specifying Permissions in a Policy .
-       If  the  object you request does not exist, the error Amazon S3 returns
-       depends on whether you also have the s3:ListBucket permission.
+       You need the relevant read object (or version) permission for this  op-
+       eration.  For  more  information, see Actions, resources, and condition
+       keys for Amazon S3 . If the object you request does not exist, the  er-
+       ror  Amazon  S3  returns  depends on whether you also have the s3:List-
+       Bucket permission.
 
        o If you have the s3:ListBucket permission on the bucket, Amazon S3 re-
          turns an HTTP status code 404 ("no such key") error.
@@ -134,14 +136,14 @@ OPTIONS
           of  the  bucket  name. For more information about access point ARNs,
           see Using access points in the Amazon S3 User Guide .
 
-          When using this action with Amazon S3 on Outposts, you  must  direct
+          When you use this action with Amazon S3 on Outposts, you must direct
           requests to the S3 on Outposts hostname. The S3 on Outposts hostname
           takes the form `` AccessPointName -AccountId  .*outpostID*  .s3-out-
-          posts.*Region*  .amazonaws.com`` . When using this action with S3 on
-          Outposts through the Amazon Web Services SDKs, you provide the  Out-
-          posts  bucket  ARN in place of the bucket name. For more information
-          about S3 on Outposts ARNs, see Using Amazon S3 on  Outposts  in  the
-          Amazon S3 User Guide .
+          posts.*Region*  .amazonaws.com``  . When you use this action with S3
+          on Outposts through the Amazon Web Services SDKs,  you  provide  the
+          Outposts  access point ARN in place of the bucket name. For more in-
+          formation about S3 on Outposts ARNs, see What is S3 on  Outposts  in
+          the Amazon S3 User Guide .
 
        --if-match (string)
           Return  the  object only if its entity tag (ETag) is the same as the
@@ -163,8 +165,10 @@ OPTIONS
           The object key.
 
        --range (string)
-          Because HeadObject returns only the metadata for an object, this pa-
-          rameter has no effect.
+          HeadObject  returns only the metadata for an object. If the Range is
+          satisfiable, only the ContentLength is affected in the response.  If
+          the Range is not satisfiable, S3 returns a 416 - Requested Range Not
+          Satisfiable error.
 
        --version-id (string)
           VersionId used to reference a specific version of the object.
@@ -447,11 +451,8 @@ OUTPUT
           data.
 
        ServerSideEncryption -> (string)
-          If the object is stored using server-side encryption either with  an
-          Amazon  Web Services KMS key or an Amazon S3-managed encryption key,
-          the response includes this header with the value of the  server-side
-          encryption algorithm used when storing this object in Amazon S3 (for
-          example, AES256, aws:kms).
+          The server-side encryption algorithm used when storing  this  object
+          in Amazon S3 (for example, AES256, aws:kms ).
 
        Metadata -> (map)
           A map of metadata to store with the object in S3.
@@ -461,92 +462,92 @@ OUTPUT
           value -> (string)
 
        SSECustomerAlgorithm -> (string)
-          If server-side encryption with a  customer-provided  encryption  key
-          was  requested, the response will include this header confirming the
+          If  server-side  encryption  with a customer-provided encryption key
+          was requested, the response will include this header confirming  the
           encryption algorithm used.
 
        SSECustomerKeyMD5 -> (string)
-          If server-side encryption with a  customer-provided  encryption  key
-          was  requested,  the  response  will  include this header to provide
-          round-trip message integrity verification of  the  customer-provided
+          If  server-side  encryption  with a customer-provided encryption key
+          was requested, the response will  include  this  header  to  provide
+          round-trip  message  integrity verification of the customer-provided
           encryption key.
 
        SSEKMSKeyId -> (string)
-          If  present, specifies the ID of the Amazon Web Services Key Manage-
-          ment Service (Amazon Web Services KMS)  symmetric  customer  managed
-          key that was used for the object.
+          If present, specifies the ID of the Amazon Web Services Key  Manage-
+          ment Service (Amazon Web Services KMS) symmetric encryption customer
+          managed key that was used for the object.
 
        BucketKeyEnabled -> (boolean)
-          Indicates  whether  the object uses an S3 Bucket Key for server-side
+          Indicates whether the object uses an S3 Bucket Key  for  server-side
           encryption with Amazon Web Services KMS (SSE-KMS).
 
        StorageClass -> (string)
-          Provides storage class information of the object. Amazon S3  returns
+          Provides  storage class information of the object. Amazon S3 returns
           this header for all objects except for S3 Standard storage class ob-
           jects.
 
           For more information, see Storage Classes .
 
        RequestCharged -> (string)
-          If present, indicates that the requester  was  successfully  charged
+          If  present,  indicates  that the requester was successfully charged
           for the request.
 
        ReplicationStatus -> (string)
-          Amazon  S3  can return this header if your request involves a bucket
+          Amazon S3 can return this header if your request involves  a  bucket
           that is either a source or a destination in a replication rule.
 
-          In replication, you have a source  bucket  on  which  you  configure
+          In  replication,  you  have  a  source bucket on which you configure
           replication and destination bucket or buckets where Amazon S3 stores
-          object replicas. When you request an object (GetObject )  or  object
+          object  replicas.  When you request an object (GetObject ) or object
           metadata (HeadObject ) from these buckets, Amazon S3 will return the
           x-amz-replication-status header in the response as follows:
 
-          o If requesting an object from the source bucket ,  Amazon  S3  will
-            return  the  x-amz-replication-status header if the object in your
-            request is eligible for replication. For example, suppose that  in
-            your  replication configuration, you specify object prefix TaxDocs
-            requesting Amazon S3 to replicate objects with key prefix  TaxDocs
-            .  Any  objects  you upload with this key name prefix, for example
-            TaxDocs/document1.pdf , are eligible for replication. For any  ob-
-            ject  request with this key name prefix, Amazon S3 will return the
-            x-amz-replication-status header with value PENDING,  COMPLETED  or
+          o If  requesting  an  object from the source bucket , Amazon S3 will
+            return the x-amz-replication-status header if the object  in  your
+            request  is eligible for replication. For example, suppose that in
+            your replication configuration, you specify object prefix  TaxDocs
+            requesting  Amazon S3 to replicate objects with key prefix TaxDocs
+            . Any objects you upload with this key name  prefix,  for  example
+            TaxDocs/document1.pdf  , are eligible for replication. For any ob-
+            ject request with this key name prefix, Amazon S3 will return  the
+            x-amz-replication-status  header  with value PENDING, COMPLETED or
             FAILED indicating object replication status.
 
           o If requesting an object from a destination bucket , Amazon S3 will
-            return the x-amz-replication-status header with value  REPLICA  if
+            return  the  x-amz-replication-status header with value REPLICA if
             the object in your request is a replica that Amazon S3 created and
             there is no replica modification replication in progress.
 
-          o When replicating objects to multiple  destination  buckets  ,  the
-            x-amz-replication-status  header  acts  differently. The header of
-            the source object will only  return  a  value  of  COMPLETED  when
+          o When  replicating  objects  to  multiple destination buckets , the
+            x-amz-replication-status header acts differently.  The  header  of
+            the  source  object  will  only  return  a value of COMPLETED when
             replication is successful to all destinations. The header will re-
             main at value PENDING until replication has completed for all des-
-            tinations.  If  one  or  more  destinations  fails replication the
+            tinations. If one  or  more  destinations  fails  replication  the
             header will return FAILED.
 
           For more information, see Replication .
 
        PartsCount -> (integer)
-          The count of parts this object has. This value is only  returned  if
-          you  specify  partNumber in your request and the object was uploaded
+          The  count  of parts this object has. This value is only returned if
+          you specify partNumber in your request and the object  was  uploaded
           as a multipart upload.
 
        ObjectLockMode -> (string)
           The Object Lock mode, if any, that's in effect for this object. This
-          header  is only returned if the requester has the s3:GetObjectReten-
-          tion permission. For more information  about  S3  Object  Lock,  see
+          header is only returned if the requester has the  s3:GetObjectReten-
+          tion  permission.  For  more  information  about S3 Object Lock, see
           Object Lock .
 
        ObjectLockRetainUntilDate -> (timestamp)
-          The  date  and  time  when the Object Lock retention period expires.
-          This header is only returned if the requester has  the  s3:GetObjec-
+          The date and time when the Object  Lock  retention  period  expires.
+          This  header  is only returned if the requester has the s3:GetObjec-
           tRetention permission.
 
        ObjectLockLegalHoldStatus -> (string)
-          Specifies  whether  a  legal hold is in effect for this object. This
-          header is only returned if the requester has the  s3:GetObjectLegal-
-          Hold  permission.  This header is not returned if the specified ver-
+          Specifies whether a legal hold is in effect for  this  object.  This
+          header  is only returned if the requester has the s3:GetObjectLegal-
+          Hold permission. This header is not returned if the  specified  ver-
           sion of this object has never had a legal hold applied. For more in-
           formation about S3 Object Lock, see Object Lock .
 

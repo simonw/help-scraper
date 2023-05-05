@@ -91,19 +91,22 @@ DESCRIPTION
 
        o An image ID, ImageId , assigned by the service for the input image.
 
-       If  you request all facial attributes (by using the detectionAttributes
-       parameter), Amazon Rekognition returns detailed facial attributes, such
-       as  facial landmarks (for example, location of eye and mouth) and other
-       facial attributes. If you provide the same image, specify the same col-
-       lection, and use the same external ID in the IndexFaces operation, Ama-
-       zon Rekognition doesn't save duplicate face metadata.
+       If you request ALL or specific facial attributes (e.g., FACE_OCCLUDED )
+       by using the detectionAttributes parameter, Amazon Rekognition  returns
+       detailed  facial attributes, such as facial landmarks (for example, lo-
+       cation of eye and  mouth),  facial  occlusion,  and  other  facial  at-
+       tributes.
+
+       If you provide the same image, specify the same collection, and use the
+       same external  ID  in  the  IndexFaces  operation,  Amazon  Rekognition
+       doesn't save duplicate face metadata.
 
        The input image is passed either as base64-encoded image bytes, or as a
        reference to an image in an Amazon S3 bucket. If you use the AWS CLI to
-       call Amazon Rekognition operations,  passing  image  bytes  isn't  sup-
+       call  Amazon  Rekognition  operations,  passing  image bytes isn't sup-
        ported. The image must be formatted as a PNG or JPEG file.
 
-       This  operation  requires permissions to perform the rekognition:Index-
+       This operation requires permissions to perform  the  rekognition:Index-
        Faces action.
 
        See also: AWS API Documentation
@@ -136,23 +139,23 @@ SYNOPSIS
 
 OPTIONS
        --collection-id (string)
-          The ID of an existing collection to which you want to add the  faces
+          The  ID of an existing collection to which you want to add the faces
           that are detected in the input images.
 
        --image (structure)
-          The  input image as base64-encoded bytes or an S3 object. If you use
-          the  AWS  CLI  to  call  Amazon  Rekognition   operations,   passing
+          The input image as base64-encoded bytes or an S3 object. If you  use
+          the   AWS   CLI  to  call  Amazon  Rekognition  operations,  passing
           base64-encoded image bytes isn't supported.
 
-          If  you  are  using an AWS SDK to call Amazon Rekognition, you might
-          not need to base64-encode image bytes passed using the Bytes  field.
+          If you are using an AWS SDK to call Amazon  Rekognition,  you  might
+          not  need to base64-encode image bytes passed using the Bytes field.
           For more information, see Images in the Amazon Rekognition developer
           guide.
 
           To specify a local file use --image-bytes instead.
 
           Bytes -> (blob)
-              Blob of image bytes up to 5 MBs. Note  that  the  maximum  image
+              Blob  of  image  bytes  up to 5 MBs. Note that the maximum image
               size you can pass to DetectCustomLabels is 4MB.
 
           S3Object -> (structure)
@@ -165,7 +168,7 @@ OPTIONS
                  S3 object key name.
 
               Version -> (string)
-                 If  the bucket is versioning enabled, you can specify the ob-
+                 If the bucket is versioning enabled, you can specify the  ob-
                  ject version.
 
        Shorthand Syntax:
@@ -187,16 +190,16 @@ OPTIONS
           The ID you want to assign to all the faces detected in the image.
 
        --detection-attributes (list)
-          An array of facial attributes that you want to be returned. This can
-          be  the  default  list of attributes or all attributes. If you don't
-          specify a value for Attributes or if you specify ["DEFAULT"]  ,  the
-          API returns the following subset of facial attributes: BoundingBox ,
-          Confidence , Pose , Quality , and Landmarks . If you provide ["ALL"]
-          , all facial attributes are returned, but the operation takes longer
-          to complete.
+          An  array  of  facial  attributes you want to be returned. A DEFAULT
+          subset of facial attributes - BoundingBox  ,  Confidence  ,  Pose  ,
+          Quality  ,  and Landmarks - will always be returned. You can request
+          for specific facial attributes (in addition to the default  list)  -
+          by  using  ["DEFAULT",  "FACE_OCCLUDED"] or just ["FACE_OCCLUDED"] .
+          You can request for all facial attributes by  using  ["ALL"]  .  Re-
+          questing more attributes may increase response time.
 
           If you provide both, ["ALL", "DEFAULT"] , the service uses a logical
-          AND  operator to determine which attributes to return (in this case,
+          AND operator to determine which attributes to return (in this  case,
           all attributes).
 
           (string)
@@ -208,34 +211,45 @@ OPTIONS
           Where valid values are:
             DEFAULT
             ALL
+            AGE_RANGE
+            BEARD
+            EMOTIONS
+            EYEGLASSES
+            EYES_OPEN
+            GENDER
+            MOUTH_OPEN
+            MUSTACHE
+            FACE_OCCLUDED
+            SMILE
+            SUNGLASSES
 
        --max-faces (integer)
-          The maximum number of faces to index. The value of MaxFaces must  be
-          greater  than or equal to 1. IndexFaces returns no more than 100 de-
-          tected faces in an image, even if you specify  a  larger  value  for
+          The  maximum number of faces to index. The value of MaxFaces must be
+          greater than or equal to 1. IndexFaces returns no more than 100  de-
+          tected  faces  in  an  image, even if you specify a larger value for
           MaxFaces .
 
-          If  IndexFaces  detects  more faces than the value of MaxFaces , the
-          faces with the lowest quality are filtered out first. If  there  are
-          still  more  faces  than  the value of MaxFaces , the faces with the
-          smallest bounding boxes are filtered out (up to  the  number  that's
-          needed  to  satisfy  the  value of MaxFaces ). Information about the
+          If IndexFaces detects more faces than the value of  MaxFaces  ,  the
+          faces  with  the lowest quality are filtered out first. If there are
+          still more faces than the value of MaxFaces ,  the  faces  with  the
+          smallest  bounding  boxes  are filtered out (up to the number that's
+          needed to satisfy the value of MaxFaces  ).  Information  about  the
           unindexed faces is available in the UnindexedFaces array.
 
-          The faces that are returned by IndexFaces are sorted by the  largest
+          The  faces that are returned by IndexFaces are sorted by the largest
           face bounding box size to the smallest size, in descending order.
-              MaxFaces  can be used with a collection associated with any ver-
+              MaxFaces can be used with a collection associated with any  ver-
               sion of the face model.
 
        --quality-filter (string)
           A filter that specifies a quality bar for how much filtering is done
-          to  identify  faces.  Filtered  faces aren't indexed. If you specify
-          AUTO , Amazon Rekognition chooses the quality bar.  If  you  specify
-          LOW  , MEDIUM , or HIGH , filtering removes all faces that dont meet
-          the chosen quality bar. The default value is AUTO . The quality  bar
-          is  based  on  a variety of common use cases. Low-quality detections
-          can occur for a number of  reasons.  Some  examples  are  an  object
-          that's  misidentified as a face, a face that's too blurry, or a face
+          to identify faces. Filtered faces aren't  indexed.  If  you  specify
+          AUTO  ,  Amazon  Rekognition chooses the quality bar. If you specify
+          LOW , MEDIUM , or HIGH , filtering removes all faces that dont  meet
+          the  chosen quality bar. The default value is AUTO . The quality bar
+          is based on a variety of common use  cases.  Low-quality  detections
+          can  occur  for  a  number  of  reasons. Some examples are an object
+          that's misidentified as a face, a face that's too blurry, or a  face
           with a pose that's too extreme to use. If you specify NONE , no fil-
           tering is performed.
 
@@ -258,17 +272,17 @@ OPTIONS
           The content of the image to be uploaded. To specify the content of a
           local file use the fileb:// prefix. Example: fileb://image.png
 
-       --cli-input-json  (string) Performs service operation based on the JSON
-       string provided. The JSON string follows the format provided by  --gen-
-       erate-cli-skeleton.  If  other  arguments  are  provided on the command
-       line, the CLI values will override the JSON-provided values. It is  not
+       --cli-input-json (string) Performs service operation based on the  JSON
+       string  provided. The JSON string follows the format provided by --gen-
+       erate-cli-skeleton. If other arguments  are  provided  on  the  command
+       line,  the CLI values will override the JSON-provided values. It is not
        possible to pass arbitrary binary values using a JSON-provided value as
        the string will be taken literally.
 
-       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
+       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
        output without sending an API request. If provided with no value or the
        value input, prints a sample input JSON that can be used as an argument
-       for  --cli-input-json.  If provided with the value output, it validates
+       for --cli-input-json. If provided with the value output,  it  validates
        the command inputs and returns a sample output JSON for that command.
 
 GLOBAL OPTIONS
@@ -282,7 +296,7 @@ GLOBAL OPTIONS
 
        --no-verify-ssl (boolean)
 
-       By default, the AWS CLI uses SSL when communicating with AWS  services.
+       By  default, the AWS CLI uses SSL when communicating with AWS services.
        For each SSL connection, the AWS CLI will verify SSL certificates. This
        option overrides the default behavior of verifying SSL certificates.
 
@@ -328,7 +342,7 @@ GLOBAL OPTIONS
 
        --no-sign-request (boolean)
 
-       Do not sign requests. Credentials will not be loaded if  this  argument
+       Do  not  sign requests. Credentials will not be loaded if this argument
        is provided.
 
        --ca-bundle (string)
@@ -338,30 +352,30 @@ GLOBAL OPTIONS
 
        --cli-read-timeout (int)
 
-       The maximum socket read time in seconds. If the value is set to 0,  the
-       socket  read  will be blocking and not timeout. The default value is 60
+       The  maximum socket read time in seconds. If the value is set to 0, the
+       socket read will be blocking and not timeout. The default value  is  60
        seconds.
 
        --cli-connect-timeout (int)
 
-       The maximum socket connect time in seconds. If the value is set  to  0,
-       the  socket connect will be blocking and not timeout. The default value
+       The  maximum  socket connect time in seconds. If the value is set to 0,
+       the socket connect will be blocking and not timeout. The default  value
        is 60 seconds.
 
 EXAMPLES
        NOTE:
-          To use the following examples, you must have the AWS  CLI  installed
-          and  configured.  See  the Getting started guide in the AWS CLI User
+          To  use  the following examples, you must have the AWS CLI installed
+          and configured. See the Getting started guide in the  AWS  CLI  User
           Guide for more information.
 
-          Unless otherwise  stated,  all  examples  have  unix-like  quotation
-          rules.  These  examples  will  need to be adapted to your terminal's
+          Unless  otherwise  stated,  all  examples  have  unix-like quotation
+          rules. These examples will need to be  adapted  to  your  terminal's
           quoting rules. See Using quotation marks with strings in the AWS CLI
           User Guide .
 
        To add faces to a collection
 
-       The  following  index-faces command adds the faces found in an image to
+       The following index-faces command adds the faces found in an  image  to
        the specified collection.
 
           aws rekognition index-faces \
@@ -591,70 +605,31 @@ EXAMPLES
               "OrientationCorrection": "ROTATE_0"
           }
 
-       For more information, see Adding Faces to a Collection  in  the  Amazon
+       For  more  information,  see Adding Faces to a Collection in the Amazon
        Rekognition Developer Guide.
 
 OUTPUT
        FaceRecords -> (list)
           An array of faces detected and added to the collection. For more in-
-          formation, see Searching Faces in a Collection in the Amazon  Rekog-
+          formation,  see Searching Faces in a Collection in the Amazon Rekog-
           nition Developer Guide.
 
           (structure)
-              Object  containing both the face metadata (stored in the backend
-              database), and facial attributes that are  detected  but  aren't
+              Object containing both the face metadata (stored in the  backend
+              database),  and  facial  attributes that are detected but aren't
               stored in the database.
 
               Face -> (structure)
-                 Describes  the face properties such as the bounding box, face
-                 ID, image ID of the input image, and external image  ID  that
+                 Describes the face properties such as the bounding box,  face
+                 ID,  image  ID of the input image, and external image ID that
                  you assigned.
 
                  FaceId -> (string)
-                     Unique  identifier that Amazon Rekognition assigns to the
+                     Unique identifier that Amazon Rekognition assigns to  the
                      face.
 
                  BoundingBox -> (structure)
                      Bounding box of the face.
-
-                     Width -> (float)
-                        Width of the bounding box as a ratio  of  the  overall
-                        image width.
-
-                     Height -> (float)
-                        Height  of  the bounding box as a ratio of the overall
-                        image height.
-
-                     Left -> (float)
-                        Left coordinate of the bounding  box  as  a  ratio  of
-                        overall image width.
-
-                     Top -> (float)
-                        Top coordinate of the bounding box as a ratio of over-
-                        all image height.
-
-                 ImageId -> (string)
-                     Unique identifier that Amazon Rekognition assigns to  the
-                     input image.
-
-                 ExternalImageId -> (string)
-                     Identifier  that you assign to all the faces in the input
-                     image.
-
-                 Confidence -> (float)
-                     Confidence level that the bounding box  contains  a  face
-                     (and not a different object such as a tree).
-
-                 IndexFacesModelVersion -> (string)
-                     The version of the face detect and storage model that was
-                     used when indexing the face vector.
-
-              FaceDetail -> (structure)
-                 Structure containing attributes of the face  that  the  algo-
-                 rithm detected.
-
-                 BoundingBox -> (structure)
-                     Bounding box of the face. Default attribute.
 
                      Width -> (float)
                         Width  of  the  bounding box as a ratio of the overall
@@ -672,9 +647,48 @@ OUTPUT
                         Top coordinate of the bounding box as a ratio of over-
                         all image height.
 
+                 ImageId -> (string)
+                     Unique  identifier that Amazon Rekognition assigns to the
+                     input image.
+
+                 ExternalImageId -> (string)
+                     Identifier that you assign to all the faces in the  input
+                     image.
+
+                 Confidence -> (float)
+                     Confidence  level  that  the bounding box contains a face
+                     (and not a different object such as a tree).
+
+                 IndexFacesModelVersion -> (string)
+                     The version of the face detect and storage model that was
+                     used when indexing the face vector.
+
+              FaceDetail -> (structure)
+                 Structure  containing  attributes  of the face that the algo-
+                 rithm detected.
+
+                 BoundingBox -> (structure)
+                     Bounding box of the face. Default attribute.
+
+                     Width -> (float)
+                        Width of the bounding box as a ratio  of  the  overall
+                        image width.
+
+                     Height -> (float)
+                        Height  of  the bounding box as a ratio of the overall
+                        image height.
+
+                     Left -> (float)
+                        Left coordinate of the bounding  box  as  a  ratio  of
+                        overall image width.
+
+                     Top -> (float)
+                        Top coordinate of the bounding box as a ratio of over-
+                        all image height.
+
                  AgeRange -> (structure)
                      The estimated age range, in years, for the face. Low rep-
-                     resents the lowest estimated age and High represents  the
+                     resents  the lowest estimated age and High represents the
                      highest estimated age.
 
                      Low -> (integer)
@@ -684,7 +698,7 @@ OUTPUT
                         The highest estimated age.
 
                  Smile -> (structure)
-                     Indicates  whether  or  not  the face is smiling, and the
+                     Indicates whether or not the face  is  smiling,  and  the
                      confidence level in the determination.
 
                      Value -> (boolean)
@@ -706,7 +720,7 @@ OUTPUT
                         Level of confidence in the determination.
 
                  Sunglasses -> (structure)
-                     Indicates  whether or not the face is wearing sunglasses,
+                     Indicates whether or not the face is wearing  sunglasses,
                      and the confidence level in the determination.
 
                      Value -> (boolean)
@@ -726,11 +740,11 @@ OUTPUT
                         Level of confidence in the prediction.
 
                  Beard -> (structure)
-                     Indicates  whether  or  not the face has a beard, and the
+                     Indicates whether or not the face has a  beard,  and  the
                      confidence level in the determination.
 
                      Value -> (boolean)
-                        Boolean value that  indicates  whether  the  face  has
+                        Boolean  value  that  indicates  whether  the face has
                         beard or not.
 
                      Confidence -> (float)
@@ -748,22 +762,22 @@ OUTPUT
                         Level of confidence in the determination.
 
                  EyesOpen -> (structure)
-                     Indicates  whether  or not the eyes on the face are open,
+                     Indicates whether or not the eyes on the face  are  open,
                      and the confidence level in the determination.
 
                      Value -> (boolean)
-                        Boolean value that indicates whether the eyes  on  the
+                        Boolean  value  that indicates whether the eyes on the
                         face are open.
 
                      Confidence -> (float)
                         Level of confidence in the determination.
 
                  MouthOpen -> (structure)
-                     Indicates  whether  or not the mouth on the face is open,
+                     Indicates whether or not the mouth on the face  is  open,
                      and the confidence level in the determination.
 
                      Value -> (boolean)
-                        Boolean value that indicates whether the mouth on  the
+                        Boolean  value that indicates whether the mouth on the
                         face is open or not.
 
                      Confidence -> (float)
@@ -771,20 +785,20 @@ OUTPUT
 
                  Emotions -> (list)
                      The emotions that appear to be expressed on the face, and
-                     the confidence level in the  determination.  The  API  is
+                     the  confidence  level  in  the determination. The API is
                      only making a determination of the physical appearance of
                      a person's face. It is not a determination of the persons
                      internal emotional state and should not be used in such a
-                     way. For example, a person pretending to have a sad  face
+                     way.  For example, a person pretending to have a sad face
                      might not be sad emotionally.
 
                      (structure)
-                        The  emotions that appear to be expressed on the face,
+                        The emotions that appear to be expressed on the  face,
                         and the confidence level in the determination. The API
                         is only making a determination of the physical appear-
-                        ance of a person's face. It is not a determination  of
+                        ance  of a person's face. It is not a determination of
                         the persons internal emotional state and should not be
-                        used in such a way. For example, a  person  pretending
+                        used  in  such a way. For example, a person pretending
                         to have a sad face might not be sad emotionally.
 
                         Type -> (string)
@@ -794,7 +808,7 @@ OUTPUT
                             Level of confidence in the determination.
 
                  Landmarks -> (list)
-                     Indicates  the location of landmarks on the face. Default
+                     Indicates the location of landmarks on the face.  Default
                      attribute.
 
                      (structure)
@@ -804,23 +818,23 @@ OUTPUT
                             Type of landmark.
 
                         X -> (float)
-                            The x-coordinate of the landmark  expressed  as  a
-                            ratio  of the width of the image. The x-coordinate
-                            is measured from the left-side of the  image.  For
-                            example,  if  the image is 700 pixels wide and the
-                            x-coordinate of the landmark  is  at  350  pixels,
+                            The  x-coordinate  of  the landmark expressed as a
+                            ratio of the width of the image. The  x-coordinate
+                            is  measured  from the left-side of the image. For
+                            example, if the image is 700 pixels wide  and  the
+                            x-coordinate  of  the  landmark  is at 350 pixels,
                             this value is 0.5.
 
                         Y -> (float)
-                            The  y-coordinate  of  the landmark expressed as a
+                            The y-coordinate of the landmark  expressed  as  a
                             ratio of the height of the image. The y-coordinate
-                            is  measured  from the top of the image. For exam-
-                            ple, if the image height is  200  pixels  and  the
+                            is measured from the top of the image.  For  exam-
+                            ple,  if  the  image  height is 200 pixels and the
                             y-coordinate of the landmark is at 50 pixels, this
                             value is 0.25.
 
                  Pose -> (structure)
-                     Indicates the pose of  the  face  as  determined  by  its
+                     Indicates  the  pose  of  the  face  as determined by its
                      pitch, roll, and yaw. Default attribute.
 
                      Roll -> (float)
@@ -830,7 +844,7 @@ OUTPUT
                         Value representing the face rotation on the yaw axis.
 
                      Pitch -> (float)
-                        Value  representing  the  face  rotation  on the pitch
+                        Value representing the  face  rotation  on  the  pitch
                         axis.
 
                  Quality -> (structure)
@@ -839,18 +853,42 @@ OUTPUT
 
                      Brightness -> (float)
                         Value representing brightness of the face. The service
-                        returns a value  between  0  and  100  (inclusive).  A
+                        returns  a  value  between  0  and  100 (inclusive). A
                         higher value indicates a brighter face image.
 
                      Sharpness -> (float)
-                        Value  representing sharpness of the face. The service
-                        returns a value  between  0  and  100  (inclusive).  A
+                        Value representing sharpness of the face. The  service
+                        returns  a  value  between  0  and  100 (inclusive). A
                         higher value indicates a sharper face image.
 
                  Confidence -> (float)
-                     Confidence  level  that  the bounding box contains a face
-                     (and not a different object such as a tree). Default  at-
+                     Confidence level that the bounding box  contains  a  face
+                     (and  not a different object such as a tree). Default at-
                      tribute.
+
+                 FaceOccluded -> (structure)
+                        FaceOccluded should return "true" with a  high  confi-
+                        dence  score if a detected faces eyes, nose, and mouth
+                        are partially captured  or  if  they  are  covered  by
+                        masks,  dark  sunglasses, cell phones, hands, or other
+                        objects. FaceOccluded should  return  "false"  with  a
+                        high  confidence  score  if common occurrences that do
+                        not impact face verification are detected, such as eye
+                        glasses,  lightly  tinted sunglasses, strands of hair,
+                        and others.
+
+                     Value -> (boolean)
+                        True if a detected faces eyes,  nose,  and  mouth  are
+                        partially  captured  or  if they are covered by masks,
+                        dark sunglasses, cell phones, hands, or other objects.
+                        False  if  common  occurrences that do not impact face
+                        verification  are  detected,  such  as  eye   glasses,
+                        lightly  tinted  sunglasses, strands of hair, and oth-
+                        ers.
+
+                     Confidence -> (float)
+                        The confidence that the service has detected the pres-
+                        ence of a face occlusion.
 
        OrientationCorrection -> (string)
           If  your collection is associated with a face detection model that's
@@ -1120,6 +1158,30 @@ OUTPUT
                      Confidence  level  that  the bounding box contains a face
                      (and not a different object such as a tree). Default  at-
                      tribute.
+
+                 FaceOccluded -> (structure)
+                        FaceOccluded  should  return "true" with a high confi-
+                        dence score if a detected faces eyes, nose, and  mouth
+                        are  partially  captured  or  if  they  are covered by
+                        masks, dark sunglasses, cell phones, hands,  or  other
+                        objects.  FaceOccluded  should  return  "false" with a
+                        high confidence score if common  occurrences  that  do
+                        not impact face verification are detected, such as eye
+                        glasses, lightly tinted sunglasses, strands  of  hair,
+                        and others.
+
+                     Value -> (boolean)
+                        True  if  a  detected  faces eyes, nose, and mouth are
+                        partially captured or if they are  covered  by  masks,
+                        dark sunglasses, cell phones, hands, or other objects.
+                        False if common occurrences that do  not  impact  face
+                        verification   are  detected,  such  as  eye  glasses,
+                        lightly tinted sunglasses, strands of hair,  and  oth-
+                        ers.
+
+                     Confidence -> (float)
+                        The confidence that the service has detected the pres-
+                        ence of a face occlusion.
 
 
 
