@@ -6,13 +6,12 @@ NAME
        create-trust-anchor -
 
 DESCRIPTION
-       Creates  a trust anchor. You establish trust between IAM Roles Anywhere
-       and your certificate authority (CA) by configuring a  trust  anchor.  A
-       Trust Anchor is defined either as a reference to a AWS Certificate Man-
-       ager Private Certificate Authority (ACM PCA), or by  uploading  a  Cer-
-       tificate  Authority  (CA) certificate. Your AWS workloads can authenti-
-       cate with the trust anchor using certificates  issued  by  the  trusted
-       Certificate Authority (CA) in exchange for temporary AWS credentials.
+       Creates  a  trust  anchor to establish trust between IAM Roles Anywhere
+       and your certificate authority (CA). You can define a trust anchor as a
+       reference  to  an  Private Certificate Authority (Private CA) or by up-
+       loading a CA certificate. Your Amazon Web Services  workloads  can  au-
+       thenticate with the trust anchor using certificates issued by the CA in
+       exchange for temporary Amazon Web Services credentials.
           Required permissions:  rolesanywhere:CreateTrustAnchor .
 
        See also: AWS API Documentation
@@ -21,6 +20,7 @@ SYNOPSIS
             create-trust-anchor
           [--enabled | --no-enabled]
           --name <value>
+          [--notification-settings <value>]
           --source <value>
           [--tags <value>]
           [--cli-input-json <value>]
@@ -47,6 +47,51 @@ OPTIONS
        --name (string)
           The name of the trust anchor.
 
+       --notification-settings (list)
+          A list of notification settings to be associated to  the  trust  an-
+          chor.
+
+          (structure)
+              Customizable notification settings that will be applied to noti-
+              fication events. IAM  Roles  Anywhere  consumes  these  settings
+              while  notifying  across multiple channels - CloudWatch metrics,
+              EventBridge, and Health Dashboard.
+
+              channel -> (string)
+                 The specified channel of  notification.  IAM  Roles  Anywhere
+                 uses CloudWatch metrics, EventBridge, and Health Dashboard to
+                 notify for an event.
+
+                 NOTE:
+                     In the absence of a specific channel, IAM Roles  Anywhere
+                     applies this setting to 'ALL' channels.
+
+              enabled -> (boolean)
+                 Indicates whether the notification setting is enabled.
+
+              event -> (string)
+                 The event to which this notification setting is applied.
+
+              threshold -> (integer)
+                 The number of days before a notification event. This value is
+                 required for a notification setting that is enabled.
+
+       Shorthand Syntax:
+
+          channel=string,enabled=boolean,event=string,threshold=integer ...
+
+       JSON Syntax:
+
+          [
+            {
+              "channel": "ALL",
+              "enabled": true|false,
+              "event": "CA_CERTIFICATE_EXPIRY"|"END_ENTITY_CERTIFICATE_EXPIRY",
+              "threshold": integer
+            }
+            ...
+          ]
+
        --source (structure)
           The trust anchor type and its related certificate data.
 
@@ -54,14 +99,14 @@ OPTIONS
               The data field of the trust anchor depending on its type.
 
               NOTE:
-                 This  is  a Tagged Union structure. Only one of the following
+                 This is a Tagged Union structure. Only one of  the  following
                  top level keys can be set: acmPcaArn, x509CertificateData.
 
               acmPcaArn -> (string)
-                 The root certificate of the Certificate Manager Private  Cer-
-                 tificate  Authority  specified  by  this ARN is used in trust
-                 validation for CreateSession operations. Included  for  trust
-                 anchors of type AWS_ACM_PCA .
+                 The  root  certificate  of  the Private Certificate Authority
+                 specified by this ARN is used in trust validation for  tempo-
+                 rary  credential requests. Included for trust anchors of type
+                 AWS_ACM_PCA .
 
               x509CertificateData -> (string)
                  The PEM-encoded data for the certificate anchor. Included for
@@ -110,17 +155,17 @@ OPTIONS
             ...
           ]
 
-       --cli-input-json (string) Performs service operation based on the  JSON
-       string  provided. The JSON string follows the format provided by --gen-
-       erate-cli-skeleton. If other arguments  are  provided  on  the  command
-       line,  the CLI values will override the JSON-provided values. It is not
+       --cli-input-json  (string) Performs service operation based on the JSON
+       string provided. The JSON string follows the format provided by  --gen-
+       erate-cli-skeleton.  If  other  arguments  are  provided on the command
+       line, the CLI values will override the JSON-provided values. It is  not
        possible to pass arbitrary binary values using a JSON-provided value as
        the string will be taken literally.
 
-       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
+       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
        output without sending an API request. If provided with no value or the
        value input, prints a sample input JSON that can be used as an argument
-       for --cli-input-json. If provided with the value output,  it  validates
+       for  --cli-input-json.  If provided with the value output, it validates
        the command inputs and returns a sample output JSON for that command.
 
 GLOBAL OPTIONS
@@ -134,7 +179,7 @@ GLOBAL OPTIONS
 
        --no-verify-ssl (boolean)
 
-       By  default, the AWS CLI uses SSL when communicating with AWS services.
+       By default, the AWS CLI uses SSL when communicating with AWS  services.
        For each SSL connection, the AWS CLI will verify SSL certificates. This
        option overrides the default behavior of verifying SSL certificates.
 
@@ -180,7 +225,7 @@ GLOBAL OPTIONS
 
        --no-sign-request (boolean)
 
-       Do  not  sign requests. Credentials will not be loaded if this argument
+       Do not sign requests. Credentials will not be loaded if  this  argument
        is provided.
 
        --ca-bundle (string)
@@ -190,14 +235,14 @@ GLOBAL OPTIONS
 
        --cli-read-timeout (int)
 
-       The  maximum socket read time in seconds. If the value is set to 0, the
-       socket read will be blocking and not timeout. The default value  is  60
+       The maximum socket read time in seconds. If the value is set to 0,  the
+       socket  read  will be blocking and not timeout. The default value is 60
        seconds.
 
        --cli-connect-timeout (int)
 
-       The  maximum  socket connect time in seconds. If the value is set to 0,
-       the socket connect will be blocking and not timeout. The default  value
+       The maximum socket connect time in seconds. If the value is set  to  0,
+       the  socket connect will be blocking and not timeout. The default value
        is 60 seconds.
 
 OUTPUT
@@ -213,6 +258,42 @@ OUTPUT
           name -> (string)
               The name of the trust anchor.
 
+          notificationSettings -> (list)
+              A list of notification settings to be associated  to  the  trust
+              anchor.
+
+              (structure)
+                 The state of a notification setting.
+
+                 A  notification  setting  includes  information such as event
+                 name, threshold, status of the notification setting, and  the
+                 channel to notify.
+
+                 channel -> (string)
+                     The specified channel of notification. IAM Roles Anywhere
+                     uses CloudWatch metrics, EventBridge,  and  Health  Dash-
+                     board to notify for an event.
+
+                     NOTE:
+                        In  the  absence of a specific channel, IAM Roles Any-
+                        where applies this setting to 'ALL' channels.
+
+                 configuredBy -> (string)
+                     The principal that configured the  notification  setting.
+                     For  default  settings  configured by IAM Roles Anywhere,
+                     the value is rolesanywhere.amazonaws.com , and  for  cus-
+                     tomized  notifications settings, it is the respective ac-
+                     count ID.
+
+                 enabled -> (boolean)
+                     Indicates whether the notification setting is enabled.
+
+                 event -> (string)
+                     The event to which this notification setting is applied.
+
+                 threshold -> (integer)
+                     The number of days before a notification event.
+
           source -> (structure)
               The trust anchor type and its related certificate data.
 
@@ -221,14 +302,14 @@ OUTPUT
 
                  NOTE:
                      This is a Tagged Union structure. Only one of the follow-
-                     ing top level keys can be  set:  acmPcaArn,  x509Certifi-
+                     ing  top  level  keys can be set: acmPcaArn, x509Certifi-
                      cateData.
 
                  acmPcaArn -> (string)
-                     The  root  certificate of the Certificate Manager Private
-                     Certificate Authority specified by this ARN  is  used  in
-                     trust  validation  for CreateSession operations. Included
-                     for trust anchors of type AWS_ACM_PCA .
+                     The root certificate of the Private Certificate Authority
+                     specified  by  this  ARN  is used in trust validation for
+                     temporary credential requests. Included for trust anchors
+                     of type AWS_ACM_PCA .
 
                  x509CertificateData -> (string)
                      The PEM-encoded data for the certificate anchor. Included

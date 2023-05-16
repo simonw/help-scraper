@@ -371,19 +371,38 @@ OPTIONS
               cate users.
 
           InvocationRole -> (string)
-              Provides the type of InvocationRole  used  to  authenticate  the
-              user account.
+              This parameter is only applicable if  your  IdentityProviderType
+              is API_GATEWAY . Provides the type of InvocationRole used to au-
+              thenticate the user account.
 
           DirectoryId -> (string)
-              The  identifier of the Directory Service directory that you want
+              The identifier of the Directory Service directory that you  want
               to stop sharing.
 
           Function -> (string)
-              The ARN for a lambda function to use for the Identity provider.
+              The ARN for a Lambda function to use for the Identity provider.
+
+          SftpAuthenticationMethods -> (string)
+              For SFTP-enabled servers, and for custom identity providers only
+              , you can specify whether to authenticate using a password,  SSH
+              key pair, or both.
+
+              o PASSWORD - users must provide their password to connect.
+
+              o PUBLIC_KEY - users must provide their private key to connect.
+
+              o PUBLIC_KEY_OR_PASSWORD  -  users  can authenticate with either
+                their password or their key. This is the default value.
+
+              o PUBLIC_KEY_AND_PASSWORD - users must provide both  their  pri-
+                vate  key and their password to connect. The server checks the
+                key first, and then if the key is valid,  the  system  prompts
+                for a password. If the private key provided does not match the
+                public key that is stored, authentication fails.
 
        Shorthand Syntax:
 
-          Url=string,InvocationRole=string,DirectoryId=string,Function=string
+          Url=string,InvocationRole=string,DirectoryId=string,Function=string,SftpAuthenticationMethods=string
 
        JSON Syntax:
 
@@ -391,7 +410,8 @@ OPTIONS
             "Url": "string",
             "InvocationRole": "string",
             "DirectoryId": "string",
-            "Function": "string"
+            "Function": "string",
+            "SftpAuthenticationMethods": "PASSWORD"|"PUBLIC_KEY"|"PUBLIC_KEY_OR_PASSWORD"|"PUBLIC_KEY_AND_PASSWORD"
           }
 
        --logging-role (string)
@@ -472,7 +492,7 @@ OPTIONS
 
        --server-id (string)
           A  system-assigned  unique identifier for a server instance that the
-          user account is assigned to.
+          Transfer Family user is assigned to.
 
        --workflow-details (structure)
           Specifies the workflow ID for the workflow to assign and the  execu-
@@ -481,64 +501,65 @@ OPTIONS
           In  addition  to  a workflow to execute when a file is uploaded com-
           pletely, WorkflowDetails can also contain a workflow ID (and  execu-
           tion  role)  for  a workflow to execute on partial upload. A partial
-          upload occurs when a file is open when the session disconnects.
+          upload occurs when the server session disconnects while the file  is
+          still being uploaded.
 
-          To remove an associated workflow from a server, you can  provide  an
+          To  remove  an associated workflow from a server, you can provide an
           empty OnUpload object, as in the following example.
-              aws   transfer   update-server  --server-id  s-01234567890abcdef
+              aws  transfer  update-server   --server-id   s-01234567890abcdef
               --workflow-details '{"OnUpload":[]}'
 
           OnUpload -> (list)
               A trigger that starts a workflow: the workflow begins to execute
               after a file is uploaded.
 
-              To  remove an associated workflow from a server, you can provide
+              To remove an associated workflow from a server, you can  provide
               an empty OnUpload object, as in the following example.
-                 aws transfer  update-server  --server-id  s-01234567890abcdef
+                 aws  transfer  update-server  --server-id s-01234567890abcdef
                  --workflow-details '{"OnUpload":[]}'
 
               (structure)
-                 Specifies  the workflow ID for the workflow to assign and the
+                 Specifies the workflow ID for the workflow to assign and  the
                  execution role that's used for executing the workflow.
 
-                 In addition to a workflow to execute when a file is  uploaded
-                 completely,  WorkflowDetails  can  also contain a workflow ID
+                 In  addition to a workflow to execute when a file is uploaded
+                 completely, WorkflowDetails can also contain  a  workflow  ID
                  (and execution role) for a workflow to execute on partial up-
-                 load.  A  partial  upload occurs when a file is open when the
-                 session disconnects.
+                 load. A partial upload occurs when the server session discon-
+                 nects while the file is still being uploaded.
 
                  WorkflowId -> (string)
                      A unique identifier for the workflow.
 
                  ExecutionRole -> (string)
-                     Includes the  necessary  permissions  for  S3,  EFS,  and
-                     Lambda  operations  that Transfer can assume, so that all
+                     Includes  the  necessary  permissions  for  S3,  EFS, and
+                     Lambda operations that Transfer can assume, so  that  all
                      workflow steps can operate on the required resources
 
           OnPartialUpload -> (list)
               A trigger that starts a workflow if a file is only partially up-
-              loaded.  You  can  attach  a  workflow to a server that executes
+              loaded. You can attach a workflow  to  a  server  that  executes
               whenever there is a partial upload.
 
-              A partial upload occurs when a file is  open  when  the  session
+              A  partial  upload  occurs  when a file is open when the session
               disconnects.
 
               (structure)
-                 Specifies  the workflow ID for the workflow to assign and the
+                 Specifies the workflow ID for the workflow to assign and  the
                  execution role that's used for executing the workflow.
 
-                 In addition to a workflow to execute when a file is  uploaded
-                 completely,  WorkflowDetails  can  also contain a workflow ID
+                 In  addition to a workflow to execute when a file is uploaded
+                 completely, WorkflowDetails can also contain  a  workflow  ID
                  (and execution role) for a workflow to execute on partial up-
-                 load.  A  partial  upload occurs when a file is open when the
-                 session disconnects.
+                 load. A partial upload occurs when the server session discon-
+                 nects while the file is still being uploaded.
 
                  WorkflowId -> (string)
                      A unique identifier for the workflow.
 
                  ExecutionRole -> (string)
-                     Includes the  necessary  permissions  for  S3,  EFS,  and
-                     Lambda  operations  that Transfer can assume, so that all
+                     Includes  the  necessary  permissions  for  S3,  EFS, and
+                     Lambda operations that Transfer can assume, so  that  all
                      workflow steps can operate on the required resources
 
        Shorthand Syntax:
@@ -564,17 +585,17 @@ OPTIONS
             ]
           }
 
-       --cli-input-json (string) Performs service operation based on the  JSON
-       string  provided. The JSON string follows the format provided by --gen-
-       erate-cli-skeleton. If other arguments  are  provided  on  the  command
-       line,  the CLI values will override the JSON-provided values. It is not
+       --cli-input-json  (string) Performs service operation based on the JSON
+       string provided. The JSON string follows the format provided by  --gen-
+       erate-cli-skeleton.  If  other  arguments  are  provided on the command
+       line, the CLI values will override the JSON-provided values. It is  not
        possible to pass arbitrary binary values using a JSON-provided value as
        the string will be taken literally.
 
-       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
+       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
        output without sending an API request. If provided with no value or the
        value input, prints a sample input JSON that can be used as an argument
-       for --cli-input-json. If provided with the value output,  it  validates
+       for  --cli-input-json.  If provided with the value output, it validates
        the command inputs and returns a sample output JSON for that command.
 
 GLOBAL OPTIONS
@@ -588,7 +609,7 @@ GLOBAL OPTIONS
 
        --no-verify-ssl (boolean)
 
-       By  default, the AWS CLI uses SSL when communicating with AWS services.
+       By default, the AWS CLI uses SSL when communicating with AWS  services.
        For each SSL connection, the AWS CLI will verify SSL certificates. This
        option overrides the default behavior of verifying SSL certificates.
 
@@ -634,7 +655,7 @@ GLOBAL OPTIONS
 
        --no-sign-request (boolean)
 
-       Do  not  sign requests. Credentials will not be loaded if this argument
+       Do not sign requests. Credentials will not be loaded if  this  argument
        is provided.
 
        --ca-bundle (string)
@@ -644,20 +665,20 @@ GLOBAL OPTIONS
 
        --cli-read-timeout (int)
 
-       The  maximum socket read time in seconds. If the value is set to 0, the
-       socket read will be blocking and not timeout. The default value  is  60
+       The maximum socket read time in seconds. If the value is set to 0,  the
+       socket  read  will be blocking and not timeout. The default value is 60
        seconds.
 
        --cli-connect-timeout (int)
 
-       The  maximum  socket connect time in seconds. If the value is set to 0,
-       the socket connect will be blocking and not timeout. The default  value
+       The maximum socket connect time in seconds. If the value is set  to  0,
+       the  socket connect will be blocking and not timeout. The default value
        is 60 seconds.
 
 OUTPUT
        ServerId -> (string)
-          A  system-assigned  unique identifier for a server that the user ac-
-          count is assigned to.
+          A system-assigned unique identifier for a server that  the  Transfer
+          Family user is assigned to.
 
 
 
