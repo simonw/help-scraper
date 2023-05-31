@@ -428,14 +428,26 @@ OUTPUT
                                    own  job-execution script consumes, as well
                                    as arguments that Glue itself consumes.
 
-                                   For information about how  to  specify  and
-                                   consume  your  own  job  arguments, see the
-                                   Calling Glue APIs in Python  topic  in  the
+                                   Job arguments may be logged.  Do  not  pass
+                                   plaintext  secrets  as  arguments. Retrieve
+                                   secrets from  a  Glue  Connection,  Secrets
+                                   Manager  or  other secret management mecha-
+                                   nism if you intend to keep them within  the
+                                   Job.
+
+                                   For  information  about  how to specify and
+                                   consume your own  Job  arguments,  see  the
+                                   Calling  Glue  APIs  in Python topic in the
                                    developer guide.
 
-                                   For  information  about the key-value pairs
-                                   that Glue consumes to set up your job,  see
-                                   the  Special  Parameters Used by Glue topic
+                                   For information about the arguments you can
+                                   provide  to  this  field  when  configuring
+                                   Spark jobs, see the Special Parameters Used
+                                   by Glue topic in the developer guide.
+
+                                   For information about the arguments you can
+                                   provide to this field when configuring  Ray
+                                   jobs,  see Using job parameters in Ray jobs
                                    in the developer guide.
 
                                    key -> (string)
@@ -490,21 +502,27 @@ OUTPUT
                                    minutes (48 hours).
 
                                MaxCapacity -> (double)
-                                   The  number  of  Glue data processing units
-                                   (DPUs) that can be allocated when this  job
-                                   runs.  A  DPU is a relative measure of pro-
-                                   cessing power that consists of 4  vCPUs  of
-                                   compute  capacity  and 16 GB of memory. For
-                                   more information, see the Glue pricing page
-                                   .
+                                   For Glue version 1.0 or earlier jobs, using
+                                   the standard worker  type,  the  number  of
+                                   Glue  data processing units (DPUs) that can
+                                   be allocated when this job runs. A DPU is a
+                                   relative  measure  of processing power that
+                                   consists of 4 vCPUs of compute capacity and
+                                   16  GB of memory. For more information, see
+                                   the Glue pricing page .
 
-                                   Do not set Max Capacity if using WorkerType
+                                   For Glue  version  2.0+  jobs,  you  cannot
+                                   specify  a  Maximum capacity . Instead, you
+                                   should specify a Worker type and the Number
+                                   of workers .
+
+                                   Do  not set MaxCapacity if using WorkerType
                                    and NumberOfWorkers .
 
                                    The value that can be allocated for  MaxCa-
                                    pacity depends on whether you are running a
-                                   Python shell job or  an  Apache  Spark  ETL
-                                   job:
+                                   Python shell job, an Apache Spark ETL  job,
+                                   or an Apache Spark streaming ETL job:
 
                                    o When you specify a Python shell job (Job-
                                      Command.Name ="pythonshell"), you can al-
@@ -512,54 +530,67 @@ OUTPUT
                                      fault is 0.0625 DPU.
 
                                    o When you specify an Apache Spark ETL  job
-                                     (JobCommand.Name ="glueetl"), you can al-
-                                     locate a minimum of 2 DPUs.  The  default
-                                     is  10  DPUs. This job type cannot have a
-                                     fractional DPU allocation.
+                                     (JobCommand.Name  ="glueetl")  or  Apache
+                                     Spark streaming ETL job  (JobCommand.Name
+                                     ="gluestreaming"),  you can allocate from
+                                     2 to 100 DPUs. The default  is  10  DPUs.
+                                     This  job  type  cannot have a fractional
+                                     DPU allocation.
 
                                WorkerType -> (string)
                                    The type of predefined worker that is allo-
                                    cated  when  a job runs. Accepts a value of
-                                   Standard, G.1X, G.2X, or G.025X.
+                                   Standard, G.1X, G.2X, or G.025X  for  Spark
+                                   jobs. Accepts the value Z.2X for Ray jobs.
 
                                    o For the Standard worker type, each worker
-                                     provides  4  vCPU,  16 GB of memory and a
+                                     provides 4 vCPU, 16 GB of  memory  and  a
                                      50GB disk, and 2 executors per worker.
 
-                                   o For the G.1X  worker  type,  each  worker
-                                     provides  4  vCPU,  16 GB of memory and a
-                                     64GB disk, and 1 executor per worker.
-
-                                   o For the G.2X  worker  type,  each  worker
-                                     provides  8  vCPU,  32 GB of memory and a
-                                     128GB disk, and 1 executor per worker.
-
-                                   o For the G.025X worker type,  each  worker
-                                     maps to 0.25 DPU (2 vCPU, 4 GB of memory,
-                                     64 GB disk), and provides 1 executor  per
+                                   o For  the  G.1X  worker  type, each worker
+                                     maps to 1 DPU (4 vCPU, 16 GB  of  memory,
+                                     64  GB disk), and provides 1 executor per
                                      worker. We recommend this worker type for
-                                     low volume streaming  jobs.  This  worker
-                                     type  is  only available for Glue version
+                                     memory-intensive jobs.
+
+                                   o For  the  G.2X  worker  type, each worker
+                                     maps to 2 DPU (8 vCPU, 32 GB  of  memory,
+                                     128 GB disk), and provides 1 executor per
+                                     worker. We recommend this worker type for
+                                     memory-intensive jobs.
+
+                                   o For  the  G.025X worker type, each worker
+                                     maps to 0.25 DPU (2 vCPU, 4 GB of memory,
+                                     64  GB disk), and provides 1 executor per
+                                     worker. We recommend this worker type for
+                                     low  volume  streaming  jobs. This worker
+                                     type is only available for  Glue  version
                                      3.0 streaming jobs.
 
+                                   o For  the  Z.2X  worker  type, each worker
+                                     maps to 2 M-DPU (8vCPU, 64 GB of m emory,
+                                     128  GB  disk),  and provides up to 8 Ray
+                                     workers (one per vCPU) based on  the  au-
+                                     toscaler.
+
                                NumberOfWorkers -> (integer)
-                                   The number of workers of a defined  worker-
+                                   The  number of workers of a defined worker-
                                    Type that are allocated when a job runs.
 
                                SecurityConfiguration -> (string)
-                                   The   name   of  the  SecurityConfiguration
+                                   The  name  of   the   SecurityConfiguration
                                    structure to be used with this job run.
 
                                LogGroupName -> (string)
-                                   The name of the log group for  secure  log-
-                                   ging  that  can be server-side encrypted in
-                                   Amazon CloudWatch using KMS. This name  can
-                                   be  /aws-glue/jobs/ , in which case the de-
-                                   fault encryption is NONE .  If  you  add  a
-                                   role  name  and  SecurityConfiguration name
-                                   (in other  words,  /aws-glue/jobs-yourRole-
+                                   The  name  of the log group for secure log-
+                                   ging that can be server-side  encrypted  in
+                                   Amazon  CloudWatch using KMS. This name can
+                                   be /aws-glue/jobs/ , in which case the  de-
+                                   fault  encryption  is  NONE  . If you add a
+                                   role name  and  SecurityConfiguration  name
+                                   (in  other  words, /aws-glue/jobs-yourRole-
                                    Name-yourSecurityConfigurationName/ ), then
-                                   that security configuration is used to  en-
+                                   that  security configuration is used to en-
                                    crypt the log group.
 
                                NotificationProperty -> (structure)
@@ -567,15 +598,22 @@ OUTPUT
                                    run notification.
 
                                    NotifyDelayAfter -> (integer)
-                                      After a job run starts,  the  number  of
+                                      After  a  job  run starts, the number of
                                       minutes to wait before sending a job run
                                       delay notification.
 
                                GlueVersion -> (string)
-                                   Glue version  determines  the  versions  of
-                                   Apache Spark and Python that Glue supports.
-                                   The Python version  indicates  the  version
-                                   supported for jobs of type Spark.
+                                   In  Spark  jobs, GlueVersion determines the
+                                   versions of Apache Spark  and  Python  that
+                                   Glue available in a job. The Python version
+                                   indicates the version supported for jobs of
+                                   type Spark.
+
+                                   Ray  jobs  should set GlueVersion to 4.0 or
+                                   greater.  However,  the  versions  of  Ray,
+                                   Python  and  additional libraries available
+                                   in your Ray job are determined by the  Run-
+                                   time parameter of the Job command.
 
                                    For  more  information  about the available
                                    Glue versions and corresponding  Spark  and

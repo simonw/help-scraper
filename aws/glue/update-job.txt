@@ -67,7 +67,7 @@ OPTIONS
                  The name of the job command. For an  Apache  Spark  ETL  job,
                  this  must  be  glueetl  . For a Python shell job, it must be
                  pythonshell . For an Apache Spark  streaming  ETL  job,  this
-                 must be gluestreaming .
+                 must be gluestreaming . For a Ray job, this must be glueray .
 
               ScriptLocation -> (string)
                  Specifies  the Amazon Simple Storage Service (Amazon S3) path
@@ -77,27 +77,44 @@ OPTIONS
                  The Python version being used to run a Python shell job.  Al-
                  lowed values are 2 or 3.
 
-          DefaultArguments -> (map)
-              The default arguments for this job.
+              Runtime -> (string)
+                 In  Ray jobs, Runtime is used to specify the versions of Ray,
+                 Python and additional libraries available  in  your  environ-
+                 ment.  This  field  is  not used in other job types. For sup-
+                 ported runtime environment values, see Working with Ray  jobs
+                 in the Glue Developer Guide.
 
-              You  can  specify  arguments  here  that  your own job-execution
+          DefaultArguments -> (map)
+              The  default  arguments  for every run of this job, specified as
+              name-value pairs.
+
+              You can specify  arguments  here  that  your  own  job-execution
               script consumes, as well as arguments that Glue itself consumes.
+
+              Job  arguments  may  be logged. Do not pass plaintext secrets as
+              arguments. Retrieve secrets from a Glue Connection, Secrets Man-
+              ager  or other secret management mechanism if you intend to keep
+              them within the Job.
 
               For information about how to specify and consume  your  own  Job
               arguments,  see the Calling Glue APIs in Python topic in the de-
               veloper guide.
 
-              For information about the key-value pairs that Glue consumes  to
-              set  up  your job, see the Special Parameters Used by Glue topic
-              in the developer guide.
+              For information about the arguments  you  can  provide  to  this
+              field  when  configuring  Spark jobs, see the Special Parameters
+              Used by Glue topic in the developer guide.
+
+              For information about the arguments  you  can  provide  to  this
+              field when configuring Ray jobs, see Using job parameters in Ray
+              jobs in the developer guide.
 
               key -> (string)
 
               value -> (string)
 
           NonOverridableArguments -> (map)
-              Non-overridable arguments for this job, specified as  name-value
-              pairs.
+              Arguments for this job that are not  overridden  when  providing
+              job arguments in a job run, specified as name-value pairs.
 
               key -> (string)
 
@@ -136,30 +153,30 @@ OPTIONS
               and  16 GB of memory. For more information, see the Glue pricing
               page .
 
-              Do not set Max Capacity if using WorkerType and  NumberOfWorkers
-              .
+              For Glue version 2.0+ jobs, you cannot specify a Maximum  capac-
+              ity  .  Instead, you should specify a Worker type and the Number
+              of workers .
 
-              The  value  that  can  be  allocated  for MaxCapacity depends on
-              whether you are running a Python shell job or  an  Apache  Spark
-              ETL job:
+              Do not set MaxCapacity if using WorkerType and NumberOfWorkers .
+
+              The value that can  be  allocated  for  MaxCapacity  depends  on
+              whether  you are running a Python shell job, an Apache Spark ETL
+              job, or an Apache Spark streaming ETL job:
 
               o When you specify a Python shell job (JobCommand.Name ="python-
-                shell"), you can allocate either 0.0625 or 1 DPU. The  default
+                shell"),  you can allocate either 0.0625 or 1 DPU. The default
                 is 0.0625 DPU.
 
-              o When  you  specify  an  Apache  Spark ETL job (JobCommand.Name
+              o When you specify an  Apache  Spark  ETL  job  (JobCommand.Name
                 ="glueetl") or Apache Spark streaming ETL job (JobCommand.Name
-                ="gluestreaming"),  you  can allocate a minimum of 2 DPUs. The
+                ="gluestreaming"), you can allocate from 2 to  100  DPUs.  The
                 default is 10 DPUs. This job type cannot have a fractional DPU
                 allocation.
 
-              For  Glue version 2.0 jobs, you cannot instead specify a Maximum
-              capacity . Instead, you should specify a  Worker  type  and  the
-              Number of workers .
-
           WorkerType -> (string)
               The type of predefined worker that is allocated when a job runs.
-              Accepts a value of Standard, G.1X, G.2X, or G.025X.
+              Accepts  a  value  of  Standard, G.1X, G.2X, or G.025X for Spark
+              jobs. Accepts the value Z.2X for Ray jobs.
 
               o For the Standard worker type, each worker provides 4 vCPU,  16
                 GB of memory and a 50GB disk, and 2 executors per worker.
@@ -180,6 +197,10 @@ OPTIONS
                 jobs. This worker type is only available for Glue version  3.0
                 streaming jobs.
 
+              o For  the Z.2X worker type, each worker maps to 2 M-DPU (8vCPU,
+                64 GB of m emory, 128 GB disk), and provides up to 8 Ray work-
+                ers based on the autoscaler.
+
           NumberOfWorkers -> (integer)
               The number of workers of a defined workerType that are allocated
               when a job runs.
@@ -196,13 +217,21 @@ OPTIONS
                  sending a job run delay notification.
 
           GlueVersion -> (string)
-              Glue version determines the versions of Apache Spark and  Python
-              that  Glue  supports.  The  Python version indicates the version
-              supported for jobs of type Spark.
+              In Spark jobs, GlueVersion determines  the  versions  of  Apache
+              Spark  and  Python that Glue available in a job. The Python ver-
+              sion indicates the version supported for jobs of type Spark.
 
-              For more information about the available Glue versions and  cor-
-              responding  Spark  and  Python versions, see Glue version in the
+              Ray jobs should set GlueVersion to 4.0 or greater. However,  the
+              versions  of  Ray,  Python and additional libraries available in
+              your Ray job are determined by the Runtime parameter of the  Job
+              command.
+
+              For  more information about the available Glue versions and cor-
+              responding Spark and Python versions, see Glue  version  in  the
               developer guide.
+
+              Jobs  that are created without specifying a Glue version default
+              to Glue 0.9.
 
           CodeGenConfigurationNodes -> (map)
               The representation of a directed acyclic graph on which both the
@@ -508,7 +537,7 @@ OPTIONS
                         **
                         .pdf"]" excludes all PDF files.
 
-                        System Message: WARNING/2 (<string>:, line 1140)
+                        System Message: WARNING/2 (<string>:, line 1168)
                                Inline strong start-string without end-string.
 
                                (string)
@@ -650,7 +679,7 @@ OPTIONS
                         **
                         .pdf"]" excludes all PDF files.
 
-                        System Message: WARNING/2 (<string>:, line 1442)
+                        System Message: WARNING/2 (<string>:, line 1470)
                                Inline strong start-string without end-string.
 
                                (string)
@@ -762,7 +791,7 @@ OPTIONS
                         **
                         .pdf"]" excludes all PDF files.
 
-                        System Message: WARNING/2 (<string>:, line 1684)
+                        System Message: WARNING/2 (<string>:, line 1712)
                                Inline strong start-string without end-string.
 
                                (string)
@@ -3691,7 +3720,8 @@ OPTIONS
             "Command": {
               "Name": "string",
               "ScriptLocation": "string",
-              "PythonVersion": "string"
+              "PythonVersion": "string",
+              "Runtime": "string"
             },
             "DefaultArguments": {"string": "string"
               ...},
@@ -3704,7 +3734,7 @@ OPTIONS
             "AllocatedCapacity": integer,
             "Timeout": integer,
             "MaxCapacity": double,
-            "WorkerType": "Standard"|"G.1X"|"G.2X"|"G.025X"|"G.4X"|"G.8X",
+            "WorkerType": "Standard"|"G.1X"|"G.2X"|"G.025X"|"G.4X"|"G.8X"|"Z.2X",
             "NumberOfWorkers": integer,
             "SecurityConfiguration": "string",
             "NotificationProperty": {

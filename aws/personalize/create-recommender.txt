@@ -12,28 +12,34 @@ DESCRIPTION
        GetRecommendations request.
           Minimum recommendation requests per second
 
+       WARNING:
+          A high minRecommendationRequestsPerSecond will increase  your  bill.
+          We  recommend starting with 1 for minRecommendationRequestsPerSecond
+          (the default). Track your usage using Amazon CloudWatch metrics, and
+          increase the minRecommendationRequestsPerSecond as necessary.
+
        When you create a recommender, you can configure the recommender's min-
        imum recommendation requests per second. The minimum recommendation re-
-       quests per second (minRecommendationRequestsPerSecond )  specifies  the
-       baseline  recommendation  request throughput provisioned by Amazon Per-
-       sonalize. The default minRecommendationRequestsPerSecond is 1 . A  rec-
-       ommendation  request  is a single GetRecommendations operation. Request
-       throughput is measured in requests per second  and  Amazon  Personalize
-       uses  your requests per second to derive your requests per hour and the
+       quests  per  second (minRecommendationRequestsPerSecond ) specifies the
+       baseline recommendation request throughput provisioned by  Amazon  Per-
+       sonalize.  The default minRecommendationRequestsPerSecond is 1 . A rec-
+       ommendation request is a single GetRecommendations  operation.  Request
+       throughput  is  measured  in requests per second and Amazon Personalize
+       uses your requests per second to derive your requests per hour and  the
        price of your recommender usage.
 
-       If your  requests  per  second  increases  beyond  minRecommendationRe-
+       If  your  requests  per  second  increases  beyond minRecommendationRe-
        questsPerSecond , Amazon Personalize auto-scales the provisioned capac-
-       ity up and down, but never below  minRecommendationRequestsPerSecond  .
-       There's  a  short time delay while the capacity is increased that might
+       ity  up  and down, but never below minRecommendationRequestsPerSecond .
+       There's a short time delay while the capacity is increased  that  might
        cause loss of requests.
 
        Your bill is the greater of either the minimum requests per hour (based
-       on  minRecommendationRequestsPerSecond)  or  the  actual  number of re-
+       on minRecommendationRequestsPerSecond) or  the  actual  number  of  re-
        quests. The actual request throughput used is calculated as the average
-       requests/second  within  a  one-hour window. We recommend starting with
+       requests/second within a one-hour window. We  recommend  starting  with
        the default minRecommendationRequestsPerSecond , track your usage using
-       Amazon  CloudWatch  metrics, and then increase the minRecommendationRe-
+       Amazon CloudWatch metrics, and then increase  the  minRecommendationRe-
        questsPerSecond as necessary.
           Status
 
@@ -41,7 +47,7 @@ DESCRIPTION
 
        o CREATE PENDING > CREATE IN_PROGRESS > ACTIVE -or- CREATE FAILED
 
-       o STOP PENDING > STOP IN_PROGRESS > INACTIVE > START  PENDING  >  START
+       o STOP  PENDING  >  STOP IN_PROGRESS > INACTIVE > START PENDING > START
          IN_PROGRESS > ACTIVE
 
        o DELETE PENDING > DELETE IN_PROGRESS
@@ -93,14 +99,14 @@ OPTIONS
           The name of the recommender.
 
        --dataset-group-arn (string)
-          The Amazon Resource Name (ARN) of  the  destination  domain  dataset
+          The  Amazon  Resource  Name  (ARN) of the destination domain dataset
           group for the recommender.
 
        --recipe-arn (string)
-          The  Amazon  Resource  Name (ARN) of the recipe that the recommender
-          will use. For a recommender, a recipe is a Domain dataset group  use
-          case.  Only  Domain  dataset group use cases can be used to create a
-          recommender. For information about use  cases  see  Choosing  recom-
+          The Amazon Resource Name (ARN) of the recipe  that  the  recommender
+          will  use. For a recommender, a recipe is a Domain dataset group use
+          case. Only Domain dataset group use cases can be used  to  create  a
+          recommender.  For  information  about  use cases see Choosing recom-
           mender use cases .
 
        --recommender-config (structure)
@@ -110,7 +116,7 @@ OPTIONS
               Specifies the exploration configuration hyperparameters, includ-
               ing explorationWeight and explorationItemAgeCutOff , you want to
               use to configure the amount of item exploration Amazon Personal-
-              ize uses when recommending items. Provide  itemExplorationConfig
+              ize  uses when recommending items. Provide itemExplorationConfig
               data only if your recommenders generate personalized recommenda-
               tions for a user (not popular items or similar items).
 
@@ -119,37 +125,64 @@ OPTIONS
               value -> (string)
 
           minRecommendationRequestsPerSecond -> (integer)
-              Specifies the requested minimum provisioned  recommendation  re-
-              quests per second that Amazon Personalize will support.
+              Specifies  the  requested minimum provisioned recommendation re-
+              quests per second that Amazon Personalize will support.  A  high
+              minRecommendationRequestsPerSecond  will  increase your bill. We
+              recommend starting with 1 for minRecommendationRequestsPerSecond
+              (the default). Track your usage using Amazon CloudWatch metrics,
+              and increase the  minRecommendationRequestsPerSecond  as  neces-
+              sary.
+
+          trainingDataConfig -> (structure)
+              Specifies the training data configuration to use when creating a
+              domain recommender.
+
+              excludedDatasetColumns -> (map)
+                 Specifies the columns to exclude from training. Each key is a
+                 dataset  type,  and  each value is a list of columns. Exclude
+                 columns to control what data Amazon Personalize uses to  gen-
+                 erate  recommendations.  For example, you might have a column
+                 that you want to use only to filter recommendations. You  can
+                 exclude this column from training and Amazon Personalize con-
+                 siders it only when filtering.
+
+                 key -> (string)
+
+                 value -> (list)
+                     (string)
 
        Shorthand Syntax:
 
-          itemExplorationConfig={KeyName1=string,KeyName2=string},minRecommendationRequestsPerSecond=integer
+          itemExplorationConfig={KeyName1=string,KeyName2=string},minRecommendationRequestsPerSecond=integer,trainingDataConfig={excludedDatasetColumns={KeyName1=[string,string],KeyName2=[string,string]}}
 
        JSON Syntax:
 
           {
             "itemExplorationConfig": {"string": "string"
               ...},
-            "minRecommendationRequestsPerSecond": integer
+            "minRecommendationRequestsPerSecond": integer,
+            "trainingDataConfig": {
+              "excludedDatasetColumns": {"string": ["string", ...]
+                ...}
+            }
           }
 
        --tags (list)
           A list of tags to apply to the recommender.
 
           (structure)
-              The  optional  metadata  that you apply to resources to help you
-              categorize and organize them. Each tag consists of a key and  an
-              optional  value,  both of which you define. For more information
-              see Tagging Personalize resources .
+              The optional metadata that you apply to resources  to  help  you
+              categorize  and organize them. Each tag consists of a key and an
+              optional value, both of which you define. For  more  information
+              see Tagging Amazon Personalize recources .
 
               tagKey -> (string)
-                 One part of a key-value pair that makes up a tag. A key is  a
+                 One  part of a key-value pair that makes up a tag. A key is a
                  general label that acts like a category for more specific tag
                  values.
 
               tagValue -> (string)
-                 The optional part of a key-value pair that makes up a tag.  A
+                 The  optional part of a key-value pair that makes up a tag. A
                  value acts as a descriptor within a tag category (key).
 
        Shorthand Syntax:
@@ -166,17 +199,17 @@ OPTIONS
             ...
           ]
 
-       --cli-input-json  (string) Performs service operation based on the JSON
-       string provided. The JSON string follows the format provided by  --gen-
-       erate-cli-skeleton.  If  other  arguments  are  provided on the command
-       line, the CLI values will override the JSON-provided values. It is  not
+       --cli-input-json (string) Performs service operation based on the  JSON
+       string  provided. The JSON string follows the format provided by --gen-
+       erate-cli-skeleton. If other arguments  are  provided  on  the  command
+       line,  the CLI values will override the JSON-provided values. It is not
        possible to pass arbitrary binary values using a JSON-provided value as
        the string will be taken literally.
 
-       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
+       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
        output without sending an API request. If provided with no value or the
        value input, prints a sample input JSON that can be used as an argument
-       for  --cli-input-json.  If provided with the value output, it validates
+       for --cli-input-json. If provided with the value output,  it  validates
        the command inputs and returns a sample output JSON for that command.
 
 GLOBAL OPTIONS
@@ -190,7 +223,7 @@ GLOBAL OPTIONS
 
        --no-verify-ssl (boolean)
 
-       By default, the AWS CLI uses SSL when communicating with AWS  services.
+       By  default, the AWS CLI uses SSL when communicating with AWS services.
        For each SSL connection, the AWS CLI will verify SSL certificates. This
        option overrides the default behavior of verifying SSL certificates.
 
@@ -236,7 +269,7 @@ GLOBAL OPTIONS
 
        --no-sign-request (boolean)
 
-       Do not sign requests. Credentials will not be loaded if  this  argument
+       Do  not  sign requests. Credentials will not be loaded if this argument
        is provided.
 
        --ca-bundle (string)
@@ -246,14 +279,14 @@ GLOBAL OPTIONS
 
        --cli-read-timeout (int)
 
-       The maximum socket read time in seconds. If the value is set to 0,  the
-       socket  read  will be blocking and not timeout. The default value is 60
+       The  maximum socket read time in seconds. If the value is set to 0, the
+       socket read will be blocking and not timeout. The default value  is  60
        seconds.
 
        --cli-connect-timeout (int)
 
-       The maximum socket connect time in seconds. If the value is set  to  0,
-       the  socket connect will be blocking and not timeout. The default value
+       The  maximum  socket connect time in seconds. If the value is set to 0,
+       the socket connect will be blocking and not timeout. The default  value
        is 60 seconds.
 
 OUTPUT

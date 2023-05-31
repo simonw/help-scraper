@@ -15,14 +15,13 @@ DESCRIPTION
        disable pagination by providing the --no-paginate argument.  When using
        --output text and the --query argument on  a  paginated  response,  the
        --query  argument  must  extract data from the results of the following
-       query expressions: regionSourceTypesAccountsList
+       query expressions: sources
 
 SYNOPSIS
             list-log-sources
-          [--input-order <value>]
-          [--list-all-dimensions <value>]
-          [--list-single-dimension <value>]
-          [--list-two-dimensions <value>]
+          [--accounts <value>]
+          [--regions <value>]
+          [--sources <value>]
           [--cli-input-json <value>]
           [--starting-token <value>]
           [--page-size <value>]
@@ -44,9 +43,9 @@ SYNOPSIS
           [--cli-connect-timeout <value>]
 
 OPTIONS
-       --input-order (list)
-          Lists the log sources in input order, namely  Region,  source  type,
-          and member account.
+       --accounts (list)
+          The list of Amazon Web Services accounts for which log  sources  are
+          displayed.
 
           (string)
 
@@ -54,38 +53,8 @@ OPTIONS
 
           "string" "string" ...
 
-          Where valid values are:
-            REGION
-            SOURCE_TYPE
-            MEMBER
-
-       --list-all-dimensions (map)
-          List  the  view  of log sources for enabled Amazon Security Lake ac-
-          counts for specific Amazon Web Services sources  from  specific  ac-
-          counts and specific Regions.
-
-          key -> (string)
-
-          value -> (map)
-              key -> (string)
-
-              value -> (list)
-                 (string)
-
-       Shorthand Syntax:
-
-          KeyName1=KeyName1=string,string,KeyName2=string,string,KeyName2=KeyName1=string,string,KeyName2=string,string
-
-       JSON Syntax:
-
-          {"string": {"string": ["string", ...]
-                ...}
-            ...}
-
-       --list-single-dimension (list)
-          List  the view of log sources for enabled Security Lake accounts for
-          all Amazon Web Services sources from specific accounts  or  specific
-          Regions.
+       --regions (list)
+          The list of regions for which log sources are displayed.
 
           (string)
 
@@ -93,64 +62,141 @@ OPTIONS
 
           "string" "string" ...
 
-       --list-two-dimensions (map)
-          Lists the view of log sources for enabled Security Lake accounts for
-          specific Amazon Web Services sources from specific accounts or  spe-
-          cific Regions.
+       --sources (list)
+          The list of sources for which log sources are displayed.
 
-          key -> (string)
+          (tagged union structure)
+              The  supported  source types from which logs and events are col-
+              lected in Amazon Security Lake. For the list of supported Amazon
+              Web Services, see the Amazon Security Lake User Guide .
 
-          value -> (list)
-              (string)
+              NOTE:
+                 This  is  a Tagged Union structure. Only one of the following
+                 top level keys can be set: awsLogSource, customLogSource.
+
+              awsLogSource -> (structure)
+                 Amazon Security Lake supports log and  event  collection  for
+                 natively supported Amazon Web Services.
+
+                 sourceName -> (string)
+                     The name for a Amazon Web Services source. This must be a
+                     Regionally unique value.
+
+                 sourceVersion -> (string)
+                     The version for a Amazon Web Services source.  This  must
+                     be a Regionally unique value.
+
+              customLogSource -> (structure)
+                 Amazon  Security Lake supports custom source types. For a de-
+                 tailed list, see the Amazon Security Lake User Guide.
+
+                 attributes -> (structure)
+                     The attributes of a third-party custom source.
+
+                     crawlerArn -> (string)
+                        The ARN of the Glue crawler.
+
+                     databaseArn -> (string)
+                        The ARN of the Glue database where results  are  writ-
+                        ten,    such   as:   arn:aws:daylight:us-east-1::data-
+                        base/sometable/* .
+
+                     tableArn -> (string)
+                        The ARN of the Glue table.
+
+                 provider -> (structure)
+                     The details of the log provider for a third-party  custom
+                     source.
+
+                     location -> (string)
+                        The  location of the partition in the Amazon S3 bucket
+                        for Security Lake.
+
+                     roleArn -> (string)
+                        The ARN of the IAM role  to  be  used  by  the  entity
+                        putting  logs into your custom source partition. Secu-
+                        rity Lake will apply the correct  access  policies  to
+                        this  role,  but  you  must  first manually create the
+                        trust policy for this role. The  IAM  role  name  must
+                        start with the text 'Security Lake'. The IAM role must
+                        trust the logProviderAccountId to assume the role.
+
+                 sourceName -> (string)
+                     The name for a third-party custom source. This must be  a
+                     Regionally unique value.
+
+                 sourceVersion -> (string)
+                     The version for a third-party custom source. This must be
+                     a Regionally unique value.
 
        Shorthand Syntax:
 
-          KeyName1=string,string,KeyName2=string,string
+          awsLogSource={sourceName=string,sourceVersion=string},customLogSource={attributes={crawlerArn=string,databaseArn=string,tableArn=string},provider={location=string,roleArn=string},sourceName=string,sourceVersion=string} ...
 
        JSON Syntax:
 
-          {"string": ["string", ...]
-            ...}
+          [
+            {
+              "awsLogSource": {
+                "sourceName": "ROUTE53"|"VPC_FLOW"|"SH_FINDINGS"|"CLOUD_TRAIL_MGMT"|"LAMBDA_EXECUTION"|"S3_DATA",
+                "sourceVersion": "string"
+              },
+              "customLogSource": {
+                "attributes": {
+                  "crawlerArn": "string",
+                  "databaseArn": "string",
+                  "tableArn": "string"
+                },
+                "provider": {
+                  "location": "string",
+                  "roleArn": "string"
+                },
+                "sourceName": "string",
+                "sourceVersion": "string"
+              }
+            }
+            ...
+          ]
 
-       --cli-input-json  (string) Performs service operation based on the JSON
-       string provided. The JSON string follows the format provided by  --gen-
-       erate-cli-skeleton.  If  other  arguments  are  provided on the command
-       line, the CLI values will override the JSON-provided values. It is  not
+       --cli-input-json (string) Performs service operation based on the  JSON
+       string  provided. The JSON string follows the format provided by --gen-
+       erate-cli-skeleton. If other arguments  are  provided  on  the  command
+       line,  the CLI values will override the JSON-provided values. It is not
        possible to pass arbitrary binary values using a JSON-provided value as
        the string will be taken literally.
 
        --starting-token (string)
-          A token to specify where to start paginating. This is the  NextToken
+          A  token to specify where to start paginating. This is the NextToken
           from a previously truncated response.
 
           For usage examples, see Pagination in the AWS Command Line Interface
           User Guide .
 
        --page-size (integer)
-          The size of each page to get in the AWS service call. This does  not
+          The  size of each page to get in the AWS service call. This does not
           affect the number of items returned in the command's output. Setting
-          a smaller page size results in more calls to the  AWS  service,  re-
-          trieving  fewer  items  in  each call. This can help prevent the AWS
+          a  smaller  page  size results in more calls to the AWS service, re-
+          trieving fewer items in each call. This can  help  prevent  the  AWS
           service calls from timing out.
 
           For usage examples, see Pagination in the AWS Command Line Interface
           User Guide .
 
        --max-items (integer)
-          The  total number of items to return in the command's output. If the
-          total number of items available is more than the value specified,  a
+          The total number of items to return in the command's output. If  the
+          total  number of items available is more than the value specified, a
           NextToken is provided in the command's output. To resume pagination,
           provide the NextToken value in the starting-token argument of a sub-
-          sequent  command. Do not use the NextToken response element directly
+          sequent command. Do not use the NextToken response element  directly
           outside of the AWS CLI.
 
           For usage examples, see Pagination in the AWS Command Line Interface
           User Guide .
 
-       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
+       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
        output without sending an API request. If provided with no value or the
        value input, prints a sample input JSON that can be used as an argument
-       for --cli-input-json. If provided with the value output,  it  validates
+       for  --cli-input-json.  If provided with the value output, it validates
        the command inputs and returns a sample output JSON for that command.
 
 GLOBAL OPTIONS
@@ -164,7 +210,7 @@ GLOBAL OPTIONS
 
        --no-verify-ssl (boolean)
 
-       By  default, the AWS CLI uses SSL when communicating with AWS services.
+       By default, the AWS CLI uses SSL when communicating with AWS  services.
        For each SSL connection, the AWS CLI will verify SSL certificates. This
        option overrides the default behavior of verifying SSL certificates.
 
@@ -210,7 +256,7 @@ GLOBAL OPTIONS
 
        --no-sign-request (boolean)
 
-       Do  not  sign requests. Credentials will not be loaded if this argument
+       Do not sign requests. Credentials will not be loaded if  this  argument
        is provided.
 
        --ca-bundle (string)
@@ -220,32 +266,106 @@ GLOBAL OPTIONS
 
        --cli-read-timeout (int)
 
-       The  maximum socket read time in seconds. If the value is set to 0, the
-       socket read will be blocking and not timeout. The default value  is  60
+       The maximum socket read time in seconds. If the value is set to 0,  the
+       socket  read  will be blocking and not timeout. The default value is 60
        seconds.
 
        --cli-connect-timeout (int)
 
-       The  maximum  socket connect time in seconds. If the value is set to 0,
-       the socket connect will be blocking and not timeout. The default  value
+       The maximum socket connect time in seconds. If the value is set  to  0,
+       the  socket connect will be blocking and not timeout. The default value
        is 60 seconds.
 
 OUTPUT
        nextToken -> (string)
-          If  nextToken is returned, there are more results available. You can
+          If nextToken is returned, there are more results available. You  can
           repeat the call using the returned token to retrieve the next page.
 
-       regionSourceTypesAccountsList -> (list)
-          Lists the log sources by Regions for enabled Security Lake accounts.
+       sources -> (list)
+          The  list  of log sources in your organization that send data to the
+          data lake.
 
-          (map)
-              key -> (string)
+          (structure)
+              Amazon Security Lake  can  collect  logs  and  events  from  na-
+              tively-supported   Amazon   Web  Services  services  and  custom
+              sources.
 
-              value -> (map)
-                 key -> (string)
+              account -> (string)
+                 Specify the account from which you want to collect logs.
 
-                 value -> (list)
-                     (string)
+              region -> (string)
+                 Specify the Regions from which you want to collect logs.
+
+              sources -> (list)
+                 Specify the sources from which you want to collect logs.
+
+                 (tagged union structure)
+                     The supported source types from which logs and events are
+                     collected  in  Amazon Security Lake. For the list of sup-
+                     ported Amazon Web Services, see the Amazon Security  Lake
+                     User Guide .
+
+                     NOTE:
+                        This is a Tagged Union structure. Only one of the fol-
+                        lowing top level keys can be set:  awsLogSource,  cus-
+                        tomLogSource.
+
+                     awsLogSource -> (structure)
+                        Amazon Security Lake supports log and event collection
+                        for natively supported Amazon Web Services.
+
+                        sourceName -> (string)
+                            The name for a Amazon Web  Services  source.  This
+                            must be a Regionally unique value.
+
+                        sourceVersion -> (string)
+                            The version for a Amazon Web Services source. This
+                            must be a Regionally unique value.
+
+                     customLogSource -> (structure)
+                        Amazon Security Lake supports custom source types. For
+                        a  detailed  list,  see  the Amazon Security Lake User
+                        Guide.
+
+                        attributes -> (structure)
+                            The attributes of a third-party custom source.
+
+                            crawlerArn -> (string)
+                               The ARN of the Glue crawler.
+
+                            databaseArn -> (string)
+                               The ARN of the Glue database where results  are
+                               written,       such       as:      arn:aws:day-
+                               light:us-east-1::database/sometable/* .
+
+                            tableArn -> (string)
+                               The ARN of the Glue table.
+
+                        provider -> (structure)
+                            The details of the log provider for a  third-party
+                            custom source.
+
+                            location -> (string)
+                               The  location of the partition in the Amazon S3
+                               bucket for Security Lake.
+
+                            roleArn -> (string)
+                               The ARN of the IAM role to be used by  the  en-
+                               tity  putting logs into your custom source par-
+                               tition. Security Lake will  apply  the  correct
+                               access  policies  to  this  role,  but you must
+                               first manually create the trust policy for this
+                               role.  The  IAM  role  name must start with the
+                               text 'Security Lake'. The IAM role  must  trust
+                               the logProviderAccountId to assume the role.
+
+                        sourceName -> (string)
+                            The  name  for  a  third-party custom source. This
+                            must be a Regionally unique value.
+
+                        sourceVersion -> (string)
+                            The version for a third-party custom source.  This
+                            must be a Regionally unique value.
 
 
 

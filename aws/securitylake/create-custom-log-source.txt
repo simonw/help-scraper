@@ -12,17 +12,17 @@ DESCRIPTION
        After creating the appropriate IAM role to  invoke  Glue  crawler,  use
        this  API  to add a custom source name in Security Lake. This operation
        creates a partition in the Amazon S3 bucket for Security  Lake  as  the
-       target  location for log files from the custom source in addition to an
-       associated Glue table and an Glue crawler.
+       target location for log files from the custom source. In addition, this
+       operation also creates an associated Glue table and an Glue crawler.
 
        See also: AWS API Documentation
 
 SYNOPSIS
             create-custom-log-source
-          --custom-source-name <value>
-          --event-class <value>
-          --glue-invocation-role-arn <value>
-          --log-provider-account-id <value>
+          [--configuration <value>]
+          [--event-classes <value>]
+          --source-name <value>
+          [--source-version <value>]
           [--cli-input-json <value>]
           [--generate-cli-skeleton <value>]
           [--debug]
@@ -41,16 +41,53 @@ SYNOPSIS
           [--cli-connect-timeout <value>]
 
 OPTIONS
-       --custom-source-name (string)
-          The name for a third-party custom source. This must be a  Regionally
-          unique value.
+       --configuration (structure)
+          The configuration for the third-party custom source.
 
-       --event-class (string)
-          The Open Cybersecurity Schema Framework (OCSF) event class which de-
-          scribes the type of data that the custom source will send  to  Secu-
-          rity Lake.
+          crawlerConfiguration -> (structure)
+              The configuration for the Glue Crawler for the third-party  cus-
+              tom source.
 
-          Possible values:
+              roleArn -> (string)
+                 The  Amazon  Resource  Name  (ARN) of the Identity and Access
+                 Management (IAM) role to be used by  the  Glue  crawler.  The
+                 recommended IAM policies are:
+
+                 o The managed policy AWSGlueServiceRole
+
+                 o A custom policy granting access to your Amazon S3 Data Lake
+
+          providerIdentity -> (structure)
+              The  identity  of  the  log  provider for the third-party custom
+              source.
+
+              externalId -> (string)
+                 The external ID used to estalish trust relationship with  the
+                 AWS identity.
+
+              principal -> (string)
+                 The AWS identity principal.
+
+       Shorthand Syntax:
+
+          crawlerConfiguration={roleArn=string},providerIdentity={externalId=string,principal=string}
+
+       JSON Syntax:
+
+          {
+            "crawlerConfiguration": {
+              "roleArn": "string"
+            },
+            "providerIdentity": {
+              "externalId": "string",
+              "principal": "string"
+            }
+          }
+
+       --event-classes (list)
+          The  Open  Cybersecurity Schema Framework (OCSF) event classes which
+          describes the type of data that the custom source will send to Secu-
+          rity Lake. The supported event classes are:
 
           o ACCESS_ACTIVITY
 
@@ -100,48 +137,41 @@ OPTIONS
 
           o SSH_ACTIVITY
 
-          o CLOUD_API
-
-          o CONTAINER_LIFECYCLE
-
-          o DATABASE_LIFECYCLE
-
           o CONFIG_STATE
-
-          o CLOUD_STORAGE
 
           o INVENTORY_INFO
 
-          o RFB_ACTIVITY
+          o EMAIL_ACTIVITY
 
-          o SMTP_ACTIVITY
+          o API_ACTIVITY
 
-          o VIRTUAL_MACHINE_ACTIVITY
+          o CLOUD_API
 
-       --glue-invocation-role-arn (string)
-          The Amazon Resource Name (ARN) of the Identity and Access Management
-          (IAM) role to be used by the Glue crawler. The recommended IAM poli-
-          cies are:
+          (string)
 
-          o The managed policy AWSGlueServiceRole
+       Syntax:
 
-          o A custom policy granting access to your Amazon S3 Data Lake
+          "string" "string" ...
 
-       --log-provider-account-id (string)
-          The  Amazon  Web  Services account ID of the custom source that will
-          write logs and events into the Amazon S3 Data Lake.
+       --source-name (string)
+          Specify the name for a third-party custom source. This must be a Re-
+          gionally unique value.
 
-       --cli-input-json (string) Performs service operation based on the  JSON
-       string  provided. The JSON string follows the format provided by --gen-
-       erate-cli-skeleton. If other arguments  are  provided  on  the  command
-       line,  the CLI values will override the JSON-provided values. It is not
+       --source-version (string)
+          Specify the source version for the  third-party  custom  source,  to
+          limit log collection to a specific version of custom data source.
+
+       --cli-input-json  (string) Performs service operation based on the JSON
+       string provided. The JSON string follows the format provided by  --gen-
+       erate-cli-skeleton.  If  other  arguments  are  provided on the command
+       line, the CLI values will override the JSON-provided values. It is  not
        possible to pass arbitrary binary values using a JSON-provided value as
        the string will be taken literally.
 
-       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
+       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
        output without sending an API request. If provided with no value or the
        value input, prints a sample input JSON that can be used as an argument
-       for --cli-input-json. If provided with the value output,  it  validates
+       for  --cli-input-json.  If provided with the value output, it validates
        the command inputs and returns a sample output JSON for that command.
 
 GLOBAL OPTIONS
@@ -155,7 +185,7 @@ GLOBAL OPTIONS
 
        --no-verify-ssl (boolean)
 
-       By  default, the AWS CLI uses SSL when communicating with AWS services.
+       By default, the AWS CLI uses SSL when communicating with AWS  services.
        For each SSL connection, the AWS CLI will verify SSL certificates. This
        option overrides the default behavior of verifying SSL certificates.
 
@@ -201,7 +231,7 @@ GLOBAL OPTIONS
 
        --no-sign-request (boolean)
 
-       Do  not  sign requests. Credentials will not be loaded if this argument
+       Do not sign requests. Credentials will not be loaded if  this  argument
        is provided.
 
        --ca-bundle (string)
@@ -211,38 +241,55 @@ GLOBAL OPTIONS
 
        --cli-read-timeout (int)
 
-       The  maximum socket read time in seconds. If the value is set to 0, the
-       socket read will be blocking and not timeout. The default value  is  60
+       The maximum socket read time in seconds. If the value is set to 0,  the
+       socket  read  will be blocking and not timeout. The default value is 60
        seconds.
 
        --cli-connect-timeout (int)
 
-       The  maximum  socket connect time in seconds. If the value is set to 0,
-       the socket connect will be blocking and not timeout. The default  value
+       The maximum socket connect time in seconds. If the value is set  to  0,
+       the  socket connect will be blocking and not timeout. The default value
        is 60 seconds.
 
 OUTPUT
-       customDataLocation -> (string)
-          The  location  of the partition in the Amazon S3 bucket for Security
-          Lake.
+       source -> (structure)
+          The created third-party custom source.
 
-       glueCrawlerName -> (string)
-          The name of the Glue crawler.
+          attributes -> (structure)
+              The attributes of a third-party custom source.
 
-       glueDatabaseName -> (string)
-          The Glue database where results are written, such  as:  arn:aws:day-
-          light:us-east-1::database/sometable/* .
+              crawlerArn -> (string)
+                 The ARN of the Glue crawler.
 
-       glueTableName -> (string)
-          The table name of the Glue crawler.
+              databaseArn -> (string)
+                 The ARN of the Glue database where results are written,  such
+                 as: arn:aws:daylight:us-east-1::database/sometable/* .
 
-       logProviderAccessRoleArn -> (string)
-          The  ARN  of the IAM role to be used by the entity putting logs into
-          your custom source partition. Security Lake will apply  the  correct
-          access policies to this role, but you must first manually create the
-          trust policy for this role. The IAM role name must  start  with  the
-          text 'Security Lake'. The IAM role must trust the logProviderAccoun-
-          tId to assume the role.
+              tableArn -> (string)
+                 The ARN of the Glue table.
+
+          provider -> (structure)
+              The details of the log provider for a third-party custom source.
+
+              location -> (string)
+                 The location of the partition in the Amazon S3 bucket for Se-
+                 curity Lake.
+
+              roleArn -> (string)
+                 The ARN of the IAM role to be used by the entity putting logs
+                 into  your  custom source partition. Security Lake will apply
+                 the correct access policies to this role, but you must  first
+                 manually  create the trust policy for this role. The IAM role
+                 name must start with the text 'Security Lake'. The  IAM  role
+                 must trust the logProviderAccountId to assume the role.
+
+          sourceName -> (string)
+              The name for a third-party custom source. This must be a Region-
+              ally unique value.
+
+          sourceVersion -> (string)
+              The version for a third-party custom source. This must be a  Re-
+              gionally unique value.
 
 
 

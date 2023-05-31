@@ -93,7 +93,7 @@ OPTIONS
               The  name  of the job command. For an Apache Spark ETL job, this
               must be glueetl . For a Python shell job, it must be pythonshell
               .   For  an  Apache  Spark  streaming  ETL  job,  this  must  be
-              gluestreaming .
+              gluestreaming . For a Ray job, this must be glueray .
 
           ScriptLocation -> (string)
               Specifies the Amazon Simple Storage Service (Amazon S3) path  to
@@ -103,36 +103,49 @@ OPTIONS
               The Python version being used to run a Python shell job. Allowed
               values are 2 or 3.
 
+          Runtime -> (string)
+              In Ray jobs, Runtime is used to specify  the  versions  of  Ray,
+              Python  and  additional libraries available in your environment.
+              This field is not used in other job types. For supported runtime
+              environment values, see Working with Ray jobs in the Glue Devel-
+              oper Guide.
+
        Shorthand Syntax:
 
-          Name=string,ScriptLocation=string,PythonVersion=string
+          Name=string,ScriptLocation=string,PythonVersion=string,Runtime=string
 
        JSON Syntax:
 
           {
             "Name": "string",
             "ScriptLocation": "string",
-            "PythonVersion": "string"
+            "PythonVersion": "string",
+            "Runtime": "string"
           }
 
        --default-arguments (map)
-          The default arguments for this job.
+          The default arguments for  every  run  of  this  job,  specified  as
+          name-value pairs.
 
-          You can specify arguments here that your  own  job-execution  script
+          You  can  specify  arguments here that your own job-execution script
           consumes, as well as arguments that Glue itself consumes.
 
-          Job  arguments may be logged. Do not pass plaintext secrets as argu-
-          ments. Retrieve secrets from a Glue Connection, Secrets  Manager  or
-          other  secret management mechanism if you intend to keep them within
+          Job arguments may be logged. Do not pass plaintext secrets as  argu-
+          ments.  Retrieve  secrets from a Glue Connection, Secrets Manager or
+          other secret management mechanism if you intend to keep them  within
           the Job.
 
-          For information about how to specify and consume your own Job  argu-
-          ments,  see  the  Calling Glue APIs in Python topic in the developer
+          For  information about how to specify and consume your own Job argu-
+          ments, see the Calling Glue APIs in Python topic  in  the  developer
           guide.
 
-          For information about the key-value pairs that Glue consumes to  set
-          up  your  job,  see the Special Parameters Used by Glue topic in the
-          developer guide.
+          For  information  about  the arguments you can provide to this field
+          when configuring Spark jobs, see the Special Parameters Used by Glue
+          topic in the developer guide.
+
+          For  information  about  the arguments you can provide to this field
+          when configuring Ray jobs, see Using job parameters in Ray  jobs  in
+          the developer guide.
 
           key -> (string)
 
@@ -148,8 +161,8 @@ OPTIONS
             ...}
 
        --non-overridable-arguments (map)
-          Non-overridable arguments for  this  job,  specified  as  name-value
-          pairs.
+          Arguments  for  this  job that are not overridden when providing job
+          arguments in a job run, specified as name-value pairs.
 
           key -> (string)
 
@@ -188,28 +201,33 @@ OPTIONS
        --allocated-capacity (integer)
           This parameter is deprecated. Use MaxCapacity instead.
 
-          The  number of Glue data processing units (DPUs) to allocate to this
-          Job. You can allocate a minimum of 2 DPUs; the default is 10. A  DPU
-          is  a  relative measure of processing power that consists of 4 vCPUs
-          of compute capacity and 16 GB of memory. For more  information,  see
+          The number of Glue data processing units (DPUs) to allocate to  this
+          Job.  You can allocate a minimum of 2 DPUs; the default is 10. A DPU
+          is a relative measure of processing power that consists of  4  vCPUs
+          of  compute  capacity and 16 GB of memory. For more information, see
           the Glue pricing page .
 
        --timeout (integer)
-          The  job timeout in minutes. This is the maximum time that a job run
-          can consume resources before it is  terminated  and  enters  TIMEOUT
+          The job timeout in minutes. This is the maximum time that a job  run
+          can  consume  resources  before  it is terminated and enters TIMEOUT
           status. The default is 2,880 minutes (48 hours).
 
        --max-capacity (double)
-          For  Glue  version  1.0  or  earlier jobs, using the standard worker
-          type, the number of Glue data processing units (DPUs)  that  can  be
-          allocated  when  this  job runs. A DPU is a relative measure of pro-
+          For Glue version 1.0 or earlier  jobs,  using  the  standard  worker
+          type,  the  number  of Glue data processing units (DPUs) that can be
+          allocated when this job runs. A DPU is a relative  measure  of  pro-
           cessing power that consists of 4 vCPUs of compute capacity and 16 GB
           of memory. For more information, see the Glue pricing page .
 
-          Do not set Max Capacity if using WorkerType and NumberOfWorkers .
+          For Glue version 2.0+ jobs, you cannot specify a Maximum capacity  .
+          Instead,  you should specify a Worker type and the Number of workers
+          .
 
-          The  value  that can be allocated for MaxCapacity depends on whether
-          you are running a Python shell job or an Apache Spark ETL job:
+          Do not set MaxCapacity if using WorkerType and NumberOfWorkers .
+
+          The value that can be allocated for MaxCapacity depends  on  whether
+          you  are  running a Python shell job, an Apache Spark ETL job, or an
+          Apache Spark streaming ETL job:
 
           o When you specify a Python  shell  job  (JobCommand.Name  ="python-
             shell"),  you  can allocate either 0.0625 or 1 DPU. The default is
@@ -217,13 +235,9 @@ OPTIONS
 
           o When  you  specify  an  Apache  Spark  ETL  job   (JobCommand.Name
             ="glueetl")  or  Apache  Spark  streaming ETL job (JobCommand.Name
-            ="gluestreaming"), you can allocate a minimum of 2 DPUs.  The  de-
+            ="gluestreaming"), you can allocate from 2 to 100  DPUs.  The  de-
             fault is 10 DPUs. This job type cannot have a fractional DPU allo-
             cation.
-
-          For Glue version 2.0 jobs, you cannot instead specify a Maximum  ca-
-          pacity . Instead, you should specify a Worker type and the Number of
-          workers .
 
        --security-configuration (string)
           The name of the SecurityConfiguration structure to be used with this
@@ -265,9 +279,13 @@ OPTIONS
           }
 
        --glue-version (string)
-          Glue version determines the versions of Apache Spark and Python that
-          Glue  supports.  The  Python version indicates the version supported
-          for jobs of type Spark.
+          In Spark jobs, GlueVersion determines the versions of  Apache  Spark
+          and  Python  that  Glue available in a job. The Python version indi-
+          cates the version supported for jobs of type Spark.
+
+          Ray jobs should set GlueVersion to 4.0 or greater. However, the ver-
+          sions  of Ray, Python and additional libraries available in your Ray
+          job are determined by the Runtime parameter of the Job command.
 
           For more information about the available Glue  versions  and  corre-
           sponding  Spark  and Python versions, see Glue version in the devel-
@@ -282,23 +300,28 @@ OPTIONS
 
        --worker-type (string)
           The type of predefined worker that is allocated when a job runs. Ac-
-          cepts a value of Standard, G.1X, G.2X, or G.025X.
+          cepts a value of Standard, G.1X, G.2X, or G.025X for Spark jobs. Ac-
+          cepts the value Z.2X for Ray jobs.
 
-          o For  the  Standard worker type, each worker provides 4 vCPU, 16 GB
+          o For the Standard worker type, each worker provides 4 vCPU,  16  GB
             of memory and a 50GB disk, and 2 executors per worker.
 
           o For the G.1X worker type, each worker maps to 1 DPU (4 vCPU, 16 GB
-            of  memory,  64  GB  disk), and provides 1 executor per worker. We
+            of memory, 64 GB disk), and provides 1  executor  per  worker.  We
             recommend this worker type for memory-intensive jobs.
 
           o For the G.2X worker type, each worker maps to 2 DPU (8 vCPU, 32 GB
-            of  memory,  128  GB disk), and provides 1 executor per worker. We
+            of memory, 128 GB disk), and provides 1 executor  per  worker.  We
             recommend this worker type for memory-intensive jobs.
 
-          o For the G.025X worker type, each worker maps to 0.25 DPU (2  vCPU,
-            4  GB  of memory, 64 GB disk), and provides 1 executor per worker.
-            We recommend this worker type for low volume streaming jobs.  This
+          o For  the G.025X worker type, each worker maps to 0.25 DPU (2 vCPU,
+            4 GB of memory, 64 GB disk), and provides 1 executor  per  worker.
+            We  recommend this worker type for low volume streaming jobs. This
             worker type is only available for Glue version 3.0 streaming jobs.
+
+          o For the Z.2X worker type, each worker maps to 2 M-DPU  (8vCPU,  64
+            GB  of  m  emory,  128  GB disk), and provides up to 8 Ray workers
+            based on the autoscaler.
 
           Possible values:
 
@@ -314,9 +337,11 @@ OPTIONS
 
           o G.8X
 
+          o Z.2X
+
        --code-gen-configuration-nodes (map)
-          The  representation  of  a  directed acyclic graph on which both the
-          Glue Studio visual component and  Glue  Studio  code  generation  is
+          The representation of a directed acyclic graph  on  which  both  the
+          Glue  Studio  visual  component  and  Glue Studio code generation is
           based.
 
           key -> (string)
@@ -332,181 +357,27 @@ OPTIONS
                      The name of the data source.
 
                  ConnectionName -> (string)
-                     The name of the connection that is  associated  with  the
+                     The  name  of  the connection that is associated with the
                      connector.
 
                  ConnectorName -> (string)
-                     The  name  of a connector that assists with accessing the
+                     The name of a connector that assists with  accessing  the
                      data store in Glue Studio.
 
                  ConnectionType -> (string)
-                     The type of connection,  such  as  marketplace.athena  or
-                     custom.athena,  designating  a  connection  to  an Amazon
+                     The  type  of  connection,  such as marketplace.athena or
+                     custom.athena, designating  a  connection  to  an  Amazon
                      Athena data store.
 
                  ConnectionTable -> (string)
                      The name of the table in the data source.
 
                  SchemaName -> (string)
-                     The name of the Cloudwatch log group to  read  from.  For
+                     The  name  of  the Cloudwatch log group to read from. For
                      example, /aws-glue/jobs/output .
 
                  OutputSchemas -> (list)
                      Specifies the data schema for the custom Athena source.
-
-                     (structure)
-                        Specifies  a  user-defined schema when a schema cannot
-                        be determined by Glue.
-
-                        Columns -> (list)
-                            Specifies the column definitions that  make  up  a
-                            Glue schema.
-
-                            (structure)
-                               Specifies a single column in a Glue schema def-
-                               inition.
-
-                               Name -> (string)
-                                   The name of the column in the  Glue  Studio
-                                   schema.
-
-                               Type -> (string)
-                                   The  hive  type for this column in the Glue
-                                   Studio schema.
-
-              JDBCConnectorSource -> (structure)
-                 Specifies a connector to a JDBC data source.
-
-                 Name -> (string)
-                     The name of the data source.
-
-                 ConnectionName -> (string)
-                     The name of the connection that is  associated  with  the
-                     connector.
-
-                 ConnectorName -> (string)
-                     The  name  of a connector that assists with accessing the
-                     data store in Glue Studio.
-
-                 ConnectionType -> (string)
-                     The type of connection, such as marketplace.jdbc or  cus-
-                     tom.jdbc, designating a connection to a JDBC data store.
-
-                 AdditionalOptions -> (structure)
-                     Additional connection options for the connector.
-
-                     FilterPredicate -> (string)
-                        Extra condition clause to filter data from source. For
-                        example:
-                            BillingCity='Mountain View'
-
-                        When using a query instead of a table name, you should
-                        validate  that the query works with the specified fil-
-                        terPredicate .
-
-                     PartitionColumn -> (string)
-                        The name of an integer column that is used for  parti-
-                        tioning.  This  option  works  only when it's included
-                        with lowerBound , upperBound  ,  and  numPartitions  .
-                        This  option  works  the  same way as in the Spark SQL
-                        JDBC reader.
-
-                     LowerBound -> (long)
-                        The minimum value of partitionColumn that is  used  to
-                        decide partition stride.
-
-                     UpperBound -> (long)
-                        The  maximum  value of partitionColumn that is used to
-                        decide partition stride.
-
-                     NumPartitions -> (long)
-                        The number  of  partitions.  This  value,  along  with
-                        lowerBound  (inclusive)  and  upperBound  (exclusive),
-                        form partition strides for generated WHERE clause  ex-
-                        pressions that are used to split the partitionColumn .
-
-                     JobBookmarkKeys -> (list)
-                        The name of the job bookmark keys on which to sort.
-
-                        (string)
-
-                     JobBookmarkKeysSortOrder -> (string)
-                        Specifies an ascending or descending sort order.
-
-                     DataTypeMapping -> (map)
-                        Custom  data type mapping that builds a mapping from a
-                        JDBC data type to an Glue data type. For example,  the
-                        option  "dataTypeMapping":{"FLOAT":"STRING"} maps data
-                        fields of JDBC type FLOAT into the Java String type by
-                        calling   the   ResultSet.getString()  method  of  the
-                        driver, and uses it to build the Glue record. The  Re-
-                        sultSet  object  is implemented by each driver, so the
-                        behavior is specific to the driver you use.  Refer  to
-                        the  documentation  for your JDBC driver to understand
-                        how the driver performs the conversions.
-
-                        key -> (string)
-
-                        value -> (string)
-
-                 ConnectionTable -> (string)
-                     The name of the table in the data source.
-
-                 Query -> (string)
-                     The table or SQL query to get  the  data  from.  You  can
-                     specify either ConnectionTable or query , but not both.
-
-                 OutputSchemas -> (list)
-                     Specifies the data schema for the custom JDBC source.
-
-                     (structure)
-                        Specifies  a  user-defined schema when a schema cannot
-                        be determined by Glue.
-
-                        Columns -> (list)
-                            Specifies the column definitions that  make  up  a
-                            Glue schema.
-
-                            (structure)
-                               Specifies a single column in a Glue schema def-
-                               inition.
-
-                               Name -> (string)
-                                   The name of the column in the  Glue  Studio
-                                   schema.
-
-                               Type -> (string)
-                                   The  hive  type for this column in the Glue
-                                   Studio schema.
-
-              SparkConnectorSource -> (structure)
-                 Specifies a connector to an Apache Spark data source.
-
-                 Name -> (string)
-                     The name of the data source.
-
-                 ConnectionName -> (string)
-                     The name of the connection that is  associated  with  the
-                     connector.
-
-                 ConnectorName -> (string)
-                     The  name  of a connector that assists with accessing the
-                     data store in Glue Studio.
-
-                 ConnectionType -> (string)
-                     The type of connection, such as marketplace.spark or cus-
-                     tom.spark,  designating  a  connection to an Apache Spark
-                     data store.
-
-                 AdditionalOptions -> (map)
-                     Additional connection options for the connector.
-
-                     key -> (string)
-
-                     value -> (string)
-
-                 OutputSchemas -> (list)
-                     Specifies data schema for the custom spark source.
 
                      (structure)
                         Specifies a user-defined schema when a  schema  cannot
@@ -526,6 +397,160 @@ OPTIONS
 
                                Type -> (string)
                                    The hive type for this column in  the  Glue
+                                   Studio schema.
+
+              JDBCConnectorSource -> (structure)
+                 Specifies a connector to a JDBC data source.
+
+                 Name -> (string)
+                     The name of the data source.
+
+                 ConnectionName -> (string)
+                     The  name  of  the connection that is associated with the
+                     connector.
+
+                 ConnectorName -> (string)
+                     The name of a connector that assists with  accessing  the
+                     data store in Glue Studio.
+
+                 ConnectionType -> (string)
+                     The  type of connection, such as marketplace.jdbc or cus-
+                     tom.jdbc, designating a connection to a JDBC data store.
+
+                 AdditionalOptions -> (structure)
+                     Additional connection options for the connector.
+
+                     FilterPredicate -> (string)
+                        Extra condition clause to filter data from source. For
+                        example:
+                            BillingCity='Mountain View'
+
+                        When using a query instead of a table name, you should
+                        validate that the query works with the specified  fil-
+                        terPredicate .
+
+                     PartitionColumn -> (string)
+                        The  name of an integer column that is used for parti-
+                        tioning. This option works  only  when  it's  included
+                        with  lowerBound  ,  upperBound  , and numPartitions .
+                        This option works the same way as  in  the  Spark  SQL
+                        JDBC reader.
+
+                     LowerBound -> (long)
+                        The  minimum  value of partitionColumn that is used to
+                        decide partition stride.
+
+                     UpperBound -> (long)
+                        The maximum value of partitionColumn that is  used  to
+                        decide partition stride.
+
+                     NumPartitions -> (long)
+                        The  number  of  partitions.  This  value,  along with
+                        lowerBound  (inclusive)  and  upperBound  (exclusive),
+                        form  partition strides for generated WHERE clause ex-
+                        pressions that are used to split the partitionColumn .
+
+                     JobBookmarkKeys -> (list)
+                        The name of the job bookmark keys on which to sort.
+
+                        (string)
+
+                     JobBookmarkKeysSortOrder -> (string)
+                        Specifies an ascending or descending sort order.
+
+                     DataTypeMapping -> (map)
+                        Custom data type mapping that builds a mapping from  a
+                        JDBC  data type to an Glue data type. For example, the
+                        option "dataTypeMapping":{"FLOAT":"STRING"} maps  data
+                        fields of JDBC type FLOAT into the Java String type by
+                        calling  the  ResultSet.getString()  method   of   the
+                        driver,  and uses it to build the Glue record. The Re-
+                        sultSet object is implemented by each driver,  so  the
+                        behavior  is  specific to the driver you use. Refer to
+                        the documentation for your JDBC driver  to  understand
+                        how the driver performs the conversions.
+
+                        key -> (string)
+
+                        value -> (string)
+
+                 ConnectionTable -> (string)
+                     The name of the table in the data source.
+
+                 Query -> (string)
+                     The  table  or  SQL  query  to get the data from. You can
+                     specify either ConnectionTable or query , but not both.
+
+                 OutputSchemas -> (list)
+                     Specifies the data schema for the custom JDBC source.
+
+                     (structure)
+                        Specifies a user-defined schema when a  schema  cannot
+                        be determined by Glue.
+
+                        Columns -> (list)
+                            Specifies  the  column  definitions that make up a
+                            Glue schema.
+
+                            (structure)
+                               Specifies a single column in a Glue schema def-
+                               inition.
+
+                               Name -> (string)
+                                   The  name  of the column in the Glue Studio
+                                   schema.
+
+                               Type -> (string)
+                                   The hive type for this column in  the  Glue
+                                   Studio schema.
+
+              SparkConnectorSource -> (structure)
+                 Specifies a connector to an Apache Spark data source.
+
+                 Name -> (string)
+                     The name of the data source.
+
+                 ConnectionName -> (string)
+                     The  name  of  the connection that is associated with the
+                     connector.
+
+                 ConnectorName -> (string)
+                     The name of a connector that assists with  accessing  the
+                     data store in Glue Studio.
+
+                 ConnectionType -> (string)
+                     The type of connection, such as marketplace.spark or cus-
+                     tom.spark, designating a connection to  an  Apache  Spark
+                     data store.
+
+                 AdditionalOptions -> (map)
+                     Additional connection options for the connector.
+
+                     key -> (string)
+
+                     value -> (string)
+
+                 OutputSchemas -> (list)
+                     Specifies data schema for the custom spark source.
+
+                     (structure)
+                        Specifies  a  user-defined schema when a schema cannot
+                        be determined by Glue.
+
+                        Columns -> (list)
+                            Specifies the column definitions that  make  up  a
+                            Glue schema.
+
+                            (structure)
+                               Specifies a single column in a Glue schema def-
+                               inition.
+
+                               Name -> (string)
+                                   The name of the column in the  Glue  Studio
+                                   schema.
+
+                               Type -> (string)
+                                   The  hive  type for this column in the Glue
                                    Studio schema.
 
               CatalogSource -> (structure)
@@ -553,7 +578,7 @@ OPTIONS
                      The database table to read from.
 
                  RedshiftTmpDir -> (string)
-                     The  Amazon  S3  path  where temporary data can be staged
+                     The Amazon S3 path where temporary  data  can  be  staged
                      when copying out of the database.
 
                  TmpDirIAMRole -> (string)
@@ -572,277 +597,24 @@ OPTIONS
                      The database table to read from.
 
                  PartitionPredicate -> (string)
-                     Partitions satisfying this predicate are  deleted.  Files
-                     within  the  retention period in these partitions are not
+                     Partitions  satisfying  this predicate are deleted. Files
+                     within the retention period in these partitions  are  not
                      deleted. Set to ""  empty by default.
 
                  AdditionalOptions -> (structure)
                      Specifies additional connection options.
 
                      BoundedSize -> (long)
-                        Sets the upper  limit  for  the  target  size  of  the
+                        Sets  the  upper  limit  for  the  target  size of the
                         dataset in bytes that will be processed.
 
                      BoundedFiles -> (long)
-                        Sets  the  upper  limit for the target number of files
+                        Sets the upper limit for the target  number  of  files
                         that will be processed.
 
               S3CsvSource -> (structure)
-                 Specifies a command-separated value (CSV) data  store  stored
+                 Specifies  a  command-separated value (CSV) data store stored
                  in Amazon S3.
-
-                 Name -> (string)
-                     The name of the data store.
-
-                 Paths -> (list)
-                     A list of the Amazon S3 paths to read from.
-
-                     (string)
-
-                 CompressionType -> (string)
-                     Specifies  how  the data is compressed. This is generally
-                     not necessary if the data has a standard file  extension.
-                     Possible values are "gzip" and "bzip" ).
-
-                 Exclusions -> (list)
-                     A  string  containing a JSON list of Unix-style glob pat-
-                     terns to exclude. For example, "["
-                     **
-                     .pdf"]" excludes all PDF files.
-
-                     System Message: WARNING/2 (<string>:, line 1270)
-                            Inline strong start-string without end-string.
-
-                            (string)
-
-                 GroupSize -> (string)
-                     The target group size in bytes. The default  is  computed
-                     based  on  the input data size and the size of your clus-
-                     ter. When  there  are  fewer  than  50,000  input  files,
-                     "groupFiles"  must  be  set  to "inPartition" for this to
-                     take effect.
-
-                 GroupFiles -> (string)
-                     Grouping files is turned on by  default  when  the  input
-                     contains more than 50,000 files. To turn on grouping with
-                     fewer than 50,000 files, set this parameter to  "inParti-
-                     tion".  To  disable  grouping  when  there  are more than
-                     50,000 files, set this parameter to "none" .
-
-                 Recurse -> (boolean)
-                     If set to true, recursively reads files in all  subdirec-
-                     tories under the specified paths.
-
-                 MaxBand -> (integer)
-                     This  option  controls the duration in milliseconds after
-                     which the s3 listing is likely to  be  consistent.  Files
-                     with  modification  timestamps  falling  within  the last
-                     maxBand milliseconds are  tracked  specially  when  using
-                     JobBookmarks  to  account  for Amazon S3 eventual consis-
-                     tency. Most users don't need to set this option. The  de-
-                     fault is 900000 milliseconds, or 15 minutes.
-
-                 MaxFilesInBand -> (integer)
-                     This option specifies the maximum number of files to save
-                     from the last maxBand seconds.  If  this  number  is  ex-
-                     ceeded, extra files are skipped and only processed in the
-                     next job run.
-
-                 AdditionalOptions -> (structure)
-                     Specifies additional connection options.
-
-                     BoundedSize -> (long)
-                        Sets the upper  limit  for  the  target  size  of  the
-                        dataset in bytes that will be processed.
-
-                     BoundedFiles -> (long)
-                        Sets  the  upper  limit for the target number of files
-                        that will be processed.
-
-                     EnableSamplePath -> (boolean)
-                        Sets option to enable a sample path.
-
-                     SamplePath -> (string)
-                        If enabled, specifies the sample path.
-
-                 Separator -> (string)
-                     Specifies the  delimiter  character.  The  default  is  a
-                     comma: ",", but any other character can be specified.
-
-                 Escaper -> (string)
-                     Specifies a character to use for escaping. This option is
-                     used only when reading CSV files. The  default  value  is
-                     none  .  If enabled, the character which immediately fol-
-                     lows is used as-is, except for a small set of  well-known
-                     escapes (\n , \r , \t , and \0 ).
-
-                 QuoteChar -> (string)
-                     Specifies  the  character to use for quoting. The default
-                     is a double quote: '"' . Set this to -1 to turn off quot-
-                     ing entirely.
-
-                 Multiline -> (boolean)
-                     A  Boolean  value  that specifies whether a single record
-                     can span multiple lines. This can occur when a field con-
-                     tains  a quoted new-line character. You must set this op-
-                     tion to True if any record spans multiple lines. The  de-
-                     fault  value  is False , which allows for more aggressive
-                     file-splitting during parsing.
-
-                 WithHeader -> (boolean)
-                     A Boolean value that specifies whether to treat the first
-                     line as a header. The default value is False .
-
-                 WriteHeader -> (boolean)
-                     A  Boolean  value  that  specifies  whether  to write the
-                     header to output. The default value is True .
-
-                 SkipFirst -> (boolean)
-                     A Boolean value that specifies whether to skip the  first
-                     data line. The default value is False .
-
-                 OptimizePerformance -> (boolean)
-                     A  Boolean  value  that  specifies whether to use the ad-
-                     vanced SIMD CSV reader  along  with  Apache  Arrow  based
-                     columnar  memory  formats. Only available in Glue version
-                     3.0.
-
-                 OutputSchemas -> (list)
-                     Specifies the data schema for the S3 CSV source.
-
-                     (structure)
-                        Specifies a user-defined schema when a  schema  cannot
-                        be determined by Glue.
-
-                        Columns -> (list)
-                            Specifies  the  column  definitions that make up a
-                            Glue schema.
-
-                            (structure)
-                               Specifies a single column in a Glue schema def-
-                               inition.
-
-                               Name -> (string)
-                                   The  name  of the column in the Glue Studio
-                                   schema.
-
-                               Type -> (string)
-                                   The hive type for this column in  the  Glue
-                                   Studio schema.
-
-              S3JsonSource -> (structure)
-                 Specifies a JSON data store stored in Amazon S3.
-
-                 Name -> (string)
-                     The name of the data store.
-
-                 Paths -> (list)
-                     A list of the Amazon S3 paths to read from.
-
-                     (string)
-
-                 CompressionType -> (string)
-                     Specifies  how  the data is compressed. This is generally
-                     not necessary if the data has a standard file  extension.
-                     Possible values are "gzip" and "bzip" ).
-
-                 Exclusions -> (list)
-                     A  string  containing a JSON list of Unix-style glob pat-
-                     terns to exclude. For example, "["
-                     **
-                     .pdf"]" excludes all PDF files.
-
-                     System Message: WARNING/2 (<string>:, line 1572)
-                            Inline strong start-string without end-string.
-
-                            (string)
-
-                 GroupSize -> (string)
-                     The target group size in bytes. The default  is  computed
-                     based  on  the input data size and the size of your clus-
-                     ter. When  there  are  fewer  than  50,000  input  files,
-                     "groupFiles"  must  be  set  to "inPartition" for this to
-                     take effect.
-
-                 GroupFiles -> (string)
-                     Grouping files is turned on by  default  when  the  input
-                     contains more than 50,000 files. To turn on grouping with
-                     fewer than 50,000 files, set this parameter to  "inParti-
-                     tion".  To  disable  grouping  when  there  are more than
-                     50,000 files, set this parameter to "none" .
-
-                 Recurse -> (boolean)
-                     If set to true, recursively reads files in all  subdirec-
-                     tories under the specified paths.
-
-                 MaxBand -> (integer)
-                     This  option  controls the duration in milliseconds after
-                     which the s3 listing is likely to  be  consistent.  Files
-                     with  modification  timestamps  falling  within  the last
-                     maxBand milliseconds are  tracked  specially  when  using
-                     JobBookmarks  to  account  for Amazon S3 eventual consis-
-                     tency. Most users don't need to set this option. The  de-
-                     fault is 900000 milliseconds, or 15 minutes.
-
-                 MaxFilesInBand -> (integer)
-                     This option specifies the maximum number of files to save
-                     from the last maxBand seconds.  If  this  number  is  ex-
-                     ceeded, extra files are skipped and only processed in the
-                     next job run.
-
-                 AdditionalOptions -> (structure)
-                     Specifies additional connection options.
-
-                     BoundedSize -> (long)
-                        Sets the upper  limit  for  the  target  size  of  the
-                        dataset in bytes that will be processed.
-
-                     BoundedFiles -> (long)
-                        Sets  the  upper  limit for the target number of files
-                        that will be processed.
-
-                     EnableSamplePath -> (boolean)
-                        Sets option to enable a sample path.
-
-                     SamplePath -> (string)
-                        If enabled, specifies the sample path.
-
-                 JsonPath -> (string)
-                     A JsonPath string defining the JSON data.
-
-                 Multiline -> (boolean)
-                     A Boolean value that specifies whether  a  single  record
-                     can span multiple lines. This can occur when a field con-
-                     tains a quoted new-line character. You must set this  op-
-                     tion  to True if any record spans multiple lines. The de-
-                     fault value is False , which allows for  more  aggressive
-                     file-splitting during parsing.
-
-                 OutputSchemas -> (list)
-                     Specifies the data schema for the S3 JSON source.
-
-                     (structure)
-                        Specifies  a  user-defined schema when a schema cannot
-                        be determined by Glue.
-
-                        Columns -> (list)
-                            Specifies the column definitions that  make  up  a
-                            Glue schema.
-
-                            (structure)
-                               Specifies a single column in a Glue schema def-
-                               inition.
-
-                               Name -> (string)
-                                   The name of the column in the  Glue  Studio
-                                   schema.
-
-                               Type -> (string)
-                                   The  hive  type for this column in the Glue
-                                   Studio schema.
-
-              S3ParquetSource -> (structure)
-                 Specifies an Apache Parquet data store stored in Amazon S3.
 
                  Name -> (string)
                      The name of the data store.
@@ -863,7 +635,7 @@ OPTIONS
                      **
                      .pdf"]" excludes all PDF files.
 
-                     System Message: WARNING/2 (<string>:, line 1814)
+                     System Message: WARNING/2 (<string>:, line 1294)
                             Inline strong start-string without end-string.
 
                             (string)
@@ -918,8 +690,50 @@ OPTIONS
                      SamplePath -> (string)
                         If enabled, specifies the sample path.
 
+                 Separator -> (string)
+                     Specifies  the  delimiter  character.  The  default  is a
+                     comma: ",", but any other character can be specified.
+
+                 Escaper -> (string)
+                     Specifies a character to use for escaping. This option is
+                     used  only  when  reading CSV files. The default value is
+                     none . If enabled, the character which  immediately  fol-
+                     lows  is used as-is, except for a small set of well-known
+                     escapes (\n , \r , \t , and \0 ).
+
+                 QuoteChar -> (string)
+                     Specifies the character to use for quoting.  The  default
+                     is a double quote: '"' . Set this to -1 to turn off quot-
+                     ing entirely.
+
+                 Multiline -> (boolean)
+                     A Boolean value that specifies whether  a  single  record
+                     can span multiple lines. This can occur when a field con-
+                     tains a quoted new-line character. You must set this  op-
+                     tion  to True if any record spans multiple lines. The de-
+                     fault value is False , which allows for  more  aggressive
+                     file-splitting during parsing.
+
+                 WithHeader -> (boolean)
+                     A Boolean value that specifies whether to treat the first
+                     line as a header. The default value is False .
+
+                 WriteHeader -> (boolean)
+                     A Boolean value  that  specifies  whether  to  write  the
+                     header to output. The default value is True .
+
+                 SkipFirst -> (boolean)
+                     A  Boolean value that specifies whether to skip the first
+                     data line. The default value is False .
+
+                 OptimizePerformance -> (boolean)
+                     A Boolean value that specifies whether  to  use  the  ad-
+                     vanced  SIMD  CSV  reader  along  with Apache Arrow based
+                     columnar memory formats. Only available in  Glue  version
+                     3.0.
+
                  OutputSchemas -> (list)
-                     Specifies the data schema for the S3 Parquet source.
+                     Specifies the data schema for the S3 CSV source.
 
                      (structure)
                         Specifies  a  user-defined schema when a schema cannot
@@ -941,119 +755,96 @@ OPTIONS
                                    The  hive  type for this column in the Glue
                                    Studio schema.
 
-              RelationalCatalogSource -> (structure)
-                 Specifies a relational catalog data store in  the  Glue  Data
-                 Catalog.
+              S3JsonSource -> (structure)
+                 Specifies a JSON data store stored in Amazon S3.
 
                  Name -> (string)
-                     The name of the data source.
+                     The name of the data store.
 
-                 Database -> (string)
-                     The name of the database to read from.
-
-                 Table -> (string)
-                     The name of the table in the database to read from.
-
-              DynamoDBCatalogSource -> (structure)
-                 Specifies  a  DynamoDBC  Catalog  data store in the Glue Data
-                 Catalog.
-
-                 Name -> (string)
-                     The name of the data source.
-
-                 Database -> (string)
-                     The name of the database to read from.
-
-                 Table -> (string)
-                     The name of the table in the database to read from.
-
-              JDBCConnectorTarget -> (structure)
-                 Specifies a data target that writes to Amazon  S3  in  Apache
-                 Parquet columnar storage.
-
-                 Name -> (string)
-                     The name of the data target.
-
-                 Inputs -> (list)
-                     The nodes that are inputs to the data target.
+                 Paths -> (list)
+                     A list of the Amazon S3 paths to read from.
 
                      (string)
 
-                 ConnectionName -> (string)
-                     The  name  of  the connection that is associated with the
-                     connector.
+                 CompressionType -> (string)
+                     Specifies how the data is compressed. This  is  generally
+                     not  necessary if the data has a standard file extension.
+                     Possible values are "gzip" and "bzip" ).
 
-                 ConnectionTable -> (string)
-                     The name of the table in the data target.
+                 Exclusions -> (list)
+                     A string containing a JSON list of Unix-style  glob  pat-
+                     terns to exclude. For example, "["
+                     **
+                     .pdf"]" excludes all PDF files.
 
-                 ConnectorName -> (string)
-                     The name of a connector that will be used.
+                     System Message: WARNING/2 (<string>:, line 1596)
+                            Inline strong start-string without end-string.
 
-                 ConnectionType -> (string)
-                     The type of connection, such as marketplace.jdbc or  cus-
-                     tom.jdbc, designating a connection to a JDBC data target.
+                            (string)
 
-                 AdditionalOptions -> (map)
-                     Additional connection options for the connector.
+                 GroupSize -> (string)
+                     The  target  group size in bytes. The default is computed
+                     based on the input data size and the size of  your  clus-
+                     ter.  When  there  are  fewer  than  50,000  input files,
+                     "groupFiles" must be set to  "inPartition"  for  this  to
+                     take effect.
 
-                     key -> (string)
+                 GroupFiles -> (string)
+                     Grouping  files  is  turned  on by default when the input
+                     contains more than 50,000 files. To turn on grouping with
+                     fewer  than 50,000 files, set this parameter to "inParti-
+                     tion". To disable  grouping  when  there  are  more  than
+                     50,000 files, set this parameter to "none" .
 
-                     value -> (string)
+                 Recurse -> (boolean)
+                     If  set to true, recursively reads files in all subdirec-
+                     tories under the specified paths.
+
+                 MaxBand -> (integer)
+                     This option controls the duration in  milliseconds  after
+                     which  the  s3  listing is likely to be consistent. Files
+                     with modification  timestamps  falling  within  the  last
+                     maxBand  milliseconds  are  tracked  specially when using
+                     JobBookmarks to account for Amazon  S3  eventual  consis-
+                     tency.  Most users don't need to set this option. The de-
+                     fault is 900000 milliseconds, or 15 minutes.
+
+                 MaxFilesInBand -> (integer)
+                     This option specifies the maximum number of files to save
+                     from  the  last  maxBand  seconds.  If this number is ex-
+                     ceeded, extra files are skipped and only processed in the
+                     next job run.
+
+                 AdditionalOptions -> (structure)
+                     Specifies additional connection options.
+
+                     BoundedSize -> (long)
+                        Sets  the  upper  limit  for  the  target  size of the
+                        dataset in bytes that will be processed.
+
+                     BoundedFiles -> (long)
+                        Sets the upper limit for the target  number  of  files
+                        that will be processed.
+
+                     EnableSamplePath -> (boolean)
+                        Sets option to enable a sample path.
+
+                     SamplePath -> (string)
+                        If enabled, specifies the sample path.
+
+                 JsonPath -> (string)
+                     A JsonPath string defining the JSON data.
+
+                 Multiline -> (boolean)
+                     A  Boolean  value  that specifies whether a single record
+                     can span multiple lines. This can occur when a field con-
+                     tains  a quoted new-line character. You must set this op-
+                     tion to True if any record spans multiple lines. The  de-
+                     fault  value  is False , which allows for more aggressive
+                     file-splitting during parsing.
 
                  OutputSchemas -> (list)
-                     Specifies the data schema for the JDBC target.
-
-                     (structure)
-                        Specifies  a  user-defined schema when a schema cannot
-                        be determined by Glue.
-
-                        Columns -> (list)
-                            Specifies the column definitions that  make  up  a
-                            Glue schema.
-
-                            (structure)
-                               Specifies a single column in a Glue schema def-
-                               inition.
-
-                               Name -> (string)
-                                   The name of the column in the  Glue  Studio
-                                   schema.
-
-                               Type -> (string)
-                                   The  hive  type for this column in the Glue
-                                   Studio schema.
-
-              SparkConnectorTarget -> (structure)
-                 Specifies a target that uses an Apache Spark connector.
-
-                 Name -> (string)
-                     The name of the data target.
-
-                 Inputs -> (list)
-                     The nodes that are inputs to the data target.
-
-                     (string)
-
-                 ConnectionName -> (string)
-                     The name of a connection for an Apache Spark connector.
-
-                 ConnectorName -> (string)
-                     The name of an Apache Spark connector.
-
-                 ConnectionType -> (string)
-                     The type of connection, such as marketplace.spark or cus-
-                     tom.spark,  designating  a  connection to an Apache Spark
-                     data store.
-
-                 AdditionalOptions -> (map)
-                     Additional connection options for the connector.
-
-                     key -> (string)
-
-                     value -> (string)
-
-                 OutputSchemas -> (list)
-                     Specifies the data schema for the custom spark target.
+                     Specifies the data schema for the S3 JSON source.
 
                      (structure)
                         Specifies a user-defined schema when a  schema  cannot
@@ -1075,6 +866,240 @@ OPTIONS
                                    The hive type for this column in  the  Glue
                                    Studio schema.
 
+              S3ParquetSource -> (structure)
+                 Specifies an Apache Parquet data store stored in Amazon S3.
+
+                 Name -> (string)
+                     The name of the data store.
+
+                 Paths -> (list)
+                     A list of the Amazon S3 paths to read from.
+
+                     (string)
+
+                 CompressionType -> (string)
+                     Specifies  how  the data is compressed. This is generally
+                     not necessary if the data has a standard file  extension.
+                     Possible values are "gzip" and "bzip" ).
+
+                 Exclusions -> (list)
+                     A  string  containing a JSON list of Unix-style glob pat-
+                     terns to exclude. For example, "["
+                     **
+                     .pdf"]" excludes all PDF files.
+
+                     System Message: WARNING/2 (<string>:, line 1838)
+                            Inline strong start-string without end-string.
+
+                            (string)
+
+                 GroupSize -> (string)
+                     The target group size in bytes. The default  is  computed
+                     based  on  the input data size and the size of your clus-
+                     ter. When  there  are  fewer  than  50,000  input  files,
+                     "groupFiles"  must  be  set  to "inPartition" for this to
+                     take effect.
+
+                 GroupFiles -> (string)
+                     Grouping files is turned on by  default  when  the  input
+                     contains more than 50,000 files. To turn on grouping with
+                     fewer than 50,000 files, set this parameter to  "inParti-
+                     tion".  To  disable  grouping  when  there  are more than
+                     50,000 files, set this parameter to "none" .
+
+                 Recurse -> (boolean)
+                     If set to true, recursively reads files in all  subdirec-
+                     tories under the specified paths.
+
+                 MaxBand -> (integer)
+                     This  option  controls the duration in milliseconds after
+                     which the s3 listing is likely to  be  consistent.  Files
+                     with  modification  timestamps  falling  within  the last
+                     maxBand milliseconds are  tracked  specially  when  using
+                     JobBookmarks  to  account  for Amazon S3 eventual consis-
+                     tency. Most users don't need to set this option. The  de-
+                     fault is 900000 milliseconds, or 15 minutes.
+
+                 MaxFilesInBand -> (integer)
+                     This option specifies the maximum number of files to save
+                     from the last maxBand seconds.  If  this  number  is  ex-
+                     ceeded, extra files are skipped and only processed in the
+                     next job run.
+
+                 AdditionalOptions -> (structure)
+                     Specifies additional connection options.
+
+                     BoundedSize -> (long)
+                        Sets the upper  limit  for  the  target  size  of  the
+                        dataset in bytes that will be processed.
+
+                     BoundedFiles -> (long)
+                        Sets  the  upper  limit for the target number of files
+                        that will be processed.
+
+                     EnableSamplePath -> (boolean)
+                        Sets option to enable a sample path.
+
+                     SamplePath -> (string)
+                        If enabled, specifies the sample path.
+
+                 OutputSchemas -> (list)
+                     Specifies the data schema for the S3 Parquet source.
+
+                     (structure)
+                        Specifies a user-defined schema when a  schema  cannot
+                        be determined by Glue.
+
+                        Columns -> (list)
+                            Specifies  the  column  definitions that make up a
+                            Glue schema.
+
+                            (structure)
+                               Specifies a single column in a Glue schema def-
+                               inition.
+
+                               Name -> (string)
+                                   The  name  of the column in the Glue Studio
+                                   schema.
+
+                               Type -> (string)
+                                   The hive type for this column in  the  Glue
+                                   Studio schema.
+
+              RelationalCatalogSource -> (structure)
+                 Specifies  a  relational  catalog data store in the Glue Data
+                 Catalog.
+
+                 Name -> (string)
+                     The name of the data source.
+
+                 Database -> (string)
+                     The name of the database to read from.
+
+                 Table -> (string)
+                     The name of the table in the database to read from.
+
+              DynamoDBCatalogSource -> (structure)
+                 Specifies a DynamoDBC Catalog data store  in  the  Glue  Data
+                 Catalog.
+
+                 Name -> (string)
+                     The name of the data source.
+
+                 Database -> (string)
+                     The name of the database to read from.
+
+                 Table -> (string)
+                     The name of the table in the database to read from.
+
+              JDBCConnectorTarget -> (structure)
+                 Specifies  a  data  target that writes to Amazon S3 in Apache
+                 Parquet columnar storage.
+
+                 Name -> (string)
+                     The name of the data target.
+
+                 Inputs -> (list)
+                     The nodes that are inputs to the data target.
+
+                     (string)
+
+                 ConnectionName -> (string)
+                     The name of the connection that is  associated  with  the
+                     connector.
+
+                 ConnectionTable -> (string)
+                     The name of the table in the data target.
+
+                 ConnectorName -> (string)
+                     The name of a connector that will be used.
+
+                 ConnectionType -> (string)
+                     The  type of connection, such as marketplace.jdbc or cus-
+                     tom.jdbc, designating a connection to a JDBC data target.
+
+                 AdditionalOptions -> (map)
+                     Additional connection options for the connector.
+
+                     key -> (string)
+
+                     value -> (string)
+
+                 OutputSchemas -> (list)
+                     Specifies the data schema for the JDBC target.
+
+                     (structure)
+                        Specifies a user-defined schema when a  schema  cannot
+                        be determined by Glue.
+
+                        Columns -> (list)
+                            Specifies  the  column  definitions that make up a
+                            Glue schema.
+
+                            (structure)
+                               Specifies a single column in a Glue schema def-
+                               inition.
+
+                               Name -> (string)
+                                   The  name  of the column in the Glue Studio
+                                   schema.
+
+                               Type -> (string)
+                                   The hive type for this column in  the  Glue
+                                   Studio schema.
+
+              SparkConnectorTarget -> (structure)
+                 Specifies a target that uses an Apache Spark connector.
+
+                 Name -> (string)
+                     The name of the data target.
+
+                 Inputs -> (list)
+                     The nodes that are inputs to the data target.
+
+                     (string)
+
+                 ConnectionName -> (string)
+                     The name of a connection for an Apache Spark connector.
+
+                 ConnectorName -> (string)
+                     The name of an Apache Spark connector.
+
+                 ConnectionType -> (string)
+                     The type of connection, such as marketplace.spark or cus-
+                     tom.spark, designating a connection to  an  Apache  Spark
+                     data store.
+
+                 AdditionalOptions -> (map)
+                     Additional connection options for the connector.
+
+                     key -> (string)
+
+                     value -> (string)
+
+                 OutputSchemas -> (list)
+                     Specifies the data schema for the custom spark target.
+
+                     (structure)
+                        Specifies  a  user-defined schema when a schema cannot
+                        be determined by Glue.
+
+                        Columns -> (list)
+                            Specifies the column definitions that  make  up  a
+                            Glue schema.
+
+                            (structure)
+                               Specifies a single column in a Glue schema def-
+                               inition.
+
+                               Name -> (string)
+                                   The name of the column in the  Glue  Studio
+                                   schema.
+
+                               Type -> (string)
+                                   The  hive  type for this column in the Glue
+                                   Studio schema.
+
               CatalogTarget -> (structure)
                  Specifies a target that uses a Glue Data Catalog table.
 
@@ -1087,12 +1112,12 @@ OPTIONS
                      (string)
 
                  Database -> (string)
-                     The  database  that contains the table you want to use as
-                     the target. This database must already exist in the  Data
+                     The database that contains the table you want to  use  as
+                     the  target. This database must already exist in the Data
                      Catalog.
 
                  Table -> (string)
-                     The  table  that  defines the schema of your output data.
+                     The table that defines the schema of  your  output  data.
                      This table must already exist in the Data Catalog.
 
               RedshiftTarget -> (structure)
@@ -1113,31 +1138,31 @@ OPTIONS
                      The name of the table in the database to write to.
 
                  RedshiftTmpDir -> (string)
-                     The Amazon S3 path where temporary  data  can  be  staged
+                     The  Amazon  S3  path  where temporary data can be staged
                      when copying out of the database.
 
                  TmpDirIAMRole -> (string)
                      The IAM role with permissions.
 
                  UpsertRedshiftOptions -> (structure)
-                     The  set of options to configure an upsert operation when
+                     The set of options to configure an upsert operation  when
                      writing to a Redshift target.
 
                      TableLocation -> (string)
                         The physical location of the Redshift table.
 
                      ConnectionName -> (string)
-                        The name of the connection to use  to  write  to  Red-
+                        The  name  of  the  connection to use to write to Red-
                         shift.
 
                      UpsertKeys -> (list)
-                        The  keys  used to determine whether to perform an up-
+                        The keys used to determine whether to perform  an  up-
                         date or insert.
 
                         (string)
 
               S3CatalogTarget -> (structure)
-                 Specifies a data target that writes to Amazon  S3  using  the
+                 Specifies  a  data  target that writes to Amazon S3 using the
                  Glue Data Catalog.
 
                  Name -> (string)
@@ -1164,15 +1189,15 @@ OPTIONS
                      A policy that specifies update behavior for the crawler.
 
                      EnableUpdateCatalog -> (boolean)
-                        Whether  to use the specified update behavior when the
+                        Whether to use the specified update behavior when  the
                         crawler finds a changed schema.
 
                      UpdateBehavior -> (string)
-                        The update behavior when the crawler finds  a  changed
+                        The  update  behavior when the crawler finds a changed
                         schema.
 
               S3GlueParquetTarget -> (structure)
-                 Specifies  a  data  target that writes to Amazon S3 in Apache
+                 Specifies a data target that writes to Amazon  S3  in  Apache
                  Parquet columnar storage.
 
                  Name -> (string)
@@ -1193,27 +1218,27 @@ OPTIONS
                      A single Amazon S3 path to write to.
 
                  Compression -> (string)
-                     Specifies how the data is compressed. This  is  generally
-                     not  necessary if the data has a standard file extension.
+                     Specifies  how  the data is compressed. This is generally
+                     not necessary if the data has a standard file  extension.
                      Possible values are "gzip" and "bzip" ).
 
                  SchemaChangePolicy -> (structure)
                      A policy that specifies update behavior for the crawler.
 
                      EnableUpdateCatalog -> (boolean)
-                        Whether to use the specified update behavior when  the
+                        Whether  to use the specified update behavior when the
                         crawler finds a changed schema.
 
                      UpdateBehavior -> (string)
-                        The  update  behavior when the crawler finds a changed
+                        The update behavior when the crawler finds  a  changed
                         schema.
 
                      Table -> (string)
-                        Specifies the table in the database  that  the  schema
+                        Specifies  the  table  in the database that the schema
                         change policy applies to.
 
                      Database -> (string)
-                        Specifies  the  database that the schema change policy
+                        Specifies the database that the schema  change  policy
                         applies to.
 
               S3DirectTarget -> (structure)
@@ -1237,8 +1262,8 @@ OPTIONS
                      A single Amazon S3 path to write to.
 
                  Compression -> (string)
-                     Specifies how the data is compressed. This  is  generally
-                     not  necessary if the data has a standard file extension.
+                     Specifies  how  the data is compressed. This is generally
+                     not necessary if the data has a standard file  extension.
                      Possible values are "gzip" and "bzip" ).
 
                  Format -> (string)
@@ -1248,23 +1273,23 @@ OPTIONS
                      A policy that specifies update behavior for the crawler.
 
                      EnableUpdateCatalog -> (boolean)
-                        Whether to use the specified update behavior when  the
+                        Whether  to use the specified update behavior when the
                         crawler finds a changed schema.
 
                      UpdateBehavior -> (string)
-                        The  update  behavior when the crawler finds a changed
+                        The update behavior when the crawler finds  a  changed
                         schema.
 
                      Table -> (string)
-                        Specifies the table in the database  that  the  schema
+                        Specifies  the  table  in the database that the schema
                         change policy applies to.
 
                      Database -> (string)
-                        Specifies  the  database that the schema change policy
+                        Specifies the database that the schema  change  policy
                         applies to.
 
               ApplyMapping -> (structure)
-                 Specifies a transform that maps data  property  keys  in  the
+                 Specifies  a  transform  that  maps data property keys in the
                  data source to data property keys in the data target. You can
                  rename keys, modify the data types for keys, and choose which
                  keys to drop from the dataset.
@@ -1278,7 +1303,7 @@ OPTIONS
                      (string)
 
                  Mapping -> (list)
-                     Specifies  the  mapping of data property keys in the data
+                     Specifies the mapping of data property keys in  the  data
                      source to data property keys in the data target.
 
                      (structure)
@@ -1303,34 +1328,34 @@ OPTIONS
                             If true, then the column is removed.
 
                         Children -> (list)
-                            Only  applicable to nested data structures. If you
-                            want to change the parent structure, but also  one
-                            of  its  children,  you  can  fill  out  this data
-                            strucutre. It is also Mapping , but  its  FromPath
-                            will  be  the  parent's FromPath plus the FromPath
+                            Only applicable to nested data structures. If  you
+                            want  to change the parent structure, but also one
+                            of its  children,  you  can  fill  out  this  data
+                            strucutre.  It  is also Mapping , but its FromPath
+                            will be the parent's FromPath  plus  the  FromPath
                             from this structure.
 
                             For the children part, suppose you have the struc-
                             ture:
-                               {  "FromPath": "OuterStructure", "ToKey": "Out-
+                               { "FromPath": "OuterStructure", "ToKey":  "Out-
                                erStructure",  "ToType":  "Struct",  "Dropped":
-                               false,   "Chidlren":  [{  "FromPath":  "inner",
-                               "ToKey":    "inner",    "ToType":     "Double",
+                               false,  "Chidlren":  [{  "FromPath":   "inner",
+                               "ToKey":     "inner",    "ToType":    "Double",
                                "Dropped": false, }] }
 
                             You can specify a Mapping that looks like:
-                               {  "FromPath": "OuterStructure", "ToKey": "Out-
+                               { "FromPath": "OuterStructure", "ToKey":  "Out-
                                erStructure",  "ToType":  "Struct",  "Dropped":
-                               false,   "Chidlren":  [{  "FromPath":  "inner",
-                               "ToKey":    "inner",    "ToType":     "Double",
+                               false,  "Chidlren":  [{  "FromPath":   "inner",
+                               "ToKey":     "inner",    "ToType":    "Double",
                                "Dropped": false, }] }
 
                             (structure)
                                Specifies the mapping of data property keys.
 
                                ToKey -> (string)
-                                   After  the  apply mapping, what the name of
-                                   the column should be. Can be  the  same  as
+                                   After the apply mapping, what the  name  of
+                                   the  column  should  be. Can be the same as
                                    FromPath .
 
                                FromPath -> (list)
@@ -1342,14 +1367,14 @@ OPTIONS
                                    The type of the data to be modified.
 
                                ToType -> (string)
-                                   The  data type that the data is to be modi-
+                                   The data type that the data is to be  modi-
                                    fied to.
 
                                Dropped -> (boolean)
                                    If true, then the column is removed.
 
               SelectFields -> (structure)
-                 Specifies a transform that chooses  the  data  property  keys
+                 Specifies  a  transform  that  chooses the data property keys
                  that you want to keep.
 
                  Name -> (string)
@@ -1367,7 +1392,7 @@ OPTIONS
                         (string)
 
               DropFields -> (structure)
-                 Specifies  a  transform  that  chooses the data property keys
+                 Specifies a transform that chooses  the  data  property  keys
                  that you want to drop.
 
                  Name -> (string)
@@ -1385,7 +1410,7 @@ OPTIONS
                         (string)
 
               RenameField -> (structure)
-                 Specifies a transform that renames  a  single  data  property
+                 Specifies  a  transform  that  renames a single data property
                  key.
 
                  Name -> (string)
@@ -1397,19 +1422,19 @@ OPTIONS
                      (string)
 
                  SourcePath -> (list)
-                     A  JSON  path to a variable in the data structure for the
+                     A JSON path to a variable in the data structure  for  the
                      source data.
 
                      (string)
 
                  TargetPath -> (list)
-                     A JSON path to a variable in the data structure  for  the
+                     A  JSON  path to a variable in the data structure for the
                      target data.
 
                      (string)
 
               Spigot -> (structure)
-                 Specifies  a  transform that writes samples of the data to an
+                 Specifies a transform that writes samples of the data  to  an
                  Amazon S3 bucket.
 
                  Name -> (string)
@@ -1426,19 +1451,19 @@ OPTIONS
                      zon S3 bucket.
 
                  Topk -> (integer)
-                     Specifies a number of records to write starting from  the
+                     Specifies  a number of records to write starting from the
                      beginning of the dataset.
 
                  Prob -> (double)
-                     The  probability (a decimal value with a maximum value of
-                     1) of picking any given record. A value  of  1  indicates
+                     The probability (a decimal value with a maximum value  of
+                     1)  of  picking  any given record. A value of 1 indicates
                      that each row read from the dataset should be included in
                      the sample output.
 
               Join -> (structure)
-                 Specifies a  transform  that  joins  two  datasets  into  one
+                 Specifies  a  transform  that  joins  two  datasets  into one
                  dataset using a comparison phrase on the specified data prop-
-                 erty keys. You can use inner, outer, left, right, left  semi,
+                 erty  keys. You can use inner, outer, left, right, left semi,
                  and left anti joins.
 
                  Name -> (string)
@@ -1450,7 +1475,7 @@ OPTIONS
                      (string)
 
                  JoinType -> (string)
-                     Specifies  the  type  of  join  to  be  performed  on the
+                     Specifies the  type  of  join  to  be  performed  on  the
                      datasets.
 
                  Columns -> (list)
@@ -1471,7 +1496,7 @@ OPTIONS
               SplitFields -> (structure)
                  Specifies a transform that splits data property keys into two
                  DynamicFrames . The output is a collection of DynamicFrames :
-                 one with selected data property keys, and one  with  the  re-
+                 one  with  selected  data property keys, and one with the re-
                  maining data property keys.
 
                  Name -> (string)
@@ -1489,8 +1514,8 @@ OPTIONS
                         (string)
 
               SelectFromCollection -> (structure)
-                 Specifies  a  transform  that chooses one DynamicFrame from a
-                 collection of DynamicFrames . The output is the selected  Dy-
+                 Specifies a transform that chooses one  DynamicFrame  from  a
+                 collection  of DynamicFrames . The output is the selected Dy-
                  namicFrame
 
                  Name -> (string)
@@ -1505,10 +1530,10 @@ OPTIONS
                      The index for the DynamicFrame to be selected.
 
               FillMissingValues -> (structure)
-                 Specifies  a  transform  that  locates records in the dataset
-                 that have missing values and adds a new field  with  a  value
+                 Specifies a transform that locates  records  in  the  dataset
+                 that  have  missing  values and adds a new field with a value
                  determined by imputation. The input data set is used to train
-                 the machine learning model that determines what  the  missing
+                 the  machine  learning model that determines what the missing
                  value should be.
 
                  Name -> (string)
@@ -1520,15 +1545,15 @@ OPTIONS
                      (string)
 
                  ImputedPath -> (string)
-                     A  JSON  path to a variable in the data structure for the
+                     A JSON path to a variable in the data structure  for  the
                      dataset that is imputed.
 
                  FilledPath -> (string)
-                     A JSON path to a variable in the data structure  for  the
+                     A  JSON  path to a variable in the data structure for the
                      dataset that is filled.
 
               Filter -> (structure)
-                 Specifies  a  transform that splits a dataset into two, based
+                 Specifies a transform that splits a dataset into  two,  based
                  on a filter condition.
 
                  Name -> (string)
@@ -1540,7 +1565,7 @@ OPTIONS
                      (string)
 
                  LogicalOperator -> (string)
-                     The operator used to filter rows  by  comparing  the  key
+                     The  operator  used  to  filter rows by comparing the key
                      value to a specified value.
 
                  Filters -> (list)
@@ -1550,7 +1575,7 @@ OPTIONS
                         Specifies a filter expression.
 
                         Operation -> (string)
-                            The  type  of  operation to perform in the expres-
+                            The type of operation to perform  in  the  expres-
                             sion.
 
                         Negated -> (boolean)
@@ -1572,8 +1597,8 @@ OPTIONS
                                    (string)
 
               CustomCode -> (structure)
-                 Specifies  a  transform  that uses custom code you provide to
-                 perform the data transformation. The output is  a  collection
+                 Specifies a transform that uses custom code  you  provide  to
+                 perform  the  data transformation. The output is a collection
                  of DynamicFrames.
 
                  Name -> (string)
@@ -1585,7 +1610,7 @@ OPTIONS
                      (string)
 
                  Code -> (string)
-                     The  custom  code that is used to perform the data trans-
+                     The custom code that is used to perform the  data  trans-
                      formation.
 
                  ClassName -> (string)
@@ -1593,70 +1618,6 @@ OPTIONS
 
                  OutputSchemas -> (list)
                      Specifies the data schema for the custom code transform.
-
-                     (structure)
-                        Specifies a user-defined schema when a  schema  cannot
-                        be determined by Glue.
-
-                        Columns -> (list)
-                            Specifies  the  column  definitions that make up a
-                            Glue schema.
-
-                            (structure)
-                               Specifies a single column in a Glue schema def-
-                               inition.
-
-                               Name -> (string)
-                                   The  name  of the column in the Glue Studio
-                                   schema.
-
-                               Type -> (string)
-                                   The hive type for this column in  the  Glue
-                                   Studio schema.
-
-              SparkSQL -> (structure)
-                 Specifies a transform where you enter a SQL query using Spark
-                 SQL syntax to transform the data. The output is a single  Dy-
-                 namicFrame .
-
-                 Name -> (string)
-                     The name of the transform node.
-
-                 Inputs -> (list)
-                     The  data  inputs identified by their node names. You can
-                     associate a table name with each input node to use in the
-                     SQL  query.  The  name you choose must meet the Spark SQL
-                     naming restrictions.
-
-                     (string)
-
-                 SqlQuery -> (string)
-                     A SQL query that must use Spark SQL syntax and  return  a
-                     single data set.
-
-                 SqlAliases -> (list)
-                     A  list  of  aliases. An alias allows you to specify what
-                     name to use in the SQL for a given  input.  For  example,
-                     you  have a datasource named "MyDataSource". If you spec-
-                     ify From as MyDataSource, and Alias as SqlName,  then  in
-                     your SQL you can do:
-                        select * from SqlName
-
-                     and that gets data from MyDataSource.
-
-                     (structure)
-                        Represents  a  single  entry in the list of values for
-                        SqlAliases .
-
-                        From -> (string)
-                            A table, or a column in a table.
-
-                        Alias -> (string)
-                            A temporary name given to a table, or a column  in
-                            a table.
-
-                 OutputSchemas -> (list)
-                     Specifies the data schema for the SparkSQL transform.
 
                      (structure)
                         Specifies  a  user-defined schema when a schema cannot
@@ -1678,6 +1639,70 @@ OPTIONS
                                    The  hive  type for this column in the Glue
                                    Studio schema.
 
+              SparkSQL -> (structure)
+                 Specifies a transform where you enter a SQL query using Spark
+                 SQL  syntax to transform the data. The output is a single Dy-
+                 namicFrame .
+
+                 Name -> (string)
+                     The name of the transform node.
+
+                 Inputs -> (list)
+                     The data inputs identified by their node names.  You  can
+                     associate a table name with each input node to use in the
+                     SQL query. The name you choose must meet  the  Spark  SQL
+                     naming restrictions.
+
+                     (string)
+
+                 SqlQuery -> (string)
+                     A  SQL  query that must use Spark SQL syntax and return a
+                     single data set.
+
+                 SqlAliases -> (list)
+                     A list of aliases. An alias allows you  to  specify  what
+                     name  to  use  in the SQL for a given input. For example,
+                     you have a datasource named "MyDataSource". If you  spec-
+                     ify  From  as MyDataSource, and Alias as SqlName, then in
+                     your SQL you can do:
+                        select * from SqlName
+
+                     and that gets data from MyDataSource.
+
+                     (structure)
+                        Represents a single entry in the list  of  values  for
+                        SqlAliases .
+
+                        From -> (string)
+                            A table, or a column in a table.
+
+                        Alias -> (string)
+                            A  temporary name given to a table, or a column in
+                            a table.
+
+                 OutputSchemas -> (list)
+                     Specifies the data schema for the SparkSQL transform.
+
+                     (structure)
+                        Specifies a user-defined schema when a  schema  cannot
+                        be determined by Glue.
+
+                        Columns -> (list)
+                            Specifies  the  column  definitions that make up a
+                            Glue schema.
+
+                            (structure)
+                               Specifies a single column in a Glue schema def-
+                               inition.
+
+                               Name -> (string)
+                                   The  name  of the column in the Glue Studio
+                                   schema.
+
+                               Type -> (string)
+                                   The hive type for this column in  the  Glue
+                                   Studio schema.
+
               DirectKinesisSource -> (structure)
                  Specifies a direct Amazon Kinesis data source.
 
@@ -1688,7 +1713,7 @@ OPTIONS
                      The amount of time to spend processing each micro batch.
 
                  DetectSchema -> (boolean)
-                     Whether to automatically determine the  schema  from  the
+                     Whether  to  automatically  determine the schema from the
                      incoming data.
 
                  StreamingOptions -> (structure)
@@ -1707,39 +1732,39 @@ OPTIONS
                         Specifies the delimiter character.
 
                      StartingPosition -> (string)
-                        The  starting  position  in the Kinesis data stream to
-                        read data from. The possible  values  are  "latest"  ,
-                        "trim_horizon"  , or "earliest" . The default value is
+                        The starting position in the Kinesis  data  stream  to
+                        read  data  from.  The  possible values are "latest" ,
+                        "trim_horizon" , or "earliest" . The default value  is
                         "latest" .
 
                      MaxFetchTimeInMs -> (long)
-                        The maximum time spent in the job executor to fetch  a
-                        record  from the Kinesis data stream per shard, speci-
+                        The  maximum time spent in the job executor to fetch a
+                        record from the Kinesis data stream per shard,  speci-
                         fied in milliseconds (ms). The default value is 1000 .
 
                      MaxFetchRecordsPerShard -> (long)
-                        The maximum number of records to fetch  per  shard  in
+                        The  maximum  number  of records to fetch per shard in
                         the Kinesis data stream. The default value is 100000 .
 
                      MaxRecordPerRead -> (long)
-                        The  maximum number of records to fetch from the Kine-
-                        sis data stream in each getRecords operation. The  de-
+                        The maximum number of records to fetch from the  Kine-
+                        sis  data stream in each getRecords operation. The de-
                         fault value is 10000 .
 
                      AddIdleTimeBetweenReads -> (boolean)
-                        Adds  a  time delay between two consecutive getRecords
+                        Adds a time delay between two  consecutive  getRecords
                         operations. The default value is "False" . This option
                         is only configurable for Glue version 2.0 and above.
 
                      IdleTimeBetweenReadsInMs -> (long)
-                        The  minimum  time  delay  between two consecutive ge-
-                        tRecords operations,  specified  in  ms.  The  default
-                        value  is  1000 . This option is only configurable for
+                        The minimum time delay  between  two  consecutive  ge-
+                        tRecords  operations,  specified  in  ms.  The default
+                        value is 1000 . This option is only  configurable  for
                         Glue version 2.0 and above.
 
                      DescribeShardInterval -> (long)
-                        The minimum time interval between two  ListShards  API
-                        calls  for your script to consider resharding. The de-
+                        The  minimum  time interval between two ListShards API
+                        calls for your script to consider resharding. The  de-
                         fault value is 1s .
 
                      NumRetries -> (integer)
@@ -1747,54 +1772,54 @@ OPTIONS
                         API requests. The default value is 3 .
 
                      RetryIntervalMs -> (long)
-                        The  cool-off  time  period  (specified  in ms) before
-                        retrying the Kinesis Data Streams API  call.  The  de-
+                        The cool-off time  period  (specified  in  ms)  before
+                        retrying  the  Kinesis  Data Streams API call. The de-
                         fault value is 1000 .
 
                      MaxRetryIntervalMs -> (long)
                         The maximum cool-off time period (specified in ms) be-
-                        tween two retries of a Kinesis Data Streams API  call.
+                        tween  two retries of a Kinesis Data Streams API call.
                         The default value is 10000 .
 
                      AvoidEmptyBatches -> (boolean)
-                        Avoids  creating  an  empty microbatch job by checking
-                        for unread data in the Kinesis data stream before  the
+                        Avoids creating an empty microbatch  job  by  checking
+                        for  unread data in the Kinesis data stream before the
                         batch is started. The default value is "False" .
 
                      StreamArn -> (string)
-                        The  Amazon  Resource  Name  (ARN) of the Kinesis data
+                        The Amazon Resource Name (ARN)  of  the  Kinesis  data
                         stream.
 
                      RoleArn -> (string)
-                        The Amazon Resource Name (ARN) of the role  to  assume
-                        using  AWS Security Token Service (AWS STS). This role
-                        must have permissions for describe or read record  op-
-                        erations  for  the  Kinesis  data stream. You must use
-                        this parameter when accessing a data stream in a  dif-
-                        ferent  account.  Used in conjunction with "awsSTSSes-
+                        The  Amazon  Resource Name (ARN) of the role to assume
+                        using AWS Security Token Service (AWS STS). This  role
+                        must  have permissions for describe or read record op-
+                        erations for the Kinesis data  stream.  You  must  use
+                        this  parameter when accessing a data stream in a dif-
+                        ferent account. Used in conjunction  with  "awsSTSSes-
                         sionName" .
 
                      RoleSessionName -> (string)
-                        An identifier for the session assuming the role  using
-                        AWS  STS. You must use this parameter when accessing a
-                        data stream in a different account. Used  in  conjunc-
+                        An  identifier for the session assuming the role using
+                        AWS STS. You must use this parameter when accessing  a
+                        data  stream  in a different account. Used in conjunc-
                         tion with "awsSTSRoleARN" .
 
                      AddRecordTimestamp -> (string)
-                        When  this  option  is  set to 'true', the data output
-                        will contain an additional column  named  "__src_time-
-                        stamp"  that indicates the time when the corresponding
-                        record received by the stream. The  default  value  is
-                        'false'.  This option is supported in Glue version 4.0
+                        When this option is set to  'true',  the  data  output
+                        will  contain  an additional column named "__src_time-
+                        stamp" that indicates the time when the  corresponding
+                        record  received  by  the stream. The default value is
+                        'false'. This option is supported in Glue version  4.0
                         or later.
 
                      EmitConsumerLagMetrics -> (string)
-                        When this option is set to 'true', for each batch,  it
-                        will  emit  the  metrics  for the duration between the
-                        oldest record received by the stream and the  time  it
-                        arrives  in  Glue  to CloudWatch. The metric's name is
-                        "glue.driver.streaming.maxConsumerLagInMs".  The   de-
-                        fault  value  is  'false'. This option is supported in
+                        When  this option is set to 'true', for each batch, it
+                        will emit the metrics for  the  duration  between  the
+                        oldest  record  received by the stream and the time it
+                        arrives in Glue to CloudWatch. The  metric's  name  is
+                        "glue.driver.streaming.maxConsumerLagInMs".   The  de-
+                        fault value is 'false'. This option  is  supported  in
                         Glue version 4.0 or later.
 
                  DataPreviewOptions -> (structure)
@@ -1811,275 +1836,6 @@ OPTIONS
 
                  Name -> (string)
                      The name of the data store.
-
-                 StreamingOptions -> (structure)
-                     Specifies the streaming options.
-
-                     BootstrapServers -> (string)
-                        A list of  bootstrap  server  URLs,  for  example,  as
-                        b-1.vpc-test-2.o4q88o.c6.kafka.us-east-1.amazon-
-                        aws.com:9094 . This option must be  specified  in  the
-                        API  call or defined in the table metadata in the Data
-                        Catalog.
-
-                     SecurityProtocol -> (string)
-                        The protocol used to  communicate  with  brokers.  The
-                        possible values are "SSL" or "PLAINTEXT" .
-
-                     ConnectionName -> (string)
-                        The name of the connection.
-
-                     TopicName -> (string)
-                        The  topic name as specified in Apache Kafka. You must
-                        specify at least one  of  "topicName"  ,  "assign"  or
-                        "subscribePattern" .
-
-                     Assign -> (string)
-                        The  specific  TopicPartitions  to  consume.  You must
-                        specify at least one  of  "topicName"  ,  "assign"  or
-                        "subscribePattern" .
-
-                     SubscribePattern -> (string)
-                        A  Java regex string that identifies the topic list to
-                        subscribe to. You must specify at least one of "topic-
-                        Name" , "assign" or "subscribePattern" .
-
-                     Classification -> (string)
-                        An optional classification.
-
-                     Delimiter -> (string)
-                        Specifies the delimiter character.
-
-                     StartingOffsets -> (string)
-                        The  starting position in the Kafka topic to read data
-                        from. The possible values are "earliest" or "latest" .
-                        The default value is "latest" .
-
-                     EndingOffsets -> (string)
-                        The  end  point  when a batch query is ended. Possible
-                        values are either "latest" or a JSON string that spec-
-                        ifies an ending offset for each TopicPartition .
-
-                     PollTimeoutMs -> (long)
-                        The timeout in milliseconds to poll data from Kafka in
-                        Spark job executors. The default value is 512 .
-
-                     NumRetries -> (integer)
-                        The number of times to retry before failing  to  fetch
-                        Kafka offsets. The default value is 3 .
-
-                     RetryIntervalMs -> (long)
-                        The  time  in  milliseconds to wait before retrying to
-                        fetch Kafka offsets. The default value is 10 .
-
-                     MaxOffsetsPerTrigger -> (long)
-                        The rate limit on the maximum number of  offsets  that
-                        are  processed per trigger interval. The specified to-
-                        tal number of offsets is proportionally  split  across
-                        topicPartitions  of  different  volumes.  The  default
-                        value is null, which means that the consumer reads all
-                        offsets until the known latest offset.
-
-                     MinPartitions -> (integer)
-                        The  desired minimum number of partitions to read from
-                        Kafka. The default value is null, which means that the
-                        number  of  spark partitions is equal to the number of
-                        Kafka partitions.
-
-                     IncludeHeaders -> (boolean)
-                        Whether to include the Kafka headers. When the  option
-                        is  set to "true", the data output will contain an ad-
-                        ditional column  named  "glue_streaming_kafka_headers"
-                        with  type Array[Struct(key: String, value: String)] .
-                        The default value is "false". This option is available
-                        in Glue version 3.0 or later only.
-
-                     AddRecordTimestamp -> (string)
-                        When  this  option  is  set to 'true', the data output
-                        will contain an additional column  named  "__src_time-
-                        stamp"  that indicates the time when the corresponding
-                        record received by the topic.  The  default  value  is
-                        'false'.  This option is supported in Glue version 4.0
-                        or later.
-
-                     EmitConsumerLagMetrics -> (string)
-                        When this option is set to 'true', for each batch,  it
-                        will  emit  the  metrics  for the duration between the
-                        oldest record received by the topic and  the  time  it
-                        arrives  in  Glue  to CloudWatch. The metric's name is
-                        "glue.driver.streaming.maxConsumerLagInMs".  The   de-
-                        fault  value  is  'false'. This option is supported in
-                        Glue version 4.0 or later.
-
-                 WindowSize -> (integer)
-                     The amount of time to spend processing each micro batch.
-
-                 DetectSchema -> (boolean)
-                     Whether to automatically determine the  schema  from  the
-                     incoming data.
-
-                 DataPreviewOptions -> (structure)
-                     Specifies  options  related to data preview for viewing a
-                     sample of your data.
-
-                     PollingTime -> (long)
-                        The polling time in milliseconds.
-
-                     RecordPollingLimit -> (long)
-                        The limit to the number of records polled.
-
-              CatalogKinesisSource -> (structure)
-                 Specifies a Kinesis data source in the Glue Data Catalog.
-
-                 Name -> (string)
-                     The name of the data source.
-
-                 WindowSize -> (integer)
-                     The amount of time to spend processing each micro batch.
-
-                 DetectSchema -> (boolean)
-                     Whether to automatically determine the  schema  from  the
-                     incoming data.
-
-                 Table -> (string)
-                     The name of the table in the database to read from.
-
-                 Database -> (string)
-                     The name of the database to read from.
-
-                 StreamingOptions -> (structure)
-                     Additional options for the Kinesis streaming data source.
-
-                     EndpointUrl -> (string)
-                        The URL of the Kinesis endpoint.
-
-                     StreamName -> (string)
-                        The name of the Kinesis data stream.
-
-                     Classification -> (string)
-                        An optional classification.
-
-                     Delimiter -> (string)
-                        Specifies the delimiter character.
-
-                     StartingPosition -> (string)
-                        The  starting  position  in the Kinesis data stream to
-                        read data from. The possible  values  are  "latest"  ,
-                        "trim_horizon"  , or "earliest" . The default value is
-                        "latest" .
-
-                     MaxFetchTimeInMs -> (long)
-                        The maximum time spent in the job executor to fetch  a
-                        record  from the Kinesis data stream per shard, speci-
-                        fied in milliseconds (ms). The default value is 1000 .
-
-                     MaxFetchRecordsPerShard -> (long)
-                        The maximum number of records to fetch  per  shard  in
-                        the Kinesis data stream. The default value is 100000 .
-
-                     MaxRecordPerRead -> (long)
-                        The  maximum number of records to fetch from the Kine-
-                        sis data stream in each getRecords operation. The  de-
-                        fault value is 10000 .
-
-                     AddIdleTimeBetweenReads -> (boolean)
-                        Adds  a  time delay between two consecutive getRecords
-                        operations. The default value is "False" . This option
-                        is only configurable for Glue version 2.0 and above.
-
-                     IdleTimeBetweenReadsInMs -> (long)
-                        The  minimum  time  delay  between two consecutive ge-
-                        tRecords operations,  specified  in  ms.  The  default
-                        value  is  1000 . This option is only configurable for
-                        Glue version 2.0 and above.
-
-                     DescribeShardInterval -> (long)
-                        The minimum time interval between two  ListShards  API
-                        calls  for your script to consider resharding. The de-
-                        fault value is 1s .
-
-                     NumRetries -> (integer)
-                        The maximum number of retries for Kinesis Data Streams
-                        API requests. The default value is 3 .
-
-                     RetryIntervalMs -> (long)
-                        The  cool-off  time  period  (specified  in ms) before
-                        retrying the Kinesis Data Streams API  call.  The  de-
-                        fault value is 1000 .
-
-                     MaxRetryIntervalMs -> (long)
-                        The maximum cool-off time period (specified in ms) be-
-                        tween two retries of a Kinesis Data Streams API  call.
-                        The default value is 10000 .
-
-                     AvoidEmptyBatches -> (boolean)
-                        Avoids  creating  an  empty microbatch job by checking
-                        for unread data in the Kinesis data stream before  the
-                        batch is started. The default value is "False" .
-
-                     StreamArn -> (string)
-                        The  Amazon  Resource  Name  (ARN) of the Kinesis data
-                        stream.
-
-                     RoleArn -> (string)
-                        The Amazon Resource Name (ARN) of the role  to  assume
-                        using  AWS Security Token Service (AWS STS). This role
-                        must have permissions for describe or read record  op-
-                        erations  for  the  Kinesis  data stream. You must use
-                        this parameter when accessing a data stream in a  dif-
-                        ferent  account.  Used in conjunction with "awsSTSSes-
-                        sionName" .
-
-                     RoleSessionName -> (string)
-                        An identifier for the session assuming the role  using
-                        AWS  STS. You must use this parameter when accessing a
-                        data stream in a different account. Used  in  conjunc-
-                        tion with "awsSTSRoleARN" .
-
-                     AddRecordTimestamp -> (string)
-                        When  this  option  is  set to 'true', the data output
-                        will contain an additional column  named  "__src_time-
-                        stamp"  that indicates the time when the corresponding
-                        record received by the stream. The  default  value  is
-                        'false'.  This option is supported in Glue version 4.0
-                        or later.
-
-                     EmitConsumerLagMetrics -> (string)
-                        When this option is set to 'true', for each batch,  it
-                        will  emit  the  metrics  for the duration between the
-                        oldest record received by the stream and the  time  it
-                        arrives  in  Glue  to CloudWatch. The metric's name is
-                        "glue.driver.streaming.maxConsumerLagInMs".  The   de-
-                        fault  value  is  'false'. This option is supported in
-                        Glue version 4.0 or later.
-
-                 DataPreviewOptions -> (structure)
-                     Additional options for data preview.
-
-                     PollingTime -> (long)
-                        The polling time in milliseconds.
-
-                     RecordPollingLimit -> (long)
-                        The limit to the number of records polled.
-
-              CatalogKafkaSource -> (structure)
-                 Specifies an Apache Kafka data store in the Data Catalog.
-
-                 Name -> (string)
-                     The name of the data store.
-
-                 WindowSize -> (integer)
-                     The amount of time to spend processing each micro batch.
-
-                 DetectSchema -> (boolean)
-                     Whether to automatically determine the  schema  from  the
-                     incoming data.
-
-                 Table -> (string)
-                     The name of the table in the database to read from.
-
-                 Database -> (string)
-                     The name of the database to read from.
 
                  StreamingOptions -> (structure)
                      Specifies the streaming options.
@@ -2180,8 +1936,277 @@ OPTIONS
                         fault value is 'false'. This option  is  supported  in
                         Glue version 4.0 or later.
 
+                 WindowSize -> (integer)
+                     The amount of time to spend processing each micro batch.
+
+                 DetectSchema -> (boolean)
+                     Whether  to  automatically  determine the schema from the
+                     incoming data.
+
                  DataPreviewOptions -> (structure)
-                     Specifies  options  related to data preview for viewing a
+                     Specifies options related to data preview for  viewing  a
+                     sample of your data.
+
+                     PollingTime -> (long)
+                        The polling time in milliseconds.
+
+                     RecordPollingLimit -> (long)
+                        The limit to the number of records polled.
+
+              CatalogKinesisSource -> (structure)
+                 Specifies a Kinesis data source in the Glue Data Catalog.
+
+                 Name -> (string)
+                     The name of the data source.
+
+                 WindowSize -> (integer)
+                     The amount of time to spend processing each micro batch.
+
+                 DetectSchema -> (boolean)
+                     Whether  to  automatically  determine the schema from the
+                     incoming data.
+
+                 Table -> (string)
+                     The name of the table in the database to read from.
+
+                 Database -> (string)
+                     The name of the database to read from.
+
+                 StreamingOptions -> (structure)
+                     Additional options for the Kinesis streaming data source.
+
+                     EndpointUrl -> (string)
+                        The URL of the Kinesis endpoint.
+
+                     StreamName -> (string)
+                        The name of the Kinesis data stream.
+
+                     Classification -> (string)
+                        An optional classification.
+
+                     Delimiter -> (string)
+                        Specifies the delimiter character.
+
+                     StartingPosition -> (string)
+                        The starting position in the Kinesis  data  stream  to
+                        read  data  from.  The  possible values are "latest" ,
+                        "trim_horizon" , or "earliest" . The default value  is
+                        "latest" .
+
+                     MaxFetchTimeInMs -> (long)
+                        The  maximum time spent in the job executor to fetch a
+                        record from the Kinesis data stream per shard,  speci-
+                        fied in milliseconds (ms). The default value is 1000 .
+
+                     MaxFetchRecordsPerShard -> (long)
+                        The  maximum  number  of records to fetch per shard in
+                        the Kinesis data stream. The default value is 100000 .
+
+                     MaxRecordPerRead -> (long)
+                        The maximum number of records to fetch from the  Kine-
+                        sis  data stream in each getRecords operation. The de-
+                        fault value is 10000 .
+
+                     AddIdleTimeBetweenReads -> (boolean)
+                        Adds a time delay between two  consecutive  getRecords
+                        operations. The default value is "False" . This option
+                        is only configurable for Glue version 2.0 and above.
+
+                     IdleTimeBetweenReadsInMs -> (long)
+                        The minimum time delay  between  two  consecutive  ge-
+                        tRecords  operations,  specified  in  ms.  The default
+                        value is 1000 . This option is only  configurable  for
+                        Glue version 2.0 and above.
+
+                     DescribeShardInterval -> (long)
+                        The  minimum  time interval between two ListShards API
+                        calls for your script to consider resharding. The  de-
+                        fault value is 1s .
+
+                     NumRetries -> (integer)
+                        The maximum number of retries for Kinesis Data Streams
+                        API requests. The default value is 3 .
+
+                     RetryIntervalMs -> (long)
+                        The cool-off time  period  (specified  in  ms)  before
+                        retrying  the  Kinesis  Data Streams API call. The de-
+                        fault value is 1000 .
+
+                     MaxRetryIntervalMs -> (long)
+                        The maximum cool-off time period (specified in ms) be-
+                        tween  two retries of a Kinesis Data Streams API call.
+                        The default value is 10000 .
+
+                     AvoidEmptyBatches -> (boolean)
+                        Avoids creating an empty microbatch  job  by  checking
+                        for  unread data in the Kinesis data stream before the
+                        batch is started. The default value is "False" .
+
+                     StreamArn -> (string)
+                        The Amazon Resource Name (ARN)  of  the  Kinesis  data
+                        stream.
+
+                     RoleArn -> (string)
+                        The  Amazon  Resource Name (ARN) of the role to assume
+                        using AWS Security Token Service (AWS STS). This  role
+                        must  have permissions for describe or read record op-
+                        erations for the Kinesis data  stream.  You  must  use
+                        this  parameter when accessing a data stream in a dif-
+                        ferent account. Used in conjunction  with  "awsSTSSes-
+                        sionName" .
+
+                     RoleSessionName -> (string)
+                        An  identifier for the session assuming the role using
+                        AWS STS. You must use this parameter when accessing  a
+                        data  stream  in a different account. Used in conjunc-
+                        tion with "awsSTSRoleARN" .
+
+                     AddRecordTimestamp -> (string)
+                        When this option is set to  'true',  the  data  output
+                        will  contain  an additional column named "__src_time-
+                        stamp" that indicates the time when the  corresponding
+                        record  received  by  the stream. The default value is
+                        'false'. This option is supported in Glue version  4.0
+                        or later.
+
+                     EmitConsumerLagMetrics -> (string)
+                        When  this option is set to 'true', for each batch, it
+                        will emit the metrics for  the  duration  between  the
+                        oldest  record  received by the stream and the time it
+                        arrives in Glue to CloudWatch. The  metric's  name  is
+                        "glue.driver.streaming.maxConsumerLagInMs".   The  de-
+                        fault value is 'false'. This option  is  supported  in
+                        Glue version 4.0 or later.
+
+                 DataPreviewOptions -> (structure)
+                     Additional options for data preview.
+
+                     PollingTime -> (long)
+                        The polling time in milliseconds.
+
+                     RecordPollingLimit -> (long)
+                        The limit to the number of records polled.
+
+              CatalogKafkaSource -> (structure)
+                 Specifies an Apache Kafka data store in the Data Catalog.
+
+                 Name -> (string)
+                     The name of the data store.
+
+                 WindowSize -> (integer)
+                     The amount of time to spend processing each micro batch.
+
+                 DetectSchema -> (boolean)
+                     Whether  to  automatically  determine the schema from the
+                     incoming data.
+
+                 Table -> (string)
+                     The name of the table in the database to read from.
+
+                 Database -> (string)
+                     The name of the database to read from.
+
+                 StreamingOptions -> (structure)
+                     Specifies the streaming options.
+
+                     BootstrapServers -> (string)
+                        A list of  bootstrap  server  URLs,  for  example,  as
+                        b-1.vpc-test-2.o4q88o.c6.kafka.us-east-1.amazon-
+                        aws.com:9094 . This option must be  specified  in  the
+                        API  call or defined in the table metadata in the Data
+                        Catalog.
+
+                     SecurityProtocol -> (string)
+                        The protocol used to  communicate  with  brokers.  The
+                        possible values are "SSL" or "PLAINTEXT" .
+
+                     ConnectionName -> (string)
+                        The name of the connection.
+
+                     TopicName -> (string)
+                        The  topic name as specified in Apache Kafka. You must
+                        specify at least one  of  "topicName"  ,  "assign"  or
+                        "subscribePattern" .
+
+                     Assign -> (string)
+                        The  specific  TopicPartitions  to  consume.  You must
+                        specify at least one  of  "topicName"  ,  "assign"  or
+                        "subscribePattern" .
+
+                     SubscribePattern -> (string)
+                        A  Java regex string that identifies the topic list to
+                        subscribe to. You must specify at least one of "topic-
+                        Name" , "assign" or "subscribePattern" .
+
+                     Classification -> (string)
+                        An optional classification.
+
+                     Delimiter -> (string)
+                        Specifies the delimiter character.
+
+                     StartingOffsets -> (string)
+                        The  starting position in the Kafka topic to read data
+                        from. The possible values are "earliest" or "latest" .
+                        The default value is "latest" .
+
+                     EndingOffsets -> (string)
+                        The  end  point  when a batch query is ended. Possible
+                        values are either "latest" or a JSON string that spec-
+                        ifies an ending offset for each TopicPartition .
+
+                     PollTimeoutMs -> (long)
+                        The timeout in milliseconds to poll data from Kafka in
+                        Spark job executors. The default value is 512 .
+
+                     NumRetries -> (integer)
+                        The number of times to retry before failing  to  fetch
+                        Kafka offsets. The default value is 3 .
+
+                     RetryIntervalMs -> (long)
+                        The  time  in  milliseconds to wait before retrying to
+                        fetch Kafka offsets. The default value is 10 .
+
+                     MaxOffsetsPerTrigger -> (long)
+                        The rate limit on the maximum number of  offsets  that
+                        are  processed per trigger interval. The specified to-
+                        tal number of offsets is proportionally  split  across
+                        topicPartitions  of  different  volumes.  The  default
+                        value is null, which means that the consumer reads all
+                        offsets until the known latest offset.
+
+                     MinPartitions -> (integer)
+                        The  desired minimum number of partitions to read from
+                        Kafka. The default value is null, which means that the
+                        number  of  spark partitions is equal to the number of
+                        Kafka partitions.
+
+                     IncludeHeaders -> (boolean)
+                        Whether to include the Kafka headers. When the  option
+                        is  set to "true", the data output will contain an ad-
+                        ditional column  named  "glue_streaming_kafka_headers"
+                        with  type Array[Struct(key: String, value: String)] .
+                        The default value is "false". This option is available
+                        in Glue version 3.0 or later only.
+
+                     AddRecordTimestamp -> (string)
+                        When  this  option  is  set to 'true', the data output
+                        will contain an additional column  named  "__src_time-
+                        stamp"  that indicates the time when the corresponding
+                        record received by the topic.  The  default  value  is
+                        'false'.  This option is supported in Glue version 4.0
+                        or later.
+
+                     EmitConsumerLagMetrics -> (string)
+                        When this option is set to 'true', for each batch,  it
+                        will  emit  the  metrics  for the duration between the
+                        oldest record received by the topic and  the  time  it
+                        arrives  in  Glue  to CloudWatch. The metric's name is
+                        "glue.driver.streaming.maxConsumerLagInMs".  The   de-
+                        fault  value  is  'false'. This option is supported in
+                        Glue version 4.0 or later.
+
+                 DataPreviewOptions -> (structure)
+                     Specifies options related to data preview for  viewing  a
                      sample of your data.
 
                      PollingTime -> (long)
@@ -2191,11 +2216,11 @@ OPTIONS
                         The limit to the number of records polled.
 
               DropNullFields -> (structure)
-                 Specifies a transform that removes columns from  the  dataset
+                 Specifies  a  transform that removes columns from the dataset
                  if all values in the column are 'null'. By default, Glue Stu-
-                 dio will recognize null objects,  but  some  values  such  as
-                 empty  strings, strings that are "null", -1 integers or other
-                 placeholders such as zeros, are not automatically  recognized
+                 dio  will  recognize  null  objects,  but some values such as
+                 empty strings, strings that are "null", -1 integers or  other
+                 placeholders  such as zeros, are not automatically recognized
                  as nulls.
 
                  Name -> (string)
@@ -2207,7 +2232,7 @@ OPTIONS
                      (string)
 
                  NullCheckBoxList -> (structure)
-                     A  structure  that  represents whether certain values are
+                     A structure that represents whether  certain  values  are
                      recognized as null values for removal.
 
                      IsEmpty -> (boolean)
@@ -2223,17 +2248,17 @@ OPTIONS
                         a null value.
 
                  NullTextList -> (list)
-                     A  structure  that  specifies  a  list  of NullValueField
-                     structures that represent a custom  null  value  such  as
-                     zero  or  other  value  being  used as a null placeholder
+                     A structure  that  specifies  a  list  of  NullValueField
+                     structures  that  represent  a  custom null value such as
+                     zero or other value being  used  as  a  null  placeholder
                      unique to the dataset.
 
-                     The DropNullFields transform removes custom  null  values
-                     only  if  both  the value of the null placeholder and the
+                     The  DropNullFields  transform removes custom null values
+                     only if both the value of the null  placeholder  and  the
                      datatype match the data.
 
                      (structure)
-                        Represents a custom null value  such  as  a  zeros  or
+                        Represents  a  custom  null  value  such as a zeros or
                         other value being used as a null placeholder unique to
                         the dataset.
 
@@ -2252,7 +2277,7 @@ OPTIONS
               Merge -> (structure)
                  Specifies a transform that merges a DynamicFrame with a stag-
                  ing DynamicFrame based on the specified primary keys to iden-
-                 tify records. Duplicate records (records with the  same  pri-
+                 tify  records.  Duplicate records (records with the same pri-
                  mary keys) are not de-duplicated.
 
                  Name -> (string)
@@ -2264,11 +2289,11 @@ OPTIONS
                      (string)
 
                  Source -> (string)
-                     The  source DynamicFrame that will be merged with a stag-
+                     The source DynamicFrame that will be merged with a  stag-
                      ing DynamicFrame .
 
                  PrimaryKeys -> (list)
-                     The list of primary key fields to match records from  the
+                     The  list of primary key fields to match records from the
                      source and staging dynamic frames.
 
                      (list)
@@ -2293,11 +2318,11 @@ OPTIONS
                      sulting DynamicFrame. The resulting union does not remove
                      duplicate rows.
 
-                     Specify DISTINCT to remove duplicate rows in the  result-
+                     Specify  DISTINCT to remove duplicate rows in the result-
                      ing DynamicFrame.
 
               PIIDetection -> (structure)
-                 Specifies  a  transform that identifies, removes or masks PII
+                 Specifies a transform that identifies, removes or  masks  PII
                  data.
 
                  Name -> (string)
@@ -2312,12 +2337,12 @@ OPTIONS
                      Indicates the type of PIIDetection transform.
 
                  EntityTypesToDetect -> (list)
-                     Indicates the types of entities the  PIIDetection  trans-
+                     Indicates  the  types of entities the PIIDetection trans-
                      form will identify as PII data.
 
-                     PII  type  entities  include: PERSON_NAME, DATE, USA_SNN,
+                     PII type entities include:  PERSON_NAME,  DATE,  USA_SNN,
                      EMAIL,   USA_ITIN,   USA_PASSPORT_NUMBER,   PHONE_NUMBER,
-                     BANK_ACCOUNT,   IP_ADDRESS,   MAC_ADDRESS,  USA_CPT_CODE,
+                     BANK_ACCOUNT,  IP_ADDRESS,   MAC_ADDRESS,   USA_CPT_CODE,
                      USA_HCPCS_CODE, USA_NATIONAL_DRUG_CODE, USA_MEDICARE_BEN-
                      EFICIARY_IDENTIFIER,      USA_HEALTH_INSURANCE_CLAIM_NUM-
                      BER,CREDIT_CARD,USA_NATIONAL_PROVIDER_IDENTI-
@@ -2326,30 +2351,30 @@ OPTIONS
                      (string)
 
                  OutputColumnName -> (string)
-                     Indicates  the  output  column name that will contain any
+                     Indicates the output column name that  will  contain  any
                      entity type detected in that row.
 
                  SampleFraction -> (double)
-                     Indicates the fraction of the data to sample  when  scan-
+                     Indicates  the  fraction of the data to sample when scan-
                      ning for PII entities.
 
                  ThresholdFraction -> (double)
-                     Indicates  the  fraction  of the data that must be met in
+                     Indicates the fraction of the data that must  be  met  in
                      order for a column to be identified as PII data.
 
                  MaskValue -> (string)
-                     Indicates the value that will replace  the  detected  en-
+                     Indicates  the  value  that will replace the detected en-
                      tity.
 
               Aggregate -> (structure)
-                 Specifies  a  transform that groups rows by chosen fields and
+                 Specifies a transform that groups rows by chosen  fields  and
                  computes the aggregated value by specified function.
 
                  Name -> (string)
                      The name of the transform node.
 
                  Inputs -> (list)
-                     Specifies the fields and rows to use as  inputs  for  the
+                     Specifies  the  fields  and rows to use as inputs for the
                      aggregate transform.
 
                      (string)
@@ -2361,15 +2386,15 @@ OPTIONS
                         (string)
 
                  Aggs -> (list)
-                     Specifies  the  aggregate  functions  to  be performed on
+                     Specifies the aggregate  functions  to  be  performed  on
                      specified fields.
 
                      (structure)
-                        Specifies the set of parameters needed to perform  ag-
+                        Specifies  the set of parameters needed to perform ag-
                         gregation in the aggregate transform.
 
                         Column -> (list)
-                            Specifies  the column on the data set on which the
+                            Specifies the column on the data set on which  the
                             aggregation function will be applied.
 
                             (string)
@@ -2378,12 +2403,12 @@ OPTIONS
                             Specifies the aggregation function to apply.
 
                             Possible aggregation functions include: avg count-
-                            Distinct,  count, first, last, kurtosis, max, min,
-                            skewness, stddev_samp,  stddev_pop,  sum,  sumDis-
+                            Distinct, count, first, last, kurtosis, max,  min,
+                            skewness,  stddev_samp,  stddev_pop,  sum, sumDis-
                             tinct, var_samp, var_pop
 
               DropDuplicates -> (structure)
-                 Specifies  a  transform  that  removes rows of repeating data
+                 Specifies a transform that removes  rows  of  repeating  data
                  from a data set.
 
                  Name -> (string)
@@ -2395,7 +2420,7 @@ OPTIONS
                      (string)
 
                  Columns -> (list)
-                     The name of the columns to be merged or  removed  if  re-
+                     The  name  of  the columns to be merged or removed if re-
                      peating.
 
                      (list)
@@ -2425,15 +2450,15 @@ OPTIONS
                      The name of the database to write to.
 
                  SchemaChangePolicy -> (structure)
-                     A  policy that specifies update behavior for the governed
+                     A policy that specifies update behavior for the  governed
                      catalog.
 
                      EnableUpdateCatalog -> (boolean)
-                        Whether to use the specified update behavior when  the
+                        Whether  to use the specified update behavior when the
                         crawler finds a changed schema.
 
                      UpdateBehavior -> (string)
-                        The  update  behavior when the crawler finds a changed
+                        The update behavior when the crawler finds  a  changed
                         schema.
 
               GovernedCatalogSource -> (structure)
@@ -2449,19 +2474,19 @@ OPTIONS
                      The database table to read from.
 
                  PartitionPredicate -> (string)
-                     Partitions satisfying this predicate are  deleted.  Files
-                     within  the  retention period in these partitions are not
+                     Partitions  satisfying  this predicate are deleted. Files
+                     within the retention period in these partitions  are  not
                      deleted. Set to ""  empty by default.
 
                  AdditionalOptions -> (structure)
                      Specifies additional connection options.
 
                      BoundedSize -> (long)
-                        Sets the upper  limit  for  the  target  size  of  the
+                        Sets  the  upper  limit  for  the  target  size of the
                         dataset in bytes that will be processed.
 
                      BoundedFiles -> (long)
-                        Sets  the  upper  limit for the target number of files
+                        Sets the upper limit for the target  number  of  files
                         that will be processed.
 
               MicrosoftSQLServerCatalogSource -> (structure)
@@ -2592,7 +2617,7 @@ OPTIONS
                      in the Glue Studio visual editor.
 
                  Inputs -> (list)
-                     Specifies the inputs for the dynamic transform  that  are
+                     Specifies  the  inputs for the dynamic transform that are
                      required.
 
                      (string)
@@ -2605,7 +2630,7 @@ OPTIONS
                         namic transform.
 
                         Name -> (string)
-                            Specifies the name of the parameter in the  config
+                            Specifies  the name of the parameter in the config
                             file of the dynamic transform.
 
                         Type -> (string)
@@ -2613,11 +2638,11 @@ OPTIONS
                             the dynamic transform.
 
                         ValidationRule -> (string)
-                            Specifies the validation rule in the  config  file
+                            Specifies  the  validation rule in the config file
                             of the dynamic transform.
 
                         ValidationMessage -> (string)
-                            Specifies  the  validation  message  in the config
+                            Specifies the validation  message  in  the  config
                             file of the dynamic transform.
 
                         Value -> (list)
@@ -2627,7 +2652,7 @@ OPTIONS
                             (string)
 
                         ListType -> (string)
-                            Specifies  the  list  type of the parameter in the
+                            Specifies the list type of the  parameter  in  the
                             config file of the dynamic transform.
 
                         IsOptional -> (boolean)
@@ -2635,26 +2660,26 @@ OPTIONS
                             in the config file of the dynamic transform.
 
                  FunctionName -> (string)
-                     Specifies  the name of the function of the dynamic trans-
+                     Specifies the name of the function of the dynamic  trans-
                      form.
 
                  Path -> (string)
-                     Specifies the path of the dynamic  transform  source  and
+                     Specifies  the  path  of the dynamic transform source and
                      config files.
 
                  Version -> (string)
-                     This  field  is not used and will be deprecated in future
+                     This field is not used and will be deprecated  in  future
                      release.
 
                  OutputSchemas -> (list)
                      Specifies the data schema for the dynamic transform.
 
                      (structure)
-                        Specifies a user-defined schema when a  schema  cannot
+                        Specifies  a  user-defined schema when a schema cannot
                         be determined by Glue.
 
                         Columns -> (list)
-                            Specifies  the  column  definitions that make up a
+                            Specifies the column definitions that  make  up  a
                             Glue schema.
 
                             (structure)
@@ -2662,11 +2687,11 @@ OPTIONS
                                inition.
 
                                Name -> (string)
-                                   The  name  of the column in the Glue Studio
+                                   The name of the column in the  Glue  Studio
                                    schema.
 
                                Type -> (string)
-                                   The hive type for this column in  the  Glue
+                                   The  hive  type for this column in the Glue
                                    Studio schema.
 
               EvaluateDataQuality -> (structure)
@@ -2702,15 +2727,15 @@ OPTIONS
                         Enable publishing for your data quality results.
 
                  StopJobOnFailureOptions -> (structure)
-                     Options  to configure how your job will stop if your data
+                     Options to configure how your job will stop if your  data
                      quality evaluation fails.
 
                      StopJobOnFailureTiming -> (string)
-                        When to stop  job  if  your  data  quality  evaluation
+                        When  to  stop  job  if  your  data quality evaluation
                         fails. Options are Immediate or AfterDataLoad.
 
               S3CatalogHudiSource -> (structure)
-                 Specifies  a  Hudi data source that is registered in the Glue
+                 Specifies a Hudi data source that is registered in  the  Glue
                  Data Catalog. The data source must be stored in Amazon S3.
 
                  Name -> (string)
@@ -2733,11 +2758,11 @@ OPTIONS
                      Specifies the data schema for the Hudi source.
 
                      (structure)
-                        Specifies a user-defined schema when a  schema  cannot
+                        Specifies  a  user-defined schema when a schema cannot
                         be determined by Glue.
 
                         Columns -> (list)
-                            Specifies  the  column  definitions that make up a
+                            Specifies the column definitions that  make  up  a
                             Glue schema.
 
                             (structure)
@@ -2745,15 +2770,15 @@ OPTIONS
                                inition.
 
                                Name -> (string)
-                                   The  name  of the column in the Glue Studio
+                                   The name of the column in the  Glue  Studio
                                    schema.
 
                                Type -> (string)
-                                   The hive type for this column in  the  Glue
+                                   The  hive  type for this column in the Glue
                                    Studio schema.
 
               CatalogHudiSource -> (structure)
-                 Specifies  a  Hudi data source that is registered in the Glue
+                 Specifies a Hudi data source that is registered in  the  Glue
                  Data Catalog.
 
                  Name -> (string)
@@ -2776,11 +2801,11 @@ OPTIONS
                      Specifies the data schema for the Hudi source.
 
                      (structure)
-                        Specifies a user-defined schema when a  schema  cannot
+                        Specifies  a  user-defined schema when a schema cannot
                         be determined by Glue.
 
                         Columns -> (list)
-                            Specifies  the  column  definitions that make up a
+                            Specifies the column definitions that  make  up  a
                             Glue schema.
 
                             (structure)
@@ -2788,11 +2813,11 @@ OPTIONS
                                inition.
 
                                Name -> (string)
-                                   The  name  of the column in the Glue Studio
+                                   The name of the column in the  Glue  Studio
                                    schema.
 
                                Type -> (string)
-                                   The hive type for this column in  the  Glue
+                                   The  hive  type for this column in the Glue
                                    Studio schema.
 
               S3HudiSource -> (structure)
@@ -2817,11 +2842,11 @@ OPTIONS
                      Specifies additional options for the connector.
 
                      BoundedSize -> (long)
-                        Sets  the  upper  limit  for  the  target  size of the
+                        Sets the upper  limit  for  the  target  size  of  the
                         dataset in bytes that will be processed.
 
                      BoundedFiles -> (long)
-                        Sets the upper limit for the target  number  of  files
+                        Sets  the  upper  limit for the target number of files
                         that will be processed.
 
                      EnableSamplePath -> (boolean)
@@ -2834,11 +2859,11 @@ OPTIONS
                      Specifies the data schema for the Hudi source.
 
                      (structure)
-                        Specifies  a  user-defined schema when a schema cannot
+                        Specifies a user-defined schema when a  schema  cannot
                         be determined by Glue.
 
                         Columns -> (list)
-                            Specifies the column definitions that  make  up  a
+                            Specifies  the  column  definitions that make up a
                             Glue schema.
 
                             (structure)
@@ -2846,15 +2871,15 @@ OPTIONS
                                inition.
 
                                Name -> (string)
-                                   The name of the column in the  Glue  Studio
+                                   The  name  of the column in the Glue Studio
                                    schema.
 
                                Type -> (string)
-                                   The  hive  type for this column in the Glue
+                                   The hive type for this column in  the  Glue
                                    Studio schema.
 
               S3HudiCatalogTarget -> (structure)
-                 Specifies a target that writes to a Hudi data source  in  the
+                 Specifies  a  target that writes to a Hudi data source in the
                  Glue Data Catalog.
 
                  Name -> (string)
@@ -2878,7 +2903,7 @@ OPTIONS
                      The name of the database to write to.
 
                  AdditionalOptions -> (map)
-                     Specifies  additional  connection options for the connec-
+                     Specifies additional connection options for  the  connec-
                      tor.
 
                      key -> (string)
@@ -2889,15 +2914,15 @@ OPTIONS
                      A policy that specifies update behavior for the crawler.
 
                      EnableUpdateCatalog -> (boolean)
-                        Whether to use the specified update behavior when  the
+                        Whether  to use the specified update behavior when the
                         crawler finds a changed schema.
 
                      UpdateBehavior -> (string)
-                        The  update  behavior when the crawler finds a changed
+                        The update behavior when the crawler finds  a  changed
                         schema.
 
               S3HudiDirectTarget -> (structure)
-                 Specifies a target that writes to a Hudi data source in  Ama-
+                 Specifies  a target that writes to a Hudi data source in Ama-
                  zon S3.
 
                  Name -> (string)
@@ -2912,281 +2937,15 @@ OPTIONS
                      The Amazon S3 path of your Hudi data source to write to.
 
                  Compression -> (string)
-                     Specifies  how  the data is compressed. This is generally
-                     not necessary if the data has a standard file  extension.
-                     Possible values are "gzip" and "bzip" ).
-
-                 PartitionKeys -> (list)
-                     Specifies native partitioning using a sequence of keys.
-
-                     (list)
-                        (string)
-
-                 Format -> (string)
-                     Specifies the data output format for the target.
-
-                 AdditionalOptions -> (map)
-                     Specifies  additional  connection options for the connec-
-                     tor.
-
-                     key -> (string)
-
-                     value -> (string)
-
-                 SchemaChangePolicy -> (structure)
-                     A policy that specifies update behavior for the crawler.
-
-                     EnableUpdateCatalog -> (boolean)
-                        Whether to use the specified update behavior when  the
-                        crawler finds a changed schema.
-
-                     UpdateBehavior -> (string)
-                        The  update  behavior when the crawler finds a changed
-                        schema.
-
-                     Table -> (string)
-                        Specifies the table in the database  that  the  schema
-                        change policy applies to.
-
-                     Database -> (string)
-                        Specifies  the  database that the schema change policy
-                        applies to.
-
-              DirectJDBCSource -> (structure)
-                 Specifies the direct JDBC source connection.
-
-                 Name -> (string)
-                     The name of the JDBC source connection.
-
-                 Database -> (string)
-                     The database of the JDBC source connection.
-
-                 Table -> (string)
-                     The table of the JDBC source connection.
-
-                 ConnectionName -> (string)
-                     The connection name of the JDBC source.
-
-                 ConnectionType -> (string)
-                     The connection type of the JDBC source.
-
-                 RedshiftTmpDir -> (string)
-                     The temp directory of the JDBC Redshift source.
-
-              S3CatalogDeltaSource -> (structure)
-                 Specifies a Delta Lake data source that is registered in  the
-                 Glue  Data  Catalog. The data source must be stored in Amazon
-                 S3.
-
-                 Name -> (string)
-                     The name of the Delta Lake data source.
-
-                 Database -> (string)
-                     The name of the database to read from.
-
-                 Table -> (string)
-                     The name of the table in the database to read from.
-
-                 AdditionalDeltaOptions -> (map)
-                     Specifies additional connection options.
-
-                     key -> (string)
-
-                     value -> (string)
-
-                 OutputSchemas -> (list)
-                     Specifies the data schema for the Delta Lake source.
-
-                     (structure)
-                        Specifies a user-defined schema when a  schema  cannot
-                        be determined by Glue.
-
-                        Columns -> (list)
-                            Specifies  the  column  definitions that make up a
-                            Glue schema.
-
-                            (structure)
-                               Specifies a single column in a Glue schema def-
-                               inition.
-
-                               Name -> (string)
-                                   The  name  of the column in the Glue Studio
-                                   schema.
-
-                               Type -> (string)
-                                   The hive type for this column in  the  Glue
-                                   Studio schema.
-
-              CatalogDeltaSource -> (structure)
-                 Specifies  a Delta Lake data source that is registered in the
-                 Glue Data Catalog.
-
-                 Name -> (string)
-                     The name of the Delta Lake data source.
-
-                 Database -> (string)
-                     The name of the database to read from.
-
-                 Table -> (string)
-                     The name of the table in the database to read from.
-
-                 AdditionalDeltaOptions -> (map)
-                     Specifies additional connection options.
-
-                     key -> (string)
-
-                     value -> (string)
-
-                 OutputSchemas -> (list)
-                     Specifies the data schema for the Delta Lake source.
-
-                     (structure)
-                        Specifies a user-defined schema when a  schema  cannot
-                        be determined by Glue.
-
-                        Columns -> (list)
-                            Specifies  the  column  definitions that make up a
-                            Glue schema.
-
-                            (structure)
-                               Specifies a single column in a Glue schema def-
-                               inition.
-
-                               Name -> (string)
-                                   The  name  of the column in the Glue Studio
-                                   schema.
-
-                               Type -> (string)
-                                   The hive type for this column in  the  Glue
-                                   Studio schema.
-
-              S3DeltaSource -> (structure)
-                 Specifies a Delta Lake data source stored in Amazon S3.
-
-                 Name -> (string)
-                     The name of the Delta Lake source.
-
-                 Paths -> (list)
-                     A list of the Amazon S3 paths to read from.
-
-                     (string)
-
-                 AdditionalDeltaOptions -> (map)
-                     Specifies additional connection options.
-
-                     key -> (string)
-
-                     value -> (string)
-
-                 AdditionalOptions -> (structure)
-                     Specifies additional options for the connector.
-
-                     BoundedSize -> (long)
-                        Sets  the  upper  limit  for  the  target  size of the
-                        dataset in bytes that will be processed.
-
-                     BoundedFiles -> (long)
-                        Sets the upper limit for the target  number  of  files
-                        that will be processed.
-
-                     EnableSamplePath -> (boolean)
-                        Sets option to enable a sample path.
-
-                     SamplePath -> (string)
-                        If enabled, specifies the sample path.
-
-                 OutputSchemas -> (list)
-                     Specifies the data schema for the Delta Lake source.
-
-                     (structure)
-                        Specifies  a  user-defined schema when a schema cannot
-                        be determined by Glue.
-
-                        Columns -> (list)
-                            Specifies the column definitions that  make  up  a
-                            Glue schema.
-
-                            (structure)
-                               Specifies a single column in a Glue schema def-
-                               inition.
-
-                               Name -> (string)
-                                   The name of the column in the  Glue  Studio
-                                   schema.
-
-                               Type -> (string)
-                                   The  hive  type for this column in the Glue
-                                   Studio schema.
-
-              S3DeltaCatalogTarget -> (structure)
-                 Specifies a target that writes to a Delta Lake data source in
-                 the Glue Data Catalog.
-
-                 Name -> (string)
-                     The name of the data target.
-
-                 Inputs -> (list)
-                     The nodes that are inputs to the data target.
-
-                     (string)
-
-                 PartitionKeys -> (list)
-                     Specifies native partitioning using a sequence of keys.
-
-                     (list)
-                        (string)
-
-                 Table -> (string)
-                     The name of the table in the database to write to.
-
-                 Database -> (string)
-                     The name of the database to write to.
-
-                 AdditionalOptions -> (map)
-                     Specifies  additional  connection options for the connec-
-                     tor.
-
-                     key -> (string)
-
-                     value -> (string)
-
-                 SchemaChangePolicy -> (structure)
-                     A policy that specifies update behavior for the crawler.
-
-                     EnableUpdateCatalog -> (boolean)
-                        Whether to use the specified update behavior when  the
-                        crawler finds a changed schema.
-
-                     UpdateBehavior -> (string)
-                        The  update  behavior when the crawler finds a changed
-                        schema.
-
-              S3DeltaDirectTarget -> (structure)
-                 Specifies a target that writes to a Delta Lake data source in
-                 Amazon S3.
-
-                 Name -> (string)
-                     The name of the data target.
-
-                 Inputs -> (list)
-                     The nodes that are inputs to the data target.
-
-                     (string)
-
-                 PartitionKeys -> (list)
-                     Specifies native partitioning using a sequence of keys.
-
-                     (list)
-                        (string)
-
-                 Path -> (string)
-                     The  Amazon  S3  path  of  your Delta Lake data source to
-                     write to.
-
-                 Compression -> (string)
                      Specifies how the data is compressed. This  is  generally
                      not  necessary if the data has a standard file extension.
                      Possible values are "gzip" and "bzip" ).
+
+                 PartitionKeys -> (list)
+                     Specifies native partitioning using a sequence of keys.
+
+                     (list)
+                        (string)
 
                  Format -> (string)
                      Specifies the data output format for the target.
@@ -3218,8 +2977,274 @@ OPTIONS
                         Specifies the database that the schema  change  policy
                         applies to.
 
+              DirectJDBCSource -> (structure)
+                 Specifies the direct JDBC source connection.
+
+                 Name -> (string)
+                     The name of the JDBC source connection.
+
+                 Database -> (string)
+                     The database of the JDBC source connection.
+
+                 Table -> (string)
+                     The table of the JDBC source connection.
+
+                 ConnectionName -> (string)
+                     The connection name of the JDBC source.
+
+                 ConnectionType -> (string)
+                     The connection type of the JDBC source.
+
+                 RedshiftTmpDir -> (string)
+                     The temp directory of the JDBC Redshift source.
+
+              S3CatalogDeltaSource -> (structure)
+                 Specifies  a Delta Lake data source that is registered in the
+                 Glue Data Catalog. The data source must be stored  in  Amazon
+                 S3.
+
+                 Name -> (string)
+                     The name of the Delta Lake data source.
+
+                 Database -> (string)
+                     The name of the database to read from.
+
+                 Table -> (string)
+                     The name of the table in the database to read from.
+
+                 AdditionalDeltaOptions -> (map)
+                     Specifies additional connection options.
+
+                     key -> (string)
+
+                     value -> (string)
+
+                 OutputSchemas -> (list)
+                     Specifies the data schema for the Delta Lake source.
+
+                     (structure)
+                        Specifies  a  user-defined schema when a schema cannot
+                        be determined by Glue.
+
+                        Columns -> (list)
+                            Specifies the column definitions that  make  up  a
+                            Glue schema.
+
+                            (structure)
+                               Specifies a single column in a Glue schema def-
+                               inition.
+
+                               Name -> (string)
+                                   The name of the column in the  Glue  Studio
+                                   schema.
+
+                               Type -> (string)
+                                   The  hive  type for this column in the Glue
+                                   Studio schema.
+
+              CatalogDeltaSource -> (structure)
+                 Specifies a Delta Lake data source that is registered in  the
+                 Glue Data Catalog.
+
+                 Name -> (string)
+                     The name of the Delta Lake data source.
+
+                 Database -> (string)
+                     The name of the database to read from.
+
+                 Table -> (string)
+                     The name of the table in the database to read from.
+
+                 AdditionalDeltaOptions -> (map)
+                     Specifies additional connection options.
+
+                     key -> (string)
+
+                     value -> (string)
+
+                 OutputSchemas -> (list)
+                     Specifies the data schema for the Delta Lake source.
+
+                     (structure)
+                        Specifies  a  user-defined schema when a schema cannot
+                        be determined by Glue.
+
+                        Columns -> (list)
+                            Specifies the column definitions that  make  up  a
+                            Glue schema.
+
+                            (structure)
+                               Specifies a single column in a Glue schema def-
+                               inition.
+
+                               Name -> (string)
+                                   The name of the column in the  Glue  Studio
+                                   schema.
+
+                               Type -> (string)
+                                   The  hive  type for this column in the Glue
+                                   Studio schema.
+
+              S3DeltaSource -> (structure)
+                 Specifies a Delta Lake data source stored in Amazon S3.
+
+                 Name -> (string)
+                     The name of the Delta Lake source.
+
+                 Paths -> (list)
+                     A list of the Amazon S3 paths to read from.
+
+                     (string)
+
+                 AdditionalDeltaOptions -> (map)
+                     Specifies additional connection options.
+
+                     key -> (string)
+
+                     value -> (string)
+
+                 AdditionalOptions -> (structure)
+                     Specifies additional options for the connector.
+
+                     BoundedSize -> (long)
+                        Sets the upper  limit  for  the  target  size  of  the
+                        dataset in bytes that will be processed.
+
+                     BoundedFiles -> (long)
+                        Sets  the  upper  limit for the target number of files
+                        that will be processed.
+
+                     EnableSamplePath -> (boolean)
+                        Sets option to enable a sample path.
+
+                     SamplePath -> (string)
+                        If enabled, specifies the sample path.
+
+                 OutputSchemas -> (list)
+                     Specifies the data schema for the Delta Lake source.
+
+                     (structure)
+                        Specifies a user-defined schema when a  schema  cannot
+                        be determined by Glue.
+
+                        Columns -> (list)
+                            Specifies  the  column  definitions that make up a
+                            Glue schema.
+
+                            (structure)
+                               Specifies a single column in a Glue schema def-
+                               inition.
+
+                               Name -> (string)
+                                   The  name  of the column in the Glue Studio
+                                   schema.
+
+                               Type -> (string)
+                                   The hive type for this column in  the  Glue
+                                   Studio schema.
+
+              S3DeltaCatalogTarget -> (structure)
+                 Specifies a target that writes to a Delta Lake data source in
+                 the Glue Data Catalog.
+
+                 Name -> (string)
+                     The name of the data target.
+
+                 Inputs -> (list)
+                     The nodes that are inputs to the data target.
+
+                     (string)
+
+                 PartitionKeys -> (list)
+                     Specifies native partitioning using a sequence of keys.
+
+                     (list)
+                        (string)
+
+                 Table -> (string)
+                     The name of the table in the database to write to.
+
+                 Database -> (string)
+                     The name of the database to write to.
+
+                 AdditionalOptions -> (map)
+                     Specifies additional connection options for  the  connec-
+                     tor.
+
+                     key -> (string)
+
+                     value -> (string)
+
+                 SchemaChangePolicy -> (structure)
+                     A policy that specifies update behavior for the crawler.
+
+                     EnableUpdateCatalog -> (boolean)
+                        Whether  to use the specified update behavior when the
+                        crawler finds a changed schema.
+
+                     UpdateBehavior -> (string)
+                        The update behavior when the crawler finds  a  changed
+                        schema.
+
+              S3DeltaDirectTarget -> (structure)
+                 Specifies a target that writes to a Delta Lake data source in
+                 Amazon S3.
+
+                 Name -> (string)
+                     The name of the data target.
+
+                 Inputs -> (list)
+                     The nodes that are inputs to the data target.
+
+                     (string)
+
+                 PartitionKeys -> (list)
+                     Specifies native partitioning using a sequence of keys.
+
+                     (list)
+                        (string)
+
+                 Path -> (string)
+                     The Amazon S3 path of your  Delta  Lake  data  source  to
+                     write to.
+
+                 Compression -> (string)
+                     Specifies  how  the data is compressed. This is generally
+                     not necessary if the data has a standard file  extension.
+                     Possible values are "gzip" and "bzip" ).
+
+                 Format -> (string)
+                     Specifies the data output format for the target.
+
+                 AdditionalOptions -> (map)
+                     Specifies  additional  connection options for the connec-
+                     tor.
+
+                     key -> (string)
+
+                     value -> (string)
+
+                 SchemaChangePolicy -> (structure)
+                     A policy that specifies update behavior for the crawler.
+
+                     EnableUpdateCatalog -> (boolean)
+                        Whether to use the specified update behavior when  the
+                        crawler finds a changed schema.
+
+                     UpdateBehavior -> (string)
+                        The  update  behavior when the crawler finds a changed
+                        schema.
+
+                     Table -> (string)
+                        Specifies the table in the database  that  the  schema
+                        change policy applies to.
+
+                     Database -> (string)
+                        Specifies  the  database that the schema change policy
+                        applies to.
+
               AmazonRedshiftSource -> (structure)
-                 Specifies  a  target  that  writes to a data source in Amazon
+                 Specifies a target that writes to a  data  source  in  Amazon
                  Redshift.
 
                  Name -> (string)
@@ -3229,7 +3254,7 @@ OPTIONS
                      Specifies the data of the Amazon Reshift source node.
 
                      AccessType -> (string)
-                        The access type for the Redshift connection. Can be  a
+                        The  access type for the Redshift connection. Can be a
                         direct connection or catalog connections.
 
                      SourceType -> (string)
@@ -3249,7 +3274,7 @@ OPTIONS
                             Specifies the description of the option.
 
                      Schema -> (structure)
-                        The Redshift schema name when working  with  a  direct
+                        The  Redshift  schema  name when working with a direct
                         connection.
 
                         Value -> (string)
@@ -3262,7 +3287,7 @@ OPTIONS
                             Specifies the description of the option.
 
                      Table -> (structure)
-                        The  Redshift  table  name  when working with a direct
+                        The Redshift table name when  working  with  a  direct
                         connection.
 
                         Value -> (string)
@@ -3275,7 +3300,7 @@ OPTIONS
                             Specifies the description of the option.
 
                      CatalogDatabase -> (structure)
-                        The name of the Glue Data Catalog database when  work-
+                        The  name of the Glue Data Catalog database when work-
                         ing with a data catalog.
 
                         Value -> (string)
@@ -3288,7 +3313,7 @@ OPTIONS
                             Specifies the description of the option.
 
                      CatalogTable -> (structure)
-                        The  Glue  Data Catalog table name when working with a
+                        The Glue Data Catalog table name when working  with  a
                         data catalog.
 
                         Value -> (string)
@@ -3308,12 +3333,12 @@ OPTIONS
                         The database table to read from.
 
                      TempDir -> (string)
-                        The  Amazon S3 path where temporary data can be staged
+                        The Amazon S3 path where temporary data can be  staged
                         when copying out of the database.
 
                      IamRole -> (structure)
                         Optional. The role name use when connection to S3. The
-                        IAM  role ill default to the role on the job when left
+                        IAM role ill default to the role on the job when  left
                         blank.
 
                         Value -> (string)
@@ -3326,7 +3351,7 @@ OPTIONS
                             Specifies the description of the option.
 
                      AdvancedOptions -> (list)
-                        Optional values when connecting to the Redshift  clus-
+                        Optional  values when connecting to the Redshift clus-
                         ter.
 
                         (structure)
@@ -3344,11 +3369,11 @@ OPTIONS
                         when the SourceType is 'query'.
 
                      PreAction -> (string)
-                        The  SQL  used before a MERGE or APPEND with upsert is
+                        The SQL used before a MERGE or APPEND with  upsert  is
                         run.
 
                      PostAction -> (string)
-                        The SQL used before a MERGE or APPEND with  upsert  is
+                        The  SQL  used before a MERGE or APPEND with upsert is
                         run.
 
                      Action -> (string)
@@ -3358,7 +3383,7 @@ OPTIONS
                         Specifies the prefix to a table.
 
                      Upsert -> (boolean)
-                        The  action  used  on Redshift sinks when doing an AP-
+                        The action used on Redshift sinks when  doing  an  AP-
                         PEND.
 
                      MergeAction -> (string)
@@ -3367,20 +3392,20 @@ OPTIONS
 
                      MergeWhenMatched -> (string)
                         The action used when to detemine how a MERGE in a Red-
-                        shift sink will be handled  when  an  existing  record
+                        shift  sink  will  be  handled when an existing record
                         matches a new record.
 
                      MergeWhenNotMatched -> (string)
                         The action used when to detemine how a MERGE in a Red-
-                        shift sink will be handled  when  an  existing  record
+                        shift  sink  will  be  handled when an existing record
                         doesn't match a new record.
 
                      MergeClause -> (string)
-                        The  SQL  used in a custom merge to deal with matching
+                        The SQL used in a custom merge to deal  with  matching
                         records.
 
                      CrawlerConnection -> (string)
-                        Specifies the name of the connection that  is  associ-
+                        Specifies  the  name of the connection that is associ-
                         ated with the catalog table used.
 
                      TableSchema -> (list)
@@ -3399,11 +3424,11 @@ OPTIONS
                                Specifies the description of the option.
 
                      StagingTable -> (string)
-                        The  name  of the temporary staging table that is used
+                        The name of the temporary staging table that  is  used
                         when doing a MERGE or APPEND with upsert.
 
                      SelectedColumns -> (list)
-                        The list of column names used to determine a  matching
+                        The  list of column names used to determine a matching
                         record when doing a MERGE or APPEND with upsert.
 
                         (structure)
@@ -3419,7 +3444,7 @@ OPTIONS
                                Specifies the description of the option.
 
               AmazonRedshiftTarget -> (structure)
-                 Specifies  a  target  that  writes to a data target in Amazon
+                 Specifies a target that writes to a  data  target  in  Amazon
                  Redshift.
 
                  Name -> (string)
@@ -3429,7 +3454,7 @@ OPTIONS
                      Specifies the data of the Amazon Reshift target node.
 
                      AccessType -> (string)
-                        The access type for the Redshift connection. Can be  a
+                        The  access type for the Redshift connection. Can be a
                         direct connection or catalog connections.
 
                      SourceType -> (string)
@@ -3449,7 +3474,7 @@ OPTIONS
                             Specifies the description of the option.
 
                      Schema -> (structure)
-                        The Redshift schema name when working  with  a  direct
+                        The  Redshift  schema  name when working with a direct
                         connection.
 
                         Value -> (string)
@@ -3462,7 +3487,7 @@ OPTIONS
                             Specifies the description of the option.
 
                      Table -> (structure)
-                        The  Redshift  table  name  when working with a direct
+                        The Redshift table name when  working  with  a  direct
                         connection.
 
                         Value -> (string)
@@ -3475,7 +3500,7 @@ OPTIONS
                             Specifies the description of the option.
 
                      CatalogDatabase -> (structure)
-                        The name of the Glue Data Catalog database when  work-
+                        The  name of the Glue Data Catalog database when work-
                         ing with a data catalog.
 
                         Value -> (string)
@@ -3488,7 +3513,7 @@ OPTIONS
                             Specifies the description of the option.
 
                      CatalogTable -> (structure)
-                        The  Glue  Data Catalog table name when working with a
+                        The Glue Data Catalog table name when working  with  a
                         data catalog.
 
                         Value -> (string)
@@ -3508,12 +3533,12 @@ OPTIONS
                         The database table to read from.
 
                      TempDir -> (string)
-                        The  Amazon S3 path where temporary data can be staged
+                        The Amazon S3 path where temporary data can be  staged
                         when copying out of the database.
 
                      IamRole -> (structure)
                         Optional. The role name use when connection to S3. The
-                        IAM  role ill default to the role on the job when left
+                        IAM role ill default to the role on the job when  left
                         blank.
 
                         Value -> (string)
@@ -3526,7 +3551,7 @@ OPTIONS
                             Specifies the description of the option.
 
                      AdvancedOptions -> (list)
-                        Optional values when connecting to the Redshift  clus-
+                        Optional  values when connecting to the Redshift clus-
                         ter.
 
                         (structure)
@@ -3544,11 +3569,11 @@ OPTIONS
                         when the SourceType is 'query'.
 
                      PreAction -> (string)
-                        The  SQL  used before a MERGE or APPEND with upsert is
+                        The SQL used before a MERGE or APPEND with  upsert  is
                         run.
 
                      PostAction -> (string)
-                        The SQL used before a MERGE or APPEND with  upsert  is
+                        The  SQL  used before a MERGE or APPEND with upsert is
                         run.
 
                      Action -> (string)
@@ -3558,7 +3583,7 @@ OPTIONS
                         Specifies the prefix to a table.
 
                      Upsert -> (boolean)
-                        The  action  used  on Redshift sinks when doing an AP-
+                        The action used on Redshift sinks when  doing  an  AP-
                         PEND.
 
                      MergeAction -> (string)
@@ -3567,20 +3592,20 @@ OPTIONS
 
                      MergeWhenMatched -> (string)
                         The action used when to detemine how a MERGE in a Red-
-                        shift sink will be handled  when  an  existing  record
+                        shift  sink  will  be  handled when an existing record
                         matches a new record.
 
                      MergeWhenNotMatched -> (string)
                         The action used when to detemine how a MERGE in a Red-
-                        shift sink will be handled  when  an  existing  record
+                        shift  sink  will  be  handled when an existing record
                         doesn't match a new record.
 
                      MergeClause -> (string)
-                        The  SQL  used in a custom merge to deal with matching
+                        The SQL used in a custom merge to deal  with  matching
                         records.
 
                      CrawlerConnection -> (string)
-                        Specifies the name of the connection that  is  associ-
+                        Specifies  the  name of the connection that is associ-
                         ated with the catalog table used.
 
                      TableSchema -> (list)
@@ -3599,11 +3624,11 @@ OPTIONS
                                Specifies the description of the option.
 
                      StagingTable -> (string)
-                        The  name  of the temporary staging table that is used
+                        The name of the temporary staging table that  is  used
                         when doing a MERGE or APPEND with upsert.
 
                      SelectedColumns -> (list)
-                        The list of column names used to determine a  matching
+                        The  list of column names used to determine a matching
                         record when doing a MERGE or APPEND with upsert.
 
                         (structure)
@@ -3624,7 +3649,7 @@ OPTIONS
                      (string)
 
               EvaluateDataQualityMultiFrame -> (structure)
-                 Specifies  your data quality evaluation criteria. Allows mul-
+                 Specifies your data quality evaluation criteria. Allows  mul-
                  tiple input data and returns a collection of Dynamic Frames.
 
                  Name -> (string)
@@ -3669,11 +3694,11 @@ OPTIONS
                      value -> (string)
 
                  StopJobOnFailureOptions -> (structure)
-                     Options  to configure how your job will stop if your data
+                     Options to configure how your job will stop if your  data
                      quality evaluation fails.
 
                      StopJobOnFailureTiming -> (string)
-                        When to stop  job  if  your  data  quality  evaluation
+                        When  to  stop  job  if  your  data quality evaluation
                         fails. Options are Immediate or AfterDataLoad.
 
        JSON Syntax:
@@ -4817,15 +4842,15 @@ OPTIONS
             ...}
 
        --execution-class (string)
-          Indicates  whether the job is run with a standard or flexible execu-
+          Indicates whether the job is run with a standard or flexible  execu-
           tion class. The standard execution-class is ideal for time-sensitive
           workloads that require fast job startup and dedicated resources.
 
-          The  flexible  execution  class  is appropriate for time-insensitive
+          The flexible execution class  is  appropriate  for  time-insensitive
           jobs whose start and completion times may vary.
 
-          Only jobs with Glue version 3.0 and above and command  type  glueetl
-          will  be allowed to set ExecutionClass to FLEX . The flexible execu-
+          Only  jobs  with Glue version 3.0 and above and command type glueetl
+          will be allowed to set ExecutionClass to FLEX . The flexible  execu-
           tion class is available for Spark jobs.
 
           Possible values:
@@ -4835,18 +4860,18 @@ OPTIONS
           o STANDARD
 
        --source-control-details (structure)
-          The details for a source control configuration for a  job,  allowing
+          The  details  for a source control configuration for a job, allowing
           synchronization of job artifacts to or from a remote repository.
 
           Provider -> (string)
               The provider for the remote repository.
 
           Repository -> (string)
-              The  name  of  the remote repository that contains the job arti-
+              The name of the remote repository that contains  the  job  arti-
               facts.
 
           Owner -> (string)
-              The owner of the remote repository that contains the  job  arti-
+              The  owner  of the remote repository that contains the job arti-
               facts.
 
           Branch -> (string)
@@ -4883,17 +4908,17 @@ OPTIONS
             "AuthToken": "string"
           }
 
-       --cli-input-json  (string) Performs service operation based on the JSON
-       string provided. The JSON string follows the format provided by  --gen-
-       erate-cli-skeleton.  If  other  arguments  are  provided on the command
-       line, the CLI values will override the JSON-provided values. It is  not
+       --cli-input-json (string) Performs service operation based on the  JSON
+       string  provided. The JSON string follows the format provided by --gen-
+       erate-cli-skeleton. If other arguments  are  provided  on  the  command
+       line,  the CLI values will override the JSON-provided values. It is not
        possible to pass arbitrary binary values using a JSON-provided value as
        the string will be taken literally.
 
-       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
+       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
        output without sending an API request. If provided with no value or the
        value input, prints a sample input JSON that can be used as an argument
-       for  --cli-input-json.  If provided with the value output, it validates
+       for --cli-input-json. If provided with the value output,  it  validates
        the command inputs and returns a sample output JSON for that command.
 
 GLOBAL OPTIONS
@@ -4907,7 +4932,7 @@ GLOBAL OPTIONS
 
        --no-verify-ssl (boolean)
 
-       By default, the AWS CLI uses SSL when communicating with AWS  services.
+       By  default, the AWS CLI uses SSL when communicating with AWS services.
        For each SSL connection, the AWS CLI will verify SSL certificates. This
        option overrides the default behavior of verifying SSL certificates.
 
@@ -4953,7 +4978,7 @@ GLOBAL OPTIONS
 
        --no-sign-request (boolean)
 
-       Do not sign requests. Credentials will not be loaded if  this  argument
+       Do  not  sign requests. Credentials will not be loaded if this argument
        is provided.
 
        --ca-bundle (string)
@@ -4963,30 +4988,30 @@ GLOBAL OPTIONS
 
        --cli-read-timeout (int)
 
-       The maximum socket read time in seconds. If the value is set to 0,  the
-       socket  read  will be blocking and not timeout. The default value is 60
+       The  maximum socket read time in seconds. If the value is set to 0, the
+       socket read will be blocking and not timeout. The default value  is  60
        seconds.
 
        --cli-connect-timeout (int)
 
-       The maximum socket connect time in seconds. If the value is set  to  0,
-       the  socket connect will be blocking and not timeout. The default value
+       The  maximum  socket connect time in seconds. If the value is set to 0,
+       the socket connect will be blocking and not timeout. The default  value
        is 60 seconds.
 
 EXAMPLES
        NOTE:
-          To use the following examples, you must have the AWS  CLI  installed
-          and  configured.  See  the Getting started guide in the AWS CLI User
+          To  use  the following examples, you must have the AWS CLI installed
+          and configured. See the Getting started guide in the  AWS  CLI  User
           Guide for more information.
 
-          Unless otherwise  stated,  all  examples  have  unix-like  quotation
-          rules.  These  examples  will  need to be adapted to your terminal's
+          Unless  otherwise  stated,  all  examples  have  unix-like quotation
+          rules. These examples will need to be  adapted  to  your  terminal's
           quoting rules. See Using quotation marks with strings in the AWS CLI
           User Guide .
 
        To create a job to transform data
 
-       The  following  create-job  example creates a streaming job that runs a
+       The following create-job example creates a streaming job  that  runs  a
        script stored in S3.
 
           aws glue create-job \
@@ -5060,7 +5085,7 @@ EXAMPLES
               "Name": "my-testing-job"
           }
 
-       For more information, see Authoring Jobs in AWS Glue in  the  AWS  Glue
+       For  more  information,  see Authoring Jobs in AWS Glue in the AWS Glue
        Developer Guide.
 
 OUTPUT
