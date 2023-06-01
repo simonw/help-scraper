@@ -6,18 +6,20 @@ NAME
        put-configuration-recorder -
 
 DESCRIPTION
-       Creates  a  new  configuration recorder to record the selected resource
-       configurations.
+       Creates  a  new  configuration recorder to record configuration changes
+       for specified resource types.
 
-       You can use this action to change the role roleARN  or  the  recording-
-       Group  of  an existing recorder. To change the role, call the action on
-       the existing configuration recorder and specify a role.
+       You can also use this action to change the roleARN  or  the  recording-
+       Group of an existing recorder. For more information, see ` Managing the
+       Configuration                                                  Recorder
+       https://docs.aws.amazon.com/config/latest/developerguide/stop-start-recorder.html`__
+       in the Config Developer Guide .
 
        NOTE:
-          Currently, you can specify only one configuration recorder  per  re-
-          gion in your account.
+          You can specify only one configuration recorder for each Amazon  Web
+          Services Region for each account.
 
-          If  ConfigurationRecorder does not have the recordingGroup parameter
+          If the configuration recorder does not have the recordingGroup field
           specified, the default is to record all supported resource types.
 
        See also: AWS API Documentation
@@ -45,22 +47,48 @@ SYNOPSIS
 
 OPTIONS
        --configuration-recorder (structure)
-          The configuration recorder object that  records  each  configuration
-          change made to the resources.
+          An object for the configuration  recorder  to  record  configuration
+          changes for specified resource types.
 
           name -> (string)
-              The  name  of the recorder. By default, Config automatically as-
-              signs  the  name  "default"  when  creating  the   configuration
-              recorder. You cannot change the assigned name.
+              The name of the configuration recorder. Config automatically as-
+              signs the name of  "default"  when  creating  the  configuration
+              recorder.
+
+              You  cannot  change the name of the configuration recorder after
+              it has been created. To change the configuration recorder  name,
+              you  must delete it and create a new configuration recorder with
+              a new name.
 
           roleARN -> (string)
-              Amazon  Resource Name (ARN) of the IAM role used to describe the
-              Amazon Web Services resources associated with the account.
+              Amazon Resource Name (ARN) of the IAM role assumed by Config and
+              used by the configuration recorder.
 
               NOTE:
-                 While the API model does not require this field,  the  server
-                 will  reject a request without a defined roleARN for the con-
+                 While  the  API model does not require this field, the server
+                 will reject a request without a defined roleARN for the  con-
                  figuration recorder.
+
+              NOTE:
+                     Pre-existing Config role
+
+                 If  you  have  used  an Amazon Web Services service that uses
+                 Config, such as Security Hub or Control Tower, and an  Config
+                 role  has  already  been created, make sure that the IAM role
+                 that you use when setting up Config keeps  the  same  minimum
+                 permissions  as  the already created Config role. You must do
+                 this so that the other Amazon Web Services service  continues
+                 to run as expected.
+
+                 For  example,  if  Control  Tower has an IAM role that allows
+                 Config to read Amazon Simple Storage Service (Amazon S3)  ob-
+                 jects, make sure that the same permissions are granted within
+                 the IAM role you use when setting up  Config.  Otherwise,  it
+                 may  interfere  with how Control Tower operates. For more in-
+                 formation about IAM roles for Config, see ` Identity and  Ac-
+                 cess             Management             for            Config
+                 https://docs.aws.amazon.com/config/latest/developerguide/security-iam.html`__
+                 in the Config Developer Guide .
 
        Shorthand Syntax:
 
@@ -74,79 +102,244 @@ OPTIONS
           }
 
        --recording-group (structure)
-          Specifies the types of Amazon Web Services resources for which  Con-
-          fig records configuration changes.
+          Specifies  which  resource  types  Config  records for configuration
+          changes.
+
+          NOTE:
+                 High Number of Config Evaluations
+
+              You may notice increased activity in your  account  during  your
+              initial  month recording with Config when compared to subsequent
+              months. During the initial bootstrapping  process,  Config  runs
+              evaluations  on  all the resources in your account that you have
+              selected for Config to record.
+
+              If you are running ephemeral workloads, you  may  see  increased
+              activity from Config as it records configuration changes associ-
+              ated with creating and deleting these  temporary  resources.  An
+              ephemeral  workload  is  a  temporary use of computing resources
+              that are loaded and run when  needed.  Examples  include  Amazon
+              Elastic  Compute  Cloud  (Amazon EC2) Spot Instances, Amazon EMR
+              jobs, and Auto Scaling. If you want to avoid the  increased  ac-
+              tivity from running ephemeral workloads, you can run these types
+              of workloads in a separate account with  Config  turned  off  to
+              avoid increased configuration recording and rule evaluations.
 
           allSupported -> (boolean)
-              Specifies whether Config records configuration changes for every
-              supported type of regional resource.
+              Specifies  whether  Config records configuration changes for all
+              supported regional resource types.
 
-              If you set this option to true , when Config adds support for  a
-              new  type of regional resource, it starts recording resources of
-              that type automatically.
+              If you set this field to true , when Config adds support  for  a
+              new type of regional resource, Config starts recording resources
+              of that type automatically.
 
-              If you set this option to true , you cannot enumerate a list  of
-              resourceTypes .
+              If you set this field to true , you  cannot  enumerate  specific
+              resource   types   to  record  in  the  resourceTypes  field  of
+              RecordingGroup , or to exclude in  the  resourceTypes  field  of
+              ExclusionByResourceTypes .
 
           includeGlobalResourceTypes -> (boolean)
-              Specifies  whether Config includes all supported types of global
-              resources (for example, IAM resources) with the  resources  that
-              it records.
+              Specifies  whether  Config records configuration changes for all
+              supported global resources.
 
-              Before  you  can set this option to true , you must set the all-
-              Supported option to true .
+              Before you set this field to true , set the  allSupported  field
+              of  RecordingGroup to true . Optionally, you can set the useOnly
+              field of RecordingStrategy to ALL_SUPPORTED_RESOURCE_TYPES .
 
-              If you set this option to true , when Config adds support for  a
-              new  type  of  global resource, it starts recording resources of
+              If you set this field to true , when Config adds support  for  a
+              new  type  of global resource in the Region where you set up the
+              configuration recorder, Config  starts  recording  resources  of
               that type automatically.
 
-              The configuration details for any global resource are  the  same
-              in  all  regions.  To prevent duplicate configuration items, you
-              should consider customizing Config in only one region to  record
-              global resources.
+              NOTE:
+                 If you set this field to false but list global resource types
+                 in the resourceTypes field of RecordingGroup  ,  Config  will
+                 still  record  configuration  changes for those specified re-
+                 source types regardless of if you  set  the  includeGlobalRe-
+                 sourceTypes field to false.
+
+                 If  you do not want to record configuration changes to global
+                 resource types, make sure to not list them in  the  resource-
+                 Types field in addition to setting the includeGlobalResource-
+                 Types field to false.
 
           resourceTypes -> (list)
-              A  comma-separated  list  that specifies the types of Amazon Web
-              Services  resources  for  which  Config  records   configuration
-              changes   (for   example,   AWS::EC2::Instance   or  AWS::Cloud-
-              Trail::Trail ).
+              A comma-separated list that specifies which resource types  Con-
+              fig records.
 
-              To record all configuration changes, you must  set  the  allSup-
-              ported option to true .
+              Optionally,  you  can set the useOnly field of RecordingStrategy
+              to INCLUSION_BY_RESOURCE_TYPES .
 
-              If you set the AllSupported option to false and populate the Re-
-              sourceTypes option with values, when Config adds support  for  a
-              new  type of resource, it will not record resources of that type
-              unless you manually add that type to your recording group.
+              To record all configuration changes, set the allSupported  field
+              of  RecordingGroup to true , and either omit this field or don't
+              specify any resource types in this field. If you set the allSup-
+              ported  field  to  false  and specify values for resourceTypes ,
+              when Config adds support for a new type of resource, it will not
+              record  resources of that type unless you manually add that type
+              to your recording group.
 
-              For a list of valid resourceTypes values, see  the  resourceType
-              Value column in Supported Amazon Web Services resource Types .
+              For a list of valid resourceTypes values, see the Resource  Type
+              Value  column in Supported Amazon Web Services resource Types in
+              the Config developer guide .
+
+              NOTE:
+                     Region Availability
+
+                 Before specifying a resource type for Config to track,  check
+                 Resource  Coverage  by  Region Availability to see if the re-
+                 source type is supported in the Amazon  Web  Services  Region
+                 where  you  set up Config. If a resource type is supported by
+                 Config in at least one Region, you can enable  the  recording
+                 of  that  resource  type  in all Regions supported by Config,
+                 even if the specified resource type is not supported  in  the
+                 Amazon Web Services Region where you set up Config.
 
               (string)
 
+          exclusionByResourceTypes -> (structure)
+              An object that specifies how Config excludes resource types from
+              being recorded by the configuration recorder.
+
+              To  use  this  option,  you  must  set  the  useOnly  field   of
+              RecordingStrategy to EXCLUSION_BY_RESOURCE_TYPES .
+
+              resourceTypes -> (list)
+                 A  comma-separated  list  of  resource  types to exclude from
+                 recording by the configuration recorder.
+
+                 (string)
+
+          recordingStrategy -> (structure)
+              An object that specifies the recording strategy for the configu-
+              ration recorder.
+
+              o If  you set the useOnly field of RecordingStrategy to ALL_SUP-
+                PORTED_RESOURCE_TYPES , Config records  configuration  changes
+                for  all  supported regional resource types. You also must set
+                the allSupported field of RecordingGroup to true . When Config
+                adds support for a new type of regional resource, Config auto-
+                matically starts recording resources of that type.
+
+              o If you set the useOnly field of  RecordingStrategy  to  INCLU-
+                SION_BY_RESOURCE_TYPES  , Config records configuration changes
+                for only the resource types you specify in  the  resourceTypes
+                field of RecordingGroup .
+
+              o If  you  set  the useOnly field of RecordingStrategy to EXCLU-
+                SION_BY_RESOURCE_TYPES , Config records configuration  changes
+                for  all  supported  resource  types except the resource types
+                that you specify as exemptions to exclude from being  recorded
+                in the resourceTypes field of ExclusionByResourceTypes .
+
+              NOTE:
+                 The recordingStrategy field is optional when you set the all-
+                 Supported field of RecordingGroup to true .
+
+                 The recordingStrategy field is optional  when  you  list  re-
+                 source types in the resourceTypes field of RecordingGroup .
+
+                 The  recordingStrategy field is required if you list resource
+                 types to exclude from recording in the resourceTypes field of
+                 ExclusionByResourceTypes .
+
+              NOTE:
+                 If  you  choose EXCLUSION_BY_RESOURCE_TYPES for the recording
+                 strategy, the exclusionByResourceTypes  field  will  override
+                 other properties in the request.
+
+                 For  example,  even  if you set includeGlobalResourceTypes to
+                 false, global resource  types  will  still  be  automatically
+                 recorded  in  this  option  unless  those  resource types are
+                 specifically listed as exemptions in the resourceTypes  field
+                 of exclusionByResourceTypes .
+
+                 By  default,  if  you  choose the EXCLUSION_BY_RESOURCE_TYPES
+                 recording strategy, when Config adds support for  a  new  re-
+                 source  type in the Region where you set up the configuration
+                 recorder, including  global  resource  types,  Config  starts
+                 recording resources of that type automatically.
+
+              useOnly -> (string)
+                 The recording strategy for the configuration recorder.
+
+                 o If  you  set  this option to ALL_SUPPORTED_RESOURCE_TYPES ,
+                   Config records configuration changes for all supported  re-
+                   gional  resource  types. You also must set the allSupported
+                   field of RecordingGroup to true . When Config adds  support
+                   for  a  new type of regional resource, Config automatically
+                   starts recording resources of that type. For a list of sup-
+                   ported  resource types, see Supported Resource Types in the
+                   Config developer guide .
+
+                 o If you set this  option  to  INCLUSION_BY_RESOURCE_TYPES  ,
+                   Config  records configuration changes for only the resource
+                   types that  you  specify  in  the  resourceTypes  field  of
+                   RecordingGroup .
+
+                 o If  you  set  this  option to EXCLUSION_BY_RESOURCE_TYPES ,
+                   Config records configuration changes for all supported  re-
+                   source types, except the resource types that you specify as
+                   exemptions to exclude from being recorded in the  resource-
+                   Types field of ExclusionByResourceTypes .
+
+                 NOTE:
+                     The  recordingStrategy field is optional when you set the
+                     allSupported field of RecordingGroup to true .
+
+                     The recordingStrategy field is optional when you list re-
+                     source types in the resourceTypes field of RecordingGroup
+                     .
+
+                     The recordingStrategy field is required if you  list  re-
+                     source  types  to exclude from recording in the resource-
+                     Types field of ExclusionByResourceTypes .
+
+                 NOTE:
+                     If you choose EXCLUSION_BY_RESOURCE_TYPES for the record-
+                     ing  strategy,  the  exclusionByResourceTypes  field will
+                     override other properties in the request.
+
+                     For example, even if you  set  includeGlobalResourceTypes
+                     to  false,  global resource types will still be automati-
+                     cally recorded in this option unless those resource types
+                     are  specifically  listed  as exemptions in the resource-
+                     Types field of exclusionByResourceTypes .
+
+                     By default, if you choose the EXCLUSION_BY_RESOURCE_TYPES
+                     recording  strategy,  when  Config adds support for a new
+                     resource type in the Region where you set up the configu-
+                     ration  recorder, including global resource types, Config
+                     starts recording resources of that type automatically.
+
        Shorthand Syntax:
 
-          allSupported=boolean,includeGlobalResourceTypes=boolean,resourceTypes=string,string
+          allSupported=boolean,includeGlobalResourceTypes=boolean,resourceTypes=string,string,exclusionByResourceTypes={resourceTypes=[string,string]},recordingStrategy={useOnly=string}
 
        JSON Syntax:
 
           {
             "allSupported": true|false,
             "includeGlobalResourceTypes": true|false,
-            "resourceTypes": ["AWS::EC2::CustomerGateway"|"AWS::EC2::EIP"|"AWS::EC2::Host"|"AWS::EC2::Instance"|"AWS::EC2::InternetGateway"|"AWS::EC2::NetworkAcl"|"AWS::EC2::NetworkInterface"|"AWS::EC2::RouteTable"|"AWS::EC2::SecurityGroup"|"AWS::EC2::Subnet"|"AWS::CloudTrail::Trail"|"AWS::EC2::Volume"|"AWS::EC2::VPC"|"AWS::EC2::VPNConnection"|"AWS::EC2::VPNGateway"|"AWS::EC2::RegisteredHAInstance"|"AWS::EC2::NatGateway"|"AWS::EC2::EgressOnlyInternetGateway"|"AWS::EC2::VPCEndpoint"|"AWS::EC2::VPCEndpointService"|"AWS::EC2::FlowLog"|"AWS::EC2::VPCPeeringConnection"|"AWS::Elasticsearch::Domain"|"AWS::IAM::Group"|"AWS::IAM::Policy"|"AWS::IAM::Role"|"AWS::IAM::User"|"AWS::ElasticLoadBalancingV2::LoadBalancer"|"AWS::ACM::Certificate"|"AWS::RDS::DBInstance"|"AWS::RDS::DBSubnetGroup"|"AWS::RDS::DBSecurityGroup"|"AWS::RDS::DBSnapshot"|"AWS::RDS::DBCluster"|"AWS::RDS::DBClusterSnapshot"|"AWS::RDS::EventSubscription"|"AWS::S3::Bucket"|"AWS::S3::AccountPublicAccessBlock"|"AWS::Redshift::Cluster"|"AWS::Redshift::ClusterSnapshot"|"AWS::Redshift::ClusterParameterGroup"|"AWS::Redshift::ClusterSecurityGroup"|"AWS::Redshift::ClusterSubnetGroup"|"AWS::Redshift::EventSubscription"|"AWS::SSM::ManagedInstanceInventory"|"AWS::CloudWatch::Alarm"|"AWS::CloudFormation::Stack"|"AWS::ElasticLoadBalancing::LoadBalancer"|"AWS::AutoScaling::AutoScalingGroup"|"AWS::AutoScaling::LaunchConfiguration"|"AWS::AutoScaling::ScalingPolicy"|"AWS::AutoScaling::ScheduledAction"|"AWS::DynamoDB::Table"|"AWS::CodeBuild::Project"|"AWS::WAF::RateBasedRule"|"AWS::WAF::Rule"|"AWS::WAF::RuleGroup"|"AWS::WAF::WebACL"|"AWS::WAFRegional::RateBasedRule"|"AWS::WAFRegional::Rule"|"AWS::WAFRegional::RuleGroup"|"AWS::WAFRegional::WebACL"|"AWS::CloudFront::Distribution"|"AWS::CloudFront::StreamingDistribution"|"AWS::Lambda::Function"|"AWS::NetworkFirewall::Firewall"|"AWS::NetworkFirewall::FirewallPolicy"|"AWS::NetworkFirewall::RuleGroup"|"AWS::ElasticBeanstalk::Application"|"AWS::ElasticBeanstalk::ApplicationVersion"|"AWS::ElasticBeanstalk::Environment"|"AWS::WAFv2::WebACL"|"AWS::WAFv2::RuleGroup"|"AWS::WAFv2::IPSet"|"AWS::WAFv2::RegexPatternSet"|"AWS::WAFv2::ManagedRuleSet"|"AWS::XRay::EncryptionConfig"|"AWS::SSM::AssociationCompliance"|"AWS::SSM::PatchCompliance"|"AWS::Shield::Protection"|"AWS::ShieldRegional::Protection"|"AWS::Config::ConformancePackCompliance"|"AWS::Config::ResourceCompliance"|"AWS::ApiGateway::Stage"|"AWS::ApiGateway::RestApi"|"AWS::ApiGatewayV2::Stage"|"AWS::ApiGatewayV2::Api"|"AWS::CodePipeline::Pipeline"|"AWS::ServiceCatalog::CloudFormationProvisionedProduct"|"AWS::ServiceCatalog::CloudFormationProduct"|"AWS::ServiceCatalog::Portfolio"|"AWS::SQS::Queue"|"AWS::KMS::Key"|"AWS::QLDB::Ledger"|"AWS::SecretsManager::Secret"|"AWS::SNS::Topic"|"AWS::SSM::FileData"|"AWS::Backup::BackupPlan"|"AWS::Backup::BackupSelection"|"AWS::Backup::BackupVault"|"AWS::Backup::RecoveryPoint"|"AWS::ECR::Repository"|"AWS::ECS::Cluster"|"AWS::ECS::Service"|"AWS::ECS::TaskDefinition"|"AWS::EFS::AccessPoint"|"AWS::EFS::FileSystem"|"AWS::EKS::Cluster"|"AWS::OpenSearch::Domain"|"AWS::EC2::TransitGateway"|"AWS::Kinesis::Stream"|"AWS::Kinesis::StreamConsumer"|"AWS::CodeDeploy::Application"|"AWS::CodeDeploy::DeploymentConfig"|"AWS::CodeDeploy::DeploymentGroup"|"AWS::EC2::LaunchTemplate"|"AWS::ECR::PublicRepository"|"AWS::GuardDuty::Detector"|"AWS::EMR::SecurityConfiguration"|"AWS::SageMaker::CodeRepository"|"AWS::Route53Resolver::ResolverEndpoint"|"AWS::Route53Resolver::ResolverRule"|"AWS::Route53Resolver::ResolverRuleAssociation"|"AWS::DMS::ReplicationSubnetGroup"|"AWS::DMS::EventSubscription"|"AWS::MSK::Cluster"|"AWS::StepFunctions::Activity"|"AWS::WorkSpaces::Workspace"|"AWS::WorkSpaces::ConnectionAlias"|"AWS::SageMaker::Model"|"AWS::ElasticLoadBalancingV2::Listener"|"AWS::StepFunctions::StateMachine"|"AWS::Batch::JobQueue"|"AWS::Batch::ComputeEnvironment"|"AWS::AccessAnalyzer::Analyzer"|"AWS::Athena::WorkGroup"|"AWS::Athena::DataCatalog"|"AWS::Detective::Graph"|"AWS::GlobalAccelerator::Accelerator"|"AWS::GlobalAccelerator::EndpointGroup"|"AWS::GlobalAccelerator::Listener"|"AWS::EC2::TransitGatewayAttachment"|"AWS::EC2::TransitGatewayRouteTable"|"AWS::DMS::Certificate"|"AWS::AppConfig::Application"|"AWS::AppSync::GraphQLApi"|"AWS::DataSync::LocationSMB"|"AWS::DataSync::LocationFSxLustre"|"AWS::DataSync::LocationS3"|"AWS::DataSync::LocationEFS"|"AWS::DataSync::Task"|"AWS::DataSync::LocationNFS"|"AWS::EC2::NetworkInsightsAccessScopeAnalysis"|"AWS::EKS::FargateProfile"|"AWS::Glue::Job"|"AWS::GuardDuty::ThreatIntelSet"|"AWS::GuardDuty::IPSet"|"AWS::SageMaker::Workteam"|"AWS::SageMaker::NotebookInstanceLifecycleConfig"|"AWS::ServiceDiscovery::Service"|"AWS::ServiceDiscovery::PublicDnsNamespace"|"AWS::SES::ContactList"|"AWS::SES::ConfigurationSet"|"AWS::Route53::HostedZone"|"AWS::IoTEvents::Input"|"AWS::IoTEvents::DetectorModel"|"AWS::IoTEvents::AlarmModel"|"AWS::ServiceDiscovery::HttpNamespace"|"AWS::Events::EventBus"|"AWS::ImageBuilder::ContainerRecipe"|"AWS::ImageBuilder::DistributionConfiguration"|"AWS::ImageBuilder::InfrastructureConfiguration"|"AWS::DataSync::LocationObjectStorage"|"AWS::DataSync::LocationHDFS"|"AWS::Glue::Classifier"|"AWS::Route53RecoveryReadiness::Cell"|"AWS::Route53RecoveryReadiness::ReadinessCheck"|"AWS::ECR::RegistryPolicy"|"AWS::Backup::ReportPlan"|"AWS::Lightsail::Certificate"|"AWS::RUM::AppMonitor"|"AWS::Events::Endpoint"|"AWS::SES::ReceiptRuleSet"|"AWS::Events::Archive"|"AWS::Events::ApiDestination"|"AWS::Lightsail::Disk"|"AWS::FIS::ExperimentTemplate"|"AWS::DataSync::LocationFSxWindows"|"AWS::SES::ReceiptFilter"|"AWS::GuardDuty::Filter"|"AWS::SES::Template"|"AWS::AmazonMQ::Broker"|"AWS::AppConfig::Environment"|"AWS::AppConfig::ConfigurationProfile"|"AWS::Cloud9::EnvironmentEC2"|"AWS::EventSchemas::Registry"|"AWS::EventSchemas::RegistryPolicy"|"AWS::EventSchemas::Discoverer"|"AWS::FraudDetector::Label"|"AWS::FraudDetector::EntityType"|"AWS::FraudDetector::Variable"|"AWS::FraudDetector::Outcome"|"AWS::IoT::Authorizer"|"AWS::IoT::SecurityProfile"|"AWS::IoT::RoleAlias"|"AWS::IoT::Dimension"|"AWS::IoTAnalytics::Datastore"|"AWS::Lightsail::Bucket"|"AWS::Lightsail::StaticIp"|"AWS::MediaPackage::PackagingGroup"|"AWS::Route53RecoveryReadiness::RecoveryGroup"|"AWS::ResilienceHub::ResiliencyPolicy"|"AWS::Transfer::Workflow"|"AWS::EKS::IdentityProviderConfig"|"AWS::EKS::Addon"|"AWS::Glue::MLTransform"|"AWS::IoT::Policy"|"AWS::IoT::MitigationAction"|"AWS::IoTTwinMaker::Workspace"|"AWS::IoTTwinMaker::Entity"|"AWS::IoTAnalytics::Dataset"|"AWS::IoTAnalytics::Pipeline"|"AWS::IoTAnalytics::Channel"|"AWS::IoTSiteWise::Dashboard"|"AWS::IoTSiteWise::Project"|"AWS::IoTSiteWise::Portal"|"AWS::IoTSiteWise::AssetModel"|"AWS::IVS::Channel"|"AWS::IVS::RecordingConfiguration"|"AWS::IVS::PlaybackKeyPair"|"AWS::KinesisAnalyticsV2::Application"|"AWS::RDS::GlobalCluster"|"AWS::S3::MultiRegionAccessPoint"|"AWS::DeviceFarm::TestGridProject"|"AWS::Budgets::BudgetsAction"|"AWS::Lex::Bot"|"AWS::CodeGuruReviewer::RepositoryAssociation"|"AWS::IoT::CustomMetric"|"AWS::Route53Resolver::FirewallDomainList"|"AWS::RoboMaker::RobotApplicationVersion"|"AWS::EC2::TrafficMirrorSession"|"AWS::IoTSiteWise::Gateway"|"AWS::Lex::BotAlias"|"AWS::LookoutMetrics::Alert"|"AWS::IoT::AccountAuditConfiguration"|"AWS::EC2::TrafficMirrorTarget"|"AWS::S3::StorageLens"|"AWS::IoT::ScheduledAudit"|"AWS::Events::Connection"|"AWS::EventSchemas::Schema"|"AWS::MediaPackage::PackagingConfiguration"|"AWS::KinesisVideo::SignalingChannel"|"AWS::AppStream::DirectoryConfig"|"AWS::LookoutVision::Project"|"AWS::Route53RecoveryControl::Cluster"|"AWS::Route53RecoveryControl::SafetyRule"|"AWS::Route53RecoveryControl::ControlPanel"|"AWS::Route53RecoveryControl::RoutingControl"|"AWS::Route53RecoveryReadiness::ResourceSet"|"AWS::RoboMaker::SimulationApplication"|"AWS::RoboMaker::RobotApplication"|"AWS::HealthLake::FHIRDatastore"|"AWS::Pinpoint::Segment"|"AWS::Pinpoint::ApplicationSettings"|"AWS::Events::Rule"|"AWS::EC2::DHCPOptions"|"AWS::EC2::NetworkInsightsPath"|"AWS::EC2::TrafficMirrorFilter"|"AWS::EC2::IPAM"|"AWS::IoTTwinMaker::Scene"|"AWS::NetworkManager::TransitGatewayRegistration"|"AWS::CustomerProfiles::Domain"|"AWS::AutoScaling::WarmPool"|"AWS::Connect::PhoneNumber"|"AWS::AppConfig::DeploymentStrategy"|"AWS::AppFlow::Flow"|"AWS::AuditManager::Assessment"|"AWS::CloudWatch::MetricStream"|"AWS::DeviceFarm::InstanceProfile"|"AWS::DeviceFarm::Project"|"AWS::EC2::EC2Fleet"|"AWS::EC2::SubnetRouteTableAssociation"|"AWS::ECR::PullThroughCacheRule"|"AWS::GroundStation::Config"|"AWS::ImageBuilder::ImagePipeline"|"AWS::IoT::FleetMetric"|"AWS::IoTWireless::ServiceProfile"|"AWS::NetworkManager::Device"|"AWS::NetworkManager::GlobalNetwork"|"AWS::NetworkManager::Link"|"AWS::NetworkManager::Site"|"AWS::Panorama::Package"|"AWS::Pinpoint::App"|"AWS::Redshift::ScheduledAction"|"AWS::Route53Resolver::FirewallRuleGroupAssociation"|"AWS::SageMaker::AppImageConfig"|"AWS::SageMaker::Image", ...]
+            "resourceTypes": ["AWS::EC2::CustomerGateway"|"AWS::EC2::EIP"|"AWS::EC2::Host"|"AWS::EC2::Instance"|"AWS::EC2::InternetGateway"|"AWS::EC2::NetworkAcl"|"AWS::EC2::NetworkInterface"|"AWS::EC2::RouteTable"|"AWS::EC2::SecurityGroup"|"AWS::EC2::Subnet"|"AWS::CloudTrail::Trail"|"AWS::EC2::Volume"|"AWS::EC2::VPC"|"AWS::EC2::VPNConnection"|"AWS::EC2::VPNGateway"|"AWS::EC2::RegisteredHAInstance"|"AWS::EC2::NatGateway"|"AWS::EC2::EgressOnlyInternetGateway"|"AWS::EC2::VPCEndpoint"|"AWS::EC2::VPCEndpointService"|"AWS::EC2::FlowLog"|"AWS::EC2::VPCPeeringConnection"|"AWS::Elasticsearch::Domain"|"AWS::IAM::Group"|"AWS::IAM::Policy"|"AWS::IAM::Role"|"AWS::IAM::User"|"AWS::ElasticLoadBalancingV2::LoadBalancer"|"AWS::ACM::Certificate"|"AWS::RDS::DBInstance"|"AWS::RDS::DBSubnetGroup"|"AWS::RDS::DBSecurityGroup"|"AWS::RDS::DBSnapshot"|"AWS::RDS::DBCluster"|"AWS::RDS::DBClusterSnapshot"|"AWS::RDS::EventSubscription"|"AWS::S3::Bucket"|"AWS::S3::AccountPublicAccessBlock"|"AWS::Redshift::Cluster"|"AWS::Redshift::ClusterSnapshot"|"AWS::Redshift::ClusterParameterGroup"|"AWS::Redshift::ClusterSecurityGroup"|"AWS::Redshift::ClusterSubnetGroup"|"AWS::Redshift::EventSubscription"|"AWS::SSM::ManagedInstanceInventory"|"AWS::CloudWatch::Alarm"|"AWS::CloudFormation::Stack"|"AWS::ElasticLoadBalancing::LoadBalancer"|"AWS::AutoScaling::AutoScalingGroup"|"AWS::AutoScaling::LaunchConfiguration"|"AWS::AutoScaling::ScalingPolicy"|"AWS::AutoScaling::ScheduledAction"|"AWS::DynamoDB::Table"|"AWS::CodeBuild::Project"|"AWS::WAF::RateBasedRule"|"AWS::WAF::Rule"|"AWS::WAF::RuleGroup"|"AWS::WAF::WebACL"|"AWS::WAFRegional::RateBasedRule"|"AWS::WAFRegional::Rule"|"AWS::WAFRegional::RuleGroup"|"AWS::WAFRegional::WebACL"|"AWS::CloudFront::Distribution"|"AWS::CloudFront::StreamingDistribution"|"AWS::Lambda::Function"|"AWS::NetworkFirewall::Firewall"|"AWS::NetworkFirewall::FirewallPolicy"|"AWS::NetworkFirewall::RuleGroup"|"AWS::ElasticBeanstalk::Application"|"AWS::ElasticBeanstalk::ApplicationVersion"|"AWS::ElasticBeanstalk::Environment"|"AWS::WAFv2::WebACL"|"AWS::WAFv2::RuleGroup"|"AWS::WAFv2::IPSet"|"AWS::WAFv2::RegexPatternSet"|"AWS::WAFv2::ManagedRuleSet"|"AWS::XRay::EncryptionConfig"|"AWS::SSM::AssociationCompliance"|"AWS::SSM::PatchCompliance"|"AWS::Shield::Protection"|"AWS::ShieldRegional::Protection"|"AWS::Config::ConformancePackCompliance"|"AWS::Config::ResourceCompliance"|"AWS::ApiGateway::Stage"|"AWS::ApiGateway::RestApi"|"AWS::ApiGatewayV2::Stage"|"AWS::ApiGatewayV2::Api"|"AWS::CodePipeline::Pipeline"|"AWS::ServiceCatalog::CloudFormationProvisionedProduct"|"AWS::ServiceCatalog::CloudFormationProduct"|"AWS::ServiceCatalog::Portfolio"|"AWS::SQS::Queue"|"AWS::KMS::Key"|"AWS::QLDB::Ledger"|"AWS::SecretsManager::Secret"|"AWS::SNS::Topic"|"AWS::SSM::FileData"|"AWS::Backup::BackupPlan"|"AWS::Backup::BackupSelection"|"AWS::Backup::BackupVault"|"AWS::Backup::RecoveryPoint"|"AWS::ECR::Repository"|"AWS::ECS::Cluster"|"AWS::ECS::Service"|"AWS::ECS::TaskDefinition"|"AWS::EFS::AccessPoint"|"AWS::EFS::FileSystem"|"AWS::EKS::Cluster"|"AWS::OpenSearch::Domain"|"AWS::EC2::TransitGateway"|"AWS::Kinesis::Stream"|"AWS::Kinesis::StreamConsumer"|"AWS::CodeDeploy::Application"|"AWS::CodeDeploy::DeploymentConfig"|"AWS::CodeDeploy::DeploymentGroup"|"AWS::EC2::LaunchTemplate"|"AWS::ECR::PublicRepository"|"AWS::GuardDuty::Detector"|"AWS::EMR::SecurityConfiguration"|"AWS::SageMaker::CodeRepository"|"AWS::Route53Resolver::ResolverEndpoint"|"AWS::Route53Resolver::ResolverRule"|"AWS::Route53Resolver::ResolverRuleAssociation"|"AWS::DMS::ReplicationSubnetGroup"|"AWS::DMS::EventSubscription"|"AWS::MSK::Cluster"|"AWS::StepFunctions::Activity"|"AWS::WorkSpaces::Workspace"|"AWS::WorkSpaces::ConnectionAlias"|"AWS::SageMaker::Model"|"AWS::ElasticLoadBalancingV2::Listener"|"AWS::StepFunctions::StateMachine"|"AWS::Batch::JobQueue"|"AWS::Batch::ComputeEnvironment"|"AWS::AccessAnalyzer::Analyzer"|"AWS::Athena::WorkGroup"|"AWS::Athena::DataCatalog"|"AWS::Detective::Graph"|"AWS::GlobalAccelerator::Accelerator"|"AWS::GlobalAccelerator::EndpointGroup"|"AWS::GlobalAccelerator::Listener"|"AWS::EC2::TransitGatewayAttachment"|"AWS::EC2::TransitGatewayRouteTable"|"AWS::DMS::Certificate"|"AWS::AppConfig::Application"|"AWS::AppSync::GraphQLApi"|"AWS::DataSync::LocationSMB"|"AWS::DataSync::LocationFSxLustre"|"AWS::DataSync::LocationS3"|"AWS::DataSync::LocationEFS"|"AWS::DataSync::Task"|"AWS::DataSync::LocationNFS"|"AWS::EC2::NetworkInsightsAccessScopeAnalysis"|"AWS::EKS::FargateProfile"|"AWS::Glue::Job"|"AWS::GuardDuty::ThreatIntelSet"|"AWS::GuardDuty::IPSet"|"AWS::SageMaker::Workteam"|"AWS::SageMaker::NotebookInstanceLifecycleConfig"|"AWS::ServiceDiscovery::Service"|"AWS::ServiceDiscovery::PublicDnsNamespace"|"AWS::SES::ContactList"|"AWS::SES::ConfigurationSet"|"AWS::Route53::HostedZone"|"AWS::IoTEvents::Input"|"AWS::IoTEvents::DetectorModel"|"AWS::IoTEvents::AlarmModel"|"AWS::ServiceDiscovery::HttpNamespace"|"AWS::Events::EventBus"|"AWS::ImageBuilder::ContainerRecipe"|"AWS::ImageBuilder::DistributionConfiguration"|"AWS::ImageBuilder::InfrastructureConfiguration"|"AWS::DataSync::LocationObjectStorage"|"AWS::DataSync::LocationHDFS"|"AWS::Glue::Classifier"|"AWS::Route53RecoveryReadiness::Cell"|"AWS::Route53RecoveryReadiness::ReadinessCheck"|"AWS::ECR::RegistryPolicy"|"AWS::Backup::ReportPlan"|"AWS::Lightsail::Certificate"|"AWS::RUM::AppMonitor"|"AWS::Events::Endpoint"|"AWS::SES::ReceiptRuleSet"|"AWS::Events::Archive"|"AWS::Events::ApiDestination"|"AWS::Lightsail::Disk"|"AWS::FIS::ExperimentTemplate"|"AWS::DataSync::LocationFSxWindows"|"AWS::SES::ReceiptFilter"|"AWS::GuardDuty::Filter"|"AWS::SES::Template"|"AWS::AmazonMQ::Broker"|"AWS::AppConfig::Environment"|"AWS::AppConfig::ConfigurationProfile"|"AWS::Cloud9::EnvironmentEC2"|"AWS::EventSchemas::Registry"|"AWS::EventSchemas::RegistryPolicy"|"AWS::EventSchemas::Discoverer"|"AWS::FraudDetector::Label"|"AWS::FraudDetector::EntityType"|"AWS::FraudDetector::Variable"|"AWS::FraudDetector::Outcome"|"AWS::IoT::Authorizer"|"AWS::IoT::SecurityProfile"|"AWS::IoT::RoleAlias"|"AWS::IoT::Dimension"|"AWS::IoTAnalytics::Datastore"|"AWS::Lightsail::Bucket"|"AWS::Lightsail::StaticIp"|"AWS::MediaPackage::PackagingGroup"|"AWS::Route53RecoveryReadiness::RecoveryGroup"|"AWS::ResilienceHub::ResiliencyPolicy"|"AWS::Transfer::Workflow"|"AWS::EKS::IdentityProviderConfig"|"AWS::EKS::Addon"|"AWS::Glue::MLTransform"|"AWS::IoT::Policy"|"AWS::IoT::MitigationAction"|"AWS::IoTTwinMaker::Workspace"|"AWS::IoTTwinMaker::Entity"|"AWS::IoTAnalytics::Dataset"|"AWS::IoTAnalytics::Pipeline"|"AWS::IoTAnalytics::Channel"|"AWS::IoTSiteWise::Dashboard"|"AWS::IoTSiteWise::Project"|"AWS::IoTSiteWise::Portal"|"AWS::IoTSiteWise::AssetModel"|"AWS::IVS::Channel"|"AWS::IVS::RecordingConfiguration"|"AWS::IVS::PlaybackKeyPair"|"AWS::KinesisAnalyticsV2::Application"|"AWS::RDS::GlobalCluster"|"AWS::S3::MultiRegionAccessPoint"|"AWS::DeviceFarm::TestGridProject"|"AWS::Budgets::BudgetsAction"|"AWS::Lex::Bot"|"AWS::CodeGuruReviewer::RepositoryAssociation"|"AWS::IoT::CustomMetric"|"AWS::Route53Resolver::FirewallDomainList"|"AWS::RoboMaker::RobotApplicationVersion"|"AWS::EC2::TrafficMirrorSession"|"AWS::IoTSiteWise::Gateway"|"AWS::Lex::BotAlias"|"AWS::LookoutMetrics::Alert"|"AWS::IoT::AccountAuditConfiguration"|"AWS::EC2::TrafficMirrorTarget"|"AWS::S3::StorageLens"|"AWS::IoT::ScheduledAudit"|"AWS::Events::Connection"|"AWS::EventSchemas::Schema"|"AWS::MediaPackage::PackagingConfiguration"|"AWS::KinesisVideo::SignalingChannel"|"AWS::AppStream::DirectoryConfig"|"AWS::LookoutVision::Project"|"AWS::Route53RecoveryControl::Cluster"|"AWS::Route53RecoveryControl::SafetyRule"|"AWS::Route53RecoveryControl::ControlPanel"|"AWS::Route53RecoveryControl::RoutingControl"|"AWS::Route53RecoveryReadiness::ResourceSet"|"AWS::RoboMaker::SimulationApplication"|"AWS::RoboMaker::RobotApplication"|"AWS::HealthLake::FHIRDatastore"|"AWS::Pinpoint::Segment"|"AWS::Pinpoint::ApplicationSettings"|"AWS::Events::Rule"|"AWS::EC2::DHCPOptions"|"AWS::EC2::NetworkInsightsPath"|"AWS::EC2::TrafficMirrorFilter"|"AWS::EC2::IPAM"|"AWS::IoTTwinMaker::Scene"|"AWS::NetworkManager::TransitGatewayRegistration"|"AWS::CustomerProfiles::Domain"|"AWS::AutoScaling::WarmPool"|"AWS::Connect::PhoneNumber"|"AWS::AppConfig::DeploymentStrategy"|"AWS::AppFlow::Flow"|"AWS::AuditManager::Assessment"|"AWS::CloudWatch::MetricStream"|"AWS::DeviceFarm::InstanceProfile"|"AWS::DeviceFarm::Project"|"AWS::EC2::EC2Fleet"|"AWS::EC2::SubnetRouteTableAssociation"|"AWS::ECR::PullThroughCacheRule"|"AWS::GroundStation::Config"|"AWS::ImageBuilder::ImagePipeline"|"AWS::IoT::FleetMetric"|"AWS::IoTWireless::ServiceProfile"|"AWS::NetworkManager::Device"|"AWS::NetworkManager::GlobalNetwork"|"AWS::NetworkManager::Link"|"AWS::NetworkManager::Site"|"AWS::Panorama::Package"|"AWS::Pinpoint::App"|"AWS::Redshift::ScheduledAction"|"AWS::Route53Resolver::FirewallRuleGroupAssociation"|"AWS::SageMaker::AppImageConfig"|"AWS::SageMaker::Image", ...],
+            "exclusionByResourceTypes": {
+              "resourceTypes": ["AWS::EC2::CustomerGateway"|"AWS::EC2::EIP"|"AWS::EC2::Host"|"AWS::EC2::Instance"|"AWS::EC2::InternetGateway"|"AWS::EC2::NetworkAcl"|"AWS::EC2::NetworkInterface"|"AWS::EC2::RouteTable"|"AWS::EC2::SecurityGroup"|"AWS::EC2::Subnet"|"AWS::CloudTrail::Trail"|"AWS::EC2::Volume"|"AWS::EC2::VPC"|"AWS::EC2::VPNConnection"|"AWS::EC2::VPNGateway"|"AWS::EC2::RegisteredHAInstance"|"AWS::EC2::NatGateway"|"AWS::EC2::EgressOnlyInternetGateway"|"AWS::EC2::VPCEndpoint"|"AWS::EC2::VPCEndpointService"|"AWS::EC2::FlowLog"|"AWS::EC2::VPCPeeringConnection"|"AWS::Elasticsearch::Domain"|"AWS::IAM::Group"|"AWS::IAM::Policy"|"AWS::IAM::Role"|"AWS::IAM::User"|"AWS::ElasticLoadBalancingV2::LoadBalancer"|"AWS::ACM::Certificate"|"AWS::RDS::DBInstance"|"AWS::RDS::DBSubnetGroup"|"AWS::RDS::DBSecurityGroup"|"AWS::RDS::DBSnapshot"|"AWS::RDS::DBCluster"|"AWS::RDS::DBClusterSnapshot"|"AWS::RDS::EventSubscription"|"AWS::S3::Bucket"|"AWS::S3::AccountPublicAccessBlock"|"AWS::Redshift::Cluster"|"AWS::Redshift::ClusterSnapshot"|"AWS::Redshift::ClusterParameterGroup"|"AWS::Redshift::ClusterSecurityGroup"|"AWS::Redshift::ClusterSubnetGroup"|"AWS::Redshift::EventSubscription"|"AWS::SSM::ManagedInstanceInventory"|"AWS::CloudWatch::Alarm"|"AWS::CloudFormation::Stack"|"AWS::ElasticLoadBalancing::LoadBalancer"|"AWS::AutoScaling::AutoScalingGroup"|"AWS::AutoScaling::LaunchConfiguration"|"AWS::AutoScaling::ScalingPolicy"|"AWS::AutoScaling::ScheduledAction"|"AWS::DynamoDB::Table"|"AWS::CodeBuild::Project"|"AWS::WAF::RateBasedRule"|"AWS::WAF::Rule"|"AWS::WAF::RuleGroup"|"AWS::WAF::WebACL"|"AWS::WAFRegional::RateBasedRule"|"AWS::WAFRegional::Rule"|"AWS::WAFRegional::RuleGroup"|"AWS::WAFRegional::WebACL"|"AWS::CloudFront::Distribution"|"AWS::CloudFront::StreamingDistribution"|"AWS::Lambda::Function"|"AWS::NetworkFirewall::Firewall"|"AWS::NetworkFirewall::FirewallPolicy"|"AWS::NetworkFirewall::RuleGroup"|"AWS::ElasticBeanstalk::Application"|"AWS::ElasticBeanstalk::ApplicationVersion"|"AWS::ElasticBeanstalk::Environment"|"AWS::WAFv2::WebACL"|"AWS::WAFv2::RuleGroup"|"AWS::WAFv2::IPSet"|"AWS::WAFv2::RegexPatternSet"|"AWS::WAFv2::ManagedRuleSet"|"AWS::XRay::EncryptionConfig"|"AWS::SSM::AssociationCompliance"|"AWS::SSM::PatchCompliance"|"AWS::Shield::Protection"|"AWS::ShieldRegional::Protection"|"AWS::Config::ConformancePackCompliance"|"AWS::Config::ResourceCompliance"|"AWS::ApiGateway::Stage"|"AWS::ApiGateway::RestApi"|"AWS::ApiGatewayV2::Stage"|"AWS::ApiGatewayV2::Api"|"AWS::CodePipeline::Pipeline"|"AWS::ServiceCatalog::CloudFormationProvisionedProduct"|"AWS::ServiceCatalog::CloudFormationProduct"|"AWS::ServiceCatalog::Portfolio"|"AWS::SQS::Queue"|"AWS::KMS::Key"|"AWS::QLDB::Ledger"|"AWS::SecretsManager::Secret"|"AWS::SNS::Topic"|"AWS::SSM::FileData"|"AWS::Backup::BackupPlan"|"AWS::Backup::BackupSelection"|"AWS::Backup::BackupVault"|"AWS::Backup::RecoveryPoint"|"AWS::ECR::Repository"|"AWS::ECS::Cluster"|"AWS::ECS::Service"|"AWS::ECS::TaskDefinition"|"AWS::EFS::AccessPoint"|"AWS::EFS::FileSystem"|"AWS::EKS::Cluster"|"AWS::OpenSearch::Domain"|"AWS::EC2::TransitGateway"|"AWS::Kinesis::Stream"|"AWS::Kinesis::StreamConsumer"|"AWS::CodeDeploy::Application"|"AWS::CodeDeploy::DeploymentConfig"|"AWS::CodeDeploy::DeploymentGroup"|"AWS::EC2::LaunchTemplate"|"AWS::ECR::PublicRepository"|"AWS::GuardDuty::Detector"|"AWS::EMR::SecurityConfiguration"|"AWS::SageMaker::CodeRepository"|"AWS::Route53Resolver::ResolverEndpoint"|"AWS::Route53Resolver::ResolverRule"|"AWS::Route53Resolver::ResolverRuleAssociation"|"AWS::DMS::ReplicationSubnetGroup"|"AWS::DMS::EventSubscription"|"AWS::MSK::Cluster"|"AWS::StepFunctions::Activity"|"AWS::WorkSpaces::Workspace"|"AWS::WorkSpaces::ConnectionAlias"|"AWS::SageMaker::Model"|"AWS::ElasticLoadBalancingV2::Listener"|"AWS::StepFunctions::StateMachine"|"AWS::Batch::JobQueue"|"AWS::Batch::ComputeEnvironment"|"AWS::AccessAnalyzer::Analyzer"|"AWS::Athena::WorkGroup"|"AWS::Athena::DataCatalog"|"AWS::Detective::Graph"|"AWS::GlobalAccelerator::Accelerator"|"AWS::GlobalAccelerator::EndpointGroup"|"AWS::GlobalAccelerator::Listener"|"AWS::EC2::TransitGatewayAttachment"|"AWS::EC2::TransitGatewayRouteTable"|"AWS::DMS::Certificate"|"AWS::AppConfig::Application"|"AWS::AppSync::GraphQLApi"|"AWS::DataSync::LocationSMB"|"AWS::DataSync::LocationFSxLustre"|"AWS::DataSync::LocationS3"|"AWS::DataSync::LocationEFS"|"AWS::DataSync::Task"|"AWS::DataSync::LocationNFS"|"AWS::EC2::NetworkInsightsAccessScopeAnalysis"|"AWS::EKS::FargateProfile"|"AWS::Glue::Job"|"AWS::GuardDuty::ThreatIntelSet"|"AWS::GuardDuty::IPSet"|"AWS::SageMaker::Workteam"|"AWS::SageMaker::NotebookInstanceLifecycleConfig"|"AWS::ServiceDiscovery::Service"|"AWS::ServiceDiscovery::PublicDnsNamespace"|"AWS::SES::ContactList"|"AWS::SES::ConfigurationSet"|"AWS::Route53::HostedZone"|"AWS::IoTEvents::Input"|"AWS::IoTEvents::DetectorModel"|"AWS::IoTEvents::AlarmModel"|"AWS::ServiceDiscovery::HttpNamespace"|"AWS::Events::EventBus"|"AWS::ImageBuilder::ContainerRecipe"|"AWS::ImageBuilder::DistributionConfiguration"|"AWS::ImageBuilder::InfrastructureConfiguration"|"AWS::DataSync::LocationObjectStorage"|"AWS::DataSync::LocationHDFS"|"AWS::Glue::Classifier"|"AWS::Route53RecoveryReadiness::Cell"|"AWS::Route53RecoveryReadiness::ReadinessCheck"|"AWS::ECR::RegistryPolicy"|"AWS::Backup::ReportPlan"|"AWS::Lightsail::Certificate"|"AWS::RUM::AppMonitor"|"AWS::Events::Endpoint"|"AWS::SES::ReceiptRuleSet"|"AWS::Events::Archive"|"AWS::Events::ApiDestination"|"AWS::Lightsail::Disk"|"AWS::FIS::ExperimentTemplate"|"AWS::DataSync::LocationFSxWindows"|"AWS::SES::ReceiptFilter"|"AWS::GuardDuty::Filter"|"AWS::SES::Template"|"AWS::AmazonMQ::Broker"|"AWS::AppConfig::Environment"|"AWS::AppConfig::ConfigurationProfile"|"AWS::Cloud9::EnvironmentEC2"|"AWS::EventSchemas::Registry"|"AWS::EventSchemas::RegistryPolicy"|"AWS::EventSchemas::Discoverer"|"AWS::FraudDetector::Label"|"AWS::FraudDetector::EntityType"|"AWS::FraudDetector::Variable"|"AWS::FraudDetector::Outcome"|"AWS::IoT::Authorizer"|"AWS::IoT::SecurityProfile"|"AWS::IoT::RoleAlias"|"AWS::IoT::Dimension"|"AWS::IoTAnalytics::Datastore"|"AWS::Lightsail::Bucket"|"AWS::Lightsail::StaticIp"|"AWS::MediaPackage::PackagingGroup"|"AWS::Route53RecoveryReadiness::RecoveryGroup"|"AWS::ResilienceHub::ResiliencyPolicy"|"AWS::Transfer::Workflow"|"AWS::EKS::IdentityProviderConfig"|"AWS::EKS::Addon"|"AWS::Glue::MLTransform"|"AWS::IoT::Policy"|"AWS::IoT::MitigationAction"|"AWS::IoTTwinMaker::Workspace"|"AWS::IoTTwinMaker::Entity"|"AWS::IoTAnalytics::Dataset"|"AWS::IoTAnalytics::Pipeline"|"AWS::IoTAnalytics::Channel"|"AWS::IoTSiteWise::Dashboard"|"AWS::IoTSiteWise::Project"|"AWS::IoTSiteWise::Portal"|"AWS::IoTSiteWise::AssetModel"|"AWS::IVS::Channel"|"AWS::IVS::RecordingConfiguration"|"AWS::IVS::PlaybackKeyPair"|"AWS::KinesisAnalyticsV2::Application"|"AWS::RDS::GlobalCluster"|"AWS::S3::MultiRegionAccessPoint"|"AWS::DeviceFarm::TestGridProject"|"AWS::Budgets::BudgetsAction"|"AWS::Lex::Bot"|"AWS::CodeGuruReviewer::RepositoryAssociation"|"AWS::IoT::CustomMetric"|"AWS::Route53Resolver::FirewallDomainList"|"AWS::RoboMaker::RobotApplicationVersion"|"AWS::EC2::TrafficMirrorSession"|"AWS::IoTSiteWise::Gateway"|"AWS::Lex::BotAlias"|"AWS::LookoutMetrics::Alert"|"AWS::IoT::AccountAuditConfiguration"|"AWS::EC2::TrafficMirrorTarget"|"AWS::S3::StorageLens"|"AWS::IoT::ScheduledAudit"|"AWS::Events::Connection"|"AWS::EventSchemas::Schema"|"AWS::MediaPackage::PackagingConfiguration"|"AWS::KinesisVideo::SignalingChannel"|"AWS::AppStream::DirectoryConfig"|"AWS::LookoutVision::Project"|"AWS::Route53RecoveryControl::Cluster"|"AWS::Route53RecoveryControl::SafetyRule"|"AWS::Route53RecoveryControl::ControlPanel"|"AWS::Route53RecoveryControl::RoutingControl"|"AWS::Route53RecoveryReadiness::ResourceSet"|"AWS::RoboMaker::SimulationApplication"|"AWS::RoboMaker::RobotApplication"|"AWS::HealthLake::FHIRDatastore"|"AWS::Pinpoint::Segment"|"AWS::Pinpoint::ApplicationSettings"|"AWS::Events::Rule"|"AWS::EC2::DHCPOptions"|"AWS::EC2::NetworkInsightsPath"|"AWS::EC2::TrafficMirrorFilter"|"AWS::EC2::IPAM"|"AWS::IoTTwinMaker::Scene"|"AWS::NetworkManager::TransitGatewayRegistration"|"AWS::CustomerProfiles::Domain"|"AWS::AutoScaling::WarmPool"|"AWS::Connect::PhoneNumber"|"AWS::AppConfig::DeploymentStrategy"|"AWS::AppFlow::Flow"|"AWS::AuditManager::Assessment"|"AWS::CloudWatch::MetricStream"|"AWS::DeviceFarm::InstanceProfile"|"AWS::DeviceFarm::Project"|"AWS::EC2::EC2Fleet"|"AWS::EC2::SubnetRouteTableAssociation"|"AWS::ECR::PullThroughCacheRule"|"AWS::GroundStation::Config"|"AWS::ImageBuilder::ImagePipeline"|"AWS::IoT::FleetMetric"|"AWS::IoTWireless::ServiceProfile"|"AWS::NetworkManager::Device"|"AWS::NetworkManager::GlobalNetwork"|"AWS::NetworkManager::Link"|"AWS::NetworkManager::Site"|"AWS::Panorama::Package"|"AWS::Pinpoint::App"|"AWS::Redshift::ScheduledAction"|"AWS::Route53Resolver::FirewallRuleGroupAssociation"|"AWS::SageMaker::AppImageConfig"|"AWS::SageMaker::Image", ...]
+            },
+            "recordingStrategy": {
+              "useOnly": "ALL_SUPPORTED_RESOURCE_TYPES"|"INCLUSION_BY_RESOURCE_TYPES"|"EXCLUSION_BY_RESOURCE_TYPES"
+            }
           }
 
-       --cli-input-json  (string) Performs service operation based on the JSON
-       string provided. The JSON string follows the format provided by  --gen-
-       erate-cli-skeleton.  If  other  arguments  are  provided on the command
-       line, the CLI values will override the JSON-provided values. It is  not
+       --cli-input-json (string) Performs service operation based on the  JSON
+       string  provided. The JSON string follows the format provided by --gen-
+       erate-cli-skeleton. If other arguments  are  provided  on  the  command
+       line,  the CLI values will override the JSON-provided values. It is not
        possible to pass arbitrary binary values using a JSON-provided value as
        the string will be taken literally.
 
-       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
+       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
        output without sending an API request. If provided with no value or the
        value input, prints a sample input JSON that can be used as an argument
-       for  --cli-input-json.  If provided with the value output, it validates
+       for --cli-input-json. If provided with the value output,  it  validates
        the command inputs and returns a sample output JSON for that command.
 
 GLOBAL OPTIONS
@@ -160,7 +353,7 @@ GLOBAL OPTIONS
 
        --no-verify-ssl (boolean)
 
-       By default, the AWS CLI uses SSL when communicating with AWS  services.
+       By  default, the AWS CLI uses SSL when communicating with AWS services.
        For each SSL connection, the AWS CLI will verify SSL certificates. This
        option overrides the default behavior of verifying SSL certificates.
 
@@ -206,7 +399,7 @@ GLOBAL OPTIONS
 
        --no-sign-request (boolean)
 
-       Do not sign requests. Credentials will not be loaded if  this  argument
+       Do  not  sign requests. Credentials will not be loaded if this argument
        is provided.
 
        --ca-bundle (string)
@@ -216,44 +409,44 @@ GLOBAL OPTIONS
 
        --cli-read-timeout (int)
 
-       The maximum socket read time in seconds. If the value is set to 0,  the
-       socket  read  will be blocking and not timeout. The default value is 60
+       The  maximum socket read time in seconds. If the value is set to 0, the
+       socket read will be blocking and not timeout. The default value  is  60
        seconds.
 
        --cli-connect-timeout (int)
 
-       The maximum socket connect time in seconds. If the value is set  to  0,
-       the  socket connect will be blocking and not timeout. The default value
+       The  maximum  socket connect time in seconds. If the value is set to 0,
+       the socket connect will be blocking and not timeout. The default  value
        is 60 seconds.
 
 EXAMPLES
        NOTE:
-          To use the following examples, you must have the AWS  CLI  installed
-          and  configured.  See  the Getting started guide in the AWS CLI User
+          To  use  the following examples, you must have the AWS CLI installed
+          and configured. See the Getting started guide in the  AWS  CLI  User
           Guide for more information.
 
-          Unless otherwise  stated,  all  examples  have  unix-like  quotation
-          rules.  These  examples  will  need to be adapted to your terminal's
+          Unless  otherwise  stated,  all  examples  have  unix-like quotation
+          rules. These examples will need to be  adapted  to  your  terminal's
           quoting rules. See Using quotation marks with strings in the AWS CLI
           User Guide .
 
        To record all supported resources
 
-       The  following  command  creates  a  configuration recorder that tracks
-       changes to all supported  resource  types,  including  global  resource
+       The following command creates  a  configuration  recorder  that  tracks
+       changes  to  all  supported  resource  types, including global resource
        types:
 
           aws configservice put-configuration-recorder --configuration-recorder name=default,roleARN=arn:aws:iam::123456789012:role/config-role --recording-group allSupported=true,includeGlobalResourceTypes=true
 
        To record specific types of resources
 
-       The  following  command  creates  a  configuration recorder that tracks
+       The following command creates  a  configuration  recorder  that  tracks
        changes to only those types of resources that are specified in the JSON
        file for the --recording-group option:
 
           aws configservice put-configuration-recorder --configuration-recorder name=default,roleARN=arn:aws:iam::123456789012:role/config-role --recording-group file://recordingGroup.json
 
-       recordingGroup.json  is  a  JSON  file  that specifies the types of re-
+       recordingGroup.json is a JSON file that  specifies  the  types  of  re-
        sources that AWS Config will record:
 
           {
@@ -272,12 +465,12 @@ EXAMPLES
             ]
           }
 
-       Before you can specify resource types for the  resourceTypes  key,  you
-       must  set  the  allSupported  and includeGlobalResourceTypes options to
+       Before  you  can  specify resource types for the resourceTypes key, you
+       must set the allSupported  and  includeGlobalResourceTypes  options  to
        false or omit them.
 
-       If the command succeeds, AWS Config returns no output.  To  verify  the
-       settings     of     your     configuration     recorder,     run    the
+       If  the  command  succeeds, AWS Config returns no output. To verify the
+       settings    of     your     configuration     recorder,     run     the
        describe-configuration-recorders command.
 
 OUTPUT
