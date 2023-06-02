@@ -6,9 +6,9 @@ NAME
        update-channel -
 
 DESCRIPTION
-       Updates  a  channel's  configuration.  This  does not affect an ongoing
-       stream of this channel. You must stop and restart the  stream  for  the
-       changes to take effect.
+       Updates a channel's configuration. Live channels cannot be updated. You
+       must stop the ongoing stream,  update  the  channel,  and  restart  the
+       stream for the changes to take effect.
 
        See also: AWS API Documentation
 
@@ -19,6 +19,7 @@ SYNOPSIS
           [--insecure-ingest | --no-insecure-ingest]
           [--latency-mode <value>]
           [--name <value>]
+          [--preset <value>]
           [--recording-configuration-arn <value>]
           [--type <value>]
           [--cli-input-json <value>]
@@ -63,6 +64,19 @@ OPTIONS
        --name (string)
           Channel name.
 
+       --preset (string)
+          Optional transcode preset for the channel. This is  selectable  only
+          for  ADVANCED_HD  and  ADVANCED_SD  channel types. For those channel
+          types, the default preset is HIGHER_BANDWIDTH_DELIVERY .  For  other
+          channel  types (BASIC and STANDARD ), preset is the empty string (""
+          ).
+
+          Possible values:
+
+          o HIGHER_BANDWIDTH_DELIVERY
+
+          o CONSTRAINED_BANDWIDTH_DELIVERY
+
        --recording-configuration-arn (string)
           Recording-configuration ARN. If this is  set  to  an  empty  string,
           recording  is disabled. A value other than an empty string indicates
@@ -70,8 +84,20 @@ OPTIONS
 
        --type (string)
           Channel type, which determines the allowable resolution and bitrate.
-          If you exceed the allowable resolution or bitrate, the stream proba-
-          bly will disconnect immediately . Valid values:
+          If  you exceed the allowable input resolution or bitrate, the stream
+          probably will disconnect immediately. Some types  generate  multiple
+          qualities  (renditions)  from the original input; this automatically
+          gives viewers the best experience for their devices and network con-
+          ditions.  Some  types  provide  transcoded video; transcoding allows
+          higher playback quality across a range of download speeds.  Default:
+          STANDARD . Valid values:
+
+          o BASIC  : Video is transmuxed: Amazon IVS delivers the original in-
+            put quality to viewers. The viewers video-quality choice  is  lim-
+            ited  to  the  original input. Input resolution can be up to 1080p
+            and bitrate can be up to 1.5 Mbps for 480p and up to 3.5 Mbps  for
+            resolutions  between  480p  and  1080p.  Original  audio is passed
+            through.
 
           o STANDARD : Video is transcoded: multiple qualities  are  generated
             from  the  original  input, to automatically give viewers the best
@@ -79,13 +105,36 @@ OPTIONS
             allows  higher playback quality across a range of download speeds.
             Resolution can be up to 1080p and bitrate can be up to  8.5  Mbps.
             Audio  is  transcoded  only  for  renditions 360p and below; above
-            that, audio is passed through. This is the default.
+            that, audio is passed through. This is the default when you create
+            a channel.
 
-          o BASIC : Video is transmuxed: Amazon IVS delivers the original  in-
-            put to viewers. The viewers video-quality choice is limited to the
-            original input. Resolution can be up to 1080p and bitrate  can  be
-            up to 1.5 Mbps for 480p and up to 3.5 Mbps for resolutions between
-            480p and 1080p.
+          o ADVANCED_SD  :  Video is transcoded; multiple qualities are gener-
+            ated from the original input, to automatically  give  viewers  the
+            best  experience  for  their devices and network conditions. Input
+            resolution can be up to 1080p and bitrate can be up to  8.5  Mbps;
+            output  is capped at SD quality (480p). You can select an optional
+            transcode  preset  (see  below).  Audio  for  all  renditions   is
+            transcoded, and an audio-only rendition is available.
+
+          o ADVANCED_HD  :  Video is transcoded; multiple qualities are gener-
+            ated from the original input, to automatically  give  viewers  the
+            best  experience  for  their devices and network conditions. Input
+            resolution can be up to 1080p and bitrate can be up to  8.5  Mbps;
+            output  is capped at HD quality (720p). You can select an optional
+            transcode  preset  (see  below).  Audio  for  all  renditions   is
+            transcoded, and an audio-only rendition is available.
+
+          Optional  transcode presets (available for the ADVANCED types) allow
+          you to trade off available download bandwidth and video quality,  to
+          optimize the viewing experience. There are two presets:
+
+          o Constrained bandwidth delivery uses a lower bitrate for each qual-
+            ity level. Use it if you have low download bandwidth and/or simple
+            video content (e.g., talking heads)
+
+          o Higher  bandwidth  delivery uses a higher bitrate for each quality
+            level. Use it if you have high download bandwidth  and/or  complex
+            video content (e.g., flashes and quick scene changes).
 
           Possible values:
 
@@ -93,17 +142,21 @@ OPTIONS
 
           o STANDARD
 
-       --cli-input-json (string) Performs service operation based on the  JSON
-       string  provided. The JSON string follows the format provided by --gen-
-       erate-cli-skeleton. If other arguments  are  provided  on  the  command
-       line,  the CLI values will override the JSON-provided values. It is not
+          o ADVANCED_SD
+
+          o ADVANCED_HD
+
+       --cli-input-json  (string) Performs service operation based on the JSON
+       string provided. The JSON string follows the format provided by  --gen-
+       erate-cli-skeleton.  If  other  arguments  are  provided on the command
+       line, the CLI values will override the JSON-provided values. It is  not
        possible to pass arbitrary binary values using a JSON-provided value as
        the string will be taken literally.
 
-       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
+       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
        output without sending an API request. If provided with no value or the
        value input, prints a sample input JSON that can be used as an argument
-       for --cli-input-json. If provided with the value output,  it  validates
+       for  --cli-input-json.  If provided with the value output, it validates
        the command inputs and returns a sample output JSON for that command.
 
 GLOBAL OPTIONS
@@ -117,7 +170,7 @@ GLOBAL OPTIONS
 
        --no-verify-ssl (boolean)
 
-       By  default, the AWS CLI uses SSL when communicating with AWS services.
+       By default, the AWS CLI uses SSL when communicating with AWS  services.
        For each SSL connection, the AWS CLI will verify SSL certificates. This
        option overrides the default behavior of verifying SSL certificates.
 
@@ -163,7 +216,7 @@ GLOBAL OPTIONS
 
        --no-sign-request (boolean)
 
-       Do  not  sign requests. Credentials will not be loaded if this argument
+       Do not sign requests. Credentials will not be loaded if  this  argument
        is provided.
 
        --ca-bundle (string)
@@ -173,31 +226,31 @@ GLOBAL OPTIONS
 
        --cli-read-timeout (int)
 
-       The  maximum socket read time in seconds. If the value is set to 0, the
-       socket read will be blocking and not timeout. The default value  is  60
+       The maximum socket read time in seconds. If the value is set to 0,  the
+       socket  read  will be blocking and not timeout. The default value is 60
        seconds.
 
        --cli-connect-timeout (int)
 
-       The  maximum  socket connect time in seconds. If the value is set to 0,
-       the socket connect will be blocking and not timeout. The default  value
+       The maximum socket connect time in seconds. If the value is set  to  0,
+       the  socket connect will be blocking and not timeout. The default value
        is 60 seconds.
 
 EXAMPLES
        NOTE:
-          To  use  the following examples, you must have the AWS CLI installed
-          and configured. See the Getting started guide in the  AWS  CLI  User
+          To use the following examples, you must have the AWS  CLI  installed
+          and  configured.  See  the Getting started guide in the AWS CLI User
           Guide for more information.
 
-          Unless  otherwise  stated,  all  examples  have  unix-like quotation
-          rules. These examples will need to be  adapted  to  your  terminal's
+          Unless otherwise  stated,  all  examples  have  unix-like  quotation
+          rules.  These  examples  will  need to be adapted to your terminal's
           quoting rules. See Using quotation marks with strings in the AWS CLI
           User Guide .
 
        Example 1: To update a channel's configuration information
 
-       The following update-channel example updates the channel  configuration
-       for  a  specified channel ARN to change the channel name. This does not
+       The  following update-channel example updates the channel configuration
+       for a specified channel ARN to change the channel name. This  does  not
        affect an ongoing stream of this channel; you must stop and restart the
        stream for the changes to take effect.
 
@@ -222,13 +275,13 @@ EXAMPLES
                   "tags": {}
           }
 
-       For  more  information,  see Create a Channel in the Amazon Interactive
+       For more information, see Create a Channel in  the  Amazon  Interactive
        Video Service User Guide.
 
        Example 2: To update a channel's configuration to enable recording
 
-       The following update-channel example updates the channel  configuration
-       for  a  specified channel ARN to enable recording. This does not affect
+       The  following update-channel example updates the channel configuration
+       for a specified channel ARN to enable recording. This does  not  affect
        an ongoing stream of this channel; you must stop and restart the stream
        for the changes to take effect.
 
@@ -259,8 +312,8 @@ EXAMPLES
 
        Example 3: To update a channel's configuration to disable recording
 
-       The following update-channel example updates the channel  configuration
-       for  a specified channel ARN to disable recording. This does not affect
+       The  following update-channel example updates the channel configuration
+       for a specified channel ARN to disable recording. This does not  affect
        an ongoing stream of this channel; you must stop and restart the stream
        for the changes to take effect.
 
@@ -296,21 +349,21 @@ OUTPUT
               Channel ARN.
 
           authorized -> (boolean)
-              Whether the channel is private (enabled for playback  authoriza-
+              Whether  the channel is private (enabled for playback authoriza-
               tion). Default: false .
 
           ingestEndpoint -> (string)
-              Channel  ingest  endpoint,  part  of the definition of an ingest
+              Channel ingest endpoint, part of the  definition  of  an  ingest
               server, used when you set up streaming software.
 
           insecureIngest -> (boolean)
-              Whether the channel allows insecure RTMP ingest. Default:  false
+              Whether  the channel allows insecure RTMP ingest. Default: false
               .
 
           latencyMode -> (string)
-              Channel  latency  mode. Use NORMAL to broadcast and deliver live
+              Channel latency mode. Use NORMAL to broadcast and  deliver  live
               video up to Full HD. Use LOW for near-real-time interaction with
-              viewers.  Default:  LOW  . (Note: In the Amazon IVS console, LOW
+              viewers. Default: LOW . (Note: In the Amazon  IVS  console,  LOW
               and NORMAL correspond to Ultra-low and Standard, respectively.)
 
           name -> (string)
@@ -319,17 +372,24 @@ OUTPUT
           playbackUrl -> (string)
               Channel playback URL.
 
+          preset -> (string)
+              Optional  transcode  preset  for the channel. This is selectable
+              only for ADVANCED_HD and ADVANCED_SD channel  types.  For  those
+              channel types, the default preset is HIGHER_BANDWIDTH_DELIVERY .
+              For other channel types (BASIC and STANDARD  ),  preset  is  the
+              empty string ("" ).
+
           recordingConfigurationArn -> (string)
-              Recording-configuration ARN. A value other than an empty  string
-              indicates  that recording is enabled. Default: "" (empty string,
+              Recording-configuration  ARN. A value other than an empty string
+              indicates that recording is enabled. Default: "" (empty  string,
               recording is disabled).
 
           tags -> (map)
-              Tags attached to the resource. Array of 1-50 maps, each  of  the
+              Tags  attached  to the resource. Array of 1-50 maps, each of the
               form string:string (key:value) . See Tagging Amazon Web Services
-              Resources for more information, including restrictions that  ap-
+              Resources  for more information, including restrictions that ap-
               ply to tags and "Tag naming limits and requirements"; Amazon IVS
-              has no service-specific constraints beyond  what  is  documented
+              has  no  service-specific  constraints beyond what is documented
               there.
 
               key -> (string)
@@ -337,10 +397,21 @@ OUTPUT
               value -> (string)
 
           type -> (string)
-              Channel  type, which determines the allowable resolution and bi-
-              trate. If you exceed the allowable resolution  or  bitrate,  the
-              stream probably will disconnect immediately. Default: STANDARD .
-              Valid values:
+              Channel type, which determines the allowable resolution and  bi-
+              trate.  If you exceed the allowable input resolution or bitrate,
+              the stream probably will disconnect immediately. Some types gen-
+              erate  multiple  qualities (renditions) from the original input;
+              this automatically gives viewers the best experience  for  their
+              devices  and  network  conditions. Some types provide transcoded
+              video; transcoding allows higher playback quality across a range
+              of download speeds. Default: STANDARD . Valid values:
+
+              o BASIC  : Video is transmuxed: Amazon IVS delivers the original
+                input quality to viewers. The viewers video-quality choice  is
+                limited  to  the original input. Input resolution can be up to
+                1080p and bitrate can be up to 1.5 Mbps for 480p and up to 3.5
+                Mbps for resolutions between 480p and 1080p. Original audio is
+                passed through.
 
               o STANDARD : Video is transcoded: multiple qualities are  gener-
                 ated  from  the  original input, to automatically give viewers
@@ -349,13 +420,38 @@ OUTPUT
                 download speeds. Resolution can be up to 1080p and bitrate can
                 be  up  to  8.5  Mbps. Audio is transcoded only for renditions
                 360p and below; above that, audio is passed through.  This  is
-                the default.
+                the default when you create a channel.
 
-              o BASIC  : Video is transmuxed: Amazon IVS delivers the original
-                input to viewers. The viewers video-quality choice is  limited
-                to  the  original input. Resolution can be up to 1080p and bi-
-                trate can be up to 1.5 Mbps for 480p and up to  3.5  Mbps  for
-                resolutions between 480p and 1080p.
+              o ADVANCED_SD : Video is transcoded; multiple qualities are gen-
+                erated from the original input, to automatically give  viewers
+                the  best experience for their devices and network conditions.
+                Input resolution can be up to 1080p and bitrate can be  up  to
+                8.5  Mbps;  output is capped at SD quality (480p). You can se-
+                lect an optional transcode preset (see below). Audio  for  all
+                renditions  is  transcoded,  and  an  audio-only  rendition is
+                available.
+
+              o ADVANCED_HD : Video is transcoded; multiple qualities are gen-
+                erated  from the original input, to automatically give viewers
+                the best experience for their devices and network  conditions.
+                Input  resolution  can be up to 1080p and bitrate can be up to
+                8.5 Mbps; output is capped at HD quality (720p). You  can  se-
+                lect  an  optional transcode preset (see below). Audio for all
+                renditions is  transcoded,  and  an  audio-only  rendition  is
+                available.
+
+              Optional  transcode  presets  (available for the ADVANCED types)
+              allow you to trade off available download  bandwidth  and  video
+              quality,  to optimize the viewing experience. There are two pre-
+              sets:
+
+              o Constrained bandwidth delivery uses a lower bitrate  for  each
+                quality  level.  Use  it  if  you  have low download bandwidth
+                and/or simple video content (e.g., talking heads)
+
+              o Higher bandwidth delivery uses a higher bitrate for each qual-
+                ity  level.  Use it if you have high download bandwidth and/or
+                complex video content (e.g., flashes and quick scene changes).
 
 
 
