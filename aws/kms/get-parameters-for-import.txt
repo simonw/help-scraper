@@ -6,32 +6,59 @@ NAME
        get-parameters-for-import -
 
 DESCRIPTION
-       Returns  the items you need to import key material into a symmetric en-
-       cryption KMS key. For more information  about  importing  key  material
-       into  KMS, see Importing key material in the Key Management Service De-
-       veloper Guide .
+       Returns  the public key and an import token you need to import or reim-
+       port key material for a KMS key.
 
-       This operation returns a public key and an import token. Use the public
-       key  to  encrypt  the symmetric key material. Store the import token to
-       send with a subsequent  ImportKeyMaterial request.
+       By default, KMS keys are created with key material that KMS  generates.
+       This  operation  supports  Importing key material , an advanced feature
+       that lets you generate and import the cryptographic key material for  a
+       KMS  key.  For  more information about importing key material into KMS,
+       see Importing key material in  the  Key  Management  Service  Developer
+       Guide .
 
-       You must specify the key ID of the symmetric encryption  KMS  key  into
-       which you will import key material. The KMS key Origin must be EXTERNAL
-       . You must also specify the wrapping algorithm and type of wrapping key
-       (public  key) that you will use to encrypt the key material. You cannot
-       perform this operation on an asymmetric KMS key, an HMAC KMS key, or on
-       any KMS key in a different Amazon Web Services account.
+       Before  calling  GetParametersForImport  , use the  CreateKey operation
+       with an Origin value of EXTERNAL to create a KMS key with no key  mate-
+       rial.  You  can import key material for a symmetric encryption KMS key,
+       HMAC KMS key, asymmetric encryption KMS key, or asymmetric signing  KMS
+       key.  You  can  also import key material into a multi-Region key of any
+       supported type. However, you can't import key material into a  KMS  key
+       in  a custom key store . You can also use GetParametersForImport to get
+       a public key and import token to reimport  the  original  key  material
+       into a KMS key whose key material expired or was deleted.
+          GetParametersForImport  returns  the  items  that you need to import
+          your key material.
 
-       To  import  key  material, you must use the public key and import token
-       from the same response. These items are valid for 24 hours. The expira-
-       tion  date  and time appear in the GetParametersForImport response. You
-       cannot use an expired token in an  ImportKeyMaterial request.  If  your
+       o The public key (or "wrapping key") of an RSA key pair that KMS gener-
+         ates. You will use this public key to encrypt ("wrap") your key mate-
+         rial while it's in transit to KMS.
+
+       o A import token that ensures that KMS can decrypt  your  key  material
+         and associate it with the correct KMS key.
+
+       The  public key and its import token are permanently linked and must be
+       used together. Each public key and import token set  is  valid  for  24
+       hours.  The  expiration  date  and time appear in the ParametersValidTo
+       field in the GetParametersForImport response. You cannot use an expired
+       public  key  or  import token in an  ImportKeyMaterial request. If your
        key and token expire, send another GetParametersForImport request.
+          GetParametersForImport requires the following information:
+
+       o The key ID of the KMS key for which you are importing the  key  mate-
+         rial.
+
+       o The  key spec of the public key ("wrapping key") that you will use to
+         encrypt your key material during import.
+
+       o The wrapping algorithm that you will use with the public key  to  en-
+         crypt your key material.
+
+       You  can use the same or a different public key spec and wrapping algo-
+       rithm each time you import or reimport the same key material.
 
        The KMS key that you use for this operation must be in a compatible key
-       state. For details, see Key states of KMS keys in  the  Key  Management
+       state.  For  details,  see Key states of KMS keys in the Key Management
        Service Developer Guide .
-          Cross-account  use  : No. You cannot perform this operation on a KMS
+          Cross-account use : No. You cannot perform this operation on  a  KMS
           key in a different Amazon Web Services account.
 
           Required permissions : kms:GetParametersForImport (key policy)
@@ -68,9 +95,12 @@ SYNOPSIS
 
 OPTIONS
        --key-id (string)
-          The identifier of the symmetric encryption KMS key  into  which  you
-          will import key material. The Origin of the KMS key must be EXTERNAL
-          .
+          The  identifier  of the KMS key that will be associated with the im-
+          ported key material. The Origin of the KMS key must be EXTERNAL .
+
+          All KMS key types are supported, including multi-Region  keys.  How-
+          ever,  you cannot import key material into a KMS key in a custom key
+          store.
 
           Specify the key ID or key ARN of the KMS key.
 
@@ -85,17 +115,38 @@ OPTIONS
           scribeKey .
 
        --wrapping-algorithm (string)
-          The  algorithm you will use to encrypt the key material before using
-          the  ImportKeyMaterial operation to import it. For more information,
-          see Encrypt the key material in the Key Management Service Developer
-          Guide .
+          The  algorithm  you will use with the RSA public key (PublicKey ) in
+          the response to protect your key material during  import.  For  more
+          information,  see  Select a wrapping algorithm in the Key Management
+          Service Developer Guide .
 
-          WARNING:
-              The RSAES_PKCS1_V1_5 wrapping algorithm is deprecated. We recom-
-              mend that you begin using a different wrapping algorithm immedi-
-              ately. KMS will end support for RSAES_PKCS1_V1_5 by  October  1,
-              2023  pursuant to cryptographic key management guidance from the
-              National Institute of Standards and Technology (NIST).
+          For RSA_AES wrapping algorithms, you encrypt your key material  with
+          an AES key that you generate, then encrypt your AES key with the RSA
+          public key from KMS. For RSAES wrapping algorithms, you encrypt your
+          key material directly with the RSA public key from KMS.
+
+          The  wrapping  algorithms that you can use depend on the type of key
+          material that you are importing. To import an RSA private  key,  you
+          must use an RSA_AES wrapping algorithm.
+
+          o RSA_AES_KEY_WRAP_SHA_256   Supported  for wrapping RSA and ECC key
+            material.
+
+          o RSA_AES_KEY_WRAP_SHA_1  Supported for wrapping RSA and ECC key ma-
+            terial.
+
+          o RSAES_OAEP_SHA_256   Supported  for all types of key material, ex-
+            cept  RSA  key  material  (private  key).  You  cannot   use   the
+            RSAES_OAEP_SHA_256  wrapping  algorithm with the RSA_2048 wrapping
+            key spec to wrap ECC_NIST_P521 key material.
+
+          o RSAES_OAEP_SHA_1  Supported for all types of key material,  except
+            RSA   key   material   (private   key).   You   cannot   use   the
+            RSAES_OAEP_SHA_1 wrapping algorithm with the RSA_2048 wrapping key
+            spec to wrap ECC_NIST_P521 key material.
+
+          o RSAES_PKCS1_V1_5  (Deprecated)   Supported  only for symmetric en-
+            cryption key material (and only in legacy mode).
 
           Possible values:
 
@@ -105,25 +156,40 @@ OPTIONS
 
           o RSAES_OAEP_SHA_256
 
+          o RSA_AES_KEY_WRAP_SHA_1
+
+          o RSA_AES_KEY_WRAP_SHA_256
+
        --wrapping-key-spec (string)
-          The type of wrapping key (public key) to  return  in  the  response.
-          Only 2048-bit RSA public keys are supported.
+          The type of RSA public key to return in the response. You  will  use
+          this  wrapping  key with the specified wrapping algorithm to protect
+          your key material during import.
+
+          Use the longest RSA wrapping key that is practical.
+
+          You  cannot  use  an  RSA_2048  public  key  to  directly  wrap   an
+          ECC_NIST_P521  private  key.  Instead, use an RSA_AES wrapping algo-
+          rithm or choose a longer RSA public key.
 
           Possible values:
 
           o RSA_2048
 
-       --cli-input-json  (string) Performs service operation based on the JSON
-       string provided. The JSON string follows the format provided by  --gen-
-       erate-cli-skeleton.  If  other  arguments  are  provided on the command
-       line, the CLI values will override the JSON-provided values. It is  not
+          o RSA_3072
+
+          o RSA_4096
+
+       --cli-input-json (string) Performs service operation based on the  JSON
+       string  provided. The JSON string follows the format provided by --gen-
+       erate-cli-skeleton. If other arguments  are  provided  on  the  command
+       line,  the CLI values will override the JSON-provided values. It is not
        possible to pass arbitrary binary values using a JSON-provided value as
        the string will be taken literally.
 
-       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
+       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
        output without sending an API request. If provided with no value or the
        value input, prints a sample input JSON that can be used as an argument
-       for  --cli-input-json.  If provided with the value output, it validates
+       for --cli-input-json. If provided with the value output,  it  validates
        the command inputs and returns a sample output JSON for that command.
 
 GLOBAL OPTIONS
@@ -137,7 +203,7 @@ GLOBAL OPTIONS
 
        --no-verify-ssl (boolean)
 
-       By default, the AWS CLI uses SSL when communicating with AWS  services.
+       By  default, the AWS CLI uses SSL when communicating with AWS services.
        For each SSL connection, the AWS CLI will verify SSL certificates. This
        option overrides the default behavior of verifying SSL certificates.
 
@@ -183,7 +249,7 @@ GLOBAL OPTIONS
 
        --no-sign-request (boolean)
 
-       Do not sign requests. Credentials will not be loaded if  this  argument
+       Do  not  sign requests. Credentials will not be loaded if this argument
        is provided.
 
        --ca-bundle (string)
@@ -193,38 +259,38 @@ GLOBAL OPTIONS
 
        --cli-read-timeout (int)
 
-       The maximum socket read time in seconds. If the value is set to 0,  the
-       socket  read  will be blocking and not timeout. The default value is 60
+       The  maximum socket read time in seconds. If the value is set to 0, the
+       socket read will be blocking and not timeout. The default value  is  60
        seconds.
 
        --cli-connect-timeout (int)
 
-       The maximum socket connect time in seconds. If the value is set  to  0,
-       the  socket connect will be blocking and not timeout. The default value
+       The  maximum  socket connect time in seconds. If the value is set to 0,
+       the socket connect will be blocking and not timeout. The default  value
        is 60 seconds.
 
 EXAMPLES
        NOTE:
-          To use the following examples, you must have the AWS  CLI  installed
-          and  configured.  See  the Getting started guide in the AWS CLI User
+          To  use  the following examples, you must have the AWS CLI installed
+          and configured. See the Getting started guide in the  AWS  CLI  User
           Guide for more information.
 
-          Unless otherwise  stated,  all  examples  have  unix-like  quotation
-          rules.  These  examples  will  need to be adapted to your terminal's
+          Unless  otherwise  stated,  all  examples  have  unix-like quotation
+          rules. These examples will need to be  adapted  to  your  terminal's
           quoting rules. See Using quotation marks with strings in the AWS CLI
           User Guide .
 
        To get the items required to import key material into a KMS key
 
        The following get-parameters-for-import example gets the public key and
-       import token that you need to import key material into a KMS key.  When
-       you  use the import-key-material command, be sure to use the import to-
-       ken and key material encrypted by the public key that were returned  in
-       the  same  get-parameters-for-import  command. Also, the wrapping algo-
-       rithm that you specify in this command must be one that you use to  en-
+       import  token that you need to import key material into a KMS key. When
+       you use the import-key-material command, be sure to use the import  to-
+       ken  and key material encrypted by the public key that were returned in
+       the same get-parameters-for-import command. Also,  the  wrapping  algo-
+       rithm  that you specify in this command must be one that you use to en-
        crypt the key material with the public key.
 
-       To  specify the KMS key, use the key-id parameter. This example uses an
+       To specify the KMS key, use the key-id parameter. This example uses  an
        key ID, but you can use a key ID or key ARN in this command.
 
           aws kms get-parameters-for-import \
@@ -241,26 +307,26 @@ EXAMPLES
               "ParametersValidTo": 1593893322.32
           }
 
-       For more information, see Download the public key and import  token  in
+       For  more  information, see Download the public key and import token in
        the AWS Key Management Service Developer Guide.
 
 OUTPUT
        KeyId -> (string)
-          The  Amazon Resource Name (key ARN ) of the KMS key to use in a sub-
-          sequent  ImportKeyMaterial request. This is the same KMS key  speci-
+          The Amazon Resource Name (key ARN ) of the KMS key to use in a  sub-
+          sequent   ImportKeyMaterial request. This is the same KMS key speci-
           fied in the GetParametersForImport request.
 
        ImportToken -> (blob)
           The import token to send in a subsequent  ImportKeyMaterial request.
 
        PublicKey -> (blob)
-          The  public  key to use to encrypt the key material before importing
+          The public key to use to encrypt the key material  before  importing
           it with  ImportKeyMaterial .
 
        ParametersValidTo -> (timestamp)
-          The time at which the import token and  public  key  are  no  longer
+          The  time  at  which  the  import token and public key are no longer
           valid. After this time, you cannot use them to make an  ImportKeyMa-
-          terial request and you must send another GetParametersForImport  re-
+          terial  request and you must send another GetParametersForImport re-
           quest to get new ones.
 
 
