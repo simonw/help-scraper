@@ -45,7 +45,7 @@ OPTIONS
        --attribute-names (list)
           A list of attributes for which to retrieve information.
 
-          The  AttributeName.N parameter is optional, but if you don't specify
+          The  AttributeNames  parameter is optional, but if you don't specify
           values for this parameter, the request returns empty results.
 
           NOTE:
@@ -57,9 +57,9 @@ OPTIONS
 
           WARNING:
               The ApproximateNumberOfMessagesDelayed , ApproximateNumberOfMes-
-              sagesNotVisible , and ApproximateNumberOfMessagesVisible metrics
-              may not achieve consistency until at least 1  minute  after  the
-              producers stop sending messages. This period is required for the
+              sagesNotVisible  ,  and  ApproximateNumberOfMessages metrics may
+              not achieve consistency until at least 1 minute after  the  pro-
+              ducers  stop  sending  messages. This period is required for the
               queue metadata to reach eventual consistency.
 
           o All  Returns all values.
@@ -91,7 +91,13 @@ OPTIONS
             can contain before Amazon SQS rejects it.
 
           o MessageRetentionPeriod  Returns the length of  time,  in  seconds,
-            for which Amazon SQS retains a message.
+            for  which Amazon SQS retains a message. When you change a queue's
+            attributes, the change can take up to 60 seconds for most  of  the
+            attributes  to propagate throughout the Amazon SQS system. Changes
+            made to the MessageRetentionPeriod attribute can  take  up  to  15
+            minutes and will impact existing messages in the queue potentially
+            causing them to be expired and deleted if the  MessageRetentionPe-
+            riod is reduced below the age of existing messages.
 
           o Policy  Returns the policy of the queue.
 
@@ -101,11 +107,15 @@ OPTIONS
             onds, for which the ReceiveMessage action waits for a  message  to
             arrive.
 
+          o VisibilityTimeout   Returns  the visibility timeout for the queue.
+            For more information about the visibility timeout, see  Visibility
+            Timeout in the Amazon SQS Developer Guide .
+
+          The following attributes apply only to dead-letter queues:
+
           o RedrivePolicy   The  string  that  includes the parameters for the
             dead-letter queue functionality of the source queue as a JSON  ob-
-            ject.  For more information about the redrive policy and dead-let-
-            ter queues, see Using Amazon SQS Dead-Letter Queues in the  Amazon
-            SQS Developer Guide .
+            ject. The parameters are as follows:
 
             o deadLetterTargetArn   The  Amazon  Resource  Name  (ARN)  of the
               dead-letter queue to which Amazon SQS moves messages  after  the
@@ -113,56 +123,84 @@ OPTIONS
 
             o maxReceiveCount   The  number of times a message is delivered to
               the source queue before being moved to  the  dead-letter  queue.
-              When  the ReceiveCount for a message exceeds the maxReceiveCount
-              for a queue, Amazon SQS  moves  the  message  to  the  dead-let-
-              ter-queue.
+              Default:  10.  When  the  ReceiveCount for a message exceeds the
+              maxReceiveCount for a queue, Amazon SQS moves the message to the
+              dead-letter-queue.
 
-          o VisibilityTimeout   Returns  the visibility timeout for the queue.
-            For more information about the visibility timeout, see  Visibility
-            Timeout in the Amazon SQS Developer Guide .
+          o RedriveAllowPolicy   The  string  that includes the parameters for
+            the permissions for the dead-letter queue redrive  permission  and
+            which  source  queues can specify dead-letter queues as a JSON ob-
+            ject. The parameters are as follows:
+
+            o redrivePermission  The permission type that defines which source
+              queues  can  specify the current queue as the dead-letter queue.
+              Valid values are:
+
+              o allowAll  (Default) Any source queues in this Amazon Web  Ser-
+                vices account in the same Region can specify this queue as the
+                dead-letter queue.
+
+              o denyAll  No source  queues  can  specify  this  queue  as  the
+                dead-letter queue.
+
+              o byQueue   Only queues specified by the sourceQueueArns parame-
+                ter can specify this queue as the dead-letter queue.
+
+            o sourceQueueArns  The Amazon Resource Names (ARN)s of the  source
+              queues  that can specify this queue as the dead-letter queue and
+              redrive messages. You can specify this parameter only  when  the
+              redrivePermission  parameter is set to byQueue . You can specify
+              up to 10 source queue ARNs. To allow more than 10 source  queues
+              to specify dead-letter queues, set the redrivePermission parame-
+              ter to allowAll .
+
+          NOTE:
+              The dead-letter queue of a FIFO queue must also be a FIFO queue.
+              Similarly,  the  dead-letter queue of a standard queue must also
+              be a standard queue.
 
           The following attributes apply only to server-side-encryption :
 
-          o KmsMasterKeyId   Returns  the ID of an Amazon Web Services managed
+          o KmsMasterKeyId  Returns the ID of an Amazon Web  Services  managed
             customer master key (CMK) for Amazon SQS or a custom CMK. For more
             information, see Key Terms .
 
-          o KmsDataKeyReusePeriodSeconds   Returns the length of time, in sec-
-            onds, for which Amazon SQS can reuse a data key to encrypt or  de-
+          o KmsDataKeyReusePeriodSeconds  Returns the length of time, in  sec-
+            onds,  for which Amazon SQS can reuse a data key to encrypt or de-
             crypt messages before calling KMS again. For more information, see
             How Does the Data Key Reuse Period Work? .
 
-          o SqsManagedSseEnabled  Returns information about whether the  queue
-            is  using SSE-SQS encryption using SQS owned encryption keys. Only
-            one server-side encryption option is  supported  per  queue  (e.g.
-            SSE-KMS or SSE-SQS ).
+          o SqsManagedSseEnabled   Returns information about whether the queue
+            is using SSE-SQS encryption using SQS owned encryption keys.  Only
+            one  server-side encryption option is supported per queue (for ex-
+            ample, SSE-KMS or SSE-SQS ).
 
-          The  following  attributes  apply  only to FIFO (first-in-first-out)
+          The following attributes apply  only  to  FIFO  (first-in-first-out)
           queues :
 
-          o FifoQueue  Returns information about whether the  queue  is  FIFO.
-            For  more  information, see FIFO queue logic in the Amazon SQS De-
+          o FifoQueue   Returns  information  about whether the queue is FIFO.
+            For more information, see FIFO queue logic in the Amazon  SQS  De-
             veloper Guide .
 
           NOTE:
-              To determine whether a queue is FIFO ,  you  can  check  whether
+              To  determine  whether  a  queue is FIFO , you can check whether
               QueueName ends with the .fifo suffix.
 
-          o ContentBasedDeduplication   Returns whether content-based dedupli-
-            cation is  enabled  for  the  queue.  For  more  information,  see
+          o ContentBasedDeduplication  Returns whether content-based  dedupli-
+            cation  is  enabled  for  the  queue.  For  more  information, see
             Exactly-once processing in the Amazon SQS Developer Guide .
 
-          The  following  attributes  apply  only  to high throughput for FIFO
+          The following attributes apply only  to  high  throughput  for  FIFO
           queues :
 
           o DeduplicationScope  Specifies whether message deduplication occurs
             at the message group or queue level. Valid values are messageGroup
             and queue .
 
-          o FifoThroughputLimit  Specifies whether the FIFO  queue  throughput
+          o FifoThroughputLimit   Specifies  whether the FIFO queue throughput
             quota applies to the entire queue or per message group. Valid val-
-            ues are perQueue and  perMessageGroupId  .  The  perMessageGroupId
-            value  is  allowed  only  when the value for DeduplicationScope is
+            ues  are  perQueue  and  perMessageGroupId . The perMessageGroupId
+            value is allowed only when the  value  for  DeduplicationScope  is
             messageGroup .
 
           To enable high throughput for FIFO queues, do the following:
@@ -171,8 +209,8 @@ OPTIONS
 
           o Set FifoThroughputLimit to perMessageGroupId .
 
-          If you set these attributes to anything other than the values  shown
-          for  enabling  high  throughput,  normal throughput is in effect and
+          If  you set these attributes to anything other than the values shown
+          for enabling high throughput, normal throughput  is  in  effect  and
           deduplication occurs as specified.
 
           For information on throughput quotas, see Quotas related to messages
@@ -208,17 +246,17 @@ OPTIONS
             RedriveAllowPolicy
             SqsManagedSseEnabled
 
-       --cli-input-json  (string) Performs service operation based on the JSON
-       string provided. The JSON string follows the format provided by  --gen-
-       erate-cli-skeleton.  If  other  arguments  are  provided on the command
-       line, the CLI values will override the JSON-provided values. It is  not
+       --cli-input-json (string) Performs service operation based on the  JSON
+       string  provided. The JSON string follows the format provided by --gen-
+       erate-cli-skeleton. If other arguments  are  provided  on  the  command
+       line,  the CLI values will override the JSON-provided values. It is not
        possible to pass arbitrary binary values using a JSON-provided value as
        the string will be taken literally.
 
-       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
+       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
        output without sending an API request. If provided with no value or the
        value input, prints a sample input JSON that can be used as an argument
-       for  --cli-input-json.  If provided with the value output, it validates
+       for --cli-input-json. If provided with the value output,  it  validates
        the command inputs and returns a sample output JSON for that command.
 
 GLOBAL OPTIONS
@@ -232,7 +270,7 @@ GLOBAL OPTIONS
 
        --no-verify-ssl (boolean)
 
-       By default, the AWS CLI uses SSL when communicating with AWS  services.
+       By  default, the AWS CLI uses SSL when communicating with AWS services.
        For each SSL connection, the AWS CLI will verify SSL certificates. This
        option overrides the default behavior of verifying SSL certificates.
 
@@ -278,7 +316,7 @@ GLOBAL OPTIONS
 
        --no-sign-request (boolean)
 
-       Do not sign requests. Credentials will not be loaded if  this  argument
+       Do  not  sign requests. Credentials will not be loaded if this argument
        is provided.
 
        --ca-bundle (string)
@@ -288,24 +326,24 @@ GLOBAL OPTIONS
 
        --cli-read-timeout (int)
 
-       The maximum socket read time in seconds. If the value is set to 0,  the
-       socket  read  will be blocking and not timeout. The default value is 60
+       The  maximum socket read time in seconds. If the value is set to 0, the
+       socket read will be blocking and not timeout. The default value  is  60
        seconds.
 
        --cli-connect-timeout (int)
 
-       The maximum socket connect time in seconds. If the value is set  to  0,
-       the  socket connect will be blocking and not timeout. The default value
+       The  maximum  socket connect time in seconds. If the value is set to 0,
+       the socket connect will be blocking and not timeout. The default  value
        is 60 seconds.
 
 EXAMPLES
        NOTE:
-          To use the following examples, you must have the AWS  CLI  installed
-          and  configured.  See  the Getting started guide in the AWS CLI User
+          To  use  the following examples, you must have the AWS CLI installed
+          and configured. See the Getting started guide in the  AWS  CLI  User
           Guide for more information.
 
-          Unless otherwise  stated,  all  examples  have  unix-like  quotation
-          rules.  These  examples  will  need to be adapted to your terminal's
+          Unless  otherwise  stated,  all  examples  have  unix-like quotation
+          rules. These examples will need to be  adapted  to  your  terminal's
           quoting rules. See Using quotation marks with strings in the AWS CLI
           User Guide .
 
@@ -336,7 +374,7 @@ EXAMPLES
             }
           }
 
-       This  example  gets only the specified queue's maximum message size and
+       This example gets only the specified queue's maximum message  size  and
        visibility timeout attributes.
 
        Command:
