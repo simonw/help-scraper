@@ -1,0 +1,274 @@
+EXPORT-KEY()                                                      EXPORT-KEY()
+
+
+
+NAME
+       export-key -
+
+DESCRIPTION
+       Exports  a  key from Amazon Web Services Payment Cryptography using ei-
+       ther ANSI X9 TR-34 or TR-31 key export standard.
+
+       Amazon Web Services Payment Cryptography simplifies main  or  root  key
+       exchange  process by eliminating the need of a paper-based key exchange
+       process. It takes a modern and secure approach based  of  the  ANSI  X9
+       TR-34 key exchange standard.
+
+       You  can use ExportKey to export main or root keys such as KEK (Key En-
+       cryption Key), using asymmetric key exchange technique  following  ANSI
+       X9  TR-34  standard. The ANSI X9 TR-34 standard uses asymmetric keys to
+       establishes bi-directional trust between  the  two  parties  exchanging
+       keys.  After  which you can export working keys using the ANSI X9 TR-31
+       symmetric key exchange standard as mandated by PCI PIN. Using this  op-
+       eration,  you  can  share your Amazon Web Services Payment Cryptography
+       generated keys with other service partners to perform cryptographic op-
+       erations outside of Amazon Web Services Payment Cryptography
+          TR-34 key export
+
+       Amazon  Web Services Payment Cryptography uses TR-34 asymmetric key ex-
+       change standard to export main keys such as KEK. In TR-34  terminology,
+       the  sending party of the key is called Key Distribution Host (KDH) and
+       the receiving party of the key is called Key Receiving Host  (KRH).  In
+       key  export  process,  KDH  is Amazon Web Services Payment Cryptography
+       which initiates key export. KRH is the user receiving the  key.  Before
+       you initiate TR-34 key export, you must obtain an export token by call-
+       ing  GetParametersForExport . This operation also returns  the  signing
+       key  certificate  that  KDH  uses to sign the wrapped key to generate a
+       TR-34 wrapped key block. The export token expires after 7 days.
+
+       Set the following parameters:
+          CertificateAuthorityPublicKeyIdentifier
+
+       The KeyARN of the certificate chain that will  sign  the  wrapping  key
+       certificate.  This  must exist within Amazon Web Services Payment Cryp-
+       tography before you initiate TR-34 key export. If it  does  not  exist,
+       you can import it by calling  ImportKey for RootCertificatePublicKey .
+          ExportToken
+
+       Obtained from KDH by calling  GetParametersForExport .
+          WrappingKeyCertificate
+
+       Amazon  Web Services Payment Cryptography uses this to wrap the key un-
+       der export.
+
+       When this operation is successful, Amazon Web Services Payment Cryptog-
+       raphy returns the TR-34 wrapped key block.
+          TR-31 key export
+
+       Amazon  Web  Services Payment Cryptography uses TR-31 symmetric key ex-
+       change standard to export working keys. In TR-31, you must use  a  main
+       key such as KEK to encrypt or wrap the key under export. To establish a
+       KEK, you can use  CreateKey or  ImportKey . When this operation is suc-
+       cessful,  Amazon  Web  Services  Payment  Cryptography  returns a TR-31
+       wrapped key block.
+          Cross-account use: This operation can't  be  used  across  different
+          Amazon Web Services accounts.
+
+          Related operations:
+
+       o GetParametersForExport
+
+       o ImportKey
+
+       See also: AWS API Documentation
+
+SYNOPSIS
+            export-key
+          --export-key-identifier <value>
+          --key-material <value>
+          [--cli-input-json <value>]
+          [--generate-cli-skeleton <value>]
+          [--debug]
+          [--endpoint-url <value>]
+          [--no-verify-ssl]
+          [--no-paginate]
+          [--output <value>]
+          [--query <value>]
+          [--profile <value>]
+          [--region <value>]
+          [--version <value>]
+          [--color <value>]
+          [--no-sign-request]
+          [--ca-bundle <value>]
+          [--cli-read-timeout <value>]
+          [--cli-connect-timeout <value>]
+
+OPTIONS
+       --export-key-identifier (string)
+          The  KeyARN of the key under export from Amazon Web Services Payment
+          Cryptography.
+
+       --key-material (tagged union structure)
+          The key block format type, for example, TR-34 or TR-31, to use  dur-
+          ing key material export.
+
+          NOTE:
+              This  is a Tagged Union structure. Only one of the following top
+              level keys can be set: Tr31KeyBlock, Tr34KeyBlock.
+
+          Tr31KeyBlock -> (structure)
+              Parameter information for key material export using TR-31  stan-
+              dard.
+
+              WrappingKeyIdentifier -> (string)
+                 The  KeyARN  of  the  the  wrapping key. This key encrypts or
+                 wraps the key under export for TR-31 key block generation.
+
+          Tr34KeyBlock -> (structure)
+              Parameter information for key material export using TR-34  stan-
+              dard.
+
+              CertificateAuthorityPublicKeyIdentifier -> (string)
+                 The  KeyARN  of the certificate chain that signs the wrapping
+                 key certificate during TR-34 key export.
+
+              ExportToken -> (string)
+                 The export token to initiate key export from Amazon Web  Ser-
+                 vices  Payment Cryptography. It also contains the signing key
+                 certificate that will sign the wrapped key during  TR-34  key
+                 block  generation. Call  GetParametersForExport to receive an
+                 export token. It expires after 7 days. You can use  the  same
+                 export  token  to  export multiple keys from the same service
+                 account.
+
+              KeyBlockFormat -> (string)
+                 The format of key block  that  Amazon  Web  Services  Payment
+                 Cryptography will use during key export.
+
+              RandomNonce -> (string)
+                 A  random  number value that is unique to the TR-34 key block
+                 generated using 2 pass. The operation will fail, if a  random
+                 nonce  value  is not provided for a TR-34 key block generated
+                 using 2 pass.
+
+              WrappingKeyCertificate -> (string)
+                 The KeyARN of the wrapping key certificate. Amazon  Web  Ser-
+                 vices  Payment Cryptography uses this certificate to wrap the
+                 key under export.
+
+       Shorthand Syntax:
+
+          Tr31KeyBlock={WrappingKeyIdentifier=string},Tr34KeyBlock={CertificateAuthorityPublicKeyIdentifier=string,ExportToken=string,KeyBlockFormat=string,RandomNonce=string,WrappingKeyCertificate=string}
+
+       JSON Syntax:
+
+          {
+            "Tr31KeyBlock": {
+              "WrappingKeyIdentifier": "string"
+            },
+            "Tr34KeyBlock": {
+              "CertificateAuthorityPublicKeyIdentifier": "string",
+              "ExportToken": "string",
+              "KeyBlockFormat": "X9_TR34_2012",
+              "RandomNonce": "string",
+              "WrappingKeyCertificate": "string"
+            }
+          }
+
+       --cli-input-json (string) Performs service operation based on the  JSON
+       string  provided. The JSON string follows the format provided by --gen-
+       erate-cli-skeleton. If other arguments  are  provided  on  the  command
+       line,  the CLI values will override the JSON-provided values. It is not
+       possible to pass arbitrary binary values using a JSON-provided value as
+       the string will be taken literally.
+
+       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
+       output without sending an API request. If provided with no value or the
+       value input, prints a sample input JSON that can be used as an argument
+       for --cli-input-json. If provided with the value output,  it  validates
+       the command inputs and returns a sample output JSON for that command.
+
+GLOBAL OPTIONS
+       --debug (boolean)
+
+       Turn on debug logging.
+
+       --endpoint-url (string)
+
+       Override command's default URL with the given URL.
+
+       --no-verify-ssl (boolean)
+
+       By  default, the AWS CLI uses SSL when communicating with AWS services.
+       For each SSL connection, the AWS CLI will verify SSL certificates. This
+       option overrides the default behavior of verifying SSL certificates.
+
+       --no-paginate (boolean)
+
+       Disable automatic pagination.
+
+       --output (string)
+
+       The formatting style for command output.
+
+       o json
+
+       o text
+
+       o table
+
+       --query (string)
+
+       A JMESPath query to use in filtering the response data.
+
+       --profile (string)
+
+       Use a specific profile from your credential file.
+
+       --region (string)
+
+       The region to use. Overrides config/env settings.
+
+       --version (string)
+
+       Display the version of this tool.
+
+       --color (string)
+
+       Turn on/off color output.
+
+       o on
+
+       o off
+
+       o auto
+
+       --no-sign-request (boolean)
+
+       Do  not  sign requests. Credentials will not be loaded if this argument
+       is provided.
+
+       --ca-bundle (string)
+
+       The CA certificate bundle to use when verifying SSL certificates. Over-
+       rides config/env settings.
+
+       --cli-read-timeout (int)
+
+       The  maximum socket read time in seconds. If the value is set to 0, the
+       socket read will be blocking and not timeout. The default value  is  60
+       seconds.
+
+       --cli-connect-timeout (int)
+
+       The  maximum  socket connect time in seconds. If the value is set to 0,
+       the socket connect will be blocking and not timeout. The default  value
+       is 60 seconds.
+
+OUTPUT
+       WrappedKey -> (structure)
+          The key material under export as a TR-34 or TR-31 wrapped key block.
+
+          KeyMaterial -> (string)
+              Parameter  information  for generating a wrapped key using TR-31
+              or TR-34 standard.
+
+          WrappedKeyMaterialFormat -> (string)
+              The key block format of a wrapped key.
+
+          WrappingKeyArn -> (string)
+              The KeyARN of the wrapped key.
+
+
+
+                                                                  EXPORT-KEY()
