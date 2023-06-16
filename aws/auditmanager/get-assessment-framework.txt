@@ -6,7 +6,7 @@ NAME
        get-assessment-framework -
 
 DESCRIPTION
-       Returns a framework from Audit Manager.
+       Gets information about a specified framework.
 
        See also: AWS API Documentation
 
@@ -138,12 +138,12 @@ OUTPUT
               The name of the framework.
 
           type -> (string)
-              The framework type, such as a custom  framework  or  a  standard
-              framework.
+              Specifies whether the framework is a  standard  framework  or  a
+              custom framework.
 
           complianceType -> (string)
-              The compliance type that the new custom framework supports, such
-              as CIS or HIPAA.
+              The  compliance type that the framework supports, such as CIS or
+              HIPAA.
 
           description -> (string)
               The description of the framework.
@@ -152,8 +152,8 @@ OUTPUT
               The logo that's associated with the framework.
 
           controlSources -> (string)
-              The sources that Audit Manager collects evidence  from  for  the
-              control.
+              The control data sources where Audit Manager  collects  evidence
+              from.
 
           controlSets -> (list)
               The control sets that are associated with the framework.
@@ -181,8 +181,8 @@ OUTPUT
                             The unique identifier for the control.
 
                         type -> (string)
-                            The type of control, such as a custom control or a
-                            standard control.
+                            Specifies whether the control is a  standard  con-
+                            trol or a custom control.
 
                         name -> (string)
                             The name of the control.
@@ -232,18 +232,25 @@ OUTPUT
                                    for evidence collection.
 
                                sourceKeyword -> (structure)
-                                   The  keyword  to  search  for in CloudTrail
-                                   logs, Config rules,  Security  Hub  checks,
-                                   and Amazon Web Services API names.
+                                   A  keyword that relates to the control data
+                                   source.
 
-                                   To  learn more about the supported keywords
-                                   that you can use  when  mapping  a  control
+                                   For manual evidence, this keyword indicates
+                                   if the manual evidence is a file or text.
+
+                                   For  automated evidence, this keyword iden-
+                                   tifies a specific CloudTrail event,  Config
+                                   rule,  Security  Hub control, or Amazon Web
+                                   Services API name.
+
+                                   To learn more about the supported  keywords
+                                   that  you  can  use  when mapping a control
                                    data source, see the following pages in the
                                    Audit Manager User Guide :
 
                                    o Config rules supported by Audit Manager
 
-                                   o Security Hub controls supported by  Audit
+                                   o Security  Hub controls supported by Audit
                                      Manager
 
                                    o API calls supported by Audit Manager
@@ -254,41 +261,76 @@ OUTPUT
                                    keywordInputType -> (string)
                                       The input method for the keyword.
 
+                                      o SELECT_FROM_LIST  is used when mapping
+                                        a data source for automated evidence.
+
+                                        o When   keywordInputType    is    SE-
+                                          LECT_FROM_LIST  ,  a keyword must be
+                                          selected to collect  automated  evi-
+                                          dence. For example, this keyword can
+                                          be a CloudTrail event name,  a  rule
+                                          name for Config, a Security Hub con-
+                                          trol, or the name of an  Amazon  Web
+                                          Services API call.
+
+                                      o UPLOAD_FILE  and  INPUT_TEXT  are only
+                                        used when mapping a  data  source  for
+                                        manual evidence.
+
+                                        o When keywordInputType is UPLOAD_FILE
+                                          , a file must be uploaded as  manual
+                                          evidence.
+
+                                        o When  keywordInputType is INPUT_TEXT
+                                          , text must be entered as manual ev-
+                                          idence.
+
                                    keywordValue -> (string)
-                                      The value of  the  keyword  that's  used
-                                      when  mapping a control data source. For
-                                      example, this can be a CloudTrail  event
+                                      The  value  of  the  keyword that's used
+                                      when mapping a control data source.  For
+                                      example,  this can be a CloudTrail event
                                       name, a rule name for Config, a Security
-                                      Hub control, or the name  of  an  Amazon
+                                      Hub  control,  or  the name of an Amazon
                                       Web Services API call.
 
                                       If youre mapping a data source to a rule
-                                      in Config,  the  keywordValue  that  you
+                                      in  Config,  the  keywordValue  that you
                                       specify depends on the type of rule:
 
-                                      o For  managed  rules  , you can use the
-                                        rule identifier as the keywordValue  .
-                                        You  can find the rule identifier from
-                                        the list of Config managed rules .
+                                      o For managed rules , you  can  use  the
+                                        rule  identifier as the keywordValue .
+                                        You can find the rule identifier  from
+                                        the list of Config managed rules . For
+                                        some rules,  the  rule  identifier  is
+                                        different  from the rule name. For ex-
+                                        ample, the  rule  name  restricted-ssh
+                                        has the following rule identifier: IN-
+                                        COMING_SSH_DISABLED . Make sure to use
+                                        the  rule  identifier,  not  the  rule
+                                        name.   Keyword  example  for  managed
+                                        rules:
 
                                         o Managed          rule          name:
                                           s3-bucket-acl-prohibited    keyword-
                                           Value : S3_BUCKET_ACL_PROHIBITED
 
-                                      o For custom rules , you form  the  key-
+                                      o For  custom  rules , you form the key-
                                         wordValue by adding the Custom_ prefix
-                                        to the rule name. This prefix  distin-
-                                        guishes the rule from a managed rule.
+                                        to  the rule name. This prefix distin-
+                                        guishes the custom rule from a managed
+                                        rule.    Keyword  example  for  custom
+                                        rules:
 
-                                        o Custom   rule  name:  my-custom-con-
-                                          fig-rule    keywordValue   :    Cus-
+                                        o Custom  rule  name:   my-custom-con-
+                                          fig-rule     keywordValue   :   Cus-
                                           tom_my-custom-config-rule
 
-                                      o For  service-linked  rules  , you form
+                                      o For service-linked rules  ,  you  form
                                         the keywordValue by adding the Custom_
-                                        prefix  to the rule name. In addition,
-                                        you remove the suffix ID that  appears
-                                        at the end of the rule name.
+                                        prefix to the rule name. In  addition,
+                                        you  remove the suffix ID that appears
+                                        at the end of the rule name.   Keyword
+                                        examples for service-linked rules:
 
                                         o Service-linked  rule  name:  Custom-
                                           RuleForAccount-confor-
@@ -302,26 +344,84 @@ OUTPUT
                                           tom_OrgConfigRule-s3-bucket-version-
                                           ing-enabled
 
+                                      WARNING:
+                                          The  keywordValue is case sensitive.
+                                          If you enter  a  value  incorrectly,
+                                          Audit  Manager  might  not recognize
+                                          the data source mapping.  As  a  re-
+                                          sult,  you  might  not  successfully
+                                          collect  evidence  from  that   data
+                                          source as intended.
+
+                                          Keep  in mind the following require-
+                                          ments, depending on the data  source
+                                          type that you're using.
+
+                                          o For Config:
+
+                                            o For  managed  rules,  make  sure
+                                              that  the  keywordValue  is  the
+                                              rule        identifier        in
+                                              ALL_CAPS_WITH_UNDERSCORES .  For
+                                              example,                  CLOUD-
+                                              WATCH_LOG_GROUP_ENCRYPTED .  For
+                                              accuracy,  we recommend that you
+                                              reference the list of  supported
+                                              Config managed rules .
+
+                                            o For custom rules, make sure that
+                                              the keywordValue has the Custom_
+                                              prefix  followed  by  the custom
+                                              rule name.  The  format  of  the
+                                              custom   rule  name  itself  may
+                                              vary. For accuracy, we recommend
+                                              that  you  visit the Config con-
+                                              sole to verify your custom  rule
+                                              name.
+
+                                          o For   Security   Hub:  The  format
+                                            varies for  Security  Hub  control
+                                            names.  For accuracy, we recommend
+                                            that you  reference  the  list  of
+                                            supported Security Hub controls .
+
+                                          o For Amazon Web Services API calls:
+                                            Make sure that the keywordValue is
+                                            written  as  serviceprefix_Action-
+                                            Name . For example, iam_ListGroups
+                                            .  For accuracy, we recommend that
+                                            you   reference   the   list    of
+                                            supported API calls .
+
+                                          o For CloudTrail: Make sure that the
+                                            keywordValue is written as  servi-
+                                            ceprefix_ActionName . For example,
+                                            cloudtrail_StartLogging . For  ac-
+                                            curacy,  we recommend that you re-
+                                            view the Amazon Web Service prefix
+                                            and  action  names  in the Service
+                                            Authorization Reference .
+
                                sourceFrequency -> (string)
-                                   The  frequency  of  evidence collection for
-                                   the control mapping source.
+                                   Specifies how often evidence  is  collected
+                                   from the control mapping source.
 
                                troubleshootingText -> (string)
-                                   The instructions  for  troubleshooting  the
+                                   The  instructions  for  troubleshooting the
                                    control.
 
                         createdAt -> (timestamp)
                             The time when the control was created.
 
                         lastUpdatedAt -> (timestamp)
-                            The  time  when  the control was most recently up-
+                            The time when the control was  most  recently  up-
                             dated.
 
                         createdBy -> (string)
                             The user or role that created the control.
 
                         lastUpdatedBy -> (string)
-                            The user or role that most  recently  updated  the
+                            The  user  or  role that most recently updated the
                             control.
 
                         tags -> (map)

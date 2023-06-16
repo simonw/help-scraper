@@ -76,8 +76,14 @@ OPTIONS
                  collection.
 
               sourceKeyword -> (structure)
-                 The keyword to search for in CloudTrail logs,  Config  rules,
-                 Security Hub checks, and Amazon Web Services API names.
+                 A keyword that relates to the control data source.
+
+                 For manual evidence, this keyword indicates if the manual ev-
+                 idence is a file or text.
+
+                 For  automated  evidence,  this keyword identifies a specific
+                 CloudTrail event, Config rule, Security Hub control, or  Ama-
+                 zon Web Services API name.
 
                  To  learn  more about the supported keywords that you can use
                  when mapping a control data source, see the  following  pages
@@ -94,6 +100,24 @@ OPTIONS
                  keywordInputType -> (string)
                      The input method for the keyword.
 
+                     o SELECT_FROM_LIST is used when mapping a data source for
+                       automated evidence.
+
+                       o When keywordInputType is SELECT_FROM_LIST , a keyword
+                         must  be  selected to collect automated evidence. For
+                         example, this keyword can be a CloudTrail event name,
+                         a  rule  name  for Config, a Security Hub control, or
+                         the name of an Amazon Web Services API call.
+
+                     o UPLOAD_FILE and INPUT_TEXT are only used when mapping a
+                       data source for manual evidence.
+
+                       o When keywordInputType is UPLOAD_FILE , a file must be
+                         uploaded as manual evidence.
+
+                       o When keywordInputType is INPUT_TEXT ,  text  must  be
+                         entered as manual evidence.
+
                  keywordValue -> (string)
                      The  value of the keyword that's used when mapping a con-
                      trol data source. For example, this can be  a  CloudTrail
@@ -106,14 +130,20 @@ OPTIONS
 
                      o For managed rules , you can use the rule identifier  as
                        the  keywordValue  .  You  can find the rule identifier
-                       from the list of Config managed rules .
+                       from the list of Config managed rules . For some rules,
+                       the  rule  identifier  is different from the rule name.
+                       For example, the rule name restricted-ssh has the  fol-
+                       lowing  rule  identifier:  INCOMING_SSH_DISABLED . Make
+                       sure to use the rule identifier,  not  the  rule  name.
+                       Keyword example for managed rules:
 
-                       o Managed rule name:  s3-bucket-acl-prohibited     key-
+                       o Managed  rule  name: s3-bucket-acl-prohibited    key-
                          wordValue : S3_BUCKET_ACL_PROHIBITED
 
-                     o For  custom rules , you form the keywordValue by adding
-                       the Custom_ prefix to the rule name. This  prefix  dis-
-                       tinguishes the rule from a managed rule.
+                     o For custom rules , you form the keywordValue by  adding
+                       the  Custom_  prefix to the rule name. This prefix dis-
+                       tinguishes the custom rule from a managed  rule.   Key-
+                       word example for custom rules:
 
                        o Custom rule name: my-custom-config-rule  keywordValue
                          : Custom_my-custom-config-rule
@@ -121,10 +151,11 @@ OPTIONS
                      o For service-linked rules , you form the keywordValue by
                        adding  the  Custom_  prefix to the rule name. In addi-
                        tion, you remove the suffix ID that appears at the  end
-                       of the rule name.
+                       of  the rule name.  Keyword examples for service-linked
+                       rules:
 
-                       o Service-linked  rule  name: CustomRuleForAccount-con-
-                         formance-pack-szsm1uv0w  keywordValue  :  Custom_Cus-
+                       o Service-linked rule  name:  CustomRuleForAccount-con-
+                         formance-pack-szsm1uv0w   keywordValue  : Custom_Cus-
                          tomRuleForAccount-conformance-pack
 
                        o Service-linked       rule       name:       OrgConfi-
@@ -132,9 +163,53 @@ OPTIONS
                          Value : Custom_OrgConfigRule-s3-bucket-versioning-en-
                          abled
 
+                     WARNING:
+                        The  keywordValue  is  case  sensitive. If you enter a
+                        value incorrectly, Audit Manager might  not  recognize
+                        the  data  source  mapping. As a result, you might not
+                        successfully collect evidence from that data source as
+                        intended.
+
+                        Keep  in mind the following requirements, depending on
+                        the data source type that you're using.
+
+                        o For Config:
+
+                          o For managed rules, make sure that the keywordValue
+                            is  the  rule  identifier  in ALL_CAPS_WITH_UNDER-
+                            SCORES  .  For  example,  CLOUDWATCH_LOG_GROUP_EN-
+                            CRYPTED . For accuracy, we recommend that you ref-
+                            erence the list of supported Config managed  rules
+                            .
+
+                          o For  custom rules, make sure that the keywordValue
+                            has the Custom_ prefix followed by the custom rule
+                            name.  The  format  of the custom rule name itself
+                            may vary. For  accuracy,  we  recommend  that  you
+                            visit  the  Config  console  to verify your custom
+                            rule name.
+
+                        o For Security Hub: The format varies for Security Hub
+                          control  names.  For accuracy, we recommend that you
+                          reference the list of supported  Security  Hub  con-
+                          trols .
+
+                        o For  Amazon  Web  Services API calls: Make sure that
+                          the keywordValue is written as serviceprefix_Action-
+                          Name  .  For example, iam_ListGroups . For accuracy,
+                          we  recommend  that  you  reference  the   list   of
+                          supported API calls .
+
+                        o For  CloudTrail:  Make sure that the keywordValue is
+                          written as serviceprefix_ActionName .  For  example,
+                          cloudtrail_StartLogging . For accuracy, we recommend
+                          that you review the Amazon Web  Service  prefix  and
+                          action  names in the Service Authorization Reference
+                          .
+
               sourceFrequency -> (string)
-                 The frequency of evidence collection for the control  mapping
-                 source.
+                 Specifies how often evidence is collected  from  the  control
+                 mapping source.
 
               troubleshootingText -> (string)
                  The instructions for troubleshooting the control.
@@ -152,7 +227,7 @@ OPTIONS
               "sourceSetUpOption": "System_Controls_Mapping"|"Procedural_Controls_Mapping",
               "sourceType": "AWS_Cloudtrail"|"AWS_Config"|"AWS_Security_Hub"|"AWS_API_Call"|"MANUAL",
               "sourceKeyword": {
-                "keywordInputType": "SELECT_FROM_LIST",
+                "keywordInputType": "SELECT_FROM_LIST"|"UPLOAD_FILE"|"INPUT_TEXT",
                 "keywordValue": "string"
               },
               "sourceFrequency": "DAILY"|"WEEKLY"|"MONTHLY",
@@ -278,8 +353,8 @@ OUTPUT
               The unique identifier for the control.
 
           type -> (string)
-              The type of control, such as a custom control or a standard con-
-              trol.
+              Specifies whether the control is a standard control or a  custom
+              control.
 
           name -> (string)
               The name of the control.
@@ -327,11 +402,16 @@ OUTPUT
                      collection.
 
                  sourceKeyword -> (structure)
-                     The  keyword  to  search  for  in CloudTrail logs, Config
-                     rules, Security Hub checks, and Amazon Web  Services  API
-                     names.
+                     A keyword that relates to the control data source.
 
-                     To  learn  more about the supported keywords that you can
+                     For manual evidence, this keyword indicates if the manual
+                     evidence is a file or text.
+
+                     For automated evidence, this keyword  identifies  a  spe-
+                     cific  CloudTrail  event,  Config rule, Security Hub con-
+                     trol, or Amazon Web Services API name.
+
+                     To learn more about the supported keywords that  you  can
                      use when mapping a control data source, see the following
                      pages in the Audit Manager User Guide :
 
@@ -346,6 +426,25 @@ OUTPUT
                      keywordInputType -> (string)
                         The input method for the keyword.
 
+                        o SELECT_FROM_LIST is used when mapping a data  source
+                          for automated evidence.
+
+                          o When keywordInputType is SELECT_FROM_LIST , a key-
+                            word must be selected to  collect  automated  evi-
+                            dence.  For  example, this keyword can be a Cloud-
+                            Trail event name, a rule name for Config, a  Secu-
+                            rity  Hub  control,  or  the name of an Amazon Web
+                            Services API call.
+
+                        o UPLOAD_FILE and INPUT_TEXT are only used  when  map-
+                          ping a data source for manual evidence.
+
+                          o When keywordInputType is UPLOAD_FILE , a file must
+                            be uploaded as manual evidence.
+
+                          o When keywordInputType is INPUT_TEXT , text must be
+                            entered as manual evidence.
+
                      keywordValue -> (string)
                         The  value  of  the keyword that's used when mapping a
                         control data source. For example, this can be a Cloud-
@@ -359,22 +458,30 @@ OUTPUT
 
                         o For  managed rules , you can use the rule identifier
                           as the keywordValue . You can find the rule  identi-
-                          fier from the list of Config managed rules .
+                          fier  from  the  list  of Config managed rules . For
+                          some rules, the rule identifier  is  different  from
+                          the  rule  name.  For  example,  the  rule  name re-
+                          stricted-ssh has the following rule identifier:  IN-
+                          COMING_SSH_DISABLED  .  Make  sure  to  use the rule
+                          identifier, not the rule name.  Keyword example  for
+                          managed rules:
 
                           o Managed    rule   name:   s3-bucket-acl-prohibited
                             keywordValue : S3_BUCKET_ACL_PROHIBITED
 
                         o For custom rules ,  you  form  the  keywordValue  by
                           adding  the  Custom_  prefix  to the rule name. This
-                          prefix distinguishes the rule from a managed rule.
+                          prefix distinguishes the custom rule from a  managed
+                          rule.  Keyword example for custom rules:
 
-                          o Custom rule name: my-custom-config-rule   keyword-
+                          o Custom  rule name: my-custom-config-rule  keyword-
                             Value : Custom_my-custom-config-rule
 
                         o For service-linked rules , you form the keywordValue
-                          by adding the Custom_ prefix to the  rule  name.  In
-                          addition,  you  remove the suffix ID that appears at
-                          the end of the rule name.
+                          by  adding  the  Custom_ prefix to the rule name. In
+                          addition, you remove the suffix ID that  appears  at
+                          the end of the rule name.  Keyword examples for ser-
+                          vice-linked rules:
 
                           o Service-linked   rule    name:    CustomRuleForAc-
                             count-conformance-pack-szsm1uv0w   keywordValue  :
@@ -385,9 +492,53 @@ OUTPUT
                             wordValue  :   Custom_OrgConfigRule-s3-bucket-ver-
                             sioning-enabled
 
+                        WARNING:
+                            The keywordValue is case sensitive. If you enter a
+                            value incorrectly, Audit Manager might not  recog-
+                            nize  the  data  source  mapping. As a result, you
+                            might not successfully collect evidence from  that
+                            data source as intended.
+
+                            Keep in mind the following requirements, depending
+                            on the data source type that you're using.
+
+                            o For Config:
+
+                              o For managed rules, make sure that the keyword-
+                                Value    is    the    rule    identifier    in
+                                ALL_CAPS_WITH_UNDERSCORES   .   For   example,
+                                CLOUDWATCH_LOG_GROUP_ENCRYPTED . For accuracy,
+                                we recommend that you reference  the  list  of
+                                supported Config managed rules .
+
+                              o For  custom rules, make sure that the keyword-
+                                Value has the Custom_ prefix followed  by  the
+                                custom  rule  name.  The  format of the custom
+                                rule name itself may vary.  For  accuracy,  we
+                                recommend that you visit the Config console to
+                                verify your custom rule name.
+
+                            o For Security Hub: The format varies for Security
+                              Hub  control  names.  For accuracy, we recommend
+                              that you reference the list of  supported  Secu-
+                              rity Hub controls .
+
+                            o For  Amazon  Web  Services  API calls: Make sure
+                              that the keywordValue is written as  servicepre-
+                              fix_ActionName  .  For example, iam_ListGroups .
+                              For accuracy, we recommend  that  you  reference
+                              the list of supported API calls .
+
+                            o For  CloudTrail: Make sure that the keywordValue
+                              is written as serviceprefix_ActionName . For ex-
+                              ample,  cloudtrail_StartLogging  . For accuracy,
+                              we recommend that you review the Amazon Web Ser-
+                              vice  prefix and action names in the Service Au-
+                              thorization Reference .
+
                  sourceFrequency -> (string)
-                     The frequency of evidence collection for the control map-
-                     ping source.
+                     Specifies how often evidence is collected from  the  con-
+                     trol mapping source.
 
                  troubleshootingText -> (string)
                      The instructions for troubleshooting the control.
