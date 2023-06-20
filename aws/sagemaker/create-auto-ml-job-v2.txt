@@ -6,18 +6,23 @@ NAME
        create-auto-ml-job-v2 -
 
 DESCRIPTION
-       Creates  an Amazon SageMaker AutoML job that uses non-tabular data such
-       as images or text for Computer Vision or  Natural  Language  Processing
-       problems.
+       Creates  an  Autopilot  job also referred to as Autopilot experiment or
+       AutoML job V2.
 
-       Find  the  resulting  model  after  you run an AutoML job V2 by calling
-       DescribeAutoMLJobV2 .
+       We recommend using CreateAutoMLJobV2 for all problem  types.  CreateAu-
+       toMLJobV2  can  process  the  same tabular data as its previous version
+       CreateAutoMLJob , as well as non-tabular data for problem types such as
+       image or text classification.
 
-       To create an AutoMLJob using tabular data, see CreateAutoMLJob .
+       Find  guidelines  about  how  to  migrate  CreateAutoMLJob to CreateAu-
+       toMLJobV2 in Migrate a CreateAutoMLJob to CreateAutoMLJobV2 .
 
-       NOTE:
-          This API action is callable through SageMaker Canvas  only.  Calling
-          it directly from the CLI or an SDK results in an error.
+       For the list of available problem types supported by  CreateAutoMLJobV2
+       , see AutoMLProblemTypeConfig .
+
+       Find  the best-performing model after you run an AutoML job V2 by call-
+       ing DescribeAutoMLJobV2 . Calling DescribeAutoMLJob on a AutoML job  V2
+       results in an error.
 
        See also: AWS API Documentation
 
@@ -61,42 +66,48 @@ OPTIONS
           InputDataConfig supported by CreateAutoMLJob . The supported formats
           depend on the problem type:
 
-          o ImageClassification:  S3Prefix,  ManifestFile , AugmentedManifest-
-            File
+          o For Tabular problem types: S3Prefix , ManifestFile .
 
-          o TextClassification: S3Prefix
+          o For  ImageClassification: S3Prefix , ManifestFile , AugmentedMani-
+            festFile .
+
+          o For TextClassification: S3Prefix .
 
           (structure)
               A channel is a named input source that training  algorithms  can
-              consume.  This channel is used for the non tabular training data
-              of an AutoML job using the V2 API. For  tabular  training  data,
-              see AutoMLChannel . For more information, see Channel .
+              consume.  This  channel is used for AutoML jobs V2 (jobs created
+              by calling CreateAutoMLJobV2 ).
 
               ChannelType -> (string)
-                 The  type  of  channel. Defines whether the data are used for
+                 The type of channel. Defines whether the data  are  used  for
                  training or validation. The default value is training . Chan-
                  nels for training and validation must share the same Content-
                  Type
 
               ContentType -> (string)
-                 The content type of the data from the input source. The  fol-
+                 The  content type of the data from the input source. The fol-
                  lowing are the allowed content types for different problems:
 
-                 o ImageClassification:  image/png , image/jpeg , or image/* .
-                   The default value is image/* .
+                 o For Tabular problem types: text/csv;header=present or x-ap-
+                   plication/vnd.amazon+parquet   .   The   default  value  is
+                   text/csv;header=present .
 
-                 o TextClassification: text/csv;header=present  or  x-applica-
-                   tion/vnd.amazon+parquet    .    The    default   value   is
+                 o For ImageClassification: image/png , image/jpeg  ,  or  im-
+                   age/* . The default value is image/* .
+
+                 o For TextClassification: text/csv;header=present or x-appli-
+                   cation/vnd.amazon+parquet   .   The   default   value    is
                    text/csv;header=present .
 
               CompressionType -> (string)
-                 The allowed compression types depend on the input format.  We
-                 allow the compression type Gzip for S3Prefix inputs only. For
-                 all other inputs, the compression type should be None . If no
-                 compression type is provided, we default to None .
+                 The  allowed compression types depend on the input format and
+                 problem type. We allow the compression type Gzip for S3Prefix
+                 inputs  on  tabular data only. For all other inputs, the com-
+                 pression type should be None . If no compression type is pro-
+                 vided, we default to None .
 
               DataSource -> (structure)
-                 The data source for an AutoML channel.
+                 The data source for an AutoML channel (Required).
 
                  S3DataSource -> (structure)
                      The Amazon S3 location of the input data.
@@ -188,50 +199,177 @@ OPTIONS
           types.
 
           NOTE:
-              This  is a Tagged Union structure. Only one of the following top
+              For  tabular  problem types, you must either specify the type of
+              supervised learning problem in AutoMLProblemTypeConfig (Tabular-
+              JobConfig.ProblemType  ) and provide the AutoMLJobObjective , or
+              none at all.
+
+          NOTE:
+              This is a Tagged Union structure. Only one of the following  top
               level keys can be set: ImageClassificationJobConfig, TextClassi-
-              ficationJobConfig.
+              ficationJobConfig, TabularJobConfig.
 
           ImageClassificationJobConfig -> (structure)
-              Settings  used  to  configure an AutoML job using the V2 API for
-              the image classification problem type.
+              Settings used to configure an AutoML job V2 for the image  clas-
+              sification problem type.
 
               CompletionCriteria -> (structure)
-                 How long a job is allowed to run, or how  many  candidates  a
+                 How  long  a  job is allowed to run, or how many candidates a
                  job is allowed to generate.
 
                  MaxCandidates -> (integer)
-                     The  maximum number of times a training job is allowed to
+                     The maximum number of times a training job is allowed  to
                      run.
 
-                     For V2 jobs (jobs created by calling CreateAutoMLJobV2 ),
+                     For job V2s (jobs created by calling CreateAutoMLJobV2 ),
                      the supported value is 1.
 
                  MaxRuntimePerTrainingJobInSeconds -> (integer)
                      The maximum time, in seconds, that each training job exe-
-                     cuted inside hyperparameter tuning is allowed to  run  as
-                     part  of  a  hyperparameter tuning job. For more informa-
-                     tion,   see   the   StoppingCondition   used    by    the
+                     cuted  inside  hyperparameter tuning is allowed to run as
+                     part of a hyperparameter tuning job.  For  more  informa-
+                     tion,    see    the   StoppingCondition   used   by   the
                      CreateHyperParameterTuningJob action.
 
-                     For V2 jobs (jobs created by calling CreateAutoMLJobV2 ),
+                     For job V2s (jobs created by calling CreateAutoMLJobV2 ),
                      this field controls the runtime of the job candidate.
 
                  MaxAutoMLJobRuntimeInSeconds -> (integer)
-                     The maximum runtime, in seconds, an  AutoML  job  has  to
+                     The  maximum  runtime,  in  seconds, an AutoML job has to
                      complete.
 
-                     If  an AutoML job exceeds the maximum runtime, the job is
-                     stopped automatically and its processing is ended  grace-
-                     fully.  The  AutoML  job  identifies the best model whose
-                     training was completed and marks it as the  best-perform-
+                     If an AutoML job exceeds the maximum runtime, the job  is
+                     stopped  automatically and its processing is ended grace-
+                     fully. The AutoML job identifies  the  best  model  whose
+                     training  was completed and marks it as the best-perform-
                      ing model. Any unfinished steps of the job, such as auto-
-                     matic one-click Autopilot model deployment, are not  com-
+                     matic  one-click Autopilot model deployment, are not com-
                      pleted.
 
           TextClassificationJobConfig -> (structure)
-              Settings  used  to  configure an AutoML job using the V2 API for
-              the text classification problem type.
+              Settings used to configure an AutoML job V2 for the text classi-
+              fication problem type.
+
+              CompletionCriteria -> (structure)
+                 How  long  a  job is allowed to run, or how many candidates a
+                 job is allowed to generate.
+
+                 MaxCandidates -> (integer)
+                     The maximum number of times a training job is allowed  to
+                     run.
+
+                     For job V2s (jobs created by calling CreateAutoMLJobV2 ),
+                     the supported value is 1.
+
+                 MaxRuntimePerTrainingJobInSeconds -> (integer)
+                     The maximum time, in seconds, that each training job exe-
+                     cuted  inside  hyperparameter tuning is allowed to run as
+                     part of a hyperparameter tuning job.  For  more  informa-
+                     tion,    see    the   StoppingCondition   used   by   the
+                     CreateHyperParameterTuningJob action.
+
+                     For job V2s (jobs created by calling CreateAutoMLJobV2 ),
+                     this field controls the runtime of the job candidate.
+
+                 MaxAutoMLJobRuntimeInSeconds -> (integer)
+                     The  maximum  runtime,  in  seconds, an AutoML job has to
+                     complete.
+
+                     If an AutoML job exceeds the maximum runtime, the job  is
+                     stopped  automatically and its processing is ended grace-
+                     fully. The AutoML job identifies  the  best  model  whose
+                     training  was completed and marks it as the best-perform-
+                     ing model. Any unfinished steps of the job, such as auto-
+                     matic  one-click Autopilot model deployment, are not com-
+                     pleted.
+
+              ContentColumn -> (string)
+                 The name of the column used to provide the  sentences  to  be
+                 classified.  It  should  not be the same as the target column
+                 (Required).
+
+              TargetLabelColumn -> (string)
+                 The name of the column used to provide the class  labels.  It
+                 should not be same as the content column (Required).
+
+          TabularJobConfig -> (structure)
+              Settings  used to configure an AutoML job V2 for a tabular prob-
+              lem type (regression, classification).
+
+              CandidateGenerationConfig -> (structure)
+                 The configuration information of  how  model  candidates  are
+                 generated.
+
+                 AlgorithmsConfig -> (list)
+                     Stores the configuration information for the selection of
+                     algorithms used to  train  model  candidates  on  tabular
+                     data.
+
+                     The  list  of available algorithms to choose from depends
+                     on the  training  mode  set  in  `  TabularJobConfig.Mode
+                     https://docs.aws.amazon.com/sagemaker/latest/APIReference/API_TabularJobConfig.html`__
+                     .
+
+                     o AlgorithmsConfig should not be  set  in  AUTO  training
+                       mode.
+
+                     o When AlgorithmsConfig is provided, one AutoMLAlgorithms
+                       attribute must be set and one only. If the list of  al-
+                       gorithms  provided  as  values  for AutoMLAlgorithms is
+                       empty, CandidateGenerationConfig uses the full  set  of
+                       algorithms for the given training mode.
+
+                     o When AlgorithmsConfig is not provided, CandidateGenera-
+                       tionConfig uses the full  set  of  algorithms  for  the
+                       given training mode.
+
+                     For  the  list  of  all  algorithms  per problem type and
+                     training mode, see AutoMLAlgorithmConfig .
+
+                     For more information on each algorithm, see the Algorithm
+                     support section in Autopilot developer guide.
+
+                     (structure)
+                        The  collection  of  algorithms  run  on a dataset for
+                        training the model candidates of an Autopilot job.
+
+                        AutoMLAlgorithms -> (list)
+                            The selection of algorithms run on  a  dataset  to
+                            train the model candidates of an Autopilot job.
+
+                            NOTE:
+                               Selected  algorithms  must  belong  to the list
+                               corresponding  to  the  training  mode  set  in
+                               AutoMLJobConfig.Mode (ENSEMBLING or HYPERPARAM-
+                               ETER_TUNING ). Choose a minimum of 1 algorithm.
+
+                            o In ENSEMBLING mode:
+
+                              o "catboost"
+
+                              o "extra-trees"
+
+                              o "fastai"
+
+                              o "lightgbm"
+
+                              o "linear-learner"
+
+                              o "nn-torch"
+
+                              o "randomforest"
+
+                              o "xgboost"
+
+                            o In HYPERPARAMETER_TUNING mode:
+
+                              o "linear-learner"
+
+                              o "mlp"
+
+                              o "xgboost"
+
+                            (string)
 
               CompletionCriteria -> (structure)
                  How long a job is allowed to run, or how  many  candidates  a
@@ -241,7 +379,7 @@ OPTIONS
                      The  maximum number of times a training job is allowed to
                      run.
 
-                     For V2 jobs (jobs created by calling CreateAutoMLJobV2 ),
+                     For job V2s (jobs created by calling CreateAutoMLJobV2 ),
                      the supported value is 1.
 
                  MaxRuntimePerTrainingJobInSeconds -> (integer)
@@ -251,7 +389,7 @@ OPTIONS
                      tion,   see   the   StoppingCondition   used    by    the
                      CreateHyperParameterTuningJob action.
 
-                     For V2 jobs (jobs created by calling CreateAutoMLJobV2 ),
+                     For job V2s (jobs created by calling CreateAutoMLJobV2 ),
                      this field controls the runtime of the job candidate.
 
                  MaxAutoMLJobRuntimeInSeconds -> (integer)
@@ -266,17 +404,94 @@ OPTIONS
                      matic one-click Autopilot model deployment, are not  com-
                      pleted.
 
-              ContentColumn -> (string)
-                 The  name  of  the column used to provide the sentences to be
-                 classified. It should not be the same as the target column.
+              FeatureSpecificationS3Uri -> (string)
+                 A  URL  to the Amazon S3 data source containing selected fea-
+                 tures from the input data source to run an Autopilot job  V2.
+                 You can input FeatureAttributeNames (optional) in JSON format
+                 as shown below:
+                     { "FeatureAttributeNames":["col1", "col2", ...] } .
 
-              TargetLabelColumn -> (string)
-                 The name of the column used to provide the class  labels.  It
-                 should not be same as the content column.
+                 You can also specify the data type of the feature  (optional)
+                 in the format shown below:
+                     { "FeatureDataTypes":{"col1":"numeric", "col2":"categori-
+                     cal" ... } }
 
-       Shorthand Syntax:
+                 NOTE:
+                     These column keys may not include the target column.
 
-          ImageClassificationJobConfig={CompletionCriteria={MaxCandidates=integer,MaxRuntimePerTrainingJobInSeconds=integer,MaxAutoMLJobRuntimeInSeconds=integer}},TextClassificationJobConfig={CompletionCriteria={MaxCandidates=integer,MaxRuntimePerTrainingJobInSeconds=integer,MaxAutoMLJobRuntimeInSeconds=integer},ContentColumn=string,TargetLabelColumn=string}
+                 In ensembling mode, Autopilot  only  supports  the  following
+                 data  types: numeric , categorical , text , and datetime . In
+                 HPO mode, Autopilot can support numeric , categorical ,  text
+                 , datetime , and sequence .
+
+                 If only FeatureDataTypes is provided, the column keys (col1 ,
+                 col2 ,..) should be a subset of the column names in the input
+                 data.
+
+                 If  both  FeatureDataTypes and FeatureAttributeNames are pro-
+                 vided, then the column keys should be a subset of the  column
+                 names provided in FeatureAttributeNames .
+
+                 The  key  name  FeatureAttributeNames  is  fixed.  The values
+                 listed in ["col1", "col2", ...] are case sensitive and should
+                 be a list of strings containing unique values that are a sub-
+                 set of the column names in the input data. The list  of  col-
+                 umns provided must not include the target column.
+
+              Mode -> (string)
+                 The method that Autopilot uses to train the data. You can ei-
+                 ther specify the mode manually or let  Autopilot  choose  for
+                 you  based  on  the  dataset size by selecting AUTO . In AUTO
+                 mode, Autopilot chooses ENSEMBLING for datasets smaller  than
+                 100 MB, and HYPERPARAMETER_TUNING for larger ones.
+
+                 The ENSEMBLING mode uses a multi-stack ensemble model to pre-
+                 dict classification and regression tasks directly  from  your
+                 dataset.  This  machine  learning  mode combines several base
+                 models to produce an optimal predictive model. It then uses a
+                 stacking  ensemble  method  to  combine predictions from con-
+                 tributing members. A multi-stack ensemble model  can  provide
+                 better  performance over a single model by combining the pre-
+                 dictive capabilities of multiple models. See Autopilot  algo-
+                 rithm  support  for  a list of algorithms supported by ENSEM-
+                 BLING mode.
+
+                 The HYPERPARAMETER_TUNING (HPO) mode uses the  best  hyperpa-
+                 rameters  to train the best version of a model. HPO automati-
+                 cally selects an algorithm for the type of problem  you  want
+                 to  solve.  Then HPO finds the best hyperparameters according
+                 to your objective metric. See Autopilot algorithm support for
+                 a list of algorithms supported by HYPERPARAMETER_TUNING mode.
+
+              GenerateCandidateDefinitionsOnly -> (boolean)
+                 Generates  possible candidates without training the models. A
+                 model candidate is a combination of data preprocessors, algo-
+                 rithms, and algorithm parameter settings.
+
+              ProblemType -> (string)
+                 The  type  of  supervised  learning problem available for the
+                 model candidates of the AutoML job V2. For more  information,
+                 see Amazon SageMaker Autopilot problem types .
+
+              TargetAttributeName -> (string)
+                 The  name of the target variable in supervised learning, usu-
+                 ally represented by 'y'.
+
+              SampleWeightAttributeName -> (string)
+                 If specified, this column name indicates which column of  the
+                 dataset  should  be  treated as sample weights for use by the
+                 objective metric during the training, evaluation, and the se-
+                 lection of the best model. This column is not considered as a
+                 predictive feature. For more information  on  Autopilot  met-
+                 rics, see Metrics and validation .
+
+                 Sample  weights  should be numeric, non-negative, with larger
+                 values indicating which rows are more important than  others.
+                 Data  points  that  have  invalid  or no weight value are ex-
+                 cluded.
+
+                 Support for sample weights is available  in  Ensembling  mode
+                 only.
 
        JSON Syntax:
 
@@ -296,6 +511,27 @@ OPTIONS
               },
               "ContentColumn": "string",
               "TargetLabelColumn": "string"
+            },
+            "TabularJobConfig": {
+              "CandidateGenerationConfig": {
+                "AlgorithmsConfig": [
+                  {
+                    "AutoMLAlgorithms": ["xgboost"|"linear-learner"|"mlp"|"lightgbm"|"catboost"|"randomforest"|"extra-trees"|"nn-torch"|"fastai", ...]
+                  }
+                  ...
+                ]
+              },
+              "CompletionCriteria": {
+                "MaxCandidates": integer,
+                "MaxRuntimePerTrainingJobInSeconds": integer,
+                "MaxAutoMLJobRuntimeInSeconds": integer
+              },
+              "FeatureSpecificationS3Uri": "string",
+              "Mode": "AUTO"|"ENSEMBLING"|"HYPERPARAMETER_TUNING",
+              "GenerateCandidateDefinitionsOnly": true|false,
+              "ProblemType": "BinaryClassification"|"MulticlassClassification"|"Regression",
+              "TargetAttributeName": "string",
+              "SampleWeightAttributeName": "string"
             }
           }
 
@@ -390,26 +626,38 @@ OPTIONS
 
        --auto-ml-job-objective (structure)
           Specifies a metric to minimize or maximize as  the  objective  of  a
-          job. For CreateAutoMLJobV2 , only Accuracy is supported.
+          job.  If  not specified, the default objective metric depends on the
+          problem type. For the list of default values per problem  type,  see
+          AutoMLJobObjective .
+
+          NOTE:
+              For  tabular  problem  types,  you  must  either provide the Au-
+              toMLJobObjective and indicate the type  of  supervised  learning
+              problem in AutoMLProblemTypeConfig (TabularJobConfig.ProblemType
+              ), or none.
 
           MetricName -> (string)
-              The  name of the objective metric used to measure the predictive
-              quality of a  machine  learning  system.  During  training,  the
-              model's  parameters are updated iteratively to optimize its per-
-              formance based on the feedback provided by the objective  metric
+              The name of the objective metric used to measure the  predictive
+              quality  of  a  machine  learning  system.  During training, the
+              model's parameters are updated iteratively to optimize its  per-
+              formance  based on the feedback provided by the objective metric
               when evaluating the model on the validation dataset.
 
-              For  the  list  of all available metrics supported by Autopilot,
+              For the list of all available metrics  supported  by  Autopilot,
               see Autopilot metrics .
 
-              If you do not specify a metric explicitly, the default  behavior
+              If  you do not specify a metric explicitly, the default behavior
               is to automatically use:
 
-              o MSE : for regression.
+              o For tabular problem types:
 
-              o F1 : for binary classification
+                o Regression: MSE .
 
-              o Accuracy : for multiclass classification.
+                o Binary classification: F1 .
+
+                o Multiclass classification: Accuracy .
+
+              o For image or text classification problem types: Accuracy
 
        Shorthand Syntax:
 
@@ -422,25 +670,25 @@ OPTIONS
           }
 
        --model-deploy-config (structure)
-          Specifies  how  to  generate  the  endpoint  name  for  an automatic
+          Specifies how  to  generate  the  endpoint  name  for  an  automatic
           one-click Autopilot model deployment.
 
           AutoGenerateEndpointName -> (boolean)
-              Set to True to automatically generate an  endpoint  name  for  a
-              one-click  Autopilot  model  deployment; set to False otherwise.
+              Set  to  True  to  automatically generate an endpoint name for a
+              one-click Autopilot model deployment; set  to  False  otherwise.
               The default value is False .
 
               NOTE:
-                 If you set AutoGenerateEndpointName to True , do not  specify
+                 If  you set AutoGenerateEndpointName to True , do not specify
                  the EndpointName ; otherwise a 400 error is thrown.
 
           EndpointName -> (string)
-              Specifies  the  endpoint  name  to use for a one-click Autopilot
+              Specifies the endpoint name to use  for  a  one-click  Autopilot
               model deployment if the endpoint name is not generated automati-
               cally.
 
               NOTE:
-                 Specify  the  EndpointName if and only if you set AutoGenera-
+                 Specify the EndpointName if and only if you  set  AutoGenera-
                  teEndpointName to False ; otherwise a 400 error is thrown.
 
        Shorthand Syntax:
@@ -455,15 +703,12 @@ OPTIONS
           }
 
        --data-split-config (structure)
-          This structure specifies how to split the data into train and  vali-
+          This  structure specifies how to split the data into train and vali-
           dation datasets.
 
-          If you are using the V1 API (for example CreateAutoMLJob ) or the V2
-          API for Natural Language Processing problems (for example  CreateAu-
-          toMLJobV2 with a TextClassificationJobConfig problem type), the val-
-          idation and training datasets must contain the same  headers.  Also,
-          for  V1  API  jobs, the validation dataset must be less than 2 GB in
-          size.
+          The validation and training datasets must contain the same  headers.
+          For jobs created by calling CreateAutoMLJob , the validation dataset
+          must be less than 2 GB in size.
 
           ValidationFraction -> (float)
               The validation fraction (optional) is a float that specifies the
