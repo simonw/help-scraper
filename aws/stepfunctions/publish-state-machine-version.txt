@@ -1,46 +1,41 @@
-DELETE-STATE-MACHINE()                                  DELETE-STATE-MACHINE()
+PUBLISH-STATE-MACHINE-VERSION()                PUBLISH-STATE-MACHINE-VERSION()
 
 
 
 NAME
-       delete-state-machine -
+       publish-state-machine-version -
 
 DESCRIPTION
-       Deletes a state machine. This is an asynchronous operation: It sets the
-       state machine's status to DELETING and begins the deletion process.
+       Creates  a  version  from  the current revision of a state machine. Use
+       versions to create immutable snapshots of your state machine.  You  can
+       start  executions  from  versions  either directly or with an alias. To
+       create an alias, use  CreateStateMachineAlias .
 
-       A qualified state machine ARN can either refer  to  a  Distributed  Map
-       state defined within a state machine, a version ARN, or an alias ARN.
+       You can publish up to 1000 versions for each state  machine.  You  must
+       manually  delete  unused  versions using the  DeleteStateMachineVersion
+       API action.
+          PublishStateMachineVersion is an idempotent API. It doesn't create a
+          duplicate state machine version if it already exists for the current
+          revision. Step Functions bases PublishStateMachineVersion 's idempo-
+          tency  check  on the stateMachineArn , name , and revisionId parame-
+          ters. Requests with the same parameters return a successful  idempo-
+          tent  response.  If  you don't specify a revisionId , Step Functions
+          checks for a previously published version  of  the  state  machine's
+          current revision.
 
-       The  following are some examples of qualified and unqualified state ma-
-       chine ARNs:
+          Related operations:
 
-       o The following qualified state machine ARN refers to a Distributed Map
-         state  with a label mapStateLabel in a state machine named myStateMa-
-         chine   .    arn:partition:states:region:account-id:stateMachine:myS-
-         tateMachine/mapStateLabel
+       o DeleteStateMachineVersion
 
-       NOTE:
-          If  you  provide a qualified state machine ARN that refers to a Dis-
-          tributed Map state , the request fails with ValidationException .
-
-       o The following unqualified state machine ARN refers to a state machine
-         named      myStateMachine      .      arn:partition:states:region:ac-
-         count-id:stateMachine:myStateMachine
-
-       This API action also deletes all versions and aliases associated with a
-       state machine.
-
-       NOTE:
-          For EXPRESS state machines, the deletion happens eventually (usually
-          in less than a minute).  Running  executions  may  emit  logs  after
-          DeleteStateMachine API is called.
+       o ListStateMachineVersions
 
        See also: AWS API Documentation
 
 SYNOPSIS
-            delete-state-machine
+            publish-state-machine-version
           --state-machine-arn <value>
+          [--revision-id <value>]
+          [--description <value>]
           [--cli-input-json <value>]
           [--generate-cli-skeleton <value>]
           [--debug]
@@ -60,7 +55,26 @@ SYNOPSIS
 
 OPTIONS
        --state-machine-arn (string)
-          The Amazon Resource Name (ARN) of the state machine to delete.
+          The Amazon Resource Name (ARN) of the state machine.
+
+       --revision-id (string)
+          Only  publish  the  state  machine  version if the current state ma-
+          chine's revision ID matches the specified ID.
+
+          Use this option to avoid publishing a version if the  state  machine
+          changed  since  you  last  updated  it. If the specified revision ID
+          doesn't match the state machine's current revision ID, the  API  re-
+          turns ConflictException .
+
+          NOTE:
+              To  specify  an  initial revision ID for a state machine with no
+              revision ID assigned, specify the string INITIAL for  the  revi-
+              sionId  parameter.  For example, you can specify a revisionID of
+              INITIAL when you create a  state  machine  using  the   CreateS-
+              tateMachine API action.
+
+       --description (string)
+          An optional description of the state machine version.
 
        --cli-input-json  (string) Performs service operation based on the JSON
        string provided. The JSON string follows the format provided by  --gen-
@@ -153,8 +167,13 @@ GLOBAL OPTIONS
        is 60 seconds.
 
 OUTPUT
-       None
+       creationDate -> (timestamp)
+          The date the version was created.
+
+       stateMachineVersionArn -> (string)
+          The Amazon Resource Name (ARN) (ARN) that identifies the  state  ma-
+          chine version.
 
 
 
-                                                        DELETE-STATE-MACHINE()
+                                               PUBLISH-STATE-MACHINE-VERSION()

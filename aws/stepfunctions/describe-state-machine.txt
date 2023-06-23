@@ -7,15 +7,38 @@ NAME
 
 DESCRIPTION
        Provides  information  about a state machine's definition, its IAM role
-       Amazon Resource Name (ARN), and configuration. If the state machine ARN
-       is  a  qualified  state machine ARN, the response returned includes the
-       Map state's label.
+       Amazon Resource Name (ARN), and configuration.
 
-       A qualified state machine ARN refers to a Distributed Map state defined
-       within  a  state  machine. For example, the qualified state machine ARN
-       arn:partition:states:region:account-id:stateMachine:stateMachine-
-       Name/mapStateLabel  refers to a Distributed Map state with a label map-
-       StateLabel in the state machine named stateMachineName .
+       A qualified state machine ARN can either refer  to  a  Distributed  Map
+       state defined within a state machine, a version ARN, or an alias ARN.
+
+       The  following are some examples of qualified and unqualified state ma-
+       chine ARNs:
+
+       o The following qualified state machine ARN refers to a Distributed Map
+         state  with a label mapStateLabel in a state machine named myStateMa-
+         chine   .    arn:partition:states:region:account-id:stateMachine:myS-
+         tateMachine/mapStateLabel
+
+       NOTE:
+          If  you  provide a qualified state machine ARN that refers to a Dis-
+          tributed Map state , the request fails with ValidationException .
+
+       o The following qualified state machine ARN refers to  an  alias  named
+         PROD     .      arn:<partition>:states:<region>:<account-id>:stateMa-
+         chine:<myStateMachine:PROD>
+
+       NOTE:
+          If you provide a qualified state machine ARN that refers to  a  ver-
+          sion ARN or an alias ARN, the request starts execution for that ver-
+          sion or alias.
+
+       o The following unqualified state machine ARN refers to a state machine
+         named    myStateMachine    .     arn:<partition>:states:<region>:<ac-
+         count-id>:stateMachine:<myStateMachine>
+
+       This API action returns the details for a state machine version if  the
+       stateMachineArn you specify is a state machine version ARN.
 
        NOTE:
           This operation is eventually consistent. The results are best effort
@@ -45,19 +68,25 @@ SYNOPSIS
 
 OPTIONS
        --state-machine-arn (string)
-          The Amazon Resource Name (ARN) of the state machine to describe.
+          The Amazon Resource Name (ARN) of the state machine  for  which  you
+          want the information.
 
-       --cli-input-json  (string) Performs service operation based on the JSON
-       string provided. The JSON string follows the format provided by  --gen-
-       erate-cli-skeleton.  If  other  arguments  are  provided on the command
-       line, the CLI values will override the JSON-provided values. It is  not
+          If you specify a state machine version ARN, this API returns details
+          about that version. The version ARN is a combination  of  state  ma-
+          chine ARN and the version number separated by a colon (:). For exam-
+          ple, stateMachineARN:1 .
+
+       --cli-input-json (string) Performs service operation based on the  JSON
+       string  provided. The JSON string follows the format provided by --gen-
+       erate-cli-skeleton. If other arguments  are  provided  on  the  command
+       line,  the CLI values will override the JSON-provided values. It is not
        possible to pass arbitrary binary values using a JSON-provided value as
        the string will be taken literally.
 
-       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
+       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
        output without sending an API request. If provided with no value or the
        value input, prints a sample input JSON that can be used as an argument
-       for  --cli-input-json.  If provided with the value output, it validates
+       for --cli-input-json. If provided with the value output,  it  validates
        the command inputs and returns a sample output JSON for that command.
 
 GLOBAL OPTIONS
@@ -71,7 +100,7 @@ GLOBAL OPTIONS
 
        --no-verify-ssl (boolean)
 
-       By default, the AWS CLI uses SSL when communicating with AWS  services.
+       By  default, the AWS CLI uses SSL when communicating with AWS services.
        For each SSL connection, the AWS CLI will verify SSL certificates. This
        option overrides the default behavior of verifying SSL certificates.
 
@@ -117,7 +146,7 @@ GLOBAL OPTIONS
 
        --no-sign-request (boolean)
 
-       Do not sign requests. Credentials will not be loaded if  this  argument
+       Do  not  sign requests. Credentials will not be loaded if this argument
        is provided.
 
        --ca-bundle (string)
@@ -127,19 +156,24 @@ GLOBAL OPTIONS
 
        --cli-read-timeout (int)
 
-       The maximum socket read time in seconds. If the value is set to 0,  the
-       socket  read  will be blocking and not timeout. The default value is 60
+       The  maximum socket read time in seconds. If the value is set to 0, the
+       socket read will be blocking and not timeout. The default value  is  60
        seconds.
 
        --cli-connect-timeout (int)
 
-       The maximum socket connect time in seconds. If the value is set  to  0,
-       the  socket connect will be blocking and not timeout. The default value
+       The  maximum  socket connect time in seconds. If the value is set to 0,
+       the socket connect will be blocking and not timeout. The default  value
        is 60 seconds.
 
 OUTPUT
        stateMachineArn -> (string)
           The Amazon Resource Name (ARN) that identifies the state machine.
+
+          If  you  specified  a state machine version ARN in your request, the
+          API returns the version ARN. The version ARN  is  a  combination  of
+          state  machine  ARN and the version number separated by a colon (:).
+          For example, stateMachineARN:1 .
 
        name -> (string)
           The name of the state machine.
@@ -177,30 +211,33 @@ OUTPUT
        creationDate -> (timestamp)
           The date the state machine is created.
 
+          For a state machine version, creationDate is the  date  the  version
+          was created.
+
        loggingConfiguration -> (structure)
-          The LoggingConfiguration data type is used to  set  CloudWatch  Logs
+          The  LoggingConfiguration  data  type is used to set CloudWatch Logs
           options.
 
           level -> (string)
               Defines which category of execution history events are logged.
 
           includeExecutionData -> (boolean)
-              Determines  whether execution data is included in your log. When
+              Determines whether execution data is included in your log.  When
               set to false , data is excluded.
 
           destinations -> (list)
-              An array of objects that describes where your execution  history
-              events  will be logged. Limited to size 1. Required, if your log
+              An  array of objects that describes where your execution history
+              events will be logged. Limited to size 1. Required, if your  log
               level is not set to OFF .
 
               (structure)
                  cloudWatchLogsLogGroup -> (structure)
                      An object describing a CloudWatch log group. For more in-
-                     formation,  see AWS::Logs::LogGroup in the CloudFormation
+                     formation, see AWS::Logs::LogGroup in the  CloudFormation
                      User Guide.
 
                      logGroupArn -> (string)
-                        The ARN of the the CloudWatch log group to  which  you
+                        The  ARN  of the the CloudWatch log group to which you
                         want your logs emitted to. The ARN must end with :*
 
        tracingConfiguration -> (structure)
@@ -210,9 +247,19 @@ OUTPUT
               When set to true , X-Ray tracing is enabled.
 
        label -> (string)
-          A  user-defined  or  an  auto-generated string that identifies a Map
-          state. This parameter is present only if the stateMachineArn  speci-
+          A user-defined or an auto-generated string  that  identifies  a  Map
+          state.  This parameter is present only if the stateMachineArn speci-
           fied in input is a qualified state machine ARN.
+
+       revisionId -> (string)
+          The revision identifier for the state machine.
+
+          Use the revisionId parameter to compare between versions of a  state
+          machine  configuration used for executions without performing a diff
+          of the properties, such as definition and roleArn .
+
+       description -> (string)
+          The description of the state machine version.
 
 
 

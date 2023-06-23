@@ -12,20 +12,53 @@ DESCRIPTION
        inition or roleArn or you will receive a  MissingRequiredParameter  er-
        ror.
 
-       If  the  given  state machine Amazon Resource Name (ARN) is a qualified
-       state machine ARN, it will fail with ValidationException.
-
        A qualified state machine ARN refers to a Distributed Map state defined
-       within  a  state  machine. For example, the qualified state machine ARN
+       within a state machine. For example, the qualified  state  machine  ARN
        arn:partition:states:region:account-id:stateMachine:stateMachine-
-       Name/mapStateLabel  refers to a Distributed Map state with a label map-
+       Name/mapStateLabel refers to a Distributed Map state with a label  map-
        StateLabel in the state machine named stateMachineName .
 
+       A  qualified  state  machine  ARN can either refer to a Distributed Map
+       state defined within a state machine, a version ARN, or an alias ARN.
+
+       The following are some examples of qualified and unqualified state  ma-
+       chine ARNs:
+
+       o The following qualified state machine ARN refers to a Distributed Map
+         state with a label mapStateLabel in a state machine named  myStateMa-
+         chine   .    arn:partition:states:region:account-id:stateMachine:myS-
+         tateMachine/mapStateLabel
+
        NOTE:
-          All StartExecution calls within a few seconds will use  the  updated
-          definition  and roleArn . Executions started immediately after call-
-          ing UpdateStateMachine may use the previous state machine definition
-          and roleArn .
+          If you provide a qualified state machine ARN that refers to  a  Dis-
+          tributed Map state , the request fails with ValidationException .
+
+       o The  following  qualified  state machine ARN refers to an alias named
+         PROD     .      arn:<partition>:states:<region>:<account-id>:stateMa-
+         chine:<myStateMachine:PROD>
+
+       NOTE:
+          If  you  provide a qualified state machine ARN that refers to a ver-
+          sion ARN or an alias ARN, the request starts execution for that ver-
+          sion or alias.
+
+       o The following unqualified state machine ARN refers to a state machine
+         named    myStateMachine    .     arn:<partition>:states:<region>:<ac-
+         count-id>:stateMachine:<myStateMachine>
+
+       After  you update your state machine, you can set the publish parameter
+       to true in the same action to publish a new version . This way, you can
+       opt-in to strict versioning of your state machine.
+
+       NOTE:
+          Step  Functions  assigns monotonically increasing integers for state
+          machine versions, starting at version number 1.
+
+       NOTE:
+          All StartExecution calls within a few seconds use the updated  defi-
+          nition  and  roleArn . Executions started immediately after you call
+          UpdateStateMachine may use the previous state machine definition and
+          roleArn .
 
        See also: AWS API Documentation
 
@@ -36,6 +69,8 @@ SYNOPSIS
           [--role-arn <value>]
           [--logging-configuration <value>]
           [--tracing-configuration <value>]
+          [--publish | --no-publish]
+          [--version-description <value>]
           [--cli-input-json <value>]
           [--generate-cli-skeleton <value>]
           [--debug]
@@ -65,8 +100,8 @@ OPTIONS
           The Amazon Resource Name (ARN) of the IAM role of the state machine.
 
        --logging-configuration (structure)
-          The LoggingConfiguration data type is used to  set  CloudWatch  Logs
-          options.
+          Use the LoggingConfiguration data type to set  CloudWatch  Logs  op-
+          tions.
 
           level -> (string)
               Defines which category of execution history events are logged.
@@ -121,17 +156,28 @@ OPTIONS
             "enabled": true|false
           }
 
-       --cli-input-json  (string) Performs service operation based on the JSON
-       string provided. The JSON string follows the format provided by  --gen-
-       erate-cli-skeleton.  If  other  arguments  are  provided on the command
-       line, the CLI values will override the JSON-provided values. It is  not
+       --publish | --no-publish (boolean)
+          Specifies  whether  the  state machine version is published. The de-
+          fault is false . To publish a version after updating the  state  ma-
+          chine, set publish to true .
+
+       --version-description (string)
+          An optional description of the state machine version to publish.
+
+          You  can only specify the versionDescription parameter if you've set
+          publish to true .
+
+       --cli-input-json (string) Performs service operation based on the  JSON
+       string  provided. The JSON string follows the format provided by --gen-
+       erate-cli-skeleton. If other arguments  are  provided  on  the  command
+       line,  the CLI values will override the JSON-provided values. It is not
        possible to pass arbitrary binary values using a JSON-provided value as
        the string will be taken literally.
 
-       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
+       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
        output without sending an API request. If provided with no value or the
        value input, prints a sample input JSON that can be used as an argument
-       for  --cli-input-json.  If provided with the value output, it validates
+       for --cli-input-json. If provided with the value output,  it  validates
        the command inputs and returns a sample output JSON for that command.
 
 GLOBAL OPTIONS
@@ -145,7 +191,7 @@ GLOBAL OPTIONS
 
        --no-verify-ssl (boolean)
 
-       By default, the AWS CLI uses SSL when communicating with AWS  services.
+       By  default, the AWS CLI uses SSL when communicating with AWS services.
        For each SSL connection, the AWS CLI will verify SSL certificates. This
        option overrides the default behavior of verifying SSL certificates.
 
@@ -191,7 +237,7 @@ GLOBAL OPTIONS
 
        --no-sign-request (boolean)
 
-       Do not sign requests. Credentials will not be loaded if  this  argument
+       Do  not  sign requests. Credentials will not be loaded if this argument
        is provided.
 
        --ca-bundle (string)
@@ -201,19 +247,29 @@ GLOBAL OPTIONS
 
        --cli-read-timeout (int)
 
-       The maximum socket read time in seconds. If the value is set to 0,  the
-       socket  read  will be blocking and not timeout. The default value is 60
+       The  maximum socket read time in seconds. If the value is set to 0, the
+       socket read will be blocking and not timeout. The default value  is  60
        seconds.
 
        --cli-connect-timeout (int)
 
-       The maximum socket connect time in seconds. If the value is set  to  0,
-       the  socket connect will be blocking and not timeout. The default value
+       The  maximum  socket connect time in seconds. If the value is set to 0,
+       the socket connect will be blocking and not timeout. The default  value
        is 60 seconds.
 
 OUTPUT
        updateDate -> (timestamp)
           The date and time the state machine was updated.
+
+       revisionId -> (string)
+          The revision identifier for the updated state machine.
+
+       stateMachineVersionArn -> (string)
+          The  Amazon  Resource Name (ARN) of the published state machine ver-
+          sion.
+
+          If the publish parameter isn't set to  true  ,  this  field  returns
+          null.
 
 
 
