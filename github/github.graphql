@@ -5159,11 +5159,8 @@ input CreateRepositoryRulesetInput {
   """The enforcement level for this ruleset"""
   enforcement: RuleEnforcement!
 
-  """The bypass mode for this ruleset"""
-  bypassMode: RuleBypassMode
-
-  """A list of Team or App IDs allowed to bypass rules in this ruleset."""
-  bypassActorIds: [ID!]
+  """A list of actors that are allowed to bypass rules in this ruleset."""
+  bypassActors: [RepositoryRulesetBypassActorInput!]
 
   """A unique identifier for the client performing the mutation."""
   clientMutationId: String
@@ -28497,9 +28494,6 @@ type RepositoryRuleset implements Node {
     last: Int
   ): RepositoryRulesetBypassActorConnection
 
-  """The bypass mode of this ruleset"""
-  bypassMode: RuleBypassMode!
-
   """
   The set of conditions that must evaluate to true for this ruleset to apply
   """
@@ -28554,10 +28548,35 @@ A team or app that has the ability to bypass a rules defined on a ruleset
 type RepositoryRulesetBypassActor implements Node {
   """The actor that can bypass rules."""
   actor: BypassActor
+
+  """The mode for the bypass actor"""
+  bypassMode: RepositoryRulesetBypassActorBypassMode
   id: ID!
+
+  """This actor represents the ability for an organization admin to bypass"""
+  organizationAdmin: Boolean!
+
+  """
+  If the actor is a repository role, the repository role's ID that can bypass
+  """
+  repositoryRoleDatabaseId: Int
+
+  """
+  If the actor is a repository role, the repository role's name that can bypass
+  """
+  repositoryRoleName: String
 
   """Identifies the ruleset associated with the allowed actor"""
   repositoryRuleset: RepositoryRuleset
+}
+
+"""The bypass mode for a specific actor on a ruleset."""
+enum RepositoryRulesetBypassActorBypassMode {
+  """The actor can always bypass rules"""
+  ALWAYS
+
+  """The actor can only bypass rules via a pull request"""
+  PULL_REQUEST
 }
 
 """The connection type for RepositoryRulesetBypassActor."""
@@ -28582,6 +28601,24 @@ type RepositoryRulesetBypassActorEdge {
 
   """The item at the end of the edge."""
   node: RepositoryRulesetBypassActor
+}
+
+"""
+Specifies the attributes for a new or updated ruleset bypass actor. Only one of
+`actor_id`, `repository_role_database_id`, or `organization_admin` should be specified.
+"""
+input RepositoryRulesetBypassActorInput {
+  """For Team and Integration bypasses, the Team or Integration ID"""
+  actorId: ID
+
+  """For role bypasses, the role database ID"""
+  repositoryRoleDatabaseId: Int
+
+  """For org admin bupasses, true"""
+  organizationAdmin: Boolean
+
+  """The bypass mode for this actor."""
+  bypassMode: RepositoryRulesetBypassActorBypassMode!
 }
 
 """The connection type for RepositoryRuleset."""
@@ -29495,31 +29532,6 @@ enum RoleInOrganization {
 
   """A user who is unaffiliated with the organization."""
   UNAFFILIATED
-}
-
-"""The bypass mode for a rule or ruleset."""
-enum RuleBypassMode {
-  """Bypassing is disabled"""
-  NONE
-
-  """Those with bypass permission at the repository level can bypass"""
-  REPOSITORY
-
-  """Those with bypass permission at the organization level can bypass"""
-  ORGANIZATION
-
-  """Bypassing is disabled"""
-  ORGANIZATION_NONE
-
-  """
-  Those with bypass permission at the organization level can bypass for pull requests only
-  """
-  ORGANIZATION_PRS_ONLY
-
-  """
-  Those with bypass permission at the organization level can always bypass
-  """
-  ORGANIZATION_ALWAYS
 }
 
 """The level of enforcement for a rule or ruleset."""
@@ -36241,11 +36253,8 @@ input UpdateRepositoryRulesetInput {
   """The enforcement level for this ruleset"""
   enforcement: RuleEnforcement
 
-  """The bypass mode for this ruleset"""
-  bypassMode: RuleBypassMode
-
-  """A list of Team or App IDs allowed to bypass rules in this ruleset."""
-  bypassActorIds: [ID!]
+  """A list of actors that are allowed to bypass rules in this ruleset."""
+  bypassActors: [RepositoryRulesetBypassActorInput!]
 
   """A unique identifier for the client performing the mutation."""
   clientMutationId: String
