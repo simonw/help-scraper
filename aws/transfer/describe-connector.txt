@@ -185,19 +185,60 @@ OUTPUT
 
                  o NONE : Specifies that no MDN response is required.
 
+              BasicAuthSecretId -> (string)
+                 Provides  Basic  authentication support to the AS2 Connectors
+                 API. To use Basic authentication, you must provide  the  name
+                 or Amazon Resource Name (ARN) of a secret in Secrets Manager.
+
+                 The  default  value  for this parameter is null , which indi-
+                 cates that Basic authentication is not enabled for  the  con-
+                 nector.
+
+                 If  the connector should use Basic authentication, the secret
+                 needs to be in the following format:
+                     { "Username": "user-name", "Password": "user-password" }
+
+                 Replace user-name and user-password with the credentials  for
+                 the actual user that is being authenticated.
+
+                 Note the following:
+
+                 o You  are  storing these credentials in Secrets Manager, not
+                   passing them directly into this API.
+
+                 o If you are using the API, SDKs, or CloudFormation  to  con-
+                   figure  your connector, then you must create the secret be-
+                   fore you can enable Basic authentication. However,  if  you
+                   are  using  the Amazon Web Services management console, you
+                   can have the system create the secret for you.
+
+                 If you have previously enabled  Basic  authentication  for  a
+                 connector,  you  can  disable it by using the UpdateConnector
+                 API call. For example, if you are using the CLI, you can  run
+                 the following command to remove Basic authentication:
+                     update-connector      --connector-id      my-connector-id
+                     --as2-config 'BasicAuthSecretId=""'
+
           AccessRole -> (string)
-              With  AS2,  you  can send files by calling StartFileTransfer and
-              specifying the  file  paths  in  the  request  parameter,  Send-
-              FilePaths  . We use the files parent directory (for example, for
-              --send-file-paths /bucket/dir/file.txt  ,  parent  directory  is
-              /bucket/dir/  )  to  temporarily  store  a processed AS2 message
-              file, store the MDN when we receive them from the  partner,  and
-              write  a  final  JSON  file  containing relevant metadata of the
+              With AS2, you can send files by  calling  StartFileTransfer  and
+              specifying  the  file  paths  in  the  request  parameter, Send-
+              FilePaths . We use the files parent directory (for example,  for
+              --send-file-paths  /bucket/dir/file.txt  ,  parent  directory is
+              /bucket/dir/ ) to temporarily  store  a  processed  AS2  message
+              file,  store  the MDN when we receive them from the partner, and
+              write a final JSON file  containing  relevant  metadata  of  the
               transmission. So, the AccessRole needs to provide read and write
-              access  to the parent directory of the file location used in the
-              StartFileTransfer request. Additionally,  you  need  to  provide
-              read  and write access to the parent directory of the files that
+              access to the parent directory of the file location used in  the
+              StartFileTransfer  request.  Additionally,  you  need to provide
+              read and write access to the parent directory of the files  that
               you intend to send with StartFileTransfer .
+
+              If  you  are  using Basic authentication for your AS2 connector,
+              the access role requires the secretsmanager:GetSecretValue  per-
+              mission  for the secret. If the secret is encrypted using a cus-
+              tomer-managed key instead of the Amazon Web Services managed key
+              in  Secrets  Manager,  then  the role also needs the kms:Decrypt
+              permission for that key.
 
           LoggingRole -> (string)
               The Amazon Resource Name (ARN) of the Identity and  Access  Man-
