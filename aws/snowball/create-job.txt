@@ -61,6 +61,9 @@ DESCRIPTION
 
          o Description: Snowball Edge Storage Optimized with EC2 Compute
 
+       NOTE:
+          This device is replaced with T98.
+
        o Device type: STANDARD
 
          o Capacity: T50
@@ -81,11 +84,11 @@ DESCRIPTION
             This device is only available in the Ningxia, Beijing, and  Singa-
             pore Amazon Web Services Region.
 
-       o Device type: V3_5C
+       o Snow Family device type: RACK_5U_C
 
-         o Capacity: T32
+         o Capacity: T13
 
-         o Description: Snowball Edge Compute Optimized without GPU
+         o Description: Snowblade.
 
        o Device type: V3_5S
 
@@ -114,6 +117,8 @@ SYNOPSIS
           [--device-configuration <value>]
           [--remote-management <value>]
           [--long-term-pricing-id <value>]
+          [--impact-level <value>]
+          [--pickup-details <value>]
           [--cli-input-json <value>]
           [--generate-cli-skeleton <value>]
           [--debug]
@@ -238,10 +243,10 @@ OPTIONS
 
               (structure)
                  A JSON-formatted object that contains the IDs for  an  Amazon
-                 Machine  Image (AMI), including the Amazon EC2 AMI ID and the
-                 Snow device AMI ID. Each AMI has these two  IDs  to  simplify
-                 identifying the AMI in both the Amazon Web Services Cloud and
-                 on the device.
+                 Machine  Image (AMI), including the Amazon EC2-compatible AMI
+                 ID and the Snow device AMI ID. Each AMI has these two IDs  to
+                 simplify  identifying the AMI in both the Amazon Web Services
+                 Cloud and on the device.
 
                  AmiId -> (string)
                      The ID of the AMI in Amazon EC2.
@@ -437,6 +442,8 @@ OPTIONS
 
           o T240
 
+          o T13
+
        --shipping-option (string)
           The shipping speed for this job. This speed doesn't dictate how soon
           you'll  get  the  Snow  device, rather it represents how quickly the
@@ -490,21 +497,26 @@ OPTIONS
               Any  change  in  job  state will trigger a notification for this
               job.
 
+          DevicePickupSnsTopicARN -> (string)
+              Used to send SNS notifications for the person picking up the de-
+              vice (identified during job creation).
+
        Shorthand Syntax:
 
-          SnsTopicARN=string,JobStatesToNotify=string,string,NotifyAll=boolean
+          SnsTopicARN=string,JobStatesToNotify=string,string,NotifyAll=boolean,DevicePickupSnsTopicARN=string
 
        JSON Syntax:
 
           {
             "SnsTopicARN": "string",
             "JobStatesToNotify": ["New"|"PreparingAppliance"|"PreparingShipment"|"InTransitToCustomer"|"WithCustomer"|"InTransitToAWS"|"WithAWSSortingFacility"|"WithAWS"|"InProgress"|"Complete"|"Cancelled"|"Listing"|"Pending", ...],
-            "NotifyAll": true|false
+            "NotifyAll": true|false,
+            "DevicePickupSnsTopicARN": "string"
           }
 
        --cluster-id (string)
-          The ID of a cluster. If you're creating a job for a node in a  clus-
-          ter,  you  need  to provide only this clusterId value. The other job
+          The  ID of a cluster. If you're creating a job for a node in a clus-
+          ter, you need to provide only this clusterId value.  The  other  job
           attributes are inherited from the cluster.
 
        --snowball-type (string)
@@ -514,18 +526,18 @@ OPTIONS
               For cluster jobs, Amazon Web Services Snow Family currently sup-
               ports only the EDGE device type.
 
-          The  type  of  Amazon  Web Services Snow device to use for this job.
+          The type of Amazon Web Services Snow device to  use  for  this  job.
           Currently, the only supported device type for cluster jobs is EDGE .
 
-          For more information, see Snowball Edge Device Options in the  Snow-
+          For  more information, see Snowball Edge Device Options in the Snow-
           ball Edge Developer Guide.
 
           For           more           information,           see           "-
           https://docs.aws.amazon.com/snowball/latest/snowcone-guide/snow-de-
-          vice-types.html"  (Snow Family Devices and Capacity) in the Snowcone
-          User                  Guide                  or                   "-
-          https://docs.aws.amazon.com/snowball/latest/developer-guide/snow-de-
           vice-types.html" (Snow Family Devices and Capacity) in the  Snowcone
+          User                   Guide                  or                  "-
+          https://docs.aws.amazon.com/snowball/latest/developer-guide/snow-de-
+          vice-types.html"  (Snow Family Devices and Capacity) in the Snowcone
           User Guide .
 
           Possible values:
@@ -548,15 +560,17 @@ OPTIONS
 
           o V3_5S
 
+          o RACK_5U_C
+
        --forwarding-address-id (string)
-          The  forwarding address ID for a job. This field is not supported in
+          The forwarding address ID for a job. This field is not supported  in
           most Regions.
 
        --tax-documents (structure)
           The tax documents required in your Amazon Web Services Region.
 
           IND -> (structure)
-              The tax documents required in Amazon Web Services Region in  In-
+              The  tax documents required in Amazon Web Services Region in In-
               dia.
 
               GSTIN -> (string)
@@ -580,14 +594,14 @@ OPTIONS
 
           For           more           information,           see           "-
           https://docs.aws.amazon.com/snowball/latest/snowcone-guide/snow-de-
-          vice-types.html" (Snow Family Devices and Capacity) in the  Snowcone
-          User                   Guide                  or                  "-
-          https://docs.aws.amazon.com/snowball/latest/developer-guide/snow-de-
           vice-types.html"  (Snow Family Devices and Capacity) in the Snowcone
+          User                  Guide                  or                   "-
+          https://docs.aws.amazon.com/snowball/latest/developer-guide/snow-de-
+          vice-types.html" (Snow Family Devices and Capacity) in the  Snowcone
           User Guide .
 
           SnowconeDeviceConfiguration -> (structure)
-              Returns information about the device configuration for an  Snow-
+              Returns  information about the device configuration for an Snow-
               cone job.
 
               WirelessConnection -> (structure)
@@ -611,11 +625,12 @@ OPTIONS
           }
 
        --remote-management (string)
-          Allows  you to securely operate and manage Snowcone devices remotely
-          from outside of your internal network.  When  set  to  INSTALLED_AU-
+          Allows you to securely operate and manage Snowcone devices  remotely
+          from  outside  of  your  internal network. When set to INSTALLED_AU-
           TOSTART , remote management will automatically be available when the
-          device arrives at your location. Otherwise,  you  need  to  use  the
-          Snowball Client to manage the device.
+          device  arrives  at  your  location.  Otherwise, you need to use the
+          Snowball Edge client to manage the device. When set to NOT_INSTALLED
+          , remote management will not be available on the device.
 
           Possible values:
 
@@ -623,8 +638,69 @@ OPTIONS
 
           o INSTALLED_AUTOSTART
 
+          o NOT_INSTALLED
+
        --long-term-pricing-id (string)
           The ID of the long-term pricing type for the device.
+
+       --impact-level (string)
+          The highest impact level of data that will be stored or processed on
+          the device, provided at job creation.
+
+          Possible values:
+
+          o IL2
+
+          o IL4
+
+          o IL5
+
+          o IL6
+
+          o IL99
+
+       --pickup-details (structure)
+          Information identifying the person picking up the device.
+
+          Name -> (string)
+              The name of the person picking up the device.
+
+          PhoneNumber -> (string)
+              The phone number of the person picking up the device.
+
+          Email -> (string)
+              The email address of the person picking up the device.
+
+          IdentificationNumber -> (string)
+              The number on the credential identifying the person  picking  up
+              the device.
+
+          IdentificationExpirationDate -> (timestamp)
+              Expiration date of the credential identifying the person picking
+              up the device.
+
+          IdentificationIssuingOrg -> (string)
+              Organization that issued the credential identifying  the  person
+              picking up the device.
+
+          DevicePickupId -> (string)
+              The unique ID for a device that will be picked up.
+
+       Shorthand Syntax:
+
+          Name=string,PhoneNumber=string,Email=string,IdentificationNumber=string,IdentificationExpirationDate=timestamp,IdentificationIssuingOrg=string,DevicePickupId=string
+
+       JSON Syntax:
+
+          {
+            "Name": "string",
+            "PhoneNumber": "string",
+            "Email": "string",
+            "IdentificationNumber": "string",
+            "IdentificationExpirationDate": timestamp,
+            "IdentificationIssuingOrg": "string",
+            "DevicePickupId": "string"
+          }
 
        --cli-input-json  (string) Performs service operation based on the JSON
        string provided. The JSON string follows the format provided by  --gen-
