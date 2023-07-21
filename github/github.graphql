@@ -10806,7 +10806,7 @@ union IpAllowListOwner = App | Enterprise | Organization
 """
 An Issue is a place to discuss ideas, enhancements, tasks, and bugs for a project.
 """
-type Issue implements Node & Assignable & Closable & Comment & Deletable & Updatable & UpdatableComment & Labelable & Lockable & Reactable & RepositoryNode & Subscribable & UniformResourceLocatable & ProjectV2Owner {
+type Issue implements Node & Assignable & Closable & Comment & Deletable & Updatable & UpdatableComment & Labelable & Lockable & Reactable & RepositoryNode & Subscribable & SubscribableThread & UniformResourceLocatable & ProjectV2Owner {
   """Reason that the conversation was locked."""
   activeLockReason: LockReason
 
@@ -11232,6 +11232,12 @@ type Issue implements Node & Assignable & Closable & Comment & Deletable & Updat
   Identifies if the viewer is watching, not watching, or ignoring the subscribable entity.
   """
   viewerSubscription: SubscriptionState
+
+  """Identifies the viewer's thread subscription form action."""
+  viewerThreadSubscriptionFormAction: ThreadSubscriptionFormAction
+
+  """Identifies the viewer's thread subscription status."""
+  viewerThreadSubscriptionStatus: ThreadSubscriptionState
 }
 
 """The possible state reasons of a closed issue."""
@@ -32691,6 +32697,17 @@ interface Subscribable {
   viewerSubscription: SubscriptionState
 }
 
+"""Entities that can be subscribed to for web and email notifications."""
+interface SubscribableThread {
+  id: ID!
+
+  """Identifies the viewer's thread subscription form action."""
+  viewerThreadSubscriptionFormAction: ThreadSubscriptionFormAction
+
+  """Identifies the viewer's thread subscription status."""
+  viewerThreadSubscriptionStatus: ThreadSubscriptionState
+}
+
 """Represents a 'subscribed' event on a given `Subscribable`."""
 type SubscribedEvent implements Node {
   """Identifies the actor who performed the event."""
@@ -34103,6 +34120,52 @@ type TextMatchHighlight {
 
   """The text matched."""
   text: String!
+}
+
+"""The possible states of a thread subscription form action"""
+enum ThreadSubscriptionFormAction {
+  """The User cannot subscribe or unsubscribe to the thread"""
+  NONE
+
+  """The User can subscribe to the thread"""
+  SUBSCRIBE
+
+  """The User can unsubscribe to the thread"""
+  UNSUBSCRIBE
+}
+
+"""The possible states of a subscription."""
+enum ThreadSubscriptionState {
+  """The subscription status is currently unavailable."""
+  UNAVAILABLE
+
+  """The subscription status is currently disabled."""
+  DISABLED
+
+  """The User is never notified because they are ignoring the list"""
+  IGNORING_LIST
+
+  """
+  The User is notified because they chose custom settings for this thread.
+  """
+  SUBSCRIBED_TO_THREAD_EVENTS
+
+  """The User is never notified because they are ignoring the thread"""
+  IGNORING_THREAD
+
+  """The User is notified becuase they are watching the list"""
+  SUBSCRIBED_TO_LIST
+
+  """
+  The User is notified because they chose custom settings for this thread.
+  """
+  SUBSCRIBED_TO_THREAD_TYPE
+
+  """The User is notified because they are subscribed to the thread"""
+  SUBSCRIBED_TO_THREAD
+
+  """The User is not recieving notifications from this thread"""
+  NONE
 }
 
 """A topic aggregates entities that are related to a subject."""
