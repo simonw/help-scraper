@@ -1,36 +1,30 @@
-CREATE-AGENT()                                                  CREATE-AGENT()
+CREATE-LOCATION-AZURE-BLOB()                      CREATE-LOCATION-AZURE-BLOB()
 
 
 
 NAME
-       create-agent -
+       create-location-azure-blob -
 
 DESCRIPTION
-       Activates  an DataSync agent that you've deployed in your storage envi-
-       ronment. The activation process associates the agent with  your  Amazon
-       Web Services account.
+       Creates  an  endpoint for a Microsoft Azure Blob Storage container that
+       DataSync can use as a transfer source or destination.
 
-       If you haven't deployed an agent yet, see the following topics to learn
-       more:
-
-       o Agent requirements
-
-       o Create an agent
-
-       NOTE:
-          If you're transferring between Amazon Web Services storage services,
-          you don't need a DataSync agent.
+       Before you begin, make sure you know how DataSync accesses  Azure  Blob
+       Storage  and  works  with access tiers and blob types . You also need a
+       DataSync agent that can connect to your container.
 
        See also: AWS API Documentation
 
 SYNOPSIS
-            create-agent
-          --activation-key <value>
-          [--agent-name <value>]
+            create-location-azure-blob
+          --container-url <value>
+          --authentication-type <value>
+          [--sas-configuration <value>]
+          [--blob-type <value>]
+          [--access-tier <value>]
+          [--subdirectory <value>]
+          --agent-arns <value>
           [--tags <value>]
-          [--vpc-endpoint-id <value>]
-          [--subnet-arns <value>]
-          [--security-group-arns <value>]
           [--cli-input-json <value>]
           [--generate-cli-skeleton <value>]
           [--debug]
@@ -49,18 +43,88 @@ SYNOPSIS
           [--cli-connect-timeout <value>]
 
 OPTIONS
-       --activation-key (string)
-          Specifies your DataSync agent's activation key. If you don't have an
-          activation key, see Activate your agent .
+       --container-url (string)
+          Specifies the URL of the Azure Blob Storage  container  involved  in
+          your transfer.
 
-       --agent-name (string)
-          Specifies a name for your agent. You can see this name in the  Data-
-          Sync console.
+       --authentication-type (string)
+          Specifies  the  authentication  method  DataSync uses to access your
+          Azure Blob Storage. DataSync can access blob storage using a  shared
+          access signature (SAS).
+
+          Possible values:
+
+          o SAS
+
+       --sas-configuration (structure)
+          Specifies  the SAS configuration that allows DataSync to access your
+          Azure Blob Storage.
+
+          Token -> (string)
+              Specifies a SAS token that provides  permissions  at  the  Azure
+              storage account, container, or folder level.
+
+              The  token  is  part  of the SAS URI string that comes after the
+              storage resource URI and a question mark. A  token  looks  some-
+              thing like this:
+                 sp=r&st=2023-12-20T14:54:52Z&se=2023-12-20T22:54:52Z&spr=https&sv=2021-06-08&sr=c&sig=aB-
+                 BKDWQvyuVcTPH9EBp%2FXTI9E%2F%2Fmq171%2BZU178wcwqU%3D
+
+       Shorthand Syntax:
+
+          Token=string
+
+       JSON Syntax:
+
+          {
+            "Token": "string"
+          }
+
+       --blob-type (string)
+          Specifies the type of blob that you want your objects or files to be
+          when  transferring them into Azure Blob Storage. Currently, DataSync
+          only supports moving data into Azure Blob Storage  as  block  blobs.
+          For more information on blob types, see the Azure Blob Storage docu-
+          mentation .
+
+          Possible values:
+
+          o BLOCK
+
+       --access-tier (string)
+          Specifies the access tier that you want your objects or files trans-
+          ferred into. This only applies when using the location as a transfer
+          destination. For more information, see Access tiers .
+
+          Possible values:
+
+          o HOT
+
+          o COOL
+
+          o ARCHIVE
+
+       --subdirectory (string)
+          Specifies path segments if you want to limit your transfer to a vir-
+          tual directory in your container (for example, /my/images ).
+
+       --agent-arns (list)
+          Specifies  the Amazon Resource Name (ARN) of the DataSync agent that
+          can connect with your Azure Blob Storage container.
+
+          You can specify more than one agent. For more information, see Using
+          multiple agents for your transfer .
+
+          (string)
+
+       Syntax:
+
+          "string" "string" ...
 
        --tags (list)
           Specifies  labels  that  help you categorize, filter, and search for
-          your Amazon Web Services resources. We recommend creating  at  least
-          one tag for your agent.
+          your Amazon Web Services resources. We recommend creating at least a
+          name tag for your transfer location.
 
           (structure)
               A  key-value  pair representing a single tag that's been applied
@@ -85,38 +149,6 @@ OPTIONS
             }
             ...
           ]
-
-       --vpc-endpoint-id (string)
-          Specifies the ID of the VPC endpoint that you  want  your  agent  to
-          connect   to.   For   example,   a   VPC   endpoint  ID  looks  like
-          vpce-01234d5aff67890e1 .
-
-          WARNING:
-              The VPC endpoint you use must include the DataSync service  name
-              (for example, com.amazonaws.us-east-2.datasync ).
-
-       --subnet-arns (list)
-          Specifies  the ARN of the subnet where you want to run your DataSync
-          task when using a VPC endpoint. This is the  subnet  where  DataSync
-          creates  and  manages  the network interfaces for your transfer. You
-          can only specify one ARN.
-
-          (string)
-
-       Syntax:
-
-          "string" "string" ...
-
-       --security-group-arns (list)
-          Specifies the Amazon Resource Name (ARN) of the security group  that
-          protects your task's network interfaces when using a virtual private
-          cloud (VPC) endpoint . You can only specify one ARN.
-
-          (string)
-
-       Syntax:
-
-          "string" "string" ...
 
        --cli-input-json (string) Performs service operation based on the  JSON
        string  provided. The JSON string follows the format provided by --gen-
@@ -209,11 +241,10 @@ GLOBAL OPTIONS
        is 60 seconds.
 
 OUTPUT
-       AgentArn -> (string)
-          The ARN of the agent that you just activated. Use the ListAgents op-
-          eration to return a list of agents in your Amazon Web  Services  ac-
-          count and Amazon Web Services Region.
+       LocationArn -> (string)
+          The  ARN  of  the Azure Blob Storage transfer location that you cre-
+          ated.
 
 
 
-                                                                CREATE-AGENT()
+                                                  CREATE-LOCATION-AZURE-BLOB()
