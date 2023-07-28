@@ -376,15 +376,75 @@ GLOBAL OPTIONS
        the  socket connect will be blocking and not timeout. The default value
        is 60 seconds.
 
+EXAMPLES
+       NOTE:
+          To use the following examples, you must have the AWS  CLI  installed
+          and  configured.  See  the Getting started guide in the AWS CLI User
+          Guide for more information.
+
+          Unless otherwise  stated,  all  examples  have  unix-like  quotation
+          rules.  These  examples  will  need to be adapted to your terminal's
+          quoting rules. See Using quotation marks with strings in the AWS CLI
+          User Guide .
+
+       To start document classification job
+
+       The  following start-document-classification-job example starts a docu-
+       ment classification job with a custom model on all of the files at  the
+       address specified by the --input-data-config tag.  In this example, the
+       input S3 bucket contains  SampleSMStext1.txt,  SampleSMStext2.txt,  and
+       SampleSMStext3.txt.  The model was previously trained on document clas-
+       sifications of spam and non-spam, or, "ham", SMS messages. When the job
+       is  complete,  output.tar.gz  is  put  at the location specified by the
+       --output-data-config  tag.  output.tar.gz  contains   predictions.jsonl
+       which  lists  the  classification  of each document. The Json output is
+       printed on one line per file, but is formatted here for readability.
+
+          aws comprehend start-document-classification-job \
+              --job-name exampleclassificationjob \
+              --input-data-config "S3Uri=s3://DOC-EXAMPLE-BUCKET-INPUT/jobdata/" \
+              --output-data-config "S3Uri=s3://DOC-EXAMPLE-DESTINATION-BUCKET/testfolder/" \
+              --data-access-role-arn arn:aws:iam::111122223333:role/service-role/AmazonComprehendServiceRole-example-role \
+              --document-classifier-arn arn:aws:comprehend:us-west-2:111122223333:document-classifier/mymodel/version/12
+
+       Contents of SampleSMStext1.txt:
+
+          "CONGRATULATIONS! TXT 2155550100 to win $5000"
+
+       Contents of SampleSMStext2.txt:
+
+          "Hi, when do you want me to pick you up from practice?"
+
+       Contents of SampleSMStext3.txt:
+
+          "Plz send bank account # to 2155550100 to claim prize!!"
+
+       Output:
+
+          {
+              "JobId": "e758dd56b824aa717ceab551fEXAMPLE",
+              "JobArn": "arn:aws:comprehend:us-west-2:111122223333:document-classification-job/e758dd56b824aa717ceab551fEXAMPLE",
+              "JobStatus": "SUBMITTED"
+          }
+
+       Contents of predictions.jsonl:
+
+          {"File": "SampleSMSText1.txt", "Line": "0", "Classes": [{"Name": "spam", "Score": 0.9999}, {"Name": "ham", "Score": 0.0001}]}
+          {"File": "SampleSMStext2.txt", "Line": "0", "Classes": [{"Name": "ham", "Score": 0.9994}, {"Name": "spam", "Score": 0.0006}]}
+          {"File": "SampleSMSText3.txt", "Line": "0", "Classes": [{"Name": "spam", "Score": 0.9999}, {"Name": "ham", "Score": 0.0001}]}
+
+       For more information, see Custom Classification in the  Amazon  Compre-
+       hend Developer Guide.
+
 OUTPUT
        JobId -> (string)
-          The identifier generated for the job. To get the status of the  job,
+          The  identifier generated for the job. To get the status of the job,
           use this identifier with the DescribeDocumentClassificationJob oper-
           ation.
 
        JobArn -> (string)
-          The Amazon Resource Name (ARN) of the document  classification  job.
-          It  is a unique, fully qualified identifier for the job. It includes
+          The  Amazon  Resource Name (ARN) of the document classification job.
+          It is a unique, fully qualified identifier for the job. It  includes
           the Amazon Web Services account, Amazon Web Services Region, and the
           job ID. The format of the ARN is as follows:
               arn:<partition>:comprehend:<region>:<account-id>:document-clas-
@@ -401,10 +461,10 @@ OUTPUT
 
           o IN_PROGRESS - Amazon Comprehend is processing the job.
 
-          o COMPLETED  -  The job was successfully completed and the output is
+          o COMPLETED - The job was successfully completed and the  output  is
             available.
 
-          o FAILED - The job did  not  complete.  For  details,  use  the  De-
+          o FAILED  -  The  job  did  not  complete.  For details, use the De-
             scribeDocumentClassificationJob operation.
 
           o STOP_REQUESTED - Amazon Comprehend has received a stop request for

@@ -776,22 +776,85 @@ GLOBAL OPTIONS
        the  socket connect will be blocking and not timeout. The default value
        is 60 seconds.
 
+EXAMPLES
+       NOTE:
+          To use the following examples, you must have the AWS  CLI  installed
+          and  configured.  See  the Getting started guide in the AWS CLI User
+          Guide for more information.
+
+          Unless otherwise  stated,  all  examples  have  unix-like  quotation
+          rules.  These  examples  will  need to be adapted to your terminal's
+          quoting rules. See Using quotation marks with strings in the AWS CLI
+          User Guide .
+
+       Example 1: To request an authorization decision for a user request (al-
+       low)
+
+       The following is-authorized example requests an authorization  decision
+       for  a principal of type User named Alice, who wants to perform the up-
+       datePhoto operation, on  a  resource  of  type  Photo  named  Vacation-
+       Photo94.jpg.
+
+       The response shows that the request is allowed by one policy.
+
+          aws verifiedpermissions is-authorized \
+              --principal entityType=User,entityId=alice \
+              --action actionType=Action,actionId=view \
+              --resource entityType=Photo,entityId=VactionPhoto94.jpg \
+              --policy-store-id PSEXAMPLEabcdefg111111
+
+       Output:
+
+          {
+              "decision": "ALLOW",
+              "determiningPolicies": [
+                  {
+                      "policyId": "SPEXAMPLEabcdefg111111"
+                  }
+              ],
+              "errors": []
+          }
+
+       Example  2:  To  request  an  authorization decision for a user request
+       (deny)
+
+       The following example is the same as the previous example, except  that
+       the principal is User::"Bob". The policy store doesn't contain any pol-
+       icy that allows that user access to Album::"alice_folder".
+
+       The output indicates that the Deny was implicit because the list of De-
+       terminingPolicies is empty.
+
+          aws verifiedpermissions create-policy \
+              --definition file://definition2.txt \
+              --policy-store-id PSEXAMPLEabcdefg111111
+
+       Output:
+
+          {
+              "decision": "DENY",
+              "determiningPolicies": [],
+              "errors": []
+          }
+
+       For more information,  see the Amazon Verified Permissions User Guide.
+
 OUTPUT
        decision -> (string)
-          An authorization decision that indicates if  the  authorization  re-
+          An  authorization  decision  that indicates if the authorization re-
           quest should be allowed or denied.
 
        determiningPolicies -> (list)
-          The  list of determining policies used to make the authorization de-
-          cision. For example, if there are two matching policies,  where  one
-          is  a  forbid and the other is a permit, then the forbid policy will
-          be the determining policy. In the case of multiple  matching  permit
-          policies  then  there would be multiple determining policies. In the
-          case that no policies match, and hence the response is  DENY,  there
+          The list of determining policies used to make the authorization  de-
+          cision.  For  example, if there are two matching policies, where one
+          is a forbid and the other is a permit, then the forbid  policy  will
+          be  the  determining policy. In the case of multiple matching permit
+          policies then there would be multiple determining policies.  In  the
+          case  that  no policies match, and hence the response is DENY, there
           would be no determining policies.
 
           (structure)
-              Contains  information  about one of the policies that determined
+              Contains information about one of the policies  that  determined
               an authorization decision.
 
               This data type is used as an element in a response parameter for
@@ -801,20 +864,20 @@ OUTPUT
               PLEabcdefg111111"}]
 
               policyId -> (string)
-                 The Id of a policy that determined to an authorization  deci-
+                 The  Id of a policy that determined to an authorization deci-
                  sion.
 
                  Example: "policyId":"SPEXAMPLEabcdefg111111"
 
        errors -> (list)
           Errors that occurred while making an authorization decision, for ex-
-          ample, a policy references an Entity or entity Attribute  that  does
+          ample,  a  policy references an Entity or entity Attribute that does
           not exist in the slice.
 
           (structure)
               Contains a description of an evaluation error.
 
-              This   data   type  is  used  as  a  request  parameter  in  the
+              This  data  type  is  used  as  a  request  parameter   in   the
               IsAuthorized and IsAuthorizedWithToken operations.
 
               errorDescription -> (string)
