@@ -12,8 +12,6 @@ Version: `3.43.0`
 
 .bail on|off             Stop after hitting an error.  Default OFF
 
-.binary on|off           Turn binary output on or off.  Default OFF
-
 .cd DIRECTORY            Change the working directory to DIRECTORY
 
 .changes on|off          Show number of rows changed by SQL
