@@ -15,8 +15,8 @@ DESCRIPTION
        question-answer or FAQ type responses from your index. The passages are
        text excerpts that can be semantically extracted  from  multiple  docu-
        ments and multiple parts of the same document. If in extreme cases your
-       documents produce no relevant passages using the Retrieve API, you  can
-       alternatively use the Query API.
+       documents produce zero passages using the Retrieve API, you can  alter-
+       natively use the Query API and its types of responses.
 
        You can also do the following:
 
@@ -28,6 +28,11 @@ DESCRIPTION
 
        You  can also include certain fields in the response that might provide
        useful additional information.
+
+       The Retrieve API shares the number of query capacity units that you set
+       for your index. For more information on what's included in a single ca-
+       pacity unit and the default base capacity for an index,  see  Adjusting
+       capacity .
 
        See also: AWS API Documentation
 
@@ -60,62 +65,82 @@ SYNOPSIS
 
 OPTIONS
        --index-id (string)
-          The identifier of the index to retrieve relevant  passages  for  the
+          The  identifier  of  the index to retrieve relevant passages for the
           search.
 
        --query-text (string)
-          The  input  query text to retrieve relevant passages for the search.
-          Amazon Kendra truncates queries at 30 token  words,  which  excludes
-          punctuation  and  stop  words.  Truncation  still applies if you use
+          The input query text to retrieve relevant passages for  the  search.
+          Amazon  Kendra  truncates  queries at 30 token words, which excludes
+          punctuation and stop words. Truncation  still  applies  if  you  use
           Boolean or more advanced, complex queries.
 
        --attribute-filter (structure)
-          Filters search results by document fields/attributes. You  can  only
+          Filters  search  results by document fields/attributes. You can only
           provide one attribute filter; however, the AndAllFilters , NotFilter
           , and OrAllFilters parameters contain a list of other filters.
 
-          The AttributeFilter parameter means you can create a set of  filter-
-          ing  rules  that a document must satisfy to be included in the query
+          The  AttributeFilter parameter means you can create a set of filter-
+          ing rules that a document must satisfy to be included in  the  query
           results.
 
           AndAllFilters -> (list)
-              Performs a logical AND operation on all supplied filters.
+              Performs  a  logical AND operation on all filters that you spec-
+              ify.
 
               (structure)
-                 Provides filtering the query results based  on  document  at-
-                 tributes or metadata fields.
+                 Filters the search results based on  document  attributes  or
+                 fields.
 
-                 When  you use the AndAllFilters or OrAllFilters , filters you
-                 can use 2 layers under the first attribute filter. For  exam-
-                 ple, you can use:
-                     <AndAllFilters>
+                 You  can  filter results using attributes for your particular
+                 documents. The attributes must exist in your index. For exam-
+                 ple,  if your documents include the custom attribute "Depart-
+                 ment", you can filter documents that belong to the  "HR"  de-
+                 partment.  You would use the EqualsTo operation to filter re-
+                 sults or documents with "Department" equals to "HR".
 
-                 o <OrAllFilters>
+                 You can use AndAllFilters  and  AndOrFilters  in  combination
+                 with  each  other or with other operations such as EqualsTo .
+                 For example:
+                     AndAllFilters
 
-                 o <EqualsTo>
+                 o EqualsTo : "Department", "HR"
 
-                 If you use more than 2 layers, you receive a ValidationExcep-
-                 tion exception with the message "AttributeFilter cannot  have
-                 a depth of more than 2."
+                 o AndOrFilters
 
-                 If you use more than 10 attribute filters in a given list for
+                   o ContainsAny : "Project Name", ["new hires", "new hiring"]
+
+                 This example filters results or documents that belong to  the
+                 HR department and belong to projects that contain "new hires"
+                 or "new hiring" in the project name (must use ContainAny with
+                 StringListValue  ). This example is filtering with a depth of
+                 2.
+
+                 You cannot filter more than a depth of 2, otherwise  you  re-
+                 ceive  a  ValidationException exception with the message "At-
+                 tributeFilter cannot have a depth of more than 2."  Also,  if
+                 you  use  more  than 10 attribute filters in a given list for
                  AndAllFilters or OrAllFilters , you receive  a  ValidationEx-
                  ception  with  the  message  "AttributeFilter  cannot  have a
                  length of more than 10".
 
+                 For examples of using AttributeFilter ,  see  Using  document
+                 attributes to filter search results .
+
                  AndAllFilters -> (list)
-                     Performs a logical AND operation on all supplied filters.
+                     Performs  a logical AND operation on all filters that you
+                     specify.
 
                      ( ... recursive ... )
 
                  OrAllFilters -> (list)
-                     Performs a logical OR operation on all supplied filters.
+                     Performs a logical OR operation on all filters  that  you
+                     specify.
 
                      ( ... recursive ... )
 
                  ( ... recursive ... )EqualsTo -> (structure)
-                     Performs an equals operation on two  document  attributes
-                     or metadata fields.
+                     Performs    an   equals   operation   on   document   at-
+                     tributes/fields and their values.
 
                      Key -> (string)
                         The identifier for the attribute.
@@ -127,7 +152,7 @@ OPTIONS
                             A string, such as "department".
 
                         StringListValue -> (list)
-                            A  list  of strings. The default maximum length or
+                            A list of strings. The default maximum  length  or
                             number of strings is 10.
 
                             (string)
@@ -138,16 +163,16 @@ OPTIONS
                         DateValue -> (timestamp)
                             A date expressed as an ISO 8601 string.
 
-                            It is important for the time zone to  be  included
-                            in  the  ISO  8601  date-time format. For example,
-                            2012-03-25T12:30:10+01:00   is   the   ISO    8601
-                            date-time  format  for  March 25th 2012 at 12:30PM
+                            It  is  important for the time zone to be included
+                            in the ISO 8601  date-time  format.  For  example,
+                            2012-03-25T12:30:10+01:00    is   the   ISO   8601
+                            date-time format for March 25th  2012  at  12:30PM
                             (plus 10 seconds) in Central European Time.
 
                  ContainsAll -> (structure)
-                     Returns true when a document contains all of  the  speci-
-                     fied  document attributes or metadata fields. This filter
-                     is only applicable to StringListValue metadata.
+                     Returns  true  when a document contains all of the speci-
+                     fied document attributes/fields. This filter is only  ap-
+                     plicable to StringListValue .
 
                      Key -> (string)
                         The identifier for the attribute.
@@ -159,7 +184,7 @@ OPTIONS
                             A string, such as "department".
 
                         StringListValue -> (list)
-                            A list of strings. The default maximum  length  or
+                            A  list  of strings. The default maximum length or
                             number of strings is 10.
 
                             (string)
@@ -170,16 +195,16 @@ OPTIONS
                         DateValue -> (timestamp)
                             A date expressed as an ISO 8601 string.
 
-                            It  is  important for the time zone to be included
-                            in the ISO 8601  date-time  format.  For  example,
-                            2012-03-25T12:30:10+01:00    is   the   ISO   8601
-                            date-time format for March 25th  2012  at  12:30PM
+                            It is important for the time zone to  be  included
+                            in  the  ISO  8601  date-time format. For example,
+                            2012-03-25T12:30:10+01:00   is   the   ISO    8601
+                            date-time  format  for  March 25th 2012 at 12:30PM
                             (plus 10 seconds) in Central European Time.
 
                  ContainsAny -> (structure)
-                     Returns  true  when a document contains any of the speci-
-                     fied document attributes or metadata fields. This  filter
-                     is only applicable to StringListValue metadata.
+                     Returns true when a document contains any of  the  speci-
+                     fied  document attributes/fields. This filter is only ap-
+                     plicable to StringListValue .
 
                      Key -> (string)
                         The identifier for the attribute.
@@ -191,7 +216,7 @@ OPTIONS
                             A string, such as "department".
 
                         StringListValue -> (list)
-                            A  list  of strings. The default maximum length or
+                            A list of strings. The default maximum  length  or
                             number of strings is 10.
 
                             (string)
@@ -202,16 +227,16 @@ OPTIONS
                         DateValue -> (timestamp)
                             A date expressed as an ISO 8601 string.
 
-                            It is important for the time zone to  be  included
-                            in  the  ISO  8601  date-time format. For example,
-                            2012-03-25T12:30:10+01:00   is   the   ISO    8601
-                            date-time  format  for  March 25th 2012 at 12:30PM
+                            It  is  important for the time zone to be included
+                            in the ISO 8601  date-time  format.  For  example,
+                            2012-03-25T12:30:10+01:00    is   the   ISO   8601
+                            date-time format for March 25th  2012  at  12:30PM
                             (plus 10 seconds) in Central European Time.
 
                  GreaterThan -> (structure)
-                     Performs a greater than operation  on  two  document  at-
-                     tributes  or  metadata fields. Use with a document attri-
-                     bute of type Date or Long .
+                     Performs   a  greater  than  operation  on  document  at-
+                     tributes/fields and their values. Use with  the  document
+                     attribute type  Date or Long .
 
                      Key -> (string)
                         The identifier for the attribute.
@@ -223,7 +248,7 @@ OPTIONS
                             A string, such as "department".
 
                         StringListValue -> (list)
-                            A list of strings. The default maximum  length  or
+                            A  list  of strings. The default maximum length or
                             number of strings is 10.
 
                             (string)
@@ -234,48 +259,16 @@ OPTIONS
                         DateValue -> (timestamp)
                             A date expressed as an ISO 8601 string.
 
-                            It  is  important for the time zone to be included
-                            in the ISO 8601  date-time  format.  For  example,
-                            2012-03-25T12:30:10+01:00    is   the   ISO   8601
-                            date-time format for March 25th  2012  at  12:30PM
+                            It is important for the time zone to  be  included
+                            in  the  ISO  8601  date-time format. For example,
+                            2012-03-25T12:30:10+01:00   is   the   ISO    8601
+                            date-time  format  for  March 25th 2012 at 12:30PM
                             (plus 10 seconds) in Central European Time.
 
                  GreaterThanOrEquals -> (structure)
-                     Performs  a greater or equals than operation on two docu-
-                     ment attributes or metadata fields. Use with  a  document
-                     attribute of type Date or Long .
-
-                     Key -> (string)
-                        The identifier for the attribute.
-
-                     Value -> (structure)
-                        The value of the attribute.
-
-                        StringValue -> (string)
-                            A string, such as "department".
-
-                        StringListValue -> (list)
-                            A  list  of strings. The default maximum length or
-                            number of strings is 10.
-
-                            (string)
-
-                        LongValue -> (long)
-                            A long integer value.
-
-                        DateValue -> (timestamp)
-                            A date expressed as an ISO 8601 string.
-
-                            It is important for the time zone to  be  included
-                            in  the  ISO  8601  date-time format. For example,
-                            2012-03-25T12:30:10+01:00   is   the   ISO    8601
-                            date-time  format  for  March 25th 2012 at 12:30PM
-                            (plus 10 seconds) in Central European Time.
-
-                 LessThan -> (structure)
-                     Performs a less than operation on two document attributes
-                     or metadata fields. Use with a document attribute of type
-                     Date or Long .
+                     Performs a greater or equals than operation  on  document
+                     attributes/fields and their values. Use with the document
+                     attribute type  Date or Long .
 
                      Key -> (string)
                         The identifier for the attribute.
@@ -304,10 +297,10 @@ OPTIONS
                             date-time format for March 25th  2012  at  12:30PM
                             (plus 10 seconds) in Central European Time.
 
-                 LessThanOrEquals -> (structure)
-                     Performs  a less than or equals operation on two document
-                     attributes or metadata fields. Use with a document attri-
-                     bute of type Date or Long .
+                 LessThan -> (structure)
+                     Performs   a   less   than   operation  on  document  at-
+                     tributes/fields and their values. Use with  the  document
+                     attribute type  Date or Long .
 
                      Key -> (string)
                         The identifier for the attribute.
@@ -334,46 +327,97 @@ OPTIONS
                             in  the  ISO  8601  date-time format. For example,
                             2012-03-25T12:30:10+01:00   is   the   ISO    8601
                             date-time  format  for  March 25th 2012 at 12:30PM
+                            (plus 10 seconds) in Central European Time.
+
+                 LessThanOrEquals -> (structure)
+                     Performs a less than or equals operation on document  at-
+                     tributes/fields  and  their values. Use with the document
+                     attribute type  Date or Long .
+
+                     Key -> (string)
+                        The identifier for the attribute.
+
+                     Value -> (structure)
+                        The value of the attribute.
+
+                        StringValue -> (string)
+                            A string, such as "department".
+
+                        StringListValue -> (list)
+                            A list of strings. The default maximum  length  or
+                            number of strings is 10.
+
+                            (string)
+
+                        LongValue -> (long)
+                            A long integer value.
+
+                        DateValue -> (timestamp)
+                            A date expressed as an ISO 8601 string.
+
+                            It  is  important for the time zone to be included
+                            in the ISO 8601  date-time  format.  For  example,
+                            2012-03-25T12:30:10+01:00    is   the   ISO   8601
+                            date-time format for March 25th  2012  at  12:30PM
                             (plus 10 seconds) in Central European Time.
 
           OrAllFilters -> (list)
-              Performs a logical OR operation on all supplied filters.
+              Performs a logical OR operation on all filters that you specify.
 
               (structure)
-                 Provides filtering the query results based  on  document  at-
-                 tributes or metadata fields.
+                 Filters  the  search  results based on document attributes or
+                 fields.
 
-                 When  you use the AndAllFilters or OrAllFilters , filters you
-                 can use 2 layers under the first attribute filter. For  exam-
-                 ple, you can use:
-                     <AndAllFilters>
+                 You can filter results using attributes for  your  particular
+                 documents. The attributes must exist in your index. For exam-
+                 ple, if your documents include the custom attribute  "Depart-
+                 ment",  you  can filter documents that belong to the "HR" de-
+                 partment. You would use the EqualsTo operation to filter  re-
+                 sults or documents with "Department" equals to "HR".
 
-                 o <OrAllFilters>
+                 You  can  use  AndAllFilters  and AndOrFilters in combination
+                 with each other or with other operations such as  EqualsTo  .
+                 For example:
+                     AndAllFilters
 
-                 o <EqualsTo>
+                 o EqualsTo : "Department", "HR"
 
-                 If you use more than 2 layers, you receive a ValidationExcep-
-                 tion exception with the message "AttributeFilter cannot  have
-                 a depth of more than 2."
+                 o AndOrFilters
 
-                 If you use more than 10 attribute filters in a given list for
-                 AndAllFilters or OrAllFilters , you receive  a  ValidationEx-
-                 ception  with  the  message  "AttributeFilter  cannot  have a
+                   o ContainsAny : "Project Name", ["new hires", "new hiring"]
+
+                 This  example filters results or documents that belong to the
+                 HR department and belong to projects that contain "new hires"
+                 or "new hiring" in the project name (must use ContainAny with
+                 StringListValue ). This example is filtering with a depth  of
+                 2.
+
+                 You  cannot  filter more than a depth of 2, otherwise you re-
+                 ceive a ValidationException exception with the  message  "At-
+                 tributeFilter  cannot  have a depth of more than 2." Also, if
+                 you use more than 10 attribute filters in a  given  list  for
+                 AndAllFilters  or  OrAllFilters , you receive a ValidationEx-
+                 ception with  the  message  "AttributeFilter  cannot  have  a
                  length of more than 10".
 
+                 For  examples  of  using AttributeFilter , see Using document
+                 attributes to filter search results .
+
                  AndAllFilters -> (list)
-                     Performs a logical AND operation on all supplied filters.
+                     Performs a logical AND operation on all filters that  you
+                     specify.
 
                      ( ... recursive ... )
 
                  OrAllFilters -> (list)
-                     Performs a logical OR operation on all supplied filters.
+                     Performs  a  logical OR operation on all filters that you
+                     specify.
 
                      ( ... recursive ... )
 
                  ( ... recursive ... )EqualsTo -> (structure)
-                     Performs an equals operation on two  document  attributes
-                     or metadata fields.
+                     Performs   an   equals   operation   on   document    at-
+                     tributes/fields and their values.
 
                      Key -> (string)
                         The identifier for the attribute.
@@ -404,8 +448,8 @@ OPTIONS
 
                  ContainsAll -> (structure)
                      Returns true when a document contains all of  the  speci-
-                     fied  document attributes or metadata fields. This filter
-                     is only applicable to StringListValue metadata.
+                     fied  document attributes/fields. This filter is only ap-
+                     plicable to StringListValue .
 
                      Key -> (string)
                         The identifier for the attribute.
@@ -436,8 +480,8 @@ OPTIONS
 
                  ContainsAny -> (structure)
                      Returns  true  when a document contains any of the speci-
-                     fied document attributes or metadata fields. This  filter
-                     is only applicable to StringListValue metadata.
+                     fied document attributes/fields. This filter is only  ap-
+                     plicable to StringListValue .
 
                      Key -> (string)
                         The identifier for the attribute.
@@ -467,9 +511,9 @@ OPTIONS
                             (plus 10 seconds) in Central European Time.
 
                  GreaterThan -> (structure)
-                     Performs a greater than operation  on  two  document  at-
-                     tributes  or  metadata fields. Use with a document attri-
-                     bute of type Date or Long .
+                     Performs  a  greater  than  operation  on  document   at-
+                     tributes/fields  and  their values. Use with the document
+                     attribute type  Date or Long .
 
                      Key -> (string)
                         The identifier for the attribute.
@@ -499,9 +543,9 @@ OPTIONS
                             (plus 10 seconds) in Central European Time.
 
                  GreaterThanOrEquals -> (structure)
-                     Performs  a greater or equals than operation on two docu-
-                     ment attributes or metadata fields. Use with  a  document
-                     attribute of type Date or Long .
+                     Performs  a  greater or equals than operation on document
+                     attributes/fields and their values. Use with the document
+                     attribute type  Date or Long .
 
                      Key -> (string)
                         The identifier for the attribute.
@@ -531,9 +575,9 @@ OPTIONS
                             (plus 10 seconds) in Central European Time.
 
                  LessThan -> (structure)
-                     Performs a less than operation on two document attributes
-                     or metadata fields. Use with a document attribute of type
-                     Date or Long .
+                     Performs  a  less  than   operation   on   document   at-
+                     tributes/fields  and  their values. Use with the document
+                     attribute type  Date or Long .
 
                      Key -> (string)
                         The identifier for the attribute.
@@ -563,9 +607,9 @@ OPTIONS
                             (plus 10 seconds) in Central European Time.
 
                  LessThanOrEquals -> (structure)
-                     Performs  a less than or equals operation on two document
-                     attributes or metadata fields. Use with a document attri-
-                     bute of type Date or Long .
+                     Performs  a less than or equals operation on document at-
+                     tributes/fields and their values. Use with  the  document
+                     attribute type  Date or Long .
 
                      Key -> (string)
                         The identifier for the attribute.
@@ -595,21 +639,24 @@ OPTIONS
                             (plus 10 seconds) in Central European Time.
 
           NotFilter -> (structure)
-              Performs a logical NOT operation on all supplied filters.
+              Performs a logical NOT operation on all filters that  you  spec-
+              ify.
 
               AndAllFilters -> (list)
-                 Performs a logical AND operation on all supplied filters.
+                 Performs  a  logical  AND  operation  on all filters that you
+                 specify.
 
                  ( ... recursive ... )
 
               OrAllFilters -> (list)
-                 Performs a logical OR operation on all supplied filters.
+                 Performs a logical OR operation on all filters that you spec-
+                 ify.
 
                  ( ... recursive ... )
 
               ( ... recursive ... )EqualsTo -> (structure)
-                 Performs an equals operation on two  document  attributes  or
-                 metadata fields.
+                 Performs  an  equals  operation on document attributes/fields
+                 and their values.
 
                  Key -> (string)
                      The identifier for the attribute.
@@ -621,7 +668,7 @@ OPTIONS
                         A string, such as "department".
 
                      StringListValue -> (list)
-                        A  list of strings. The default maximum length or num-
+                        A list of strings. The default maximum length or  num-
                         ber of strings is 10.
 
                         (string)
@@ -632,16 +679,16 @@ OPTIONS
                      DateValue -> (timestamp)
                         A date expressed as an ISO 8601 string.
 
-                        It is important for the time zone to  be  included  in
-                        the   ISO   8601   date-time   format.   For  example,
-                        2012-03-25T12:30:10+01:00 is the  ISO  8601  date-time
-                        format  for  March  25th 2012 at 12:30PM (plus 10 sec-
+                        It  is  important  for the time zone to be included in
+                        the  ISO   8601   date-time   format.   For   example,
+                        2012-03-25T12:30:10+01:00  is  the  ISO 8601 date-time
+                        format for March 25th 2012 at 12:30PM  (plus  10  sec-
                         onds) in Central European Time.
 
               ContainsAll -> (structure)
-                 Returns true when a document contains all  of  the  specified
-                 document  attributes  or metadata fields. This filter is only
-                 applicable to StringListValue metadata.
+                 Returns  true  when  a document contains all of the specified
+                 document attributes/fields. This filter is only applicable to
+                 StringListValue .
 
                  Key -> (string)
                      The identifier for the attribute.
@@ -653,7 +700,7 @@ OPTIONS
                         A string, such as "department".
 
                      StringListValue -> (list)
-                        A list of strings. The default maximum length or  num-
+                        A  list of strings. The default maximum length or num-
                         ber of strings is 10.
 
                         (string)
@@ -664,48 +711,16 @@ OPTIONS
                      DateValue -> (timestamp)
                         A date expressed as an ISO 8601 string.
 
-                        It  is  important  for the time zone to be included in
-                        the  ISO   8601   date-time   format.   For   example,
-                        2012-03-25T12:30:10+01:00  is  the  ISO 8601 date-time
-                        format for March 25th 2012 at 12:30PM  (plus  10  sec-
+                        It is important for the time zone to  be  included  in
+                        the   ISO   8601   date-time   format.   For  example,
+                        2012-03-25T12:30:10+01:00 is the  ISO  8601  date-time
+                        format  for  March  25th 2012 at 12:30PM (plus 10 sec-
                         onds) in Central European Time.
 
               ContainsAny -> (structure)
-                 Returns  true  when  a document contains any of the specified
-                 document attributes or metadata fields. This filter  is  only
-                 applicable to StringListValue metadata.
-
-                 Key -> (string)
-                     The identifier for the attribute.
-
-                 Value -> (structure)
-                     The value of the attribute.
-
-                     StringValue -> (string)
-                        A string, such as "department".
-
-                     StringListValue -> (list)
-                        A  list of strings. The default maximum length or num-
-                        ber of strings is 10.
-
-                        (string)
-
-                     LongValue -> (long)
-                        A long integer value.
-
-                     DateValue -> (timestamp)
-                        A date expressed as an ISO 8601 string.
-
-                        It is important for the time zone to  be  included  in
-                        the   ISO   8601   date-time   format.   For  example,
-                        2012-03-25T12:30:10+01:00 is the  ISO  8601  date-time
-                        format  for  March  25th 2012 at 12:30PM (plus 10 sec-
-                        onds) in Central European Time.
-
-              GreaterThan -> (structure)
-                 Performs a greater than operation on two document  attributes
-                 or  metadata  fields.  Use  with a document attribute of type
-                 Date or Long .
+                 Returns true when a document contains any  of  the  specified
+                 document attributes/fields. This filter is only applicable to
+                 StringListValue .
 
                  Key -> (string)
                      The identifier for the attribute.
@@ -734,10 +749,10 @@ OPTIONS
                         format for March 25th 2012 at 12:30PM  (plus  10  sec-
                         onds) in Central European Time.
 
-              GreaterThanOrEquals -> (structure)
-                 Performs  a  greater or equals than operation on two document
-                 attributes or metadata fields. Use with a document  attribute
-                 of type Date or Long .
+              GreaterThan -> (structure)
+                 Performs   a   greater   than   operation   on  document  at-
+                 tributes/fields and their values. Use with the  document  at-
+                 tribute type  Date or Long .
 
                  Key -> (string)
                      The identifier for the attribute.
@@ -766,9 +781,41 @@ OPTIONS
                         format  for  March  25th 2012 at 12:30PM (plus 10 sec-
                         onds) in Central European Time.
 
+              GreaterThanOrEquals -> (structure)
+                 Performs a greater or equals than operation on  document  at-
+                 tributes/fields  and  their values. Use with the document at-
+                 tribute type  Date or Long .
+
+                 Key -> (string)
+                     The identifier for the attribute.
+
+                 Value -> (structure)
+                     The value of the attribute.
+
+                     StringValue -> (string)
+                        A string, such as "department".
+
+                     StringListValue -> (list)
+                        A list of strings. The default maximum length or  num-
+                        ber of strings is 10.
+
+                        (string)
+
+                     LongValue -> (long)
+                        A long integer value.
+
+                     DateValue -> (timestamp)
+                        A date expressed as an ISO 8601 string.
+
+                        It  is  important  for the time zone to be included in
+                        the  ISO   8601   date-time   format.   For   example,
+                        2012-03-25T12:30:10+01:00  is  the  ISO 8601 date-time
+                        format for March 25th 2012 at 12:30PM  (plus  10  sec-
+                        onds) in Central European Time.
+
               LessThan -> (structure)
-                 Performs a less than operation on two document attributes  or
-                 metadata  fields.  Use with a document attribute of type Date
+                 Performs  a less than operation on document attributes/fields
+                 and their values. Use with the document attribute type   Date
                  or Long .
 
                  Key -> (string)
@@ -781,38 +828,6 @@ OPTIONS
                         A string, such as "department".
 
                      StringListValue -> (list)
-                        A list of strings. The default maximum length or  num-
-                        ber of strings is 10.
-
-                        (string)
-
-                     LongValue -> (long)
-                        A long integer value.
-
-                     DateValue -> (timestamp)
-                        A date expressed as an ISO 8601 string.
-
-                        It  is  important  for the time zone to be included in
-                        the  ISO   8601   date-time   format.   For   example,
-                        2012-03-25T12:30:10+01:00  is  the  ISO 8601 date-time
-                        format for March 25th 2012 at 12:30PM  (plus  10  sec-
-                        onds) in Central European Time.
-
-              LessThanOrEquals -> (structure)
-                 Performs  a less than or equals operation on two document at-
-                 tributes or metadata fields. Use with a document attribute of
-                 type Date or Long .
-
-                 Key -> (string)
-                     The identifier for the attribute.
-
-                 Value -> (structure)
-                     The value of the attribute.
-
-                     StringValue -> (string)
-                        A string, such as "department".
-
-                     StringListValue -> (list)
                         A  list of strings. The default maximum length or num-
                         ber of strings is 10.
 
@@ -830,9 +845,41 @@ OPTIONS
                         format  for  March  25th 2012 at 12:30PM (plus 10 sec-
                         onds) in Central European Time.
 
+              LessThanOrEquals -> (structure)
+                 Performs a less than or  equals  operation  on  document  at-
+                 tributes/fields  and  their values. Use with the document at-
+                 tribute type  Date or Long .
+
+                 Key -> (string)
+                     The identifier for the attribute.
+
+                 Value -> (structure)
+                     The value of the attribute.
+
+                     StringValue -> (string)
+                        A string, such as "department".
+
+                     StringListValue -> (list)
+                        A list of strings. The default maximum length or  num-
+                        ber of strings is 10.
+
+                        (string)
+
+                     LongValue -> (long)
+                        A long integer value.
+
+                     DateValue -> (timestamp)
+                        A date expressed as an ISO 8601 string.
+
+                        It  is  important  for the time zone to be included in
+                        the  ISO   8601   date-time   format.   For   example,
+                        2012-03-25T12:30:10+01:00  is  the  ISO 8601 date-time
+                        format for March 25th 2012 at 12:30PM  (plus  10  sec-
+                        onds) in Central European Time.
+
           EqualsTo -> (structure)
-              Performs an equals operation on two document attributes or meta-
-              data fields.
+              Performs  an  equals operation on document attributes/fields and
+              their values.
 
               Key -> (string)
                  The identifier for the attribute.
@@ -844,7 +891,7 @@ OPTIONS
                      A string, such as "department".
 
                  StringListValue -> (list)
-                     A  list  of strings. The default maximum length or number
+                     A list of strings. The default maximum length  or  number
                      of strings is 10.
 
                      (string)
@@ -855,16 +902,16 @@ OPTIONS
                  DateValue -> (timestamp)
                      A date expressed as an ISO 8601 string.
 
-                     It is important for the time zone to be included  in  the
-                     ISO     8601     date-time     format.    For    example,
-                     2012-03-25T12:30:10+01:00 is the ISO 8601 date-time  for-
-                     mat  for  March 25th 2012 at 12:30PM (plus 10 seconds) in
+                     It  is  important for the time zone to be included in the
+                     ISO    8601    date-time     format.     For     example,
+                     2012-03-25T12:30:10+01:00  is the ISO 8601 date-time for-
+                     mat for March 25th 2012 at 12:30PM (plus 10  seconds)  in
                      Central European Time.
 
           ContainsAll -> (structure)
               Returns true when a document contains all of the specified docu-
-              ment attributes or metadata fields. This filter is only applica-
-              ble to StringListValue metadata.
+              ment  attributes/fields.  This  filter  is  only  applicable  to
+              StringListValue .
 
               Key -> (string)
                  The identifier for the attribute.
@@ -876,7 +923,7 @@ OPTIONS
                      A string, such as "department".
 
                  StringListValue -> (list)
-                     A list of strings. The default maximum length  or  number
+                     A  list  of strings. The default maximum length or number
                      of strings is 10.
 
                      (string)
@@ -887,16 +934,16 @@ OPTIONS
                  DateValue -> (timestamp)
                      A date expressed as an ISO 8601 string.
 
-                     It  is  important for the time zone to be included in the
-                     ISO    8601    date-time     format.     For     example,
-                     2012-03-25T12:30:10+01:00  is the ISO 8601 date-time for-
-                     mat for March 25th 2012 at 12:30PM (plus 10  seconds)  in
+                     It is important for the time zone to be included  in  the
+                     ISO     8601     date-time     format.    For    example,
+                     2012-03-25T12:30:10+01:00 is the ISO 8601 date-time  for-
+                     mat  for  March 25th 2012 at 12:30PM (plus 10 seconds) in
                      Central European Time.
 
           ContainsAny -> (structure)
               Returns true when a document contains any of the specified docu-
-              ment attributes or metadata fields. This filter is only applica-
-              ble to StringListValue metadata.
+              ment  attributes/fields.  This  filter  is  only  applicable  to
+              StringListValue .
 
               Key -> (string)
                  The identifier for the attribute.
@@ -908,7 +955,7 @@ OPTIONS
                      A string, such as "department".
 
                  StringListValue -> (list)
-                     A  list  of strings. The default maximum length or number
+                     A list of strings. The default maximum length  or  number
                      of strings is 10.
 
                      (string)
@@ -919,15 +966,15 @@ OPTIONS
                  DateValue -> (timestamp)
                      A date expressed as an ISO 8601 string.
 
-                     It is important for the time zone to be included  in  the
-                     ISO     8601     date-time     format.    For    example,
-                     2012-03-25T12:30:10+01:00 is the ISO 8601 date-time  for-
-                     mat  for  March 25th 2012 at 12:30PM (plus 10 seconds) in
+                     It  is  important for the time zone to be included in the
+                     ISO    8601    date-time     format.     For     example,
+                     2012-03-25T12:30:10+01:00  is the ISO 8601 date-time for-
+                     mat for March 25th 2012 at 12:30PM (plus 10  seconds)  in
                      Central European Time.
 
           GreaterThan -> (structure)
-              Performs a greater than operation on two document attributes  or
-              metadata  fields.  Use with a document attribute of type Date or
+              Performs  a greater than operation on document attributes/fields
+              and their values. Use with the document attribute type  Date  or
               Long .
 
               Key -> (string)
@@ -940,7 +987,7 @@ OPTIONS
                      A string, such as "department".
 
                  StringListValue -> (list)
-                     A list of strings. The default maximum length  or  number
+                     A  list  of strings. The default maximum length or number
                      of strings is 10.
 
                      (string)
@@ -951,48 +998,16 @@ OPTIONS
                  DateValue -> (timestamp)
                      A date expressed as an ISO 8601 string.
 
-                     It  is  important for the time zone to be included in the
-                     ISO    8601    date-time     format.     For     example,
-                     2012-03-25T12:30:10+01:00  is the ISO 8601 date-time for-
-                     mat for March 25th 2012 at 12:30PM (plus 10  seconds)  in
+                     It is important for the time zone to be included  in  the
+                     ISO     8601     date-time     format.    For    example,
+                     2012-03-25T12:30:10+01:00 is the ISO 8601 date-time  for-
+                     mat  for  March 25th 2012 at 12:30PM (plus 10 seconds) in
                      Central European Time.
 
           GreaterThanOrEquals -> (structure)
-              Performs  a greater or equals than operation on two document at-
-              tributes or metadata fields. Use with a  document  attribute  of
-              type Date or Long .
-
-              Key -> (string)
-                 The identifier for the attribute.
-
-              Value -> (structure)
-                 The value of the attribute.
-
-                 StringValue -> (string)
-                     A string, such as "department".
-
-                 StringListValue -> (list)
-                     A  list  of strings. The default maximum length or number
-                     of strings is 10.
-
-                     (string)
-
-                 LongValue -> (long)
-                     A long integer value.
-
-                 DateValue -> (timestamp)
-                     A date expressed as an ISO 8601 string.
-
-                     It is important for the time zone to be included  in  the
-                     ISO     8601     date-time     format.    For    example,
-                     2012-03-25T12:30:10+01:00 is the ISO 8601 date-time  for-
-                     mat  for  March 25th 2012 at 12:30PM (plus 10 seconds) in
-                     Central European Time.
-
-          LessThan -> (structure)
-              Performs a less than operation on  two  document  attributes  or
-              metadata  fields.  Use with a document attribute of type Date or
-              Long .
+              Performs a greater or equals  than  operation  on  document  at-
+              tributes/fields  and  their values. Use with the document attri-
+              bute type  Date or Long .
 
               Key -> (string)
                  The identifier for the attribute.
@@ -1021,10 +1036,10 @@ OPTIONS
                      mat for March 25th 2012 at 12:30PM (plus 10  seconds)  in
                      Central European Time.
 
-          LessThanOrEquals -> (structure)
-              Performs  a  less  than  or equals operation on two document at-
-              tributes or metadata fields. Use with a  document  attribute  of
-              type Date or Long .
+          LessThan -> (structure)
+              Performs a less than operation on document attributes/fields and
+              their values. Use with the document attribute type  Date or Long
+              .
 
               Key -> (string)
                  The identifier for the attribute.
@@ -1051,6 +1066,38 @@ OPTIONS
                      ISO     8601     date-time     format.    For    example,
                      2012-03-25T12:30:10+01:00 is the ISO 8601 date-time  for-
                      mat  for  March 25th 2012 at 12:30PM (plus 10 seconds) in
+                     Central European Time.
+
+          LessThanOrEquals -> (structure)
+              Performs a  less  than  or  equals  operation  on  document  at-
+              tributes/fields  and  their values. Use with the document attri-
+              bute type  Date or Long .
+
+              Key -> (string)
+                 The identifier for the attribute.
+
+              Value -> (structure)
+                 The value of the attribute.
+
+                 StringValue -> (string)
+                     A string, such as "department".
+
+                 StringListValue -> (list)
+                     A list of strings. The default maximum length  or  number
+                     of strings is 10.
+
+                     (string)
+
+                 LongValue -> (long)
+                     A long integer value.
+
+                 DateValue -> (timestamp)
+                     A date expressed as an ISO 8601 string.
+
+                     It  is  important for the time zone to be included in the
+                     ISO    8601    date-time     format.     For     example,
+                     2012-03-25T12:30:10+01:00  is the ISO 8601 date-time for-
+                     mat for March 25th 2012 at 12:30PM (plus 10  seconds)  in
                      Central European Time.
 
        JSON Syntax:
@@ -1351,7 +1398,7 @@ OPTIONS
 
        --requested-document-attributes (list)
           A list of document fields/attributes to include in the response. You
-          can  limit  the  response to include certain document fields. By de-
+          can limit the response to include certain document  fields.  By  de-
           fault, all document fields are included in the response.
 
           (string)
@@ -1361,20 +1408,20 @@ OPTIONS
           "string" "string" ...
 
        --document-relevance-override-configurations (list)
-          Overrides relevance tuning configurations of  fields/attributes  set
+          Overrides  relevance  tuning configurations of fields/attributes set
           at the index level.
 
-          If  you  use this API to override the relevance tuning configured at
-          the index level, but there is no relevance tuning configured at  the
+          If you use this API to override the relevance tuning  configured  at
+          the  index level, but there is no relevance tuning configured at the
           index level, then Amazon Kendra does not apply any relevance tuning.
 
-          If  there  is  relevance  tuning  configured for fields at the index
-          level, and you use this API to override only some of  these  fields,
-          then  for  the fields you did not override, the importance is set to
+          If there is relevance tuning configured  for  fields  at  the  index
+          level,  and  you use this API to override only some of these fields,
+          then for the fields you did not override, the importance is  set  to
           1.
 
           (structure)
-              Overrides the document relevance properties of  a  custom  index
+              Overrides  the  document  relevance properties of a custom index
               field.
 
               Name -> (string)
@@ -1387,28 +1434,28 @@ OPTIONS
                  ing parameters.
 
                  Freshness -> (boolean)
-                     Indicates that this field determines how "fresh" a  docu-
+                     Indicates  that this field determines how "fresh" a docu-
                      ment is. For example, if document 1 was created on Novem-
                      ber 5, and document 2 was created on October 31, document
-                     1  is  "fresher"  than  document  2. You can only set the
-                     Freshness field on one DATE type field. Only  applies  to
+                     1 is "fresher" than document 2.  You  can  only  set  the
+                     Freshness  field  on one DATE type field. Only applies to
                      DATE fields.
 
                  Importance -> (integer)
-                     The  relative  importance  of  the  field  in the search.
-                     Larger numbers provide more of a boost than smaller  num-
+                     The relative importance  of  the  field  in  the  search.
+                     Larger  numbers provide more of a boost than smaller num-
                      bers.
 
                  Duration -> (string)
-                     Specifies  the time period that the boost applies to. For
-                     example, to make the boost apply to  documents  with  the
-                     field   value  within  the  last  month,  you  would  use
-                     "2628000s". Once the field value is beyond the  specified
-                     range,  the effect of the boost drops off. The higher the
+                     Specifies the time period that the boost applies to.  For
+                     example,  to  make  the boost apply to documents with the
+                     field  value  within  the  last  month,  you  would   use
+                     "2628000s".  Once the field value is beyond the specified
+                     range, the effect of the boost drops off. The higher  the
                      importance, the faster the effect drops off. If you don't
-                     specify  a  value,  the default is 3 months. The value of
-                     the field is a numeric string followed by  the  character
-                     "s",  for  example "86400s" for one day, or "604800s" for
+                     specify a value, the default is 3 months.  The  value  of
+                     the  field  is a numeric string followed by the character
+                     "s", for example "86400s" for one day, or  "604800s"  for
                      one week.
 
                      Only applies to DATE fields.
@@ -1416,30 +1463,30 @@ OPTIONS
                  RankOrder -> (string)
                      Determines how values should be interpreted.
 
-                     When the RankOrder field is ASCENDING  ,  higher  numbers
-                     are  better.  For example, a document with a rating score
-                     of 10 is higher ranking than a  document  with  a  rating
+                     When  the  RankOrder  field is ASCENDING , higher numbers
+                     are better. For example, a document with a  rating  score
+                     of  10  is  higher  ranking than a document with a rating
                      score of 1.
 
-                     When  the  RankOrder  field is DESCENDING , lower numbers
-                     are better. For example, in a task tracking  application,
-                     a  priority  1  task  is more important than a priority 5
+                     When the RankOrder field is DESCENDING  ,  lower  numbers
+                     are  better. For example, in a task tracking application,
+                     a priority 1 task is more important  than  a  priority  5
                      task.
 
                      Only applies to LONG and DOUBLE fields.
 
                  ValueImportanceMap -> (map)
-                     A list of values that should be given a  different  boost
-                     when  they appear in the result list. For example, if you
-                     are boosting a field  called  "department,"  query  terms
-                     that  match  the  department field are boosted in the re-
-                     sult. However, you can add entries  from  the  department
+                     A  list  of values that should be given a different boost
+                     when they appear in the result list. For example, if  you
+                     are  boosting  a  field  called "department," query terms
+                     that match the department field are boosted  in  the  re-
+                     sult.  However,  you  can add entries from the department
                      field to boost documents with those values higher.
 
                      For example, you can add entries to the map with names of
-                     departments. If you add "HR",5 and  "Legal",3  those  de-
+                     departments.  If  you  add "HR",5 and "Legal",3 those de-
                      partments are given special attention when they appear in
-                     the metadata of a document. When those terms appear  they
+                     the  metadata of a document. When those terms appear they
                      are given the specified importance instead of the regular
                      importance for the boost.
 
@@ -1469,30 +1516,30 @@ OPTIONS
           ]
 
        --page-number (integer)
-          Retrieved relevant passages are returned in pages the  size  of  the
+          Retrieved  relevant  passages  are returned in pages the size of the
           PageSize parameter. By default, Amazon Kendra returns the first page
-          of results. Use this parameter to get result pages after  the  first
+          of  results.  Use this parameter to get result pages after the first
           one.
 
        --page-size (integer)
-          Sets  the number of retrieved relevant passages that are returned in
-          each page of results. The default page size is 10. The maximum  num-
-          ber  of  results  returned  is 100. If you ask for more than 100 re-
+          Sets the number of retrieved relevant passages that are returned  in
+          each  page of results. The default page size is 10. The maximum num-
+          ber of results returned is 100. If you ask for  more  than  100  re-
           sults, only 100 are returned.
 
        --user-context (structure)
           The user context token or user and group information.
 
           Token -> (string)
-              The user context token for filtering search results for a  user.
+              The  user context token for filtering search results for a user.
               It must be a JWT or a JSON token.
 
           UserId -> (string)
-              The  identifier  of  the  user you want to filter search results
+              The identifier of the user you want  to  filter  search  results
               based on their access to documents.
 
           Groups -> (list)
-              The list of groups you want to filter search  results  based  on
+              The  list  of  groups you want to filter search results based on
               the groups' access to documents.
 
               (string)
@@ -1505,14 +1552,14 @@ OPTIONS
                  Data source information for user context filtering.
 
                  GroupId -> (string)
-                     The identifier of the group you want to add to your  list
-                     of  groups. This is for filtering search results based on
+                     The  identifier of the group you want to add to your list
+                     of groups. This is for filtering search results based  on
                      the groups' access to documents.
 
                  DataSourceId -> (string)
-                     The identifier of the data source group you want  to  add
+                     The  identifier  of the data source group you want to add
                      to your list of data source groups. This is for filtering
-                     search results based on the groups' access  to  documents
+                     search  results  based on the groups' access to documents
                      in that data source.
 
        Shorthand Syntax:
@@ -1534,17 +1581,17 @@ OPTIONS
             ]
           }
 
-       --cli-input-json  (string) Performs service operation based on the JSON
-       string provided. The JSON string follows the format provided by  --gen-
-       erate-cli-skeleton.  If  other  arguments  are  provided on the command
-       line, the CLI values will override the JSON-provided values. It is  not
+       --cli-input-json (string) Performs service operation based on the  JSON
+       string  provided. The JSON string follows the format provided by --gen-
+       erate-cli-skeleton. If other arguments  are  provided  on  the  command
+       line,  the CLI values will override the JSON-provided values. It is not
        possible to pass arbitrary binary values using a JSON-provided value as
        the string will be taken literally.
 
-       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
+       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
        output without sending an API request. If provided with no value or the
        value input, prints a sample input JSON that can be used as an argument
-       for  --cli-input-json.  If provided with the value output, it validates
+       for --cli-input-json. If provided with the value output,  it  validates
        the command inputs and returns a sample output JSON for that command.
 
 GLOBAL OPTIONS
@@ -1558,7 +1605,7 @@ GLOBAL OPTIONS
 
        --no-verify-ssl (boolean)
 
-       By default, the AWS CLI uses SSL when communicating with AWS  services.
+       By  default, the AWS CLI uses SSL when communicating with AWS services.
        For each SSL connection, the AWS CLI will verify SSL certificates. This
        option overrides the default behavior of verifying SSL certificates.
 
@@ -1604,7 +1651,7 @@ GLOBAL OPTIONS
 
        --no-sign-request (boolean)
 
-       Do not sign requests. Credentials will not be loaded if  this  argument
+       Do  not  sign requests. Credentials will not be loaded if this argument
        is provided.
 
        --ca-bundle (string)
@@ -1614,14 +1661,14 @@ GLOBAL OPTIONS
 
        --cli-read-timeout (int)
 
-       The maximum socket read time in seconds. If the value is set to 0,  the
-       socket  read  will be blocking and not timeout. The default value is 60
+       The  maximum socket read time in seconds. If the value is set to 0, the
+       socket read will be blocking and not timeout. The default value  is  60
        seconds.
 
        --cli-connect-timeout (int)
 
-       The maximum socket connect time in seconds. If the value is set  to  0,
-       the  socket connect will be blocking and not timeout. The default value
+       The  maximum  socket connect time in seconds. If the value is set to 0,
+       the socket connect will be blocking and not timeout. The default  value
        is 60 seconds.
 
 OUTPUT
@@ -1656,7 +1703,7 @@ OUTPUT
                  thor ) or the source URI (_source_uri ) of the document.
 
                  (structure)
-                     A  document attribute or metadata field. To create custom
+                     A document attribute or metadata field. To create  custom
                      document attributes, see Custom attributes .
 
                      Key -> (string)
@@ -1669,7 +1716,7 @@ OUTPUT
                             A string, such as "department".
 
                         StringListValue -> (list)
-                            A list of strings. The default maximum  length  or
+                            A  list  of strings. The default maximum length or
                             number of strings is 10.
 
                             (string)
@@ -1680,11 +1727,21 @@ OUTPUT
                         DateValue -> (timestamp)
                             A date expressed as an ISO 8601 string.
 
-                            It  is  important for the time zone to be included
-                            in the ISO 8601  date-time  format.  For  example,
-                            2012-03-25T12:30:10+01:00    is   the   ISO   8601
-                            date-time format for March 25th  2012  at  12:30PM
+                            It is important for the time zone to  be  included
+                            in  the  ISO  8601  date-time format. For example,
+                            2012-03-25T12:30:10+01:00   is   the   ISO    8601
+                            date-time  format  for  March 25th 2012 at 12:30PM
                             (plus 10 seconds) in Central European Time.
+
+              ScoreAttributes -> (structure)
+                 The confidence score bucket for a retrieved  passage  result.
+                 The  confidence bucket provides a relative ranking that indi-
+                 cates how confident Amazon Kendra is  that  the  response  is
+                 relevant to the query.
+
+                 ScoreConfidence -> (string)
+                     A  relative  ranking  for how relevant the response is to
+                     the query.
 
 
 
