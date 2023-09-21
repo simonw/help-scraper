@@ -68,6 +68,8 @@ OPTIONS
 
           o generic
 
+          o swift
+
        --namespace (string)
           The namespace of the package version with the requested readme file.
           The  package  version component that specifies its namespace depends
