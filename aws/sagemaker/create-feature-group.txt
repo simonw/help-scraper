@@ -121,39 +121,73 @@ OPTIONS
                  The value type of a feature. Valid values are Integral, Frac-
                  tional, or String.
 
+              CollectionType -> (string)
+                 A grouping of elements where each element within the  collec-
+                 tion  must have the same feature type (String , Integral , or
+                 Fractional ).
+
+                 o List : An ordered collection of elements.
+
+                 o Set : An unordered collection of unique elements.
+
+                 o Vector : A specialized list that  represents  a  fixed-size
+                   array  of  elements.  The vector dimension is determined by
+                   you. Must have elements with fractional feature types.
+
+              CollectionConfig -> (tagged union structure)
+                 Configuration for your collection.
+
+                 NOTE:
+                     This is a Tagged Union structure. Only one of the follow-
+                     ing top level keys can be set: VectorConfig.
+
+                 VectorConfig -> (structure)
+                     Configuration for your vector collection type.
+
+                     o Dimension : The number of elements in your vector.
+
+                     Dimension -> (integer)
+                        The number of elements in your vector.
+
        Shorthand Syntax:
 
-          FeatureName=string,FeatureType=string ...
+          FeatureName=string,FeatureType=string,CollectionType=string,CollectionConfig={VectorConfig={Dimension=integer}} ...
 
        JSON Syntax:
 
           [
             {
               "FeatureName": "string",
-              "FeatureType": "Integral"|"Fractional"|"String"
+              "FeatureType": "Integral"|"Fractional"|"String",
+              "CollectionType": "List"|"Set"|"Vector",
+              "CollectionConfig": {
+                "VectorConfig": {
+                  "Dimension": integer
+                }
+              }
             }
             ...
           ]
 
        --online-store-config (structure)
-          You can turn the OnlineStore on or off by specifying  True  for  the
+          You  can  turn  the OnlineStore on or off by specifying True for the
           EnableOnlineStore flag in OnlineStoreConfig .
 
-          You  can  also include an Amazon Web Services KMS key ID (KMSKeyId )
+          You can also include an Amazon Web Services KMS key ID  (KMSKeyId  )
           for at-rest encryption of the OnlineStore .
 
           The default value is False .
 
           SecurityConfig -> (structure)
-              Use to specify KMS Key ID (KMSKeyId ) for at-rest encryption  of
+              Use  to specify KMS Key ID (KMSKeyId ) for at-rest encryption of
               your OnlineStore .
 
               KmsKeyId -> (string)
-                 The  Amazon Web Services Key Management Service (KMS) key ARN
-                 that SageMaker Feature Store uses to encrypt  the  Amazon  S3
+                 The Amazon Web Services Key Management Service (KMS) key  ARN
+                 that  SageMaker  Feature  Store uses to encrypt the Amazon S3
                  objects at rest using Amazon S3 server-side encryption.
 
-                 The  caller  (either  user or IAM role) of CreateFeatureGroup
+                 The caller (either user or IAM  role)  of  CreateFeatureGroup
                  must have below permissions to the OnlineStore  KmsKeyId :
 
                  o "kms:Encrypt"
@@ -178,23 +212,23 @@ OPTIONS
 
                  o "kms:RevokeGrant"
 
-                 The caller (either user or IAM role) to all DataPlane  opera-
-                 tions  (PutRecord  , GetRecord , DeleteRecord ) must have the
+                 The  caller (either user or IAM role) to all DataPlane opera-
+                 tions (PutRecord , GetRecord , DeleteRecord ) must  have  the
                  following permissions to the KmsKeyId :
 
                  o "kms:Decrypt"
 
           EnableOnlineStore -> (boolean)
-              Turn OnlineStore off by specifying False for  the  EnableOnline-
-              Store  flag.  Turn OnlineStore on by specifying True for the En-
+              Turn  OnlineStore  off by specifying False for the EnableOnline-
+              Store flag. Turn OnlineStore on by specifying True for  the  En-
               ableOnlineStore flag.
 
               The default value is False .
 
           TtlDuration -> (structure)
-              Time to live duration, where the record is  hard  deleted  after
+              Time  to  live  duration, where the record is hard deleted after
               the expiration time is reached; ExpiresAt = EventTime + TtlDura-
-              tion . For information on HardDelete, see the  DeleteRecord  API
+              tion  .  For information on HardDelete, see the DeleteRecord API
               in the Amazon SageMaker API Reference guide.
 
               Unit -> (string)
@@ -203,9 +237,19 @@ OPTIONS
               Value -> (integer)
                  TtlDuration time value.
 
+          StorageType -> (string)
+              Option for different tiers of low latency storage for  real-time
+              data retrieval.
+
+              o Standard  :  A  managed  low  latency  data  store for feature
+                groups.
+
+              o InMemory : A managed data store for feature groups  that  sup-
+                ports very low latency retrieval.
+
        Shorthand Syntax:
 
-          SecurityConfig={KmsKeyId=string},EnableOnlineStore=boolean,TtlDuration={Unit=string,Value=integer}
+          SecurityConfig={KmsKeyId=string},EnableOnlineStore=boolean,TtlDuration={Unit=string,Value=integer},StorageType=string
 
        JSON Syntax:
 
@@ -217,7 +261,8 @@ OPTIONS
             "TtlDuration": {
               "Unit": "Seconds"|"Minutes"|"Hours"|"Days"|"Weeks",
               "Value": integer
-            }
+            },
+            "StorageType": "Standard"|"InMemory"
           }
 
        --offline-store-config (structure)
