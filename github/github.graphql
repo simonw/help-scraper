@@ -28918,6 +28918,15 @@ enum RepositoryRuleType {
   """Prevent merge commits from being pushed to matching refs."""
   REQUIRED_LINEAR_HISTORY
 
+  """Merges must be performed via a merge queue."""
+  MERGE_QUEUE
+
+  """
+  When enabled, all conversations on code must be resolved before a pull request
+  can be merged into a branch that matches this rule.
+  """
+  REQUIRED_REVIEW_THREAD_RESOLUTION
+
   """
   Choose which environments must be successfully deployed to before refs can be merged into a branch that matches this rule.
   """
@@ -28939,8 +28948,29 @@ enum RepositoryRuleType {
   """
   REQUIRED_STATUS_CHECKS
 
+  """
+  Require all commits be made to a non-target branch and submitted via a pull
+  request and required workflow checks to pass before they can be merged.
+  """
+  REQUIRED_WORKFLOW_STATUS_CHECKS
+
   """Prevent users with push access from force pushing to refs."""
   NON_FAST_FORWARD
+
+  """Authorization"""
+  AUTHORIZATION
+
+  """Tag"""
+  TAG
+
+  """Merge queue locked ref"""
+  MERGE_QUEUE_LOCKED_REF
+
+  """Branch is read-only. Users cannot push to the branch."""
+  LOCK_BRANCH
+
+  """Max ref updates"""
+  MAX_REF_UPDATES
 
   """Commit message pattern"""
   COMMIT_MESSAGE_PATTERN
@@ -28956,6 +28986,23 @@ enum RepositoryRuleType {
 
   """Tag name pattern"""
   TAG_NAME_PATTERN
+
+  """File path pattern"""
+  FILE_PATH_PATTERN
+
+  """
+  Require all changes made to a targeted branch to pass the specified workflows before they can be merged.
+  """
+  WORKFLOWS
+
+  """Commits pushed to matching refs must have verified signatures."""
+  RULESET_REQUIRED_SIGNATURES
+
+  """Secret scanning"""
+  SECRET_SCANNING
+
+  """Workflow files cannot be modified."""
+  WORKFLOW_UPDATES
 }
 
 """A repository-topic connects a repository to a topic."""
@@ -29797,7 +29844,7 @@ enum RuleEnforcement {
 }
 
 """Types which can be parameters for `RepositoryRule` objects."""
-union RuleParameters = BranchNamePatternParameters | CommitAuthorEmailPatternParameters | CommitMessagePatternParameters | CommitterEmailPatternParameters | PullRequestParameters | RequiredDeploymentsParameters | RequiredStatusChecksParameters | TagNamePatternParameters | UpdateParameters
+union RuleParameters = BranchNamePatternParameters | CommitAuthorEmailPatternParameters | CommitMessagePatternParameters | CommitterEmailPatternParameters | PullRequestParameters | RequiredDeploymentsParameters | RequiredStatusChecksParameters | TagNamePatternParameters | UpdateParameters | WorkflowsParameters
 
 """
 Specifies the parameters for a `RepositoryRule` object. Only one of the fields should be specified.
@@ -29829,6 +29876,9 @@ input RuleParametersInput {
 
   """Parameters used for the `tag_name_pattern` rule type"""
   tagNamePattern: TagNamePatternParametersInput
+
+  """Parameters used for the `workflows` rule type"""
+  workflows: WorkflowsParametersInput
 }
 
 """Types which can have `RepositoryRule` objects."""
@@ -38320,6 +38370,36 @@ type Workflow implements Node & UniformResourceLocatable {
   url: URI!
 }
 
+"""A workflow that must run for this rule to pass"""
+type WorkflowFileReference {
+  """The path to the workflow file"""
+  path: String!
+
+  """The ref (branch or tag) of the workflow file to use"""
+  ref: String
+
+  """The ID of the repository where the workflow is defined"""
+  repositoryId: Int!
+
+  """The commit SHA of the workflow file to use"""
+  sha: String
+}
+
+"""A workflow that must run for this rule to pass"""
+input WorkflowFileReferenceInput {
+  """The path to the workflow file"""
+  path: String!
+
+  """The ref (branch or tag) of the workflow file to use"""
+  ref: String
+
+  """The ID of the repository where the workflow is defined"""
+  repositoryId: Int!
+
+  """The commit SHA of the workflow file to use"""
+  sha: String
+}
+
 """A workflow run."""
 type WorkflowRun implements Node & UniformResourceLocatable {
   """The check suite this workflow run belongs to."""
@@ -38462,6 +38542,22 @@ input WorkflowRunOrder {
 enum WorkflowRunOrderField {
   """Order workflow runs by most recently created"""
   CREATED_AT
+}
+
+"""
+Require all changes made to a targeted branch to pass the specified workflows before they can be merged.
+"""
+type WorkflowsParameters {
+  """Workflows that must pass for this rule to pass."""
+  workflows: [WorkflowFileReference!]!
+}
+
+"""
+Require all changes made to a targeted branch to pass the specified workflows before they can be merged.
+"""
+input WorkflowsParametersInput {
+  """Workflows that must pass for this rule to pass."""
+  workflows: [WorkflowFileReferenceInput!]!
 }
 
 """The possible states for a workflow."""
