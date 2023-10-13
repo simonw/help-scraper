@@ -6,16 +6,28 @@ NAME
        create-project-version -
 
 DESCRIPTION
-       Creates  a  new version of a model and begins training. Models are man-
-       aged as part of an Amazon Rekognition Custom Labels  project.  The  re-
-       sponse  from  CreateProjectVersion is an Amazon Resource Name (ARN) for
-       the version of the model.
+       Creates  a new version of Amazon Rekognition project (like a Custom La-
+       bels model or  a  custom  adapter)  and  begins  training.  Models  and
+       adapters  are  managed  as  part of a Rekognition project. The response
+       from CreateProjectVersion is an Amazon  Resource  Name  (ARN)  for  the
+       project version.
 
-       Training uses the  training  and  test  datasets  associated  with  the
-       project.  For  more information, see Creating training and test dataset
-       in the Amazon Rekognition Custom Labels Developer Guide .
+       The  FeatureConfig  operation argument allows you to configure specific
+       model or adapter settings. You can provide a description to the project
+       version  by  using  the VersionDescription argment. Training can take a
+       while to complete. You can get  the  current  status  by  calling   De-
+       scribeProjectVersions . Training completed successfully if the value of
+       the Status field is TRAINING_COMPLETED . Once training has successfully
+       completed,  call   DescribeProjectVersions  to get the training results
+       and evaluate the model.
+
+       This operation requires permissions  to  perform  the  rekognition:Cre-
+       ateProjectVersion action.
 
        NOTE:
+              The  following  applies only to projects with Amazon Rekognition
+              Custom Labels as the chosen feature:
+
           You can train a model in a  project  that  doesn't  have  associated
           datasets  by specifying manifest files in the TrainingData and Test-
           ingData fields.
@@ -29,24 +41,6 @@ DESCRIPTION
           recommend that you use the manifest files  to  create  training  and
           test datasets for the project.
 
-       Training  takes  a while to complete. You can get the current status by
-       calling  DescribeProjectVersions . Training completed  successfully  if
-       the value of the Status field is TRAINING_COMPLETED .
-
-       If  training fails, see Debugging a failed model training in the Amazon
-       Rekognition Custom Labels developer guide.
-
-       Once training has successfully completed, call  DescribeProjectVersions
-       to  get  the training results and evaluate the model. For more informa-
-       tion, see Improving a trained Amazon Rekognition Custom Labels model in
-       the Amazon Rekognition Custom Labels developers guide.
-
-       After  evaluating  the model, you start the model by calling  StartPro-
-       jectVersion .
-
-       This operation requires permissions  to  perform  the  rekognition:Cre-
-       ateProjectVersion action.
-
        See also: AWS API Documentation
 
 SYNOPSIS
@@ -58,6 +52,8 @@ SYNOPSIS
           [--testing-data <value>]
           [--tags <value>]
           [--kms-key-id <value>]
+          [--version-description <value>]
+          [--feature-config <value>]
           [--cli-input-json <value>]
           [--generate-cli-skeleton <value>]
           [--debug]
@@ -77,16 +73,17 @@ SYNOPSIS
 
 OPTIONS
        --project-arn (string)
-          The ARN of the Amazon Rekognition Custom Labels project that manages
-          the model that you want to train.
+          The  ARN  of  the  Amazon  Rekognition  project that will manage the
+          project version you want to train.
 
        --version-name (string)
-          A name for the version of the model. This value must be unique.
+          A name for the version of the project version. This  value  must  be
+          unique.
 
        --output-config (structure)
-          The Amazon S3 bucket location to store the results of training.  The
-          S3  bucket  can  be  in  any  AWS  account as long as the caller has
-          s3:PutObject permissions on the S3 bucket.
+          The  Amazon S3 bucket location to store the results of training. The
+          bucket can be any S3 bucket in your AWS account. You need  s3:PutOb-
+          ject permission on the bucket.
 
           S3Bucket -> (string)
               The S3 bucket where training output is placed.
@@ -106,69 +103,13 @@ OPTIONS
           }
 
        --training-data (structure)
-          Specifies an external manifest that the services uses to  train  the
-          model. If you specify TrainingData you must also specify TestingData
-          . The project must not have any associated datasets.
+          Specifies  an  external manifest that the services uses to train the
+          project version. If you specify TrainingData you must  also  specify
+          TestingData . The project must not have any associated datasets.
 
           Assets -> (list)
-              A Sagemaker GroundTruth manifest file that contains the training
-              images (assets).
-
-              (structure)
-                 Assets  are  the  images that you use to train and evaluate a
-                 model version. Assets can also contain validation information
-                 that you use to debug a failed model training.
-
-                 GroundTruthManifest -> (structure)
-                     The  S3  bucket  that contains an Amazon Sagemaker Ground
-                     Truth format manifest file.
-
-                     S3Object -> (structure)
-                        Provides the S3 bucket name and object name.
-
-                        The region for the S3 bucket containing the S3  object
-                        must  match  the region you use for Amazon Rekognition
-                        operations.
-
-                        For Amazon Rekognition to process an  S3  object,  the
-                        user must have permission to access the S3 object. For
-                        more information, see  How  Amazon  Rekognition  works
-                        with IAM in the Amazon Rekognition Developer Guide.
-
-                        Bucket -> (string)
-                            Name of the S3 bucket.
-
-                        Name -> (string)
-                            S3 object key name.
-
-                        Version -> (string)
-                            If the bucket is versioning enabled, you can spec-
-                            ify the object version.
-
-       JSON Syntax:
-
-          {
-            "Assets": [
-              {
-                "GroundTruthManifest": {
-                  "S3Object": {
-                    "Bucket": "string",
-                    "Name": "string",
-                    "Version": "string"
-                  }
-                }
-              }
-              ...
-            ]
-          }
-
-       --testing-data (structure)
-          Specifies an external manifest that the service  uses  to  test  the
-          model. If you specify TestingData you must also specify TrainingData
-          . The project must not have any associated datasets.
-
-          Assets -> (list)
-              The assets used for testing.
+              A  manifest file that contains references to the training images
+              and ground-truth annotations.
 
               (structure)
                  Assets are the images that you use to train  and  evaluate  a
@@ -201,12 +142,65 @@ OPTIONS
                             If the bucket is versioning enabled, you can spec-
                             ify the object version.
 
+       JSON Syntax:
+
+          {
+            "Assets": [
+              {
+                "GroundTruthManifest": {
+                  "S3Object": {
+                    "Bucket": "string",
+                    "Name": "string",
+                    "Version": "string"
+                  }
+                }
+              }
+              ...
+            ]
+          }
+
+       --testing-data (structure)
+          Specifies  an  external  manifest  that the service uses to test the
+          project version. If you specify TestingData you  must  also  specify
+          TrainingData . The project must not have any associated datasets.
+
+          Assets -> (list)
+              The assets used for testing.
+
+              (structure)
+                 Assets  are  the  images that you use to train and evaluate a
+                 model version. Assets can also contain validation information
+                 that you use to debug a failed model training.
+
+                 GroundTruthManifest -> (structure)
+                     The  S3  bucket  that contains an Amazon Sagemaker Ground
+                     Truth format manifest file.
+
+                     S3Object -> (structure)
+                        Provides the S3 bucket name and object name.
+
+                        The region for the S3 bucket containing the S3  object
+                        must  match  the region you use for Amazon Rekognition
+                        operations.
+
+                        For Amazon Rekognition to process an  S3  object,  the
+                        user must have permission to access the S3 object. For
+                        more information, see  How  Amazon  Rekognition  works
+                        with IAM in the Amazon Rekognition Developer Guide.
+
+                        Bucket -> (string)
+                            Name of the S3 bucket.
+
+                        Name -> (string)
+                            S3 object key name.
+
+                        Version -> (string)
+                            If the bucket is versioning enabled, you can spec-
+                            ify the object version.
+
           AutoCreate -> (boolean)
-              If  specified,  Amazon  Rekognition  Custom  Labels  temporarily
-              splits the training dataset (80%) to create a test dataset (20%)
-              for the training job. After training completes, the test dataset
-              is not stored and the training dataset reverts to  its  previous
-              size.
+              If specified, Rekognition splits training dataset  to  create  a
+              test dataset for the training job.
 
        JSON Syntax:
 
@@ -228,7 +222,7 @@ OPTIONS
 
        --tags (map)
           A  set  of  tags  (key-value  pairs)  that you want to attach to the
-          model.
+          project version.
 
           key -> (string)
 
@@ -247,12 +241,13 @@ OPTIONS
           The identifier for your AWS Key  Management  Service  key  (AWS  KMS
           key). You can supply the Amazon Resource Name (ARN) of your KMS key,
           the ID of your KMS key, an alias for your KMS key, or an alias  ARN.
-          The  key is used to encrypt training and test images copied into the
-          service for model training. Your source images are  unaffected.  The
-          key  is  also  used  to  encrypt training results and manifest files
-          written to the output Amazon S3 bucket (OutputConfig ).
+          The  key  is used to encrypt training images, test images, and mani-
+          fest files copied into the service for  the  project  version.  Your
+          source images are unaffected. The key is also used to encrypt train-
+          ing results and manifest files  written  to  the  output  Amazon  S3
+          bucket (OutputConfig ).
 
-          If you choose to use your own KMS key, you need the  following  per-
+          If  you  choose to use your own KMS key, you need the following per-
           missions on the KMS key.
 
           o kms:CreateGrant
@@ -263,8 +258,35 @@ OPTIONS
 
           o kms:Decrypt
 
-          If  you  don't specify a value for KmsKeyId , images copied into the
+          If you don't specify a value for KmsKeyId , images copied  into  the
           service are encrypted using a key that AWS owns and manages.
+
+       --version-description (string)
+          A description applied to the project version being created.
+
+       --feature-config (structure)
+          Feature-specific  configuration of the training job. If the job con-
+          figuration does not match  the  feature  type  associated  with  the
+          project, an InvalidParameterException is returned.
+
+          ContentModeration -> (structure)
+              Configuration options for Custom Moderation training.
+
+              ConfidenceThreshold -> (float)
+                 The  confidence  level  you plan to use to identify if unsafe
+                 content is present during inference.
+
+       Shorthand Syntax:
+
+          ContentModeration={ConfidenceThreshold=float}
+
+       JSON Syntax:
+
+          {
+            "ContentModeration": {
+              "ConfidenceThreshold": float
+            }
+          }
 
        --cli-input-json (string) Performs service operation based on the  JSON
        string  provided. The JSON string follows the format provided by --gen-
@@ -358,8 +380,9 @@ GLOBAL OPTIONS
 
 OUTPUT
        ProjectVersionArn -> (string)
-          The  ARN  of  the  model  version that was created. Use DescribePro-
-          jectVersion to get the current status of the training operation.
+          The  ARN  of  the model or the project version that was created. Use
+          DescribeProjectVersion to get the current status of the training op-
+          eration.
 
 
 
