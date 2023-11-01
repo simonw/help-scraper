@@ -7,12 +7,11 @@ NAME
 
 DESCRIPTION
        Translates  the  input  document from the source language to the target
-       language. This synchronous operation supports plain text  or  HTML  for
-       the  input  document. TranslateDocument supports translations from Eng-
-       lish to any supported language, and from any supported language to Eng-
-       lish.  Therefore, specify either the source language code or the target
-       language code as en (English).
-          TranslateDocument does not support language auto-detection.
+       language. This synchronous operation supports text, HTML, or Word docu-
+       ments  as  the  input document. TranslateDocument supports translations
+       from English to any supported language, and from any supported language
+       to  English.  Therefore, specify either the source language code or the
+       target language code as en (English).
 
        If you set the Formality parameter, the request will fail if the target
        language  does  not  support  formality. For a list of target languages
@@ -93,28 +92,43 @@ OPTIONS
           "string" "string" ...
 
        --source-language-code (string)
-          The  language  code  for the language of the source text. Do not use
-          auto , because TranslateDocument does not support language  auto-de-
-          tection.  For a list of supported language codes, see Supported lan-
-          guages .
+          The language code for the language of the source text. For a list of
+          supported language codes, see Supported languages .
+
+          To have Amazon Translate determine the source language of your text,
+          you can specify auto in the SourceLanguageCode field. If you specify
+          auto , Amazon Translate will call Amazon Comprehend to determine the
+          source language.
+
+          NOTE:
+              If  you  specify  auto , you must send the TranslateDocument re-
+              quest in a region that supports  Amazon  Comprehend.  Otherwise,
+              the  request  returns an error indicating that autodetect is not
+              supported.
 
        --target-language-code (string)
           The language code requested for the translated document. For a  list
           of supported language codes, see Supported languages .
 
        --settings (structure)
-          Settings  to configure your translation output, including the option
-          to set the formality level of the output text and the option to mask
-          profane words and phrases.
+          Settings to configure your translation output. You can configure the
+          following options:
+
+          o Brevity: not supported.
+
+          o Formality: sets the formality level of the output text.
+
+          o Profanity: masks profane words and  phrases  in  your  translation
+            output.
 
           Formality -> (string)
-              You  can  optionally  specify the desired level of formality for
-              translations to supported target languages. The  formality  set-
-              ting  controls the level of formal language usage (also known as
-              register ) in the translation output. You can set the  value  to
-              informal  or formal. If you don't specify a value for formality,
-              or if the target language doesn't support formality, the  trans-
-              lation will ignore the formality setting.
+              You  can specify the desired level of formality for translations
+              to supported target languages. The  formality  setting  controls
+              the  level of formal language usage (also known as register ) in
+              the translation output. You can set the  value  to  informal  or
+              formal.  If  you  don't specify a value for formality, or if the
+              target language doesn't support formality, the translation  will
+              ignore the formality setting.
 
               If  you specify multiple target languages for the job, translate
               ignores the formality setting for any  unsupported  target  lan-
@@ -124,8 +138,8 @@ OPTIONS
               Supported languages in the Amazon Translate Developer Guide.
 
           Profanity -> (string)
-              Enable the profanity setting if you  want  Amazon  Translate  to
-              mask profane words and phrases in your translation output.
+              You can enable the profanity setting if you want to mask profane
+              words and phrases in your translation output.
 
               To  mask  profane  words  and phrases, Amazon Translate replaces
               them with the grawlix string ?$#@$. This 5-character sequence is
@@ -142,15 +156,29 @@ OPTIONS
               target  languages  don't support profanity masking, the transla-
               tion job won't mask profanity for any target language.
 
+          Brevity -> (string)
+              When you turn on brevity, Amazon Translate reduces the length of
+              the translation output for most translations (when compared with
+              the same translation  with  brevity  turned  off).  By  default,
+              brevity is turned off.
+
+              If  you turn on brevity for a translation request with an unsup-
+              ported language pair, the translation proceeds with the  brevity
+              setting turned off.
+
+              For  the language pairs that brevity supports, see Using brevity
+              in the Amazon Translate Developer Guide.
+
        Shorthand Syntax:
 
-          Formality=string,Profanity=string
+          Formality=string,Profanity=string,Brevity=string
 
        JSON Syntax:
 
           {
             "Formality": "FORMAL"|"INFORMAL",
-            "Profanity": "MASK"
+            "Profanity": "MASK",
+            "Brevity": "ON"
           }
 
        --document-content (blob)
@@ -295,44 +323,64 @@ OUTPUT
                         custom terminology.
 
        AppliedSettings -> (structure)
-          Settings  to configure your translation output, including the option
-          to set the formality level of the output text and the option to mask
-          profane words and phrases.
+          Settings to configure your translation output. You can configure the
+          following options:
+
+          o Brevity: reduces the length of the  translation  output  for  most
+            translations. Available for TranslateText only.
+
+          o Formality: sets the formality level of the translation output.
+
+          o Profanity: masks profane words and phrases in the translation out-
+            put.
 
           Formality -> (string)
-              You  can  optionally  specify the desired level of formality for
-              translations to supported target languages. The  formality  set-
-              ting  controls the level of formal language usage (also known as
-              register ) in the translation output. You can set the  value  to
-              informal  or formal. If you don't specify a value for formality,
-              or if the target language doesn't support formality, the  trans-
-              lation will ignore the formality setting.
+              You can specify the desired level of formality for  translations
+              to  supported  target  languages. The formality setting controls
+              the level of formal language usage (also known as register )  in
+              the  translation  output.  You  can set the value to informal or
+              formal. If you don't specify a value for formality,  or  if  the
+              target  language doesn't support formality, the translation will
+              ignore the formality setting.
 
-              If  you specify multiple target languages for the job, translate
-              ignores the formality setting for any  unsupported  target  lan-
+              If you specify multiple target languages for the job,  translate
+              ignores  the  formality  setting for any unsupported target lan-
               guage.
 
-              For  a  list  of  target  languages  that support formality, see
+              For a list of  target  languages  that  support  formality,  see
               Supported languages in the Amazon Translate Developer Guide.
 
           Profanity -> (string)
-              Enable the profanity setting if you  want  Amazon  Translate  to
-              mask profane words and phrases in your translation output.
+              You can enable the profanity setting if you want to mask profane
+              words and phrases in your translation output.
 
-              To  mask  profane  words  and phrases, Amazon Translate replaces
+              To mask profane words and  phrases,  Amazon  Translate  replaces
               them with the grawlix string ?$#@$. This 5-character sequence is
-              used  for  each profane word or phrase, regardless of the length
+              used for each profane word or phrase, regardless of  the  length
               or number of words.
 
-              Amazon Translate doesn't detect profanity in  all  of  its  sup-
+              Amazon  Translate  doesn't  detect  profanity in all of its sup-
               ported languages. For languages that don't support profanity de-
-              tection, see Unsupported languages in the Amazon  Translate  De-
+              tection,  see  Unsupported languages in the Amazon Translate De-
               veloper Guide.
 
-              If  you  specify  multiple target languages for the job, all the
-              target languages must support profanity masking. If any  of  the
-              target  languages  don't support profanity masking, the transla-
+              If you specify multiple target languages for the  job,  all  the
+              target  languages  must support profanity masking. If any of the
+              target languages don't support profanity masking,  the  transla-
               tion job won't mask profanity for any target language.
+
+          Brevity -> (string)
+              When you turn on brevity, Amazon Translate reduces the length of
+              the translation output for most translations (when compared with
+              the  same  translation  with  brevity  turned  off). By default,
+              brevity is turned off.
+
+              If you turn on brevity for a translation request with an  unsup-
+              ported  language pair, the translation proceeds with the brevity
+              setting turned off.
+
+              For the language pairs that brevity supports, see Using  brevity
+              in the Amazon Translate Developer Guide.
 
 
 
