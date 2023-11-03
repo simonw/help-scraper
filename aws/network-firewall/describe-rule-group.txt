@@ -15,6 +15,7 @@ SYNOPSIS
           [--rule-group-name <value>]
           [--rule-group-arn <value>]
           [--type <value>]
+          [--analyze-rule-group | --no-analyze-rule-group]
           [--cli-input-json <value>]
           [--generate-cli-skeleton <value>]
           [--debug]
@@ -58,6 +59,11 @@ OPTIONS
           o STATELESS
 
           o STATEFUL
+
+       --analyze-rule-group | --no-analyze-rule-group (boolean)
+          Indicates whether you want Network Firewall to analyze the stateless
+          rules in the rule group for rule behavior such as  asymmetric  rout-
+          ing. If set to TRUE , Network Firewall runs the analysis.
 
        --cli-input-json  (string) Performs service operation based on the JSON
        string provided. The JSON string follows the format provided by  --gen-
@@ -246,67 +252,71 @@ OUTPUT
 
               RulesString -> (string)
                  Stateful inspection criteria, provided in Suricata compatible
-                 intrusion  prevention  system  (IPS)  rules.  Suricata  is an
-                 open-source network IPS that includes a  standard  rule-based
-                 language for network traffic inspection.
+                 rules.  Suricata is an open-source threat detection framework
+                 that includes a  standard  rule-based  language  for  network
+                 traffic inspection.
 
                  These rules contain the inspection criteria and the action to
                  take for traffic that matches the criteria, so this  type  of
                  rule group doesn't have a separate action setting.
 
+                 NOTE:
+                     You  can't  use the priority keyword if the RuleOrder op-
+                     tion in  StatefulRuleOptions is set to STRICT_ORDER .
+
               RulesSourceList -> (structure)
                  Stateful inspection criteria for a domain list rule group.
 
                  Targets -> (list)
-                     The  domains that you want to inspect for in your traffic
+                     The domains that you want to inspect for in your  traffic
                      flows. Valid domain specifications are the following:
 
-                     o Explicit names. For  example,  abc.example.com  matches
+                     o Explicit  names.  For  example, abc.example.com matches
                        only the domain abc.example.com .
 
-                     o Names  that  use  a domain wildcard, which you indicate
-                       with an  initial  '.  '.  For  example,``.example.com``
+                     o Names that use a domain wildcard,  which  you  indicate
+                       with  an  initial  '.  '.  For example,``.example.com``
                        matches example.com and matches all subdomains of exam-
                        ple.com , such as abc.example.com and www.example.com .
 
                      (string)
 
                  TargetTypes -> (list)
-                     The protocols you want to inspect.  Specify  TLS_SNI  for
-                     HTTPS  . Specify HTTP_HOST for HTTP . You can specify ei-
+                     The  protocols  you  want to inspect. Specify TLS_SNI for
+                     HTTPS . Specify HTTP_HOST for HTTP . You can specify  ei-
                      ther or both.
 
                      (string)
 
                  GeneratedRulesType -> (string)
-                     Whether you want to allow or deny access to  the  domains
+                     Whether  you  want to allow or deny access to the domains
                      in your target list.
 
               StatefulRules -> (list)
-                 An  array of individual stateful rules inspection criteria to
+                 An array of individual stateful rules inspection criteria  to
                  be used together in a stateful rule group. Use this option to
-                 specify  simple Suricata rules with protocol, source and des-
+                 specify simple Suricata rules with protocol, source and  des-
                  tination, ports, direction, and rule options. For information
                  about the Suricata Rules format, see Rules Format .
 
                  (structure)
-                     A  single  Suricata  rules  specification,  for  use in a
-                     stateful rule group. Use this option to specify a  simple
-                     Suricata  rule  with  protocol,  source  and destination,
+                     A single Suricata  rules  specification,  for  use  in  a
+                     stateful  rule group. Use this option to specify a simple
+                     Suricata rule  with  protocol,  source  and  destination,
                      ports, direction, and rule options. For information about
                      the Suricata Rules format, see Rules Format .
 
                      Action -> (string)
                         Defines what Network Firewall should do with the pack-
                         ets in a traffic flow when the flow matches the state-
-                        ful  rule  criteria. For all actions, Network Firewall
-                        performs the specified action and discontinues  state-
+                        ful rule criteria. For all actions,  Network  Firewall
+                        performs  the specified action and discontinues state-
                         ful inspection of the traffic flow.
 
-                        The  actions  for  a stateful rule are defined as fol-
+                        The actions for a stateful rule are  defined  as  fol-
                         lows:
 
-                        o PASS - Permits the packets to  go  to  the  intended
+                        o PASS  -  Permits  the  packets to go to the intended
                           destination.
 
                         o DROP - Blocks the packets from going to the intended
@@ -314,14 +324,13 @@ OUTPUT
                           logging is configured in the  Firewall   LoggingCon-
                           figuration .
 
-                        o ALERT - Permits the packets to go  to  the  intended
-                          destination and sends an alert log message, if alert
-                          logging is configured in the  Firewall   LoggingCon-
-                          figuration .  You can use this action to test a rule
-                          that you intend to use to drop traffic. You can  en-
-                          able  the rule with ALERT action, verify in the logs
-                          that the rule is filtering as you want, then  change
-                          the action to DROP .
+                        o ALERT - Sends an alert log message, if alert logging
+                          is configured in the   Firewall    LoggingConfigura-
+                          tion  .  You can use this action to test a rule that
+                          you intend to use to drop traffic.  You  can  enable
+                          the  rule with ALERT action, verify in the logs that
+                          the rule is filtering as you want, then  change  the
+                          action to DROP .
 
                      Header -> (structure)
                         The  stateful  inspection criteria for this rule, used
@@ -823,7 +832,9 @@ OUTPUT
               Additional options governing how Network Firewall handles state-
               ful rules. The policies where you use your stateful  rule  group
               must  have  stateful  rule  options settings that are compatible
-              with these settings.
+              with these settings. Some limitations apply; for  more  informa-
+              tion, see Strict evaluation order in the Network Firewall Devel-
+              oper Guide .
 
               RuleOrder -> (string)
                  Indicates how to manage the order of the rule evaluation  for
@@ -947,6 +958,70 @@ OUTPUT
 
           LastModifiedTime -> (timestamp)
               The last time that the rule group was changed.
+
+          AnalysisResults -> (list)
+              The  list  of analysis results for AnalyzeRuleGroup . If you set
+              AnalyzeRuleGroup to TRUE in  CreateRuleGroup ,   UpdateRuleGroup
+              ,  or   DescribeRuleGroup  ,  Network Firewall analyzes the rule
+              group and identifies the rules that might adversely effect  your
+              firewall's  functionality.  For example, if Network Firewall de-
+              tects a rule that's routing traffic  asymmetrically,  which  im-
+              pacts  the  service's  ability  to properly process traffic, the
+              service includes the rule in the list of analysis results.
+
+              (structure)
+                 The analysis result for  Network  Firewall's  stateless  rule
+                 group  analyzer.  Every time you call  CreateRuleGroup ,  Up-
+                 dateRuleGroup , or  DescribeRuleGroup  on  a  stateless  rule
+                 group, Network Firewall analyzes the stateless rule groups in
+                 your account and identifies the rules  that  might  adversely
+                 effect your firewall's functionality. For example, if Network
+                 Firewall detects a rule  that's  routing  traffic  asymmetri-
+                 cally,  which  impacts  the  service's  ability  to  properly
+                 process traffic, the service includes the rule in a  list  of
+                 analysis results.
+
+                 IdentifiedRuleIds -> (list)
+                     The  priority number of the stateless rules identified in
+                     the analysis.
+
+                     (string)
+
+                 IdentifiedType -> (string)
+                     The types of rule configurations  that  Network  Firewall
+                     analyzes  your rule groups for. Network Firewall analyzes
+                     stateless rule groups for the  following  types  of  rule
+                     configurations:
+
+                     o STATELESS_RULE_FORWARDING_ASYMMETRICALLY    Cause:  One
+                       or more stateless rules with the action pass or forward
+                       are  forwarding  traffic  asymmetrically. Specifically,
+                       the rule's set of source IP addresses or their  associ-
+                       ated  port  numbers, don't match the set of destination
+                       IP addresses or their associated port numbers. To miti-
+                       gate:  Make  sure that there's an existing return path.
+                       For example, if the rule  allows  traffic  from  source
+                       10.1.0.0/24  to destination 20.1.0.0/24, you should al-
+                       low return traffic from source 20.1.0.0/24 to  destina-
+                       tion 10.1.0.0/24.
+
+                     o STATELESS_RULE_CONTAINS_TCP_FLAGS   Cause: At least one
+                       stateless rule with the action pass or``forward``  con-
+                       tains  TCP  flags  that are inconsistent in the forward
+                       and return directions. To mitigate: Prevent  asymmetric
+                       routing  issues  caused by TCP flags by following these
+                       actions:
+
+                       o Remove unnecessary  TCP  flag  inspections  from  the
+                         rules.
+
+                       o If  you  need  to  inspect  TCP flags, check that the
+                         rules correctly account  for  changes  in  TCP  flags
+                         throughout  the TCP connection cycle, for example SYN
+                         and ACK flags used in a 3-way TCP handshake.
+
+                 AnalysisDetail -> (string)
+                     Provides analysis details for the identified rule.
 
 
 
