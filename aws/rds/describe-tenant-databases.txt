@@ -1,30 +1,28 @@
-DESCRIBE-EVENT-SUBSCRIPTIONS()                  DESCRIBE-EVENT-SUBSCRIPTIONS()
+DESCRIBE-TENANT-DATABASES()                        DESCRIBE-TENANT-DATABASES()
 
 
 
 NAME
-       describe-event-subscriptions -
+       describe-tenant-databases -
 
 DESCRIPTION
-       Lists all the subscription descriptions for a customer account. The de-
-       scription for a subscription includes SubscriptionName , SNSTopicARN  ,
-       CustomerID , SourceType , SourceID , CreationTime , and Status .
-
-       If you specify a SubscriptionName , lists the description for that sub-
-       scription.
+       Describes  the  tenant  databases  in  a  DB  instance  that  uses  the
+       multi-tenant configuration. Only RDS for Oracle CDB instances are  sup-
+       ported.
 
        See also: AWS API Documentation
 
-       describe-event-subscriptions is a  paginated  operation.  Multiple  API
-       calls  may  be  issued  in order to retrieve the entire data set of re-
-       sults. You can disable pagination by providing the --no-paginate  argu-
-       ment.  When using --output text and the --query argument on a paginated
-       response, the --query argument must extract data from  the  results  of
-       the following query expressions: EventSubscriptionsList
+       describe-tenant-databases  is a paginated operation. Multiple API calls
+       may be issued in order to retrieve the entire data set of results.  You
+       can  disable  pagination by providing the --no-paginate argument.  When
+       using --output text and the --query argument on a  paginated  response,
+       the  --query argument must extract data from the results of the follow-
+       ing query expressions: TenantDatabases
 
 SYNOPSIS
-            describe-event-subscriptions
-          [--subscription-name <value>]
+            describe-tenant-databases
+          [--db-instance-identifier <value>]
+          [--tenant-db-name <value>]
           [--filters <value>]
           [--cli-input-json <value>]
           [--starting-token <value>]
@@ -47,12 +45,32 @@ SYNOPSIS
           [--cli-connect-timeout <value>]
 
 OPTIONS
-       --subscription-name (string)
-          The  name of the RDS event notification subscription you want to de-
-          scribe.
+       --db-instance-identifier (string)
+          The user-supplied DB instance identifier, which must match the iden-
+          tifier  of an existing instance owned by the Amazon Web Services ac-
+          count. This parameter isn't case-sensitive.
+
+       --tenant-db-name (string)
+          The user-supplied tenant database name, which must match the name of
+          an  existing  tenant  database on the specified DB instance owned by
+          your Amazon Web Services account. This  parameter  isnt  case-sensi-
+          tive.
 
        --filters (list)
-          This parameter isn't currently supported.
+          A filter that specifies one or more database tenants to describe.
+
+          Supported filters:
+
+          o tenant-db-name  - Tenant database names. The results list only in-
+            cludes information about the tenant  databases  that  match  these
+            tenant DB names.
+
+          o tenant-database-resource-id  -  Tenant  database  resource identi-
+            fiers.
+
+          o dbi-resource-id - DB instance resource  identifiers.  The  results
+            list  only includes information about the tenants contained within
+            the DB instances identified by these resource identifiers.
 
           (structure)
               A filter name and value pair that is used to return a more  spe-
@@ -216,108 +234,95 @@ GLOBAL OPTIONS
        the  socket connect will be blocking and not timeout. The default value
        is 60 seconds.
 
-EXAMPLES
-       NOTE:
-          To use the following examples, you must have the AWS  CLI  installed
-          and  configured.  See  the Getting started guide in the AWS CLI User
-          Guide for more information.
-
-          Unless otherwise  stated,  all  examples  have  unix-like  quotation
-          rules.  These  examples  will  need to be adapted to your terminal's
-          quoting rules. See Using quotation marks with strings in the AWS CLI
-          User Guide .
-
-       To describe event subscriptions
-
-       This  example  describes  all of the Amazon RDS event subscriptions for
-       the current AWS account.
-
-          aws rds describe-event-subscriptions
-
-       Output:
-
-          {
-              "EventSubscriptionsList": [
-                  {
-                      "EventCategoriesList": [
-                          "backup",
-                          "recovery"
-                      ],
-                      "Enabled": true,
-                      "EventSubscriptionArn": "arn:aws:rds:us-east-1:123456789012:es:my-instance-events",
-                      "Status": "creating",
-                      "SourceType": "db-instance",
-                      "CustomerAwsId": "123456789012",
-                      "SubscriptionCreationTime": "2018-07-31 23:22:01.893",
-                      "CustSubscriptionId": "my-instance-events",
-                      "SnsTopicArn": "arn:aws:sns:us-east-1:123456789012:interesting-events"
-                  },
-                  ...some output truncated...
-              ]
-          }
-
 OUTPUT
        Marker -> (string)
-          An optional pagination token provided by a  previous  DescribeOrder-
-          ableDBInstanceOptions  request.  If this parameter is specified, the
-          response includes only records beyond the marker, up  to  the  value
-          specified by MaxRecords .
+          An optional pagination token provided by a previous  DescribeTenant-
+          Databases  request. If this parameter is specified, the response in-
+          cludes only records beyond the marker, up to the value specified  by
+          MaxRecords .
 
-       EventSubscriptionsList -> (list)
-          A list of EventSubscriptions data types.
+       TenantDatabases -> (list)
+          An  array  of  the tenant databases requested by the DescribeTenant-
+          Databases operation.
 
           (structure)
-              Contains  the  results  of  a  successful  invocation of the De-
-              scribeEventSubscriptions action.
+              A tenant database in the DB instance. This data type is an  ele-
+              ment in the response to the DescribeTenantDatabases action.
 
-              CustomerAwsId -> (string)
-                 The Amazon Web Services customer account associated with  the
-                 RDS event notification subscription.
+              TenantDatabaseCreateTime -> (timestamp)
+                 The creation time of the tenant database.
 
-              CustSubscriptionId -> (string)
-                 The RDS event notification subscription Id.
+              DBInstanceIdentifier -> (string)
+                 The ID of the DB instance that contains the tenant database.
 
-              SnsTopicArn -> (string)
-                 The topic ARN of the RDS event notification subscription.
+              TenantDBName -> (string)
+                 The database name of the tenant database.
 
               Status -> (string)
-                 The status of the RDS event notification subscription.
+                 The status of the tenant database.
 
-                 Constraints:
+              MasterUsername -> (string)
+                 The master username of the tenant database.
 
-                 Can  be one of the following: creating | modifying | deleting
-                 | active | no-permission | topic-not-exist
+              DbiResourceId -> (string)
+                 The  Amazon  Web Services Region-unique, immutable identifier
+                 for the DB instance.
 
-                 The status "no-permission" indicates that RDS no  longer  has
-                 permission   to   post   to   the   SNS   topic.  The  status
-                 "topic-not-exist" indicates that the topic was deleted  after
-                 the subscription was created.
+              TenantDatabaseResourceId -> (string)
+                 The Amazon Web Services Region-unique,  immutable  identifier
+                 for the tenant database.
 
-              SubscriptionCreationTime -> (string)
-                 The time the RDS event notification subscription was created.
+              TenantDatabaseARN -> (string)
+                 The Amazon Resource Name (ARN) for the tenant database.
 
-              SourceType -> (string)
-                 The source type for the RDS event notification subscription.
+              CharacterSetName -> (string)
+                 The character set of the tenant database.
 
-              SourceIdsList -> (list)
-                 A list of source IDs for the RDS event notification subscrip-
-                 tion.
+              NcharCharacterSetName -> (string)
+                 The NCHAR character set name of the tenant database.
 
-                 (string)
+              DeletionProtection -> (boolean)
+                 Specifies  whether  deletion protection is enabled for the DB
+                 instance.
 
-              EventCategoriesList -> (list)
-                 A list of event categories for  the  RDS  event  notification
-                 subscription.
+              PendingModifiedValues -> (structure)
+                 Information about pending changes for a tenant database.
 
-                 (string)
+                 MasterUserPassword -> (string)
+                     The master password for the tenant database.
 
-              Enabled -> (boolean)
-                 Specifies whether the subscription is enabled. True indicates
-                 the subscription is enabled.
+                 TenantDBName -> (string)
+                     The name of the tenant database.
 
-              EventSubscriptionArn -> (string)
-                 The Amazon Resource Name (ARN) for the event subscription.
+              TagList -> (list)
+                 A list of tags. For more information, see Tagging Amazon  RDS
+                 Resources in the Amazon RDS User Guide.
+
+                 (structure)
+                     Metadata assigned to an Amazon RDS resource consisting of
+                     a key-value pair.
+
+                     For more information, see Tagging Amazon RDS Resources in
+                     the Amazon RDS User Guide.
+
+                     Key -> (string)
+                        A  key  is  the  required  name of the tag. The string
+                        value can be from  1  to  128  Unicode  characters  in
+                        length  and  can't be prefixed with aws: or rds: . The
+                        string can only contain only the set of  Unicode  let-
+                        ters,  digits,  white-space,  '_', '.', ':', '/', '=',
+                        '+',        '-',        '@'        (Java        regex:
+                        "^([\p{L}\p{Z}\p{N}_.:/=+\-@]*)$").
+
+                     Value -> (string)
+                        A  value  is the optional value of the tag. The string
+                        value can be from  1  to  256  Unicode  characters  in
+                        length  and  can't be prefixed with aws: or rds: . The
+                        string can only contain only the set of  Unicode  let-
+                        ters,  digits,  white-space,  '_', '.', ':', '/', '=',
+                        '+',        '-',        '@'        (Java        regex:
+                        "^([\p{L}\p{Z}\p{N}_.:/=+\-@]*)$").
 
 
 
-                                                DESCRIBE-EVENT-SUBSCRIPTIONS()
+                                                   DESCRIBE-TENANT-DATABASES()

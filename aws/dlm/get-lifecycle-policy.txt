@@ -360,6 +360,146 @@ OUTPUT
                             more information, see Cron expressions in the Ama-
                             zon CloudWatch User Guide .
 
+                        Scripts -> (list)
+                               [Snapshot  policies that target instances only]
+                               Specifies pre and/or post scripts for  a  snap-
+                               shot  lifecycle  policy that targets instances.
+                               This is useful for creating application-consis-
+                               tent  snapshots, or for performing specific ad-
+                               ministrative tasks before or after Amazon  Data
+                               Lifecycle Manager initiates snapshot creation.
+
+                            For  more  information,  see  Automating  applica-
+                            tion-consistent  snapshots  with  pre   and   post
+                            scripts .
+
+                            (structure)
+                                   [Snapshot  policies  that  target instances
+                                   only] Information  about  pre  and/or  post
+                                   scripts  for  a  snapshot  lifecycle policy
+                                   that targets instances. For  more  informa-
+                                   tion, see Automating application-consistent
+                                   snapshots with pre and post scripts .
+
+                               Stages -> (list)
+                                   Indicate which scripts Amazon Data  Lifecy-
+                                   cle Manager should run on target instances.
+                                   Pre scripts run before Amazon Data  Lifecy-
+                                   cle  Manager  initiates  snapshot creation.
+                                   Post scripts run after Amazon Data  Lifecy-
+                                   cle Manager initiates snapshot creation.
+
+                                   o To  run  a pre script only, specify PRE .
+                                     In this case, Amazon Data Lifecycle  Man-
+                                     ager  calls  the  SSM  document  with the
+                                     pre-script  parameter  before  initiating
+                                     snapshot creation.
+
+                                   o To run a post script only, specify POST .
+                                     In this case, Amazon Data Lifecycle  Man-
+                                     ager  calls  the  SSM  document  with the
+                                     post-script  parameter  after  initiating
+                                     snapshot creation.
+
+                                   o To run both pre and post scripts, specify
+                                     both PRE and POST . In this case,  Amazon
+                                     Data Lifecycle Manager calls the SSM doc-
+                                     ument with the pre-script  parameter  be-
+                                     fore  initiating  snapshot  creation, and
+                                     then it calls the SSM document again with
+                                     the  post-script parameter after initiat-
+                                     ing snapshot creation.
+
+                                   If you are  automating  VSS  Backups,  omit
+                                   this parameter.
+
+                                   Default: PRE and POST
+
+                                   (string)
+
+                               ExecutionHandlerService -> (string)
+                                   Indicates  the  service used to execute the
+                                   pre and/or post scripts.
+
+                                   o If you are using  custom  SSM  documents,
+                                     specify AWS_SYSTEMS_MANAGER .
+
+                                   o If  you  are automating VSS Backups, omit
+                                     this parameter.
+
+                                   Default: AWS_SYSTEMS_MANAGER
+
+                               ExecutionHandler -> (string)
+                                   The SSM  document  that  includes  the  pre
+                                   and/or post scripts to run.
+
+                                   o If  you are automating VSS backups, spec-
+                                     ify AWS_VSS_BACKUP . In this case, Amazon
+                                     Data Lifecycle Manager automatically uses
+                                     the  AWSEC2-CreateVssSnapshot  SSM  docu-
+                                     ment.
+
+                                   o If  you  are  using a custom SSM document
+                                     that you own, specify either the name  or
+                                     ARN of the SSM document. If you are using
+                                     a custom SSM document that is shared with
+                                     you, specify the ARN of the SSM document.
+
+                               ExecuteOperationOnScriptFailure -> (boolean)
+                                   Indicates  whether  Amazon  Data  Lifecycle
+                                   Manager should default to  crash-consistent
+                                   snapshots if the pre script fails.
+
+                                   o To  default  to crash consistent snapshot
+                                     if the pre script fails, specify true .
+
+                                   o To skip the instance  for  snapshot  cre-
+                                     ation  if  the  pre script fails, specify
+                                     false .
+
+                                   This parameter is supported only if you run
+                                   a  pre  script.  If  you  run a post script
+                                   only, omit this parameter.
+
+                                   Default: true
+
+                               ExecutionTimeout -> (integer)
+                                   Specifies a timeout period, in seconds, af-
+                                   ter  which  Amazon  Data  Lifecycle Manager
+                                   fails the script run attempt if it has  not
+                                   completed.  If  a  script does not complete
+                                   within  its  timeout  period,  Amazon  Data
+                                   Lifecycle  Manager  fails  the attempt. The
+                                   timeout period applies to the pre and  post
+                                   scripts individually.
+
+                                   If  you  are  automating  VSS Backups, omit
+                                   this parameter.
+
+                                   Default: 10
+
+                               MaximumRetryCount -> (integer)
+                                   Specifies the number of times  Amazon  Data
+                                   Lifecycle Manager should retry scripts that
+                                   fail.
+
+                                   o If the  pre  script  fails,  Amazon  Data
+                                     Lifecycle   Manager  retries  the  entire
+                                     snapshot creation process, including run-
+                                     ning the pre and post scripts.
+
+                                   o If  the  post  script  fails, Amazon Data
+                                     Lifecycle Manager retries the post script
+                                     only;  in  this case, the pre script will
+                                     have completed  and  the  snapshot  might
+                                     have been created.
+
+                                   If  you  do  not want Amazon Data Lifecycle
+                                   Manager to retry failed scripts, specify  0
+                                   .
+
+                                   Default: 0
+
                      RetainRule -> (structure)
                         The  retention  rule  for snapshots or AMIs created by
                         the policy.
@@ -384,7 +524,7 @@ OUTPUT
                             Interval=3  and  IntervalUnit=MONTHS  .  Once  the
                             snapshot  has  been  retained  for 3 months, it is
                             deleted, or it is moved to the archive tier if you
-                            have specified an  ArchiveRule .
+                            have specified an ArchiveRule .
 
                      FastRestoreRule -> (structure)
                             [Snapshot  policies  only]  The  rule for enabling
@@ -422,34 +562,38 @@ OUTPUT
 
                         (structure)
                                [Snapshot and AMI policies  only]  Specifies  a
-                               cross-Region  copy  rule  for  snapshot and AMI
+                               cross-Region  copy  rule for a snapshot and AMI
                                policies.
 
                             NOTE:
                                To  specify  a  cross-Region  copy  action  for
-                               event-based polices, use  CrossRegionCopyAction
+                               event-based  polices, use CrossRegionCopyAction
                                .
 
                             TargetRegion -> (string)
 
                                NOTE:
-                                   Avoid using this  parameter  when  creating
-                                   new  policies. Instead, use Target to spec-
-                                   ify a target Region or a target Outpost for
-                                   snapshot copies.
+                                      Use  this  parameter  for  AMI  policies
+                                      only.  For snapshot policies, use Target
+                                      instead. For snapshot  policies  created
+                                      before  the  Target parameter was intro-
+                                      duced, this parameter indicates the tar-
+                                      get Region for snapshot copies.
 
-                                   For  policies created before the Target pa-
-                                   rameter was introduced, this parameter  in-
-                                   dicates  the  target  Region  for  snapshot
-                                   copies.
+                                   [AMI  policies  only]  The target Region or
+                                   the Amazon Resource Name (ARN) of the  tar-
+                                   get Outpost for the snapshot copies.
 
                             Target -> (string)
-                               The target Region or the Amazon  Resource  Name
-                               (ARN)  of  the  target Outpost for the snapshot
-                               copies.
 
-                               Use this parameter instead of TargetRegion . Do
-                               not specify both.
+                               NOTE:
+                                      Use this parameter for snapshot policies
+                                      only. For AMI policies, use TargetRegion
+                                      instead.
+
+                                   [Snapshot  policies only] The target Region
+                                   or the Amazon Resource Name  (ARN)  of  the
+                                   target Outpost for the snapshot copies.
 
                             Encrypted -> (boolean)
                                To encrypt a copy of an unencrypted snapshot if
