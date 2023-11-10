@@ -346,9 +346,30 @@ OUTPUT
 
                  MaxConcurrentCount -> (integer)
                      The maximum number of accounts in which to  perform  this
-                     operation  at one time. This is dependent on the value of
-                     FailureToleranceCount .``MaxConcurrentCount`` is at  most
-                     one more than the FailureToleranceCount .
+                     operation  at  one  time. This can depend on the value of
+                     FailureToleranceCount depending on your ConcurrencyMode .
+                     MaxConcurrentCount  is at most one more than the Failure-
+                     ToleranceCount if you're using STRICT_FAILURE_TOLERANCE .
+
+                     Note that this setting lets you specify the  maximum  for
+                     operations.  For large deployments, under certain circum-
+                     stances the actual number of accounts acted upon  concur-
+                     rently may be lower due to service throttling.
+
+                     Conditional:  You  must specify either MaxConcurrentCount
+                     or MaxConcurrentPercentage , but not both.
+
+                     By default, 1 is specified.
+
+                 MaxConcurrentPercentage -> (integer)
+                     The maximum percentage of accounts in  which  to  perform
+                     this operation at one time.
+
+                     When  calculating  the  number  of  accounts based on the
+                     specified percentage, CloudFormation rounds down  to  the
+                     next  whole  number.  This  is true except in cases where
+                     rounding down would result is zero. In this case,  Cloud-
+                     Formation sets the number as one instead.
 
                      Note  that  this setting lets you specify the maximum for
                      operations. For large deployments, under certain  circum-
@@ -360,25 +381,23 @@ OUTPUT
 
                      By default, 1 is specified.
 
-                 MaxConcurrentPercentage -> (integer)
-                     The  maximum  percentage  of accounts in which to perform
-                     this operation at one time.
+                 ConcurrencyMode -> (string)
+                     Specifies  how  the  concurrency level behaves during the
+                     operation execution.
 
-                     When calculating the number  of  accounts  based  on  the
-                     specified  percentage,  CloudFormation rounds down to the
-                     next whole number. This is true  except  in  cases  where
-                     rounding  down would result is zero. In this case, Cloud-
-                     Formation sets the number as one instead.
+                     o STRICT_FAILURE_TOLERANCE : Dynamically lowers the  con-
+                       currency  level to ensure the number of failed accounts
+                       never exceeds the FailureToleranceCount  +1.  StackSets
+                       will  set  the actual concurrency of your deployment as
+                       the minimum value between  the  MaxConcurrentCount  and
+                       the  FailureToleranceCount  +1. This is the default be-
+                       havior. If failure tolerance or Maximum concurrent  ac-
+                       counts are set to percentages, the behavior is similar.
 
-                     Note that this setting lets you specify the  maximum  for
-                     operations.  For large deployments, under certain circum-
-                     stances the actual number of accounts acted upon  concur-
-                     rently may be lower due to service throttling.
-
-                     Conditional:  You  must specify either MaxConcurrentCount
-                     or MaxConcurrentPercentage , but not both.
-
-                     By default, 1 is specified.
+                     o SOFT_FAILURE_TOLERANCE  : Always run at the concurrency
+                       level set by the user in the MaxConcurrentCount or Max-
+                       ConcurrentPercentage  ,  regardless  of  the  number of
+                       failures.
 
        NextToken -> (string)
           If the request doesn't return all results, NextToken is set to a to-

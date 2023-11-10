@@ -285,29 +285,10 @@ OUTPUT
 
               MaxConcurrentCount -> (integer)
                  The maximum number of accounts in which to perform this oper-
-                 ation at one time. This is dependent on the value of Failure-
-                 ToleranceCount  .``MaxConcurrentCount``  is  at most one more
-                 than the FailureToleranceCount .
-
-                 Note that this setting lets you specify the maximum for oper-
-                 ations.  For  large  deployments, under certain circumstances
-                 the actual number of accounts acted upon concurrently may  be
-                 lower due to service throttling.
-
-                 Conditional:  You  must  specify either MaxConcurrentCount or
-                 MaxConcurrentPercentage , but not both.
-
-                 By default, 1 is specified.
-
-              MaxConcurrentPercentage -> (integer)
-                 The maximum percentage of accounts in which to  perform  this
-                 operation at one time.
-
-                 When  calculating  the number of accounts based on the speci-
-                 fied percentage, CloudFormation rounds down to the next whole
-                 number.  This  is  true  except  in cases where rounding down
-                 would result is zero. In this case, CloudFormation  sets  the
-                 number as one instead.
+                 ation at one time. This can depend on the value  of  Failure-
+                 ToleranceCount depending on your ConcurrencyMode . MaxConcur-
+                 rentCount is at most one more than the  FailureToleranceCount
+                 if you're using STRICT_FAILURE_TOLERANCE .
 
                  Note that this setting lets you specify the maximum for oper-
                  ations. For large deployments,  under  certain  circumstances
@@ -319,49 +300,86 @@ OUTPUT
 
                  By default, 1 is specified.
 
+              MaxConcurrentPercentage -> (integer)
+                 The  maximum  percentage of accounts in which to perform this
+                 operation at one time.
+
+                 When calculating the number of accounts based on  the  speci-
+                 fied percentage, CloudFormation rounds down to the next whole
+                 number. This is true except  in  cases  where  rounding  down
+                 would  result  is zero. In this case, CloudFormation sets the
+                 number as one instead.
+
+                 Note that this setting lets you specify the maximum for oper-
+                 ations.  For  large  deployments, under certain circumstances
+                 the actual number of accounts acted upon concurrently may  be
+                 lower due to service throttling.
+
+                 Conditional:  You  must  specify either MaxConcurrentCount or
+                 MaxConcurrentPercentage , but not both.
+
+                 By default, 1 is specified.
+
+              ConcurrencyMode -> (string)
+                 Specifies how the concurrency level behaves during the opera-
+                 tion execution.
+
+                 o STRICT_FAILURE_TOLERANCE  :  Dynamically lowers the concur-
+                   rency level to ensure the number of failed  accounts  never
+                   exceeds  the  FailureToleranceCount  +1. StackSets will set
+                   the actual concurrency of your deployment  as  the  minimum
+                   value  between the MaxConcurrentCount and the FailureToler-
+                   anceCount +1. This is the default behavior. If failure tol-
+                   erance  or  Maximum concurrent accounts are set to percent-
+                   ages, the behavior is similar.
+
+                 o SOFT_FAILURE_TOLERANCE :  Always  run  at  the  concurrency
+                   level  set by the user in the MaxConcurrentCount or MaxCon-
+                   currentPercentage , regardless of the number of failures.
+
           RetainStacks -> (boolean)
-              For  stack  set  operations  of  action  type DELETE , specifies
-              whether to remove the stack instances from the  specified  stack
+              For stack set operations  of  action  type  DELETE  ,  specifies
+              whether  to  remove the stack instances from the specified stack
               set, but doesn't delete the stacks. You can't re-associate a re-
-              tained stack, or add an existing, saved stack  to  a  new  stack
+              tained  stack,  or  add  an existing, saved stack to a new stack
               set.
 
           AdministrationRoleARN -> (string)
-              The  Amazon  Resource Name (ARN) of the IAM role used to perform
+              The Amazon Resource Name (ARN) of the IAM role used  to  perform
               this stack set operation.
 
-              Use customized administrator roles to  control  which  users  or
-              groups  can  manage specific stack sets within the same adminis-
+              Use  customized  administrator  roles  to control which users or
+              groups can manage specific stack sets within the  same  adminis-
               trator account. For more information, see Define Permissions for
               Multiple Administrators in the CloudFormation User Guide .
 
           ExecutionRoleName -> (string)
-              The  name of the IAM execution role used to create or update the
+              The name of the IAM execution role used to create or update  the
               stack set.
 
-              Use customized execution roles to control which stack  resources
+              Use  customized execution roles to control which stack resources
               users and groups can include in their stack sets.
 
           CreationTimestamp -> (timestamp)
-              The  time  at  which  the operation was initiated. Note that the
+              The time at which the operation was  initiated.  Note  that  the
               creation times for the stack set operation might differ from the
-              creation  time  of the individual stacks themselves. This is be-
-              cause CloudFormation needs to perform preparatory work  for  the
-              operation,  such  as  dispatching  the work to the requested Re-
+              creation time of the individual stacks themselves. This  is  be-
+              cause  CloudFormation  needs to perform preparatory work for the
+              operation, such as dispatching the work  to  the  requested  Re-
               gions, before actually creating the first stacks.
 
           EndTimestamp -> (timestamp)
-              The time at which the stack set operation ended, across all  ac-
+              The  time at which the stack set operation ended, across all ac-
               counts and Regions specified. Note that this doesn't necessarily
-              mean that the stack set operation was successful,  or  even  at-
+              mean  that  the  stack set operation was successful, or even at-
               tempted, in each account or Region.
 
           DeploymentTargets -> (structure)
-              [Service-managed  permissions]  The  Organizations  accounts af-
+              [Service-managed permissions]  The  Organizations  accounts  af-
               fected by the stack operation.
 
               Accounts -> (list)
-                 The names of one or more Amazon  Web  Services  accounts  for
+                 The  names  of  one  or more Amazon Web Services accounts for
                  which you want to deploy stack set updates.
 
                  (string)
@@ -370,63 +388,63 @@ OUTPUT
                  Returns the value of the AccountsUrl property.
 
               OrganizationalUnitIds -> (list)
-                 The  organization  root ID or organizational unit (OU) IDs to
+                 The organization root ID or organizational unit (OU)  IDs  to
                  which StackSets deploys.
 
                  (string)
 
               AccountFilterType -> (string)
-                 Limit deployment targets to individual  accounts  or  include
+                 Limit  deployment  targets  to individual accounts or include
                  additional accounts with provided OUs.
 
-                 The  following  is a list of possible values for the Account-
+                 The following is a list of possible values for  the  Account-
                  FilterType operation.
 
-                 o INTERSECTION : StackSets deploys to the accounts  specified
+                 o INTERSECTION  : StackSets deploys to the accounts specified
                    in Accounts parameter.
 
-                 o DIFFERENCE  :  StackSets excludes the accounts specified in
-                   Accounts parameter. This enables user to avoid certain  ac-
+                 o DIFFERENCE : StackSets excludes the accounts  specified  in
+                   Accounts  parameter. This enables user to avoid certain ac-
                    counts within an OU such as suspended accounts.
 
-                 o UNION  :  StackSets includes additional accounts deployment
+                 o UNION : StackSets includes additional  accounts  deployment
                    targets.  This is the default value if AccountFilterType is
-                   not  provided. This enables user to update an entire OU and
-                   individual accounts from a different  OU  in  one  request,
+                   not provided. This enables user to update an entire OU  and
+                   individual  accounts  from  a  different OU in one request,
                    which used to be two separate requests.
 
-                 o NONE  :  Deploys to all the accounts in specified organiza-
+                 o NONE : Deploys to all the accounts in  specified  organiza-
                    tional units (OU).
 
           StackSetDriftDetectionDetails -> (structure)
-              Detailed information about the drift status of  the  stack  set.
+              Detailed  information  about  the drift status of the stack set.
               This includes information about drift operations currently being
               performed on the stack set.
 
-              This information will only be present for stack  set  operations
+              This  information  will only be present for stack set operations
               whose Action type is DETECT_DRIFT .
 
-              For  more  information, see Detecting Unmanaged Changes in Stack
+              For more information, see Detecting Unmanaged Changes  in  Stack
               Sets in the CloudFormation User Guide.
 
               DriftStatus -> (string)
-                 Status of the stack set's actual  configuration  compared  to
-                 its  expected  template  and parameter configuration. A stack
+                 Status  of  the  stack set's actual configuration compared to
+                 its expected template and parameter  configuration.  A  stack
                  set is considered to have drifted if one or more of its stack
-                 instances  have  drifted from their expected template and pa-
+                 instances have drifted from their expected template  and  pa-
                  rameter configuration.
 
-                 o DRIFTED : One or more of the stack instances  belonging  to
-                   the  stack set stack differs from the expected template and
-                   parameter configuration. A stack instance is considered  to
+                 o DRIFTED  :  One or more of the stack instances belonging to
+                   the stack set stack differs from the expected template  and
+                   parameter  configuration. A stack instance is considered to
                    have drifted if one or more of the resources in the associ-
                    ated stack have drifted.
 
-                 o NOT_CHECKED : CloudFormation hasn't checked the  stack  set
+                 o NOT_CHECKED  :  CloudFormation hasn't checked the stack set
                    for drift.
 
                  o IN_SYNC : All of the stack instances belonging to the stack
-                   set stack match from the expected  template  and  parameter
+                   set  stack  match  from the expected template and parameter
                    configuration.
 
               DriftDetectionStatus -> (string)
@@ -435,57 +453,57 @@ OUTPUT
                  o COMPLETED : The drift detection operation completed without
                    failing on any stack instances.
 
-                 o FAILED : The drift detection operation exceeded the  speci-
+                 o FAILED  : The drift detection operation exceeded the speci-
                    fied failure tolerance.
 
-                 o PARTIAL_SUCCESS  :  The drift detection operation completed
+                 o PARTIAL_SUCCESS : The drift detection  operation  completed
                    without exceeding the failure tolerance for the operation.
 
-                 o IN_PROGRESS : The drift detection  operation  is  currently
+                 o IN_PROGRESS  :  The  drift detection operation is currently
                    being performed.
 
-                 o STOPPED  : The user has canceled the drift detection opera-
+                 o STOPPED : The user has canceled the drift detection  opera-
                    tion.
 
               LastDriftCheckTimestamp -> (timestamp)
                  Most recent time when CloudFormation performed a drift detec-
-                 tion  operation on the stack set. This value will be NULL for
-                 any stack set on which drift detection hasn't yet  been  per-
+                 tion operation on the stack set. This value will be NULL  for
+                 any  stack  set on which drift detection hasn't yet been per-
                  formed.
 
               TotalStackInstancesCount -> (integer)
-                 The  total  number of stack instances belonging to this stack
+                 The total number of stack instances belonging to  this  stack
                  set.
 
                  The total number of stack instances is equal to the total of:
 
                  o Stack instances that match the stack set configuration.
 
-                 o Stack instances that have drifted from the stack  set  con-
+                 o Stack  instances  that have drifted from the stack set con-
                    figuration.
 
-                 o Stack  instances  where  the  drift detection operation has
+                 o Stack instances where the  drift  detection  operation  has
                    failed.
 
                  o Stack instances currently being checked for drift.
 
               DriftedStackInstancesCount -> (integer)
-                 The number of stack instances that have drifted from the  ex-
+                 The  number of stack instances that have drifted from the ex-
                  pected template and parameter configuration of the stack set.
                  A stack instance is considered to have drifted if one or more
-                 of  the  resources  in the associated stack don't match their
+                 of the resources in the associated stack  don't  match  their
                  expected configuration.
 
               InSyncStackInstancesCount -> (integer)
-                 The number of stack instances which match the  expected  tem-
+                 The  number  of stack instances which match the expected tem-
                  plate and parameter configuration of the stack set.
 
               InProgressStackInstancesCount -> (integer)
-                 The  number  of  stack  instances  that  are  currently being
+                 The number  of  stack  instances  that  are  currently  being
                  checked for drift.
 
               FailedStackInstancesCount -> (integer)
-                 The number of stack instances for which the  drift  detection
+                 The  number  of stack instances for which the drift detection
                  operation failed.
 
           StatusReason -> (string)
@@ -495,7 +513,7 @@ OUTPUT
               Detailed information about the StackSet operation.
 
               FailedStackInstancesCount -> (integer)
-                 The  number  of stack instances for which the StackSet opera-
+                 The number of stack instances for which the  StackSet  opera-
                  tion failed.
 
 
