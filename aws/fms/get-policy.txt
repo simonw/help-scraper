@@ -211,10 +211,10 @@ OUTPUT
                      99.  Valid  values  for postProcessRuleGroups are between
                      9901 and 10000.
 
-                 o Example: IMPORT_NETWORK_FIREWALL   "{\"type\":\"IMPORT_NET-
-                   WORK_FIREWALL\",\"awsNetworkFirewallConfig\":{\"network-
-                   FirewallStatelessRuleGroupReferences\":[{\"re-
-                   sourceARN\":\"arn:aws:network-fire-
+                 o Example:    IMPORT_NETWORK_FIREWALL        "{\"type\":\"IM-
+                   PORT_NETWORK_FIREWALL\",\"awsNetworkFirewallCon-
+                   fig\":{\"networkFirewallStatelessRuleGroupRefer-
+                   ences\":[{\"resourceARN\":\"arn:aws:network-fire-
                    wall:us-west-2:000000000000:stateless-rule-
                    group\/rg1\",\"priority\":1}],\"networkFirewallStatelessDe-
                    faultActions\":[\"aws:drop\"],\"networkFirewallStateless-
@@ -412,16 +412,6 @@ OUTPUT
                    istingConfig\":boolean}}"    To use the distributed deploy-
                    ment model, you must set PolicyOption to NULL .
 
-                 o Example:             THIRD_PARTY_FIREWALL                "{
-                   "type":"THIRD_PARTY_FIREWALL",             "thirdPartyFire-
-                   wall":"PALO_ALTO_NETWORKS_CLOUD_NGFW", "thirdPartyFirewall-
-                   Config":{   "thirdPartyFirewallPolicyList":["global-1"]  },
-                   "firewallDeploymentModel":{ "distributedFirewallDeployment-
-                   Model":{  "distributedFirewallOrchestrationConfig":{ "fire-
-                   wallCreationConfig":{  "endpointLocation":{  "availability-
-                   ZoneConfigList":[ { "availabilityZoneName":"${Availability-
-                   Zone}" } ] } }, "allowedIPV4CidrList":[ ] } } } }"
-
                  o Example:    SECURITY_GROUPS_COMMON       "{\"type\":\"SECU-
                    RITY_GROUPS_COMMON\",\"revertManualSecurity-
                    GroupChanges\":false,\"exclusiveResourceSecurityGroupMan-
@@ -469,12 +459,36 @@ OUTPUT
                    RITY_GROUPS_USAGE_AUDIT\",\"deleteUnusedSecurity-
                    Groups\":true,\"coalesceRedundantSecurityGroups\":true}"
 
-                 o Specification  for  SHIELD_ADVANCED  for  Amazon CloudFront
+                 o Example:    SHIELD_ADVANCED   with   web   ACL   management
+                   "{\"type\":\"SHIELD_ADVANCED\",\"optimizeUnassociatedWe-
+                   bACL\":true}"    If  you  set optimizeUnassociatedWebACL to
+                   true , Firewall Manager creates web ACLs in accounts within
+                   the  policy  scope if the web ACLs will be used by at least
+                   one resource. Firewall Manager creates web ACLs in the  ac-
+                   counts  within  policy  scope  only if the web ACLs will be
+                   used by at least one resource. If at any  time  an  account
+                   comes  into  policy  scope,  Firewall Manager automatically
+                   creates a web ACL in the account if at least  one  resource
+                   will  use  the  web  ACL. Upon enablement, Firewall Manager
+                   performs a one-time cleanup of unused web ACLs in your  ac-
+                   count. The cleanup process can take several hours. If a re-
+                   source leaves policy scope after Firewall Manager creates a
+                   web ACL, Firewall Manager doesn't disassociate the resource
+                   from the web ACL. If you want Firewall Manager to clean  up
+                   the  web  ACL, you must first manually disassociate the re-
+                   sources from the web ACL, and then enable the manage unused
+                   web  ACLs option in your policy. If you set optimizeUnasso-
+                   ciatedWebACL to false , and Firewall Manager  automatically
+                   creates an empty web ACL in each account that's within pol-
+                   icy scope.
+
+                 o Specification for  SHIELD_ADVANCED  for  Amazon  CloudFront
                    distributions    "{\"type\":\"SHIELD_ADVANCED\",\"automati-
                    cResponseConfiguration\":          {\"automaticResponseSta-
                    tus\":\"ENABLED|IGNORED|DISABLED\",  \"automaticResponseAc-
                    tion\":\"BLOCK|COUNT\"},      \"overrideCustomerWebaclClas-
-                   sic\":true|false}"   For  example:  "{\"type\":\"SHIELD_AD-
+                   sic\":true|false,                 \"optimizeUnassociatedWe-
+                   bACL\":true|false}"   For example:  "{\"type\":\"SHIELD_AD-
                    VANCED\",\"automaticResponseConfiguration\":   {\"automati-
                    cResponseStatus\":\"ENABLED\",       \"automaticResponseAc-
                    tion\":\"COUNT\"}}"    The  default  value for automaticRe-
@@ -485,10 +499,21 @@ OUTPUT
                    can protect with a Shield Advanced policy, this ManagedSer-
                    viceData configuration is an empty string.
 
-                 o Example:  WAFV2  - Account takeover prevention and Bot Con-
-                   trol  managed  rule  groups,  and  rule   action   override
-                   "{\"type\":\"WAFV2\",\"preProcessRuleGroups\":[{\"rule-
-                   GroupArn\":null,\"overrideAc-
+                 o Example:  THIRD_PARTY_FIREWALL    Replace THIRD_PARTY_FIRE-
+                   WALL_NAME with the name of the  third-party  firewall.   "{
+                   "type":"THIRD_PARTY_FIREWALL",             "thirdPartyFire-
+                   wall":"THIRD_PARTY_FIREWALL_NAME",  "thirdPartyFirewallCon-
+                   fig":{    "thirdPartyFirewallPolicyList":["global-1"]    },
+                   "firewallDeploymentModel":{ "distributedFirewallDeployment-
+                   Model":{  "distributedFirewallOrchestrationConfig":{ "fire-
+                   wallCreationConfig":{  "endpointLocation":{  "availability-
+                   ZoneConfigList":[ { "availabilityZoneName":"${Availability-
+                   Zone}" } ] } }, "allowedIPV4CidrList":[ ] } } } }"
+
+                 o Example: WAFV2 - Account takeover prevention,  Bot  Control
+                   managed  rule  groups,  optimize  unassociated web ACL, and
+                   rule action  override    "{\"type\":\"WAFV2\",\"preProcess-
+                   RuleGroups\":[{\"ruleGroupArn\":null,\"overrideAc-
                    tion\":{\"type\":\"NONE\"},\"managedRuleGroupIdenti-
                    fier\":{\"versionEnabled\":null,\"version\":null,\"vendor-
                    Name\":\"AWS\",\"managedRuleGroupName\":\"AWSManagedRule-
@@ -516,17 +541,40 @@ OUTPUT
                    LOW\"},\"customRequestHandling\":null,\"customRe-
                    sponse\":null,\"overrideCustomerWebACLAssocia-
                    tion\":false,\"loggingConfiguration\":null,\"sample-
-                   dRequestsEnabledForDefaultActions\":true}"
+                   dRequestsEnabledForDefaultActions\":true,\"optimizeUnasso-
+                   ciatedWebACL\":true}"
+
+                   o Bot Control - For information  about  AWSManagedRulesBot-
+                     ControlRuleSet      managed      rule     groups,     see
+                     AWSManagedRulesBotControlRuleSet in the WAF API Reference
+                     .
 
                    o Fraud Control account takeover prevention (ATP) - For in-
-                     formation  about  the properties available for AWSManage-
+                     formation about the properties available  for  AWSManage-
                      dRulesATPRuleSet     managed     rule     groups,     see
                      AWSManagedRulesATPRuleSet in the WAF API Reference .
 
-                   o Bot  Control  - For information about AWSManagedRulesBot-
-                     ControlRuleSet     managed     rule      groups,      see
-                     AWSManagedRulesBotControlRuleSet in the WAF API Reference
-                     .
+                   o Optimize unassociated web ACL - If you set  optimizeUnas-
+                     sociatedWebACL  to  true  ,  Firewall Manager creates web
+                     ACLs in accounts within the policy scope if the web  ACLs
+                     will  be  used by at least one resource. Firewall Manager
+                     creates web ACLs in the accounts within policy scope only
+                     if the web ACLs will be used by at least one resource. If
+                     at any time an account comes into policy scope,  Firewall
+                     Manager automatically creates a web ACL in the account if
+                     at least one resource will use the web ACL. Upon  enable-
+                     ment, Firewall Manager performs a one-time cleanup of un-
+                     used web ACLs in your account. The  cleanup  process  can
+                     take several hours. If a resource leaves policy scope af-
+                     ter Firewall Manager creates a web ACL, Firewall  Manager
+                     disassociates  the  resource  from the web ACL, but won't
+                     clean up the unused web ACL. Firewall Manager only cleans
+                     up  unused  web  ACLs when you first enable management of
+                     unused web ACLs in a policy. If you set optimizeUnassoci-
+                     atedWebACL  to  false Firewall Manager doesn't manage un-
+                     used web ACLs, and Firewall Manager automatically creates
+                     an  empty  web  ACL  in each account that's within policy
+                     scope.
 
                    o Rule action overrides - Firewall  Manager  supports  rule
                      action overrides only for managed rule groups. To config-
@@ -552,15 +600,27 @@ OUTPUT
                    tions\":true,\"captchaConfig\":{\"immunityTimeProp-
                    erty\":{\"immunityTime\":500}},\"challengeConfig\":{\"immu-
                    nityTimeProperty\":{\"immunityTime\":800}},\"tokenDo-
-                   mains\":[\"google.com\",\"amazon.com\"]}"   If  you  update
-                   the  policy's  values for captchaConfig , challengeConfig ,
-                   or tokenDomains , Firewall Manager will overwrite your  lo-
-                   cal  web  ACLs to contain the new value(s). However, if you
-                   don't update the policy's captchaConfig , challengeConfig ,
-                   or  tokenDomains  values, the values in your local web ACLs
-                   will remain unchanged. For information  about  CAPTCHA  and
-                   Challenge configs, see CaptchaConfig and ChallengeConfig in
-                   the WAF API Reference .
+                   mains\":[\"google.com\",\"amazon.com\"],\"associationCon-
+                   fig\":{\"requestBody\":{\"CLOUDFRONT\":{\"defaultSizeIn-
+                   spectionLimit\":\"KB_16\"}}}}"
+
+                   o CAPTCHA and Challenge configs - If you  update  the  pol-
+                     icy's  values  for  associationConfig  ,  captchaConfig ,
+                     challengeConfig , or tokenDomains , Firewall Manager will
+                     overwrite   your  local  web  ACLs  to  contain  the  new
+                     value(s). However, if you don't update the policy's asso-
+                     ciationConfig , captchaConfig , challengeConfig , or tok-
+                     enDomains values, the values in your local web ACLs  will
+                     remain  unchanged. For information about association con-
+                     figs,  see  AssociationConfig  .  For  information  about
+                     CAPTCHA  and  Challenge  configs,  see  CaptchaConfig and
+                     ChallengeConfig in the WAF API Reference .
+
+                   o defaultSizeInspectionLimit - Specifies the  maximum  size
+                     of the web request body component that an associated Ama-
+                     zon CloudFront distribution should send to  WAF  for  in-
+                     spection.       For       more      information,      see
+                     DefaultSizeInspectionLimit in the WAF API Reference .
 
                  o Example: WAFV2 - Firewall Manager support for  WAF  managed
                    rule  group versioning   "{\"type\":\"WAFV2\",\"preProcess-
@@ -648,19 +708,30 @@ OUTPUT
               types,  specify  a  resource  type  of ResourceTypeList and then
               specify the resource types in a ResourceTypeList .
 
-              For WAF and Shield Advanced, resource types include AWS::Elasti-
-              cLoadBalancingV2::LoadBalancer     ,     AWS::ElasticLoadBalanc-
-              ing::LoadBalancer , AWS::EC2::EIP , and AWS::CloudFront::Distri-
-              bution  .  For  a security group common policy, valid values are
-              AWS::EC2::NetworkInterface and AWS::EC2::Instance . For a  secu-
-              rity  group content audit policy, valid values are AWS::EC2::Se-
-              curityGroup ,  AWS::EC2::NetworkInterface  ,  and  AWS::EC2::In-
-              stance  .  For a security group usage audit policy, the value is
-              AWS::EC2::SecurityGroup . For an Network Firewall policy or  DNS
-              Firewall policy, the value is AWS::EC2::VPC .
+              The following are valid resource types for each Firewall Manager
+              policy type:
+
+              o Amazon  Web  Services  WAF  Classic - AWS::ApiGateway::Stage ,
+                AWS::CloudFront::Distribution  ,  and  AWS::ElasticLoadBalanc-
+                ingV2::LoadBalancer .
+
+              o WAF   -   AWS::ApiGateway::Stage   ,   AWS::ElasticLoadBalanc-
+                ingV2::LoadBalancer , and AWS::CloudFront::Distribution .
+
+              o DNS Firewall, Network Firewall,  and  third-party  firewall  -
+                AWS::EC2::VPC .
+
+              o Shield  Advanced - AWS::ElasticLoadBalancingV2::LoadBalancer ,
+                AWS::ElasticLoadBalancing::LoadBalancer , AWS::EC2::EIP ,  and
+                AWS::CloudFront::Distribution .
+
+              o Security  group  content  audit  -  AWS::EC2::SecurityGroup  ,
+                AWS::EC2::NetworkInterface , and AWS::EC2::Instance .
+
+              o Security group usage audit - AWS::EC2::SecurityGroup .
 
           ResourceTypeList -> (list)
-              An  array of ResourceType objects. Use this only to specify mul-
+              An array of ResourceType objects. Use this only to specify  mul-
               tiple resource types. To specify a single resource type, use Re-
               sourceType .
 
@@ -670,15 +741,15 @@ OUTPUT
               An array of ResourceTag objects.
 
               (structure)
-                 The  resource tags that Firewall Manager uses to determine if
+                 The resource tags that Firewall Manager uses to determine  if
                  a particular resource should be included or excluded from the
-                 Firewall  Manager  policy. Tags enable you to categorize your
+                 Firewall Manager policy. Tags enable you to  categorize  your
                  Amazon Web Services resources in different ways, for example,
                  by purpose, owner, or environment. Each tag consists of a key
-                 and an optional value. Firewall  Manager  combines  the  tags
-                 with  "AND" so that, if you add more than one tag to a policy
-                 scope, a resource must have all the specified tags to be  in-
-                 cluded  or  excluded.  For more information, see Working with
+                 and  an  optional  value.  Firewall Manager combines the tags
+                 with "AND" so that, if you add more than one tag to a  policy
+                 scope,  a resource must have all the specified tags to be in-
+                 cluded or excluded. For more information,  see  Working  with
                  Tag Editor .
 
                  Key -> (string)
@@ -688,69 +759,36 @@ OUTPUT
                      The resource tag value.
 
           ExcludeResourceTags -> (boolean)
-              If set to True , resources with the tags that are  specified  in
-              the  ResourceTag array are not in scope of the policy. If set to
-              False , and the ResourceTag array is not  null,  only  resources
+              If  set  to True , resources with the tags that are specified in
+              the ResourceTag array are not in scope of the policy. If set  to
+              False  ,  and  the ResourceTag array is not null, only resources
               with the specified tags are in scope of the policy.
 
           RemediationEnabled -> (boolean)
-              Indicates  if  the policy should be automatically applied to new
+              Indicates if the policy should be automatically applied  to  new
               resources.
 
           DeleteUnusedFMManagedResources -> (boolean)
-              Indicates whether Firewall Manager should  automatically  remove
+              Indicates  whether  Firewall Manager should automatically remove
               protections from resources that leave the policy scope and clean
               up resources that Firewall Manager is managing for accounts when
               those accounts leave policy scope. For example, Firewall Manager
               will disassociate a Firewall Manager managed web ACL from a pro-
-              tected  customer resource when the customer resource leaves pol-
+              tected customer resource when the customer resource leaves  pol-
               icy scope.
 
-              By default,  Firewall  Manager  doesn't  remove  protections  or
+              By  default,  Firewall  Manager  doesn't  remove  protections or
               delete Firewall Manager managed resources.
 
-              This  option is not available for Shield Advanced or WAF Classic
+              This option is not available for Shield Advanced or WAF  Classic
               policies.
 
           IncludeMap -> (map)
-              Specifies the Amazon Web Services account IDs and  Organizations
-              organizational  units (OUs) to include in the policy. Specifying
-              an OU is the equivalent of specifying all accounts in the OU and
-              in  any  of  its child OUs, including any child OUs and accounts
-              that are added at a later time.
-
-              You can specify inclusions or exclusions, but not both.  If  you
-              specify  an  IncludeMap , Firewall Manager applies the policy to
-              all accounts specified by the IncludeMap , and does not evaluate
-              any  ExcludeMap  specifications.  If  you  do not specify an In-
-              cludeMap , then Firewall Manager applies the policy to  all  ac-
-              counts except for those specified by the ExcludeMap .
-
-              You can specify account IDs, OUs, or a combination:
-
-              o Specify  account IDs by setting the key to ACCOUNT . For exam-
-                ple, the following is a valid map: {ACCOUNT : [accountID1, ac-
-                countID2]} .
-
-              o Specify  OUs by setting the key to ORG_UNIT . For example, the
-                following is a valid map: {ORG_UNIT : [ouid111, ouid112]} .
-
-              o Specify accounts and OUs together in a single  map,  separated
-                with  a comma. For example, the following is a valid map: {AC-
-                COUNT  :  [accountID1,  accountID2],  ORG_UNIT   :   [ouid111,
-                ouid112]} .
-
-              key -> (string)
-
-              value -> (list)
-                 (string)
-
-          ExcludeMap -> (map)
               Specifies  the Amazon Web Services account IDs and Organizations
-              organizational units (OUs) to exclude from the policy.  Specify-
-              ing an OU is the equivalent of specifying all accounts in the OU
-              and in any of its child OUs, including any  child  OUs  and  ac-
-              counts that are added at a later time.
+              organizational units (OUs) to include in the policy.  Specifying
+              an OU is the equivalent of specifying all accounts in the OU and
+              in any of its child OUs, including any child  OUs  and  accounts
+              that are added at a later time.
 
               You  can  specify inclusions or exclusions, but not both. If you
               specify an IncludeMap , Firewall Manager applies the  policy  to
@@ -778,6 +816,39 @@ OUTPUT
               value -> (list)
                  (string)
 
+          ExcludeMap -> (map)
+              Specifies the Amazon Web Services account IDs and  Organizations
+              organizational  units (OUs) to exclude from the policy. Specify-
+              ing an OU is the equivalent of specifying all accounts in the OU
+              and  in  any  of  its child OUs, including any child OUs and ac-
+              counts that are added at a later time.
+
+              You can specify inclusions or exclusions, but not both.  If  you
+              specify  an  IncludeMap , Firewall Manager applies the policy to
+              all accounts specified by the IncludeMap , and does not evaluate
+              any  ExcludeMap  specifications.  If  you  do not specify an In-
+              cludeMap , then Firewall Manager applies the policy to  all  ac-
+              counts except for those specified by the ExcludeMap .
+
+              You can specify account IDs, OUs, or a combination:
+
+              o Specify  account IDs by setting the key to ACCOUNT . For exam-
+                ple, the following is a valid map: {ACCOUNT : [accountID1, ac-
+                countID2]} .
+
+              o Specify  OUs by setting the key to ORG_UNIT . For example, the
+                following is a valid map: {ORG_UNIT : [ouid111, ouid112]} .
+
+              o Specify accounts and OUs together in a single  map,  separated
+                with  a comma. For example, the following is a valid map: {AC-
+                COUNT  :  [accountID1,  accountID2],  ORG_UNIT   :   [ouid111,
+                ouid112]} .
+
+              key -> (string)
+
+              value -> (list)
+                 (string)
+
           ResourceSetIds -> (list)
               The unique identifiers of the resource sets used by the policy.
 
@@ -787,12 +858,12 @@ OUTPUT
               The definition of the Network Firewall firewall policy.
 
           PolicyStatus -> (string)
-              Indicates whether the policy is in or out of an  admin's  policy
+              Indicates  whether  the policy is in or out of an admin's policy
               or Region scope.
 
               o ACTIVE - The administrator can manage and delete the policy.
 
-              o OUT_OF_ADMIN_SCOPE  -  The  administrator can view the policy,
+              o OUT_OF_ADMIN_SCOPE - The administrator can  view  the  policy,
                 but they can't edit or delete the policy. Existing policy pro-
                 tections stay in place. Any new resources that come into scope
                 of the policy won't be protected.
