@@ -8,9 +8,11 @@ NAME
 DESCRIPTION
        Provides information about a state machine execution, such as the state
        machine associated with the execution, the execution input and  output,
-       and  relevant execution metadata. Use this API action to return the Map
-       Run Amazon Resource Name (ARN) if the execution was dispatched by a Map
-       Run.
+       and  relevant  execution metadata. If you've redriven an execution, you
+       can use this API action to return information  about  the  redrives  of
+       that  execution. In addition, you can use this API action to return the
+       Map Run Amazon Resource Name (ARN) if the execution was dispatched by a
+       Map Run.
 
        If you specify a version or alias ARN when you call the  StartExecution
        API action, DescribeExecution returns that ARN.
@@ -19,7 +21,7 @@ DESCRIPTION
           This operation is eventually consistent. The results are best effort
           and may not reflect very recent updates and changes.
 
-       Executions  of an EXPRESS state machinearen't supported by DescribeExe-
+       Executions of an EXPRESS state machine aren't supported by DescribeExe-
        cution unless a Map Run dispatched them.
 
        See also: AWS API Documentation
@@ -230,6 +232,65 @@ OUTPUT
 
           If you start an execution from a StartExecution request with a state
           machine version ARN, this field will be null.
+
+       redriveCount -> (integer)
+          The number of times you've redriven an execution. If  you  have  not
+          yet  redriven an execution, the redriveCount is 0. This count is not
+          updated for redrives that failed to  start  or  are  pending  to  be
+          redriven.
+
+       redriveDate -> (timestamp)
+          The  date  the  execution  was  last  redriven.  If you have not yet
+          redriven an execution, the redriveDate is null.
+
+          The redriveDate is unavailable if you redrive a Map Run that  starts
+          child workflow executions of type EXPRESS .
+
+       redriveStatus -> (string)
+          Indicates  whether  or  not  an execution can be redriven at a given
+          point in time.
+
+          o For executions of type STANDARD , redriveStatus is  NOT_REDRIVABLE
+            if  calling the  RedriveExecution API action would return the Exe-
+            cutionNotRedrivable error.
+
+          o For a Distributed Map that includes child workflows of type  STAN-
+            DARD  ,  redriveStatus  indicates  whether  or not the Map Run can
+            redrive child workflow executions.
+
+          o For a Distributed Map that includes child workflows  of  type  EX-
+            PRESS  ,  redriveStatus  indicates  whether or not the Map Run can
+            redrive child workflow executions. You can redrive failed or timed
+            out  EXPRESS  workflows  only if they're a part of a Map Run. When
+            you redrive the Map Run, these workflows are restarted  using  the
+            StartExecution API action.
+
+       redriveStatusReason -> (string)
+          When redriveStatus is NOT_REDRIVABLE , redriveStatusReason specifies
+          the reason why an execution cannot be redriven.
+
+          o For executions of type STANDARD , or for a  Distributed  Map  that
+            includes  child  workflows  of type STANDARD , redriveStatusReason
+            can include one of the following reasons:
+
+            o State machine is in DELETING status .
+
+            o Execution is RUNNING and cannot be redriven .
+
+            o Execution is SUCCEEDED and cannot be redriven .
+
+            o Execution was started before the launch of RedriveExecution .
+
+            o Execution history event limit exceeded .
+
+            o Execution has exceeded the max execution time .
+
+            o Execution redrivable period exceeded .
+
+          o For a Distributed Map that includes child workflows  of  type  EX-
+            PRESS  ,  redriveStatusReason  is only returned if the child work-
+            flows are not redrivable. This happens when the child workflow ex-
+            ecutions have completed successfully.
 
 
 
