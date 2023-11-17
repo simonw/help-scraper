@@ -6,8 +6,25 @@ NAME
        create-lifecycle-policy -
 
 DESCRIPTION
-       Creates  a  policy  to manage the lifecycle of the specified Amazon Web
-       Services resources. You can create up to 100 lifecycle policies.
+       Creates  an Amazon Data Lifecycle Manager lifecycle policy. Amazon Data
+       Lifecycle Manager supports the following policy types:
+
+       o Custom EBS snapshot policy
+
+       o Custom EBS-backed AMI policy
+
+       o Cross-account copy event policy
+
+       o Default policy for EBS snapshots
+
+       o Default policy for EBS-backed AMIs
+
+       For more information, see Default policies vs custom policies .
+
+       WARNING:
+          If you create a default policy, you can specify the request  parame-
+          ters  either  in  the  request body, or in the PolicyDetails request
+          structure, but not both.
 
        See also: AWS API Documentation
 
@@ -16,8 +33,15 @@ SYNOPSIS
           --execution-role-arn <value>
           --description <value>
           --state <value>
-          --policy-details <value>
+          [--policy-details <value>]
           [--tags <value>]
+          [--default-policy <value>]
+          [--create-interval <value>]
+          [--retain-interval <value>]
+          [--copy-tags | --no-copy-tags]
+          [--extend-deletion | --no-extend-deletion]
+          [--cross-region-copy-targets <value>]
+          [--exclusions <value>]
           [--cli-input-json <value>]
           [--generate-cli-skeleton <value>]
           [--debug]
@@ -45,7 +69,7 @@ OPTIONS
           _-]+$ are supported.
 
        --state (string)
-          The desired activation state of the lifecycle policy after creation.
+          The activation state of the lifecycle policy after creation.
 
           Possible values:
 
@@ -56,31 +80,36 @@ OPTIONS
        --policy-details (structure)
           The configuration details of the lifecycle policy.
 
+          WARNING:
+              If you create a default policy, you can specify the request  pa-
+              rameters either in the request body, or in the PolicyDetails re-
+              quest structure, but not both.
+
           PolicyType -> (string)
-                 [All policy types] The valid target resource  types  and  ac-
-                 tions a policy can manage. Specify EBS_SNAPSHOT_MANAGEMENT to
-                 create a lifecycle policy that manages the lifecycle of  Ama-
-                 zon EBS snapshots. Specify IMAGE_MANAGEMENT to create a life-
-                 cycle policy that manages the lifecycle of  EBS-backed  AMIs.
-                 Specify  EVENT_BASED_POLICY  to  create an event-based policy
-                 that performs specific actions when a defined event occurs in
-                 your Amazon Web Services account.
+                 [Custom policies only] The valid target  resource  types  and
+                 actions  a policy can manage. Specify EBS_SNAPSHOT_MANAGEMENT
+                 to create a lifecycle policy that manages  the  lifecycle  of
+                 Amazon  EBS  snapshots.  Specify IMAGE_MANAGEMENT to create a
+                 lifecycle policy that manages  the  lifecycle  of  EBS-backed
+                 AMIs.  Specify  EVENT_BASED_POLICY  to  create an event-based
+                 policy that performs specific actions when  a  defined  event
+                 occurs in your Amazon Web Services account.
 
               The default is EBS_SNAPSHOT_MANAGEMENT .
 
           ResourceTypes -> (list)
-                 [Snapshot  policies  only] The target resource type for snap-
-                 shot and AMI lifecycle policies. Use VOLUME to  create  snap-
-                 shots  of  individual  volumes  or  use  INSTANCE  to  create
+                 [Custom  snapshot policies only] The target resource type for
+                 snapshot and AMI lifecycle policies.  Use  VOLUME  to  create
+                 snapshots  of  individual  volumes  or use INSTANCE to create
                  multi-volume snapshots from the volumes for an instance.
 
               (string)
 
           ResourceLocations -> (list)
-                 [Snapshot and AMI policies only]  The  location  of  the  re-
-                 sources  to backup. If the source resources are located in an
-                 Amazon Web Services Region, specify CLOUD . If the source re-
-                 sources  are  located  on an Outpost in your account, specify
+                 [Custom snapshot and AMI policies only] The location  of  the
+                 resources  to  backup. If the source resources are located in
+                 an Amazon Web Services Region, specify CLOUD . If the  source
+                 resources  are located on an Outpost in your account, specify
                  OUTPOST .
 
               If you specify OUTPOST , Amazon Data Lifecycle Manager backs  up
@@ -90,8 +119,8 @@ OPTIONS
               (string)
 
           TargetTags -> (list)
-                 [Snapshot and AMI policies only] The single tag that  identi-
-                 fies targeted resources for this policy.
+                 [Custom snapshot and AMI policies only] The single  tag  that
+                 identifies targeted resources for this policy.
 
               (structure)
                  Specifies a tag for a resource.
@@ -103,14 +132,14 @@ OPTIONS
                      The tag value.
 
           Schedules -> (list)
-                 [Snapshot  and AMI policies only] The schedules of policy-de-
-                 fined actions for snapshot and AMI lifecycle policies. A pol-
-                 icy  can  have up to four schedulesone mandatory schedule and
-                 up to three optional schedules.
+                 [Custom snapshot and AMI policies only] The schedules of pol-
+                 icy-defined actions for snapshot and AMI lifecycle  policies.
+                 A  policy can have up to four schedulesone mandatory schedule
+                 and up to three optional schedules.
 
               (structure)
-                     [Snapshot and AMI policies only] Specifies a schedule for
-                     a snapshot or AMI lifecycle policy.
+                     [Custom snapshot  and  AMI  policies  only]  Specifies  a
+                     schedule for a snapshot or AMI lifecycle policy.
 
                  Name -> (string)
                      The name of the schedule.
@@ -155,13 +184,13 @@ OPTIONS
                      The creation rule.
 
                      Location -> (string)
-                            [Snapshot policies only] Specifies the destination
-                            for  snapshots  created  by  the policy. To create
-                            snapshots in the same Region  as  the  source  re-
-                            source, specify CLOUD . To create snapshots on the
-                            same Outpost as the source resource, specify  OUT-
-                            POST_LOCAL  . If you omit this parameter, CLOUD is
-                            used by default.
+                            [Custom snapshot policies only] Specifies the des-
+                            tination  for  snapshots created by the policy. To
+                            create snapshots in the same Region as the  source
+                            resource,  specify  CLOUD . To create snapshots on
+                            the same Outpost as the source  resource,  specify
+                            OUTPOST_LOCAL  . If you omit this parameter, CLOUD
+                            is used by default.
 
                         If the policy targets resources in an Amazon Web  Ser-
                         vices  Region,  then  you must create snapshots in the
@@ -195,22 +224,22 @@ OPTIONS
                         Watch User Guide .
 
                      Scripts -> (list)
-                            [Snapshot  policies  that  target  instances only]
-                            Specifies pre and/or post scripts for  a  snapshot
-                            lifecycle  policy  that targets instances. This is
-                            useful for creating  application-consistent  snap-
-                            shots,  or  for performing specific administrative
-                            tasks before or after Amazon Data  Lifecycle  Man-
-                            ager initiates snapshot creation.
+                            [Custom  snapshot  policies  that target instances
+                            only] Specifies pre  and/or  post  scripts  for  a
+                            snapshot  lifecycle policy that targets instances.
+                            This is useful for creating application-consistent
+                            snapshots,  or for performing specific administra-
+                            tive tasks before or after Amazon  Data  Lifecycle
+                            Manager initiates snapshot creation.
 
                         For  more information, see Automating application-con-
                         sistent snapshots with pre and post scripts .
 
                         (structure)
-                               [Snapshot policies that target instances  only]
-                               Information about pre and/or post scripts for a
-                               snapshot  lifecycle  policy  that  targets  in-
-                               stances.  For  more information, see Automating
+                               [Custom snapshot policies that target instances
+                               only] Information about pre and/or post scripts
+                               for a snapshot lifecycle  policy  that  targets
+                               instances. For more information, see Automating
                                application-consistent snapshots with  pre  and
                                post scripts .
 
@@ -351,8 +380,8 @@ OPTIONS
                         ArchiveRule .
 
                  FastRestoreRule -> (structure)
-                        [Snapshot  policies  only]  The rule for enabling fast
-                        snapshot restore.
+                        [Custom  snapshot policies only] The rule for enabling
+                        fast snapshot restore.
 
                      Count -> (integer)
                         The number of snapshots to be enabled with fast  snap-
@@ -383,8 +412,8 @@ OPTIONS
                         copied to up to three Regions or Outposts.
 
                      (structure)
-                            [Snapshot  and  AMI  policies  only]  Specifies  a
-                            cross-Region  copy  rule  for  a  snapshot and AMI
+                            [Custom snapshot and AMI policies only]  Specifies
+                            a  cross-Region  copy  rule for a snapshot and AMI
                             policies.
 
                         NOTE:
@@ -401,9 +430,9 @@ OPTIONS
                                    rameter  indicates  the  target  Region for
                                    snapshot copies.
 
-                               [AMI policies only] The target  Region  or  the
-                               Amazon  Resource  Name (ARN) of the target Out-
-                               post for the snapshot copies.
+                               [Custom AMI policies only] The target Region or
+                               the  Amazon  Resource  Name (ARN) of the target
+                               Outpost for the snapshot copies.
 
                         Target -> (string)
 
@@ -412,9 +441,9 @@ OPTIONS
                                    only.  For  AMI  policies, use TargetRegion
                                    instead.
 
-                               [Snapshot policies only] The target  Region  or
-                               the  Amazon  Resource  Name (ARN) of the target
-                               Outpost for the snapshot copies.
+                               [Custom snapshot policies only] The target  Re-
+                               gion  or  the Amazon Resource Name (ARN) of the
+                               target Outpost for the snapshot copies.
 
                         Encrypted -> (boolean)
                             To encrypt a copy of an  unencrypted  snapshot  if
@@ -452,8 +481,8 @@ OPTIONS
                                nit=MONTHS .
 
                         DeprecateRule -> (structure)
-                               [AMI  policies  only]  The AMI deprecation rule
-                               for cross-Region  AMI  copies  created  by  the
+                               [Custom  AMI policies only] The AMI deprecation
+                               rule for cross-Region AMI copies created by the
                                rule.
 
                             Interval -> (integer)
@@ -471,13 +500,13 @@ OPTIONS
                                IntervalUnit=MONTHS .
 
                  ShareRules -> (list)
-                        [Snapshot  policies  only]  The rule for sharing snap-
-                        shots with other Amazon Web Services accounts.
+                        [Custom  snapshot  policies only] The rule for sharing
+                        snapshots with other Amazon Web Services accounts.
 
                      (structure)
-                            [Snapshot policies  only]  Specifies  a  rule  for
-                            sharing  snapshots  across Amazon Web Services ac-
-                            counts.
+                            [Custom snapshot policies only] Specifies  a  rule
+                            for  sharing  snapshots across Amazon Web Services
+                            accounts.
 
                         TargetAccounts -> (list)
                             The IDs of the Amazon Web Services  accounts  with
@@ -495,8 +524,8 @@ OPTIONS
                             terval.
 
                  DeprecateRule -> (structure)
-                        [AMI policies only] The AMI deprecation rule  for  the
-                        schedule.
+                        [Custom AMI policies only] The  AMI  deprecation  rule
+                        for the schedule.
 
                      Count -> (integer)
                         If the schedule has a count-based retention rule, this
@@ -517,13 +546,13 @@ OPTIONS
                         The unit of time in which to measure the Interval .
 
                  ArchiveRule -> (structure)
-                        [Snapshot policies that target volumes only] The snap-
-                        shot archiving rule for the schedule. When you specify
-                        an archiving rule, snapshots are  automatically  moved
-                        from  the  standard  tier to the archive tier once the
-                        schedule's retention threshold is met.  Snapshots  are
-                        then  retained in the archive tier for the archive re-
-                        tention period that you specify.
+                        [Custom snapshot policies that  target  volumes  only]
+                        The snapshot archiving rule for the schedule. When you
+                        specify an archiving rule, snapshots are automatically
+                        moved  from the standard tier to the archive tier once
+                        the schedule's retention threshold is  met.  Snapshots
+                        are  then retained in the archive tier for the archive
+                        retention period that you specify.
 
                      For more information about using snapshot archiving,  see
                      Considerations for snapshot lifecycle policies .
@@ -559,8 +588,8 @@ OPTIONS
                                and IntervalUnit=MONTHS .
 
           Parameters -> (structure)
-                 [Snapshot and AMI policies only] A set of optional parameters
-                 for snapshot and AMI lifecycle policies.
+                 [Custom snapshot and AMI policies only] A set of optional pa-
+                 rameters for snapshot and AMI lifecycle policies.
 
               NOTE:
                  If  you are modifying a policy that was created or previously
@@ -570,29 +599,30 @@ OPTIONS
                  omit this parameter or set its values to null.
 
               ExcludeBootVolume -> (boolean)
-                 [Snapshot  policies  that  target  instances  only] Indicates
-                 whether to exclude the root volume from multi-volume snapshot
-                 sets.  The  default is false . If you specify true , then the
-                 root volumes attached to targeted instances will be  excluded
-                 from the multi-volume snapshot sets created by the policy.
+                 [Custom  snapshot  policies that target instances only] Indi-
+                 cates whether to exclude the root  volume  from  multi-volume
+                 snapshot  sets.  The default is false . If you specify true ,
+                 then the root volumes attached to targeted instances will  be
+                 excluded  from  the multi-volume snapshot sets created by the
+                 policy.
 
               NoReboot -> (boolean)
-                 [AMI  policies only] Indicates whether targeted instances are
-                 rebooted when the lifecycle policy runs. true indicates  that
-                 targeted  instances  are  not  rebooted when the policy runs.
-                 false indicates that target instances are rebooted  when  the
-                 policy  runs.  The  default  is  true  (instances are not re-
-                 booted).
+                 [Custom AMI policies only]  Indicates  whether  targeted  in-
+                 stances are rebooted when the lifecycle policy runs. true in-
+                 dicates that targeted instances are  not  rebooted  when  the
+                 policy  runs.  false  indicates that target instances are re-
+                 booted when the policy runs. The default is  true  (instances
+                 are not rebooted).
 
               ExcludeDataVolumeTags -> (list)
-                     [Snapshot policies that target instances only]  The  tags
-                     used  to identify data (non-root) volumes to exclude from
-                     multi-volume snapshot sets.
+                     [Custom snapshot policies that target instances only] The
+                     tags used to identify data (non-root) volumes to  exclude
+                     from multi-volume snapshot sets.
 
-                 If you create a snapshot lifecycle policy  that  targets  in-
-                 stances  and  you  specify tags for this parameter, then data
+                 If  you  create  a snapshot lifecycle policy that targets in-
+                 stances and you specify tags for this  parameter,  then  data
                  volumes with the specified tags that are attached to targeted
-                 instances  will  be  excluded  from the multi-volume snapshot
+                 instances will be excluded  from  the  multi-volume  snapshot
                  sets created by the policy.
 
                  (structure)
@@ -605,47 +635,47 @@ OPTIONS
                         The tag value.
 
           EventSource -> (structure)
-                 [Event-based policies only]  The  event  that  activates  the
+                 [Event-based  policies  only]  The  event  that activates the
                  event-based policy.
 
               Type -> (string)
-                 The  source  of  the event. Currently only managed CloudWatch
+                 The source of the event. Currently  only  managed  CloudWatch
                  Events rules are supported.
 
               Parameters -> (structure)
                  Information about the event.
 
                  EventType -> (string)
-                     The type  of  event.  Currently,  only  snapshot  sharing
+                     The  type  of  event.  Currently,  only  snapshot sharing
                      events are supported.
 
                  SnapshotOwner -> (list)
-                     The  IDs  of  the  Amazon  Web Services accounts that can
-                     trigger policy by sharing snapshots  with  your  account.
-                     The  policy  only runs if one of the specified Amazon Web
+                     The IDs of the Amazon  Web  Services  accounts  that  can
+                     trigger  policy  by  sharing snapshots with your account.
+                     The policy only runs if one of the specified  Amazon  Web
                      Services accounts shares a snapshot with your account.
 
                      (string)
 
                  DescriptionRegex -> (string)
                      The snapshot description that can trigger the policy. The
-                     description  pattern is specified using a regular expres-
-                     sion. The policy runs only if a snapshot with a  descrip-
-                     tion  that  matches  the specified pattern is shared with
+                     description pattern is specified using a regular  expres-
+                     sion.  The policy runs only if a snapshot with a descrip-
+                     tion that matches the specified pattern  is  shared  with
                      your account.
 
                      For  example,  specifying  ^.*Created  for  policy:  pol-
-                     icy-1234567890abcdef0.*$  configures  the  policy  to run
-                     only   if    snapshots    created    by    policy    pol-
+                     icy-1234567890abcdef0.*$ configures  the  policy  to  run
+                     only    if    snapshots    created    by    policy   pol-
                      icy-1234567890abcdef0 are shared with your account.
 
           Actions -> (list)
-                 [Event-based  policies only] The actions to be performed when
+                 [Event-based policies only] The actions to be performed  when
                  the event-based policy is activated. You can specify only one
                  action per policy.
 
               (structure)
-                     [Event-based  policies  only]  Specifies an action for an
+                     [Event-based policies only] Specifies an  action  for  an
                      event-based policy.
 
                  Name -> (string)
@@ -655,11 +685,11 @@ OPTIONS
                      The rule for copying shared snapshots across Regions.
 
                      (structure)
-                            [Event-based policies only] Specifies a  cross-Re-
+                            [Event-based  policies only] Specifies a cross-Re-
                             gion copy action for event-based policies.
 
                         NOTE:
-                            To  specify  a cross-Region copy rule for snapshot
+                            To specify a cross-Region copy rule  for  snapshot
                             and AMI policies, use CrossRegionCopyRule .
 
                         Target -> (string)
@@ -669,37 +699,156 @@ OPTIONS
                             The encryption settings for the copied snapshot.
 
                             Encrypted -> (boolean)
-                               To encrypt a copy of  an  unencrypted  snapshot
-                               when  encryption by default is not enabled, en-
+                               To  encrypt  a  copy of an unencrypted snapshot
+                               when encryption by default is not enabled,  en-
                                able encryption using this parameter. Copies of
                                encrypted snapshots are encrypted, even if this
-                               parameter is false or when  encryption  by  de-
+                               parameter  is  false  or when encryption by de-
                                fault is not enabled.
 
                             CmkArn -> (string)
-                               The  Amazon  Resource Name (ARN) of the KMS key
+                               The Amazon Resource Name (ARN) of the  KMS  key
                                to use for EBS encryption. If this parameter is
-                               not  specified, the default KMS key for the ac-
+                               not specified, the default KMS key for the  ac-
                                count is used.
 
                         RetainRule -> (structure)
-                            Specifies a retention rule for cross-Region  snap-
-                            shot  copies  created  by  snapshot or event-based
-                            policies, or cross-Region AMI  copies  created  by
-                            AMI  policies. After the retention period expires,
+                            Specifies  a retention rule for cross-Region snap-
+                            shot copies created  by  snapshot  or  event-based
+                            policies,  or  cross-Region  AMI copies created by
+                            AMI policies. After the retention period  expires,
                             the cross-Region copy is deleted.
 
                             Interval -> (integer)
-                               The amount of time  to  retain  a  cross-Region
+                               The  amount  of  time  to retain a cross-Region
                                snapshot or AMI copy. The maximum is 100 years.
-                               This is equivalent to 1200 months, 5200  weeks,
+                               This  is equivalent to 1200 months, 5200 weeks,
                                or 36500 days.
 
                             IntervalUnit -> (string)
-                               The  unit of time for time-based retention. For
-                               example, to retain a cross-Region  copy  for  3
-                               months,   specify   Interval=3  and  IntervalU-
+                               The unit of time for time-based retention.  For
+                               example,  to  retain  a cross-Region copy for 3
+                               months,  specify  Interval=3   and   IntervalU-
                                nit=MONTHS .
+
+          PolicyLanguage -> (string)
+              The type of policy to create. Specify one of the following:
+
+              o SIMPLIFIED To create a default policy.
+
+              o STANDARD To create a custom policy.
+
+          ResourceType -> (string)
+                 [Default policies only] Specify the type of default policy to
+                 create.
+
+              o To create a default policy for  EBS  snapshots,  that  creates
+                snapshots of all volumes in the Region that do not have recent
+                backups, specify VOLUME .
+
+              o To create a default policy for EBS-backed AMIs,  that  creates
+                EBS-backed  AMIs  from all instances in the Region that do not
+                have recent backups, specify INSTANCE .
+
+          CreateInterval -> (integer)
+                 [Default policies only] Specifies how often the policy should
+                 run  and create snapshots or AMIs. The creation frequency can
+                 range from 1 to 7 days. If you do not specify  a  value,  the
+                 default is 1.
+
+              Default: 1
+
+          RetainInterval -> (integer)
+                 [Default  policies only] Specifies how long the policy should
+                 retain snapshots or AMIs before deleting them. The  retention
+                 period  can  range  from 2 to 14 days, but it must be greater
+                 than the creation frequency to ensure that the policy retains
+                 at  least  1 snapshot or AMI at any given time. If you do not
+                 specify a value, the default is 7.
+
+              Default: 7
+
+          CopyTags -> (boolean)
+                 [Default policies only] Indicates whether the  policy  should
+                 copy tags from the source resource to the snapshot or AMI. If
+                 you do not specify a value, the default is false .
+
+              Default: false
+
+          CrossRegionCopyTargets -> (list)
+                 [Default policies only]  Specifies  destination  Regions  for
+                 snapshot  or  AMI copies. You can specify up to 3 destination
+                 Regions. If you do not want to  create  cross-Region  copies,
+                 omit this parameter.
+
+              (structure)
+                     [Default  policies  only]  Specifies a destination Region
+                     for cross-Region copy actions.
+
+                 TargetRegion -> (string)
+                     The target Region, for example us-east-1 .
+
+          ExtendDeletion -> (boolean)
+                 [Default policies only] Defines the snapshot or AMI retention
+                 behavior  for  the policy if the source volume or instance is
+                 deleted, or if the policy  enters  the  error,  disabled,  or
+                 deleted state.
+
+              By default (ExtendDeletion=false ):
+
+              o If a source resource is deleted, Amazon Data Lifecycle Manager
+                will continue to delete previously created snapshots or  AMIs,
+                up  to  but not including the last one, based on the specified
+                retention period. If you want Amazon Data Lifecycle Manager to
+                delete  all snapshots or AMIs, including the last one, specify
+                true .
+
+              o If a policy enters the error, disabled, or deleted state, Ama-
+                zon  Data Lifecycle Manager stops deleting snapshots and AMIs.
+                If you want Amazon Data Lifecycle Manager to continue deleting
+                snapshots  or  AMIs, including the last one, if the policy en-
+                ters one of these states, specify true .
+
+              If you enable  extended  deletion  (ExtendDeletion=true  ),  you
+              override both default behaviors simultaneously.
+
+              If you do not specify a value, the default is false .
+
+              Default: false
+
+          Exclusions -> (structure)
+                 [Default  policies  only]  Specifies exclusion parameters for
+                 volumes or instances for which you  do  not  want  to  create
+                 snapshots  or  AMIs.  The policy will not create snapshots or
+                 AMIs for target resources that match any of the specified ex-
+                 clusion parameters.
+
+              ExcludeBootVolumes -> (boolean)
+                 [Default  policies  for EBS snapshots only] Indicates whether
+                 to exclude volumes that are attached to instances as the boot
+                 volume. If you exclude boot volumes, only volumes attached as
+                 data (non-boot) volumes will be backed up by the  policy.  To
+                 exclude boot volumes, specify true .
+
+              ExcludeVolumeTypes -> (list)
+                     [Default  policies  for EBS snapshots only] Specifies the
+                     volume types to exclude. Volumes of the  specified  types
+                     will not be targeted by the policy.
+
+                 (string)
+
+              ExcludeTags -> (list)
+                     [Default  policies  for  EBS-backed  AMIs only] Specifies
+                     whether to exclude volumes that have specific tags.
+
+                 (structure)
+                     Specifies a tag for a resource.
+
+                     Key -> (string)
+                        The tag key.
+
+                     Value -> (string)
+                        The tag value.
 
        JSON Syntax:
 
@@ -842,7 +991,30 @@ OPTIONS
                 ]
               }
               ...
-            ]
+            ],
+            "PolicyLanguage": "SIMPLIFIED"|"STANDARD",
+            "ResourceType": "VOLUME"|"INSTANCE",
+            "CreateInterval": integer,
+            "RetainInterval": integer,
+            "CopyTags": true|false,
+            "CrossRegionCopyTargets": [
+              {
+                "TargetRegion": "string"
+              }
+              ...
+            ],
+            "ExtendDeletion": true|false,
+            "Exclusions": {
+              "ExcludeBootVolumes": true|false,
+              "ExcludeVolumeTypes": ["string", ...],
+              "ExcludeTags": [
+                {
+                  "Key": "string",
+                  "Value": "string"
+                }
+                ...
+              ]
+            }
           }
 
        --tags (map)
@@ -861,17 +1033,164 @@ OPTIONS
           {"string": "string"
             ...}
 
-       --cli-input-json (string) Performs service operation based on the  JSON
-       string  provided. The JSON string follows the format provided by --gen-
-       erate-cli-skeleton. If other arguments  are  provided  on  the  command
-       line,  the CLI values will override the JSON-provided values. It is not
+       --default-policy (string)
+              [Default policies only] Specify the type of  default  policy  to
+              create.
+
+          o To  create  a default policy for EBS snapshots, that creates snap-
+            shots of all volumes in the Region that do not have  recent  back-
+            ups, specify VOLUME .
+
+          o To  create  a  default  policy  for  EBS-backed AMIs, that creates
+            EBS-backed AMIs from all instances in the Region that do not  have
+            recent backups, specify INSTANCE .
+
+          Possible values:
+
+          o VOLUME
+
+          o INSTANCE
+
+       --create-interval (integer)
+              [Default  policies  only]  Specifies how often the policy should
+              run and create snapshots or AMIs.  The  creation  frequency  can
+              range  from  1 to 7 days. If you do not specify a value, the de-
+              fault is 1.
+
+          Default: 1
+
+       --retain-interval (integer)
+              [Default policies only] Specifies how long the policy should re-
+              tain  snapshots  or AMIs before deleting them. The retention pe-
+              riod can range from 2 to 14 days, but it must  be  greater  than
+              the  creation  frequency  to  ensure  that the policy retains at
+              least 1 snapshot or AMI at any given time. If you do not specify
+              a value, the default is 7.
+
+          Default: 7
+
+       --copy-tags | --no-copy-tags (boolean)
+              [Default policies only] Indicates whether the policy should copy
+              tags from the source resource to the snapshot or AMI. If you  do
+              not specify a value, the default is false .
+
+          Default: false
+
+       --extend-deletion | --no-extend-deletion (boolean)
+              [Default  policies  only]  Defines the snapshot or AMI retention
+              behavior for the policy if the  source  volume  or  instance  is
+              deleted, or if the policy enters the error, disabled, or deleted
+              state.
+
+          By default (ExtendDeletion=false ):
+
+          o If a source resource is deleted,  Amazon  Data  Lifecycle  Manager
+            will  continue  to delete previously created snapshots or AMIs, up
+            to but not including the last one, based on the  specified  reten-
+            tion  period.  If you want Amazon Data Lifecycle Manager to delete
+            all snapshots or AMIs, including the last one, specify true .
+
+          o If a policy enters the error, disabled, or deleted  state,  Amazon
+            Data  Lifecycle  Manager stops deleting snapshots and AMIs. If you
+            want Amazon Data Lifecycle Manager to continue deleting  snapshots
+            or AMIs, including the last one, if the policy enters one of these
+            states, specify true .
+
+          If you enable extended deletion (ExtendDeletion=true ), you override
+          both default behaviors simultaneously.
+
+          If you do not specify a value, the default is false .
+
+          Default: false
+
+       --cross-region-copy-targets (list)
+              [Default  policies only] Specifies destination Regions for snap-
+              shot or AMI copies. You can specify up to 3 destination Regions.
+              If  you do not want to create cross-Region copies, omit this pa-
+              rameter.
+
+          (structure)
+                 [Default policies only] Specifies a  destination  Region  for
+                 cross-Region copy actions.
+
+              TargetRegion -> (string)
+                 The target Region, for example us-east-1 .
+
+       Shorthand Syntax:
+
+          TargetRegion=string ...
+
+       JSON Syntax:
+
+          [
+            {
+              "TargetRegion": "string"
+            }
+            ...
+          ]
+
+       --exclusions (structure)
+              [Default  policies only] Specifies exclusion parameters for vol-
+              umes or instances for which you do not want to create  snapshots
+              or AMIs. The policy will not create snapshots or AMIs for target
+              resources that match any of the specified exclusion parameters.
+
+          ExcludeBootVolumes -> (boolean)
+              [Default policies for EBS snapshots only] Indicates  whether  to
+              exclude  volumes that are attached to instances as the boot vol-
+              ume. If you exclude boot volumes, only volumes attached as  data
+              (non-boot)  volumes  will be backed up by the policy. To exclude
+              boot volumes, specify true .
+
+          ExcludeVolumeTypes -> (list)
+                 [Default policies for EBS snapshots only] Specifies the  vol-
+                 ume types to exclude. Volumes of the specified types will not
+                 be targeted by the policy.
+
+              (string)
+
+          ExcludeTags -> (list)
+                 [Default policies for EBS-backed AMIs only] Specifies whether
+                 to exclude volumes that have specific tags.
+
+              (structure)
+                 Specifies a tag for a resource.
+
+                 Key -> (string)
+                     The tag key.
+
+                 Value -> (string)
+                     The tag value.
+
+       Shorthand Syntax:
+
+          ExcludeBootVolumes=boolean,ExcludeVolumeTypes=string,string,ExcludeTags=[{Key=string,Value=string},{Key=string,Value=string}]
+
+       JSON Syntax:
+
+          {
+            "ExcludeBootVolumes": true|false,
+            "ExcludeVolumeTypes": ["string", ...],
+            "ExcludeTags": [
+              {
+                "Key": "string",
+                "Value": "string"
+              }
+              ...
+            ]
+          }
+
+       --cli-input-json  (string) Performs service operation based on the JSON
+       string provided. The JSON string follows the format provided by  --gen-
+       erate-cli-skeleton.  If  other  arguments  are  provided on the command
+       line, the CLI values will override the JSON-provided values. It is  not
        possible to pass arbitrary binary values using a JSON-provided value as
        the string will be taken literally.
 
-       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
+       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
        output without sending an API request. If provided with no value or the
        value input, prints a sample input JSON that can be used as an argument
-       for --cli-input-json. If provided with the value output,  it  validates
+       for  --cli-input-json.  If provided with the value output, it validates
        the command inputs and returns a sample output JSON for that command.
 
 GLOBAL OPTIONS
@@ -885,7 +1204,7 @@ GLOBAL OPTIONS
 
        --no-verify-ssl (boolean)
 
-       By  default, the AWS CLI uses SSL when communicating with AWS services.
+       By default, the AWS CLI uses SSL when communicating with AWS  services.
        For each SSL connection, the AWS CLI will verify SSL certificates. This
        option overrides the default behavior of verifying SSL certificates.
 
@@ -931,7 +1250,7 @@ GLOBAL OPTIONS
 
        --no-sign-request (boolean)
 
-       Do  not  sign requests. Credentials will not be loaded if this argument
+       Do not sign requests. Credentials will not be loaded if  this  argument
        is provided.
 
        --ca-bundle (string)
@@ -941,33 +1260,33 @@ GLOBAL OPTIONS
 
        --cli-read-timeout (int)
 
-       The  maximum socket read time in seconds. If the value is set to 0, the
-       socket read will be blocking and not timeout. The default value  is  60
+       The maximum socket read time in seconds. If the value is set to 0,  the
+       socket  read  will be blocking and not timeout. The default value is 60
        seconds.
 
        --cli-connect-timeout (int)
 
-       The  maximum  socket connect time in seconds. If the value is set to 0,
-       the socket connect will be blocking and not timeout. The default  value
+       The maximum socket connect time in seconds. If the value is set  to  0,
+       the  socket connect will be blocking and not timeout. The default value
        is 60 seconds.
 
 EXAMPLES
        NOTE:
-          To  use  the following examples, you must have the AWS CLI installed
-          and configured. See the Getting started guide in the  AWS  CLI  User
+          To use the following examples, you must have the AWS  CLI  installed
+          and  configured.  See  the Getting started guide in the AWS CLI User
           Guide for more information.
 
-          Unless  otherwise  stated,  all  examples  have  unix-like quotation
-          rules. These examples will need to be  adapted  to  your  terminal's
+          Unless otherwise  stated,  all  examples  have  unix-like  quotation
+          rules.  These  examples  will  need to be adapted to your terminal's
           quoting rules. See Using quotation marks with strings in the AWS CLI
           User Guide .
 
        To create a lifecycle policy
 
-       The following create-lifecycle-policy example creates a lifecycle  pol-
+       The  following create-lifecycle-policy example creates a lifecycle pol-
        icy that creates a daily snapshot of volumes at the specified time. The
-       specified tags are added to the snapshots, and  tags  are  also  copied
-       from  the volume and added to the snapshots. If creating a new snapshot
+       specified  tags  are  added  to the snapshots, and tags are also copied
+       from the volume and added to the snapshots. If creating a new  snapshot
        exceeds the specified maximum count, the oldest snapshot is deleted.
 
           aws dlm create-lifecycle-policy \
