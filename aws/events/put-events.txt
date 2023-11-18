@@ -9,6 +9,16 @@ DESCRIPTION
        Sends  custom  events to Amazon EventBridge so that they can be matched
        to rules.
 
+       The maximum size for a PutEvents event entry is 256 KB. Entry  size  is
+       calculated including the event and any necessary characters and keys of
+       the JSON representation of the event. To learn  more,  see  Calculating
+       PutEvents event entry size in the Amazon EventBridge User Guide
+
+       PutEvents  accepts  the data in JSON format. For the JSON number (inte-
+       ger)  data  type,   the   constraints   are:   a   minimum   value   of
+       -9,223,372,036,854,775,808      and      a     maximum     value     of
+       9,223,372,036,854,775,807.
+
        NOTE:
           PutEvents will only process nested JSON up to 1100 levels deep.
 
@@ -51,6 +61,15 @@ OPTIONS
               Source -> (string)
                  The source of the event.
 
+                 NOTE:
+                     Detail  , DetailType , and Source are required for Event-
+                     Bridge to successfully send an event to an event bus.  If
+                     you  include  event  entries in a request that do not in-
+                     clude each of those properties,  EventBridge  fails  that
+                     entry.  If  you submit a request in which none of the en-
+                     tries have each of these  properties,  EventBridge  fails
+                     the entire request.
+
               Resources -> (list)
                  Amazon  Web Services resources, identified by Amazon Resource
                  Name (ARN), which the event primarily concerns.  Any  number,
@@ -62,9 +81,27 @@ OPTIONS
                  Free-form  string,  with a maximum of 128 characters, used to
                  decide what fields to expect in the event detail.
 
+                 NOTE:
+                     Detail , DetailType , and Source are required for  Event-
+                     Bridge  to successfully send an event to an event bus. If
+                     you include event entries in a request that  do  not  in-
+                     clude  each  of  those properties, EventBridge fails that
+                     entry. If you submit a request in which none of  the  en-
+                     tries  have  each  of these properties, EventBridge fails
+                     the entire request.
+
               Detail -> (string)
                  A valid JSON object. There is no other  schema  imposed.  The
-                 JSON object may contain fields and nested subobjects.
+                 JSON object may contain fields and nested sub-objects.
+
+                 NOTE:
+                     Detail  , DetailType , and Source are required for Event-
+                     Bridge to successfully send an event to an event bus.  If
+                     you  include  event  entries in a request that do not in-
+                     clude each of those properties,  EventBridge  fails  that
+                     entry.  If  you submit a request in which none of the en-
+                     tries have each of these  properties,  EventBridge  fails
+                     the entire request.
 
               EventBusName -> (string)
                  The  name  or ARN of the event bus to receive the event. Only
@@ -74,10 +111,12 @@ OPTIONS
 
                  NOTE:
                      If you're using a global endpoint with a custom bus,  you
-                     must enter the name, not the ARN, of the event bus in ei-
-                     ther the primary or secondary Region here and the  corre-
-                     sponding event bus in the other Region will be determined
-                     based on the endpoint referenced by the EndpointId .
+                     can  enter  either the name or Amazon Resource Name (ARN)
+                     of the event bus in either the primary or  secondary  Re-
+                     gion  here. EventBridge then determines the corresponding
+                     event bus in the other Region based on the endpoint  ref-
+                     erenced  by the EndpointId . Specifying the event bus ARN
+                     is preferred.
 
               TraceHeader -> (string)
                  An  X-Ray   trace   header,   which   is   an   http   header
@@ -259,19 +298,72 @@ OUTPUT
           the index in the request array.
 
           (structure)
-              Represents an event that failed to be submitted. For information
-              about  the errors that are common to all actions, see Common Er-
-              rors .
+              Represents the results of an event submitted to an event bus.
+
+              If the submission was successful, the entry has the event ID  in
+              it.  Otherwise,  you can use the error code and error message to
+              identify the problem with the entry.
+
+              For information about the errors that are common to all actions,
+              see Common Errors .
 
               EventId -> (string)
                  The ID of the event.
 
               ErrorCode -> (string)
-                 The error  code  that  indicates  why  the  event  submission
+                 The  error  code  that  indicates  why  the  event submission
                  failed.
 
+                 Retryable errors include:
+
+                 o
+
+                   ``
+                   InternalFailure ``   The request processing has failed  be-
+                   cause of an unknown error, exception or failure.
+
+                 System Message: WARNING/2 (<string>:, line 455)
+                   Inline literal start-string without end-string.
+
+                 o
+
+                   ``
+                   ThrottlingException  ``   The request was denied due to re-
+                   quest throttling.
+
+                 System Message: WARNING/2 (<string>:, line 457)
+                   Inline literal start-string without end-string.
+
+                 Non-retryable errors include:
+
+                 o
+
+                   ``
+                   AccessDeniedException ``   You do not have  sufficient  ac-
+                   cess to perform this action.
+
+                 System Message: WARNING/2 (<string>:, line 467)
+                   Inline literal start-string without end-string.
+
+                 o InvalidAccountIdException    The account ID provided is not
+                   valid.
+
+                 o InvalidArgument   A specified parameter is not valid.
+
+                 o MalformedDetail   The JSON provided is not valid.
+
+                 o RedactionFailure   Redacting the CloudTrail event failed.
+
+                 o NotAuthorizedForSourceException   You do not  have  permis-
+                   sions  to  publish  events with this source onto this event
+                   bus.
+
+                 o NotAuthorizedForDetailTypeException   You do not have  per-
+                   missions  to publish events with this detail type onto this
+                   event bus.
+
               ErrorMessage -> (string)
-                 The  error  message  that  explains  why the event submission
+                 The error message that  explains  why  the  event  submission
                  failed.
 
 
