@@ -11,9 +11,13 @@ DESCRIPTION
        Storage Service User Guide .
 
        WARNING:
-          You  must enable IoT SiteWise to export data to Amazon S3 before you
-          create a bulk import job. For more information about how to  config-
-          ure storage settings, see PutStorageConfiguration .
+          Before  you  create  a bulk import job, you must enable IoT SiteWise
+          warm tier or IoT SiteWise cold tier. For more information about  how
+          to configure storage settings, see PutStorageConfiguration .
+
+          Bulk import is designed to store historical data to IoT SiteWise. It
+          does not trigger computations or notifications on IoT SiteWise  warm
+          or cold tier storage.
 
        See also: AWS API Documentation
 
@@ -24,6 +28,8 @@ SYNOPSIS
           --files <value>
           --error-report-location <value>
           --job-configuration <value>
+          [--adaptive-ingestion | --no-adaptive-ingestion]
+          [--delete-files-after-import | --no-delete-files-after-import]
           [--cli-input-json <value>]
           [--generate-cli-skeleton <value>]
           [--debug]
@@ -114,15 +120,18 @@ OPTIONS
           format used to save data in Amazon S3.
 
           fileFormat -> (structure)
-              The file format of the data in Amazon S3.
+              The file format of the data in S3.
 
               csv -> (structure)
-                 The .csv file format.
+                 The file is in .CSV format.
 
                  columnNames -> (list)
                      The column names specified in the .csv file.
 
                      (string)
+
+              parquet -> (structure)
+                 The file is in parquet format.
 
        JSON Syntax:
 
@@ -130,21 +139,33 @@ OPTIONS
             "fileFormat": {
               "csv": {
                 "columnNames": ["ALIAS"|"ASSET_ID"|"PROPERTY_ID"|"DATA_TYPE"|"TIMESTAMP_SECONDS"|"TIMESTAMP_NANO_OFFSET"|"QUALITY"|"VALUE", ...]
+              },
+              "parquet": {
+
               }
             }
           }
 
-       --cli-input-json  (string) Performs service operation based on the JSON
-       string provided. The JSON string follows the format provided by  --gen-
-       erate-cli-skeleton.  If  other  arguments  are  provided on the command
-       line, the CLI values will override the JSON-provided values. It is  not
+       --adaptive-ingestion | --no-adaptive-ingestion (boolean)
+          If  set to true, ingest new data into IoT SiteWise storage. Measure-
+          ments with notifications, metrics and transforms  are  computed.  If
+          set to false, historical data is ingested into IoT SiteWise as is.
+
+       --delete-files-after-import | --no-delete-files-after-import (boolean)
+          If  set to true, your data files is deleted from S3, after ingestion
+          into IoT SiteWise storage.
+
+       --cli-input-json (string) Performs service operation based on the  JSON
+       string  provided. The JSON string follows the format provided by --gen-
+       erate-cli-skeleton. If other arguments  are  provided  on  the  command
+       line,  the CLI values will override the JSON-provided values. It is not
        possible to pass arbitrary binary values using a JSON-provided value as
        the string will be taken literally.
 
-       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
+       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
        output without sending an API request. If provided with no value or the
        value input, prints a sample input JSON that can be used as an argument
-       for  --cli-input-json.  If provided with the value output, it validates
+       for --cli-input-json. If provided with the value output,  it  validates
        the command inputs and returns a sample output JSON for that command.
 
 GLOBAL OPTIONS
@@ -158,7 +179,7 @@ GLOBAL OPTIONS
 
        --no-verify-ssl (boolean)
 
-       By default, the AWS CLI uses SSL when communicating with AWS  services.
+       By  default, the AWS CLI uses SSL when communicating with AWS services.
        For each SSL connection, the AWS CLI will verify SSL certificates. This
        option overrides the default behavior of verifying SSL certificates.
 
@@ -204,7 +225,7 @@ GLOBAL OPTIONS
 
        --no-sign-request (boolean)
 
-       Do not sign requests. Credentials will not be loaded if  this  argument
+       Do  not  sign requests. Credentials will not be loaded if this argument
        is provided.
 
        --ca-bundle (string)
@@ -214,14 +235,14 @@ GLOBAL OPTIONS
 
        --cli-read-timeout (int)
 
-       The maximum socket read time in seconds. If the value is set to 0,  the
-       socket  read  will be blocking and not timeout. The default value is 60
+       The  maximum socket read time in seconds. If the value is set to 0, the
+       socket read will be blocking and not timeout. The default value  is  60
        seconds.
 
        --cli-connect-timeout (int)
 
-       The maximum socket connect time in seconds. If the value is set  to  0,
-       the  socket connect will be blocking and not timeout. The default value
+       The  maximum  socket connect time in seconds. If the value is set to 0,
+       the socket connect will be blocking and not timeout. The default  value
        is 60 seconds.
 
 OUTPUT
@@ -232,26 +253,26 @@ OUTPUT
           The unique name that helps identify the job request.
 
        jobStatus -> (string)
-          The status of the bulk import job can be one of following values.
+          The status of the bulk import job can be one of following values:
 
-          o PENDING  IoT SiteWise is waiting for the current bulk  import  job
+          o PENDING   IoT  SiteWise is waiting for the current bulk import job
             to finish.
 
           o CANCELLED  The bulk import job has been canceled.
 
-          o RUNNING   IoT  SiteWise  is processing your request to import your
+          o RUNNING  IoT SiteWise is processing your request  to  import  your
             data from Amazon S3.
 
           o COMPLETED  IoT SiteWise successfully completed your request to im-
             port data from Amazon S3.
 
-          o FAILED   IoT SiteWise couldn't process your request to import data
-            from Amazon S3. You can use logs saved in the specified error  re-
+          o FAILED  IoT SiteWise couldn't process your request to import  data
+            from  Amazon S3. You can use logs saved in the specified error re-
             port location in Amazon S3 to troubleshoot issues.
 
-          o COMPLETED_WITH_FAILURES   IoT  SiteWise  completed your request to
-            import data from Amazon S3 with errors. You can use logs saved  in
-            the  specified  error report location in Amazon S3 to troubleshoot
+          o COMPLETED_WITH_FAILURES  IoT SiteWise completed  your  request  to
+            import  data from Amazon S3 with errors. You can use logs saved in
+            the specified error report location in Amazon S3  to  troubleshoot
             issues.
 
 
