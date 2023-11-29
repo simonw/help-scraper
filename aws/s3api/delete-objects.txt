@@ -6,37 +6,112 @@ NAME
        delete-objects -
 
 DESCRIPTION
-       This  action enables you to delete multiple objects from a bucket using
-       a single HTTP request. If you know the object keys  that  you  want  to
-       delete, then this action provides a suitable alternative to sending in-
-       dividual delete requests, reducing per-request overhead.
+       This operation enables you to delete multiple objects from a bucket us-
+       ing a single HTTP request. If you know the object keys that you want to
+       delete,  then this operation provides a suitable alternative to sending
+       individual delete requests, reducing per-request overhead.
 
-       The request contains a list of up to 1000 keys that you want to delete.
-       In  the  XML, you provide the object key names, and optionally, version
-       IDs if you want to delete a specific version of the object from a  ver-
-       sioning-enabled  bucket.  For each key, Amazon S3 performs a delete ac-
-       tion and returns the result of that delete, success, or failure, in the
-       response.  Note  that  if  the  object  specified in the request is not
+       The request can contain a list of up to 1000  keys  that  you  want  to
+       delete.  In  the XML, you provide the object key names, and optionally,
+       version IDs if you want to delete a specific version of the object from
+       a  versioning-enabled bucket. For each key, Amazon S3 performs a delete
+       operation and returns the result of that delete, success or failure, in
+       the  response.  Note that if the object specified in the request is not
        found, Amazon S3 returns the result as deleted.
 
-       The action supports two modes for the response: verbose and  quiet.  By
-       default,  the  action  uses verbose mode in which the response includes
-       the result of deletion of each key in your request. In quiet  mode  the
-       response  includes only keys where the delete action encountered an er-
-       ror. For a successful deletion, the action does not return any informa-
-       tion about the delete in the response body.
+       NOTE:
 
-       When  performing  this action on an MFA Delete enabled bucket, that at-
-       tempts to delete any versioned objects, you must include an MFA  token.
-       If  you do not provide one, the entire request will fail, even if there
-       are non-versioned objects you are trying to delete. If you  provide  an
-       invalid  token, whether there are versioned keys in the request or not,
+          o Directory buckets - S3 Versioning isn't enabled and supported  for
+            directory buckets.
+
+          o Directory  buckets - For directory buckets, you must make requests
+            for this API operation to the Zonal endpoint. These endpoints sup-
+            port virtual-hosted-style requests in the format
+            ``
+            https://bucket_name     .s3express-az_id     .*region*    .amazon-
+            aws.com/key-name `` . Path-style requests are not  supported.  For
+            more  information,  see Regional and Zonal endpoints in the Amazon
+            S3 User Guide .
+
+          System Message: WARNING/2 (<string>:, line 33)
+            Inline literal start-string without end-string.
+
+       The operation supports two modes for the response: verbose  and  quiet.
+       By  default,  the operation uses verbose mode in which the response in-
+       cludes the result of deletion of each key in  your  request.  In  quiet
+       mode the response includes only keys where the delete operation encoun-
+       tered an error. For a successful deletion in a quiet mode,  the  opera-
+       tion  does  not return any information about the delete in the response
+       body.
+
+       When performing this action on an MFA Delete enabled bucket,  that  at-
+       tempts  to delete any versioned objects, you must include an MFA token.
+       If you do not provide one, the entire request will fail, even if  there
+       are  non-versioned  objects you are trying to delete. If you provide an
+       invalid token, whether there are versioned keys in the request or  not,
        the entire Multi-Object Delete request will fail. For information about
-       MFA Delete, see MFA Delete .
+       MFA Delete, see MFA Delete in the Amazon S3 User Guide .
 
-       Finally, the Content-MD5 header is required for all Multi-Object Delete
-       requests. Amazon S3 uses the header value to ensure that  your  request
-       body has not been altered in transit.
+       NOTE:
+              Directory buckets - MFA delete is  not  supported  by  directory
+              buckets.
+
+          Permissions
+
+       o General  purpose  bucket  permissions - The following permissions are
+         required in your policies when your  DeleteObjects  request  includes
+         specific headers.
+
+         o
+
+           **
+           s3:DeleteObject  **  -  To delete an object from a bucket, you must
+           always specify the s3:DeleteObject permission.
+
+         System Message: WARNING/2 (<string>:, line 62)
+           Inline strong start-string without end-string.
+
+         o
+
+           **
+           s3:DeleteObjectVersion ** - To delete a specific version of an  ob-
+           ject  from a versiong-enabled bucket, you must specify the s3:Dele-
+           teObjectVersion permission.
+
+         System Message: WARNING/2 (<string>:, line 64)
+           Inline strong start-string without end-string.
+
+       o Directory bucket permissions - To grant access to this API  operation
+         on  a directory bucket, we recommend that you use the ` CreateSession
+         https://docs.aws.amazon.com/AmazonS3/latest/API/API_CreateSession.html`__
+         API  operation  for  session-based  authorization.  Specifically, you
+         grant the s3express:CreateSession permission to the directory  bucket
+         in  a  bucket  policy or an IAM identity-based policy. Then, you make
+         the CreateSession API call on the bucket to obtain a  session  token.
+         With  the  session token in your request header, you can make API re-
+         quests to this operation. After the session token expires,  you  make
+         another  CreateSession  API  call to generate a new session token for
+         use. Amazon Web Services CLI or SDKs create session and  refresh  the
+         session  token  automatically  to  avoid service interruptions when a
+         session expires. For more information about authorization, see ` Cre-
+         ateSession
+         https://docs.aws.amazon.com/AmazonS3/latest/API/API_CreateSession.html`__
+         .
+
+         Content-MD5 request header
+
+       o General  purpose  bucket - The Content-MD5 request header is required
+         for all Multi-Object Delete requests. Amazon S3 uses the header value
+         to ensure that your request body has not been altered in transit.
+
+       o Directory  bucket  -  The  Content-MD5 request header or a additional
+         checksum   request   header   (including    x-amz-checksum-crc32    ,
+         x-amz-checksum-crc32c   ,   x-amz-checksum-sha1   ,  or  x-amz-check-
+         sum-sha256 ) is required for all Multi-Object Delete requests.
+
+         HTTP Host header syntax
+          Directory buckets - The HTTP Host header syntax  is  ``  Bucket_name
+          .s3express-az_id .*region* .amazonaws.com`` .
 
        The following operations are related to DeleteObjects :
 
@@ -81,29 +156,53 @@ SYNOPSIS
 OPTIONS
        --bucket (string)
           The bucket name containing the objects to delete.
+              Directory buckets - When you use this operation with a directory
+              bucket, you must use virtual-hosted-style requests in the format
+              ``  Bucket_name  .s3express-az_id  .*region*  .amazonaws.com`` .
+              Path-style requests are not supported.  Directory  bucket  names
+              must  be  unique  in  the chosen Availability Zone. Bucket names
+              must follow the format `` bucket_base_name --az-id --x-s3`` (for
+              example, `` DOC-EXAMPLE-BUCKET --usw2-az2 --x-s3`` ). For infor-
+              mation about bucket naming restrictions,  see  Directory  bucket
+              naming rules in the Amazon S3 User Guide .
 
-          When  using  this  action  with an access point, you must direct re-
-          quests to the access point hostname. The access point hostname takes
-          the  form  AccessPointName -AccountId .s3-accesspoint.*Region* .ama-
-          zonaws.com. When using this action with an access point through  the
-          Amazon  Web Services SDKs, you provide the access point ARN in place
-          of the bucket name. For more information about  access  point  ARNs,
-          see Using access points in the Amazon S3 User Guide .
+              Access  points  - When you use this action with an access point,
+              you must provide the alias of the access point in place  of  the
+              bucket  name or specify the access point ARN. When using the ac-
+              cess point ARN, you must direct requests  to  the  access  point
+              hostname.  The access point hostname takes the form AccessPoint-
+              Name -AccountId  .s3-accesspoint.*Region*  .amazonaws.com.  When
+              using  this  action  with an access point through the Amazon Web
+              Services SDKs, you provide the access point ARN in place of  the
+              bucket  name.  For more information about access point ARNs, see
+              Using access points in the Amazon S3 User Guide .
 
-          When you use this action with Amazon S3 on Outposts, you must direct
-          requests to the S3 on Outposts hostname. The S3 on Outposts hostname
-          takes  the  form `` AccessPointName -AccountId .*outpostID* .s3-out-
-          posts.*Region* .amazonaws.com`` . When you use this action  with  S3
-          on  Outposts  through  the Amazon Web Services SDKs, you provide the
-          Outposts access point ARN in place of the bucket name. For more  in-
-          formation  about S3 on Outposts ARNs, see What is S3 on Outposts? in
-          the Amazon S3 User Guide .
+          NOTE:
+                 Access points and Object Lambda access points  are  not  sup-
+                 ported by directory buckets.
+
+              S3 on Outposts - When you use this action with Amazon S3 on Out-
+              posts, you must direct requests to the S3 on Outposts  hostname.
+              The  S3  on  Outposts hostname takes the form `` AccessPointName
+              -AccountId .*outpostID* .s3-outposts.*Region* .amazonaws.com`` .
+              When  you use this action with S3 on Outposts through the Amazon
+              Web Services SDKs, you provide the Outposts access point ARN  in
+              place  of the bucket name. For more information about S3 on Out-
+              posts ARNs, see What is S3 on Outposts? in the  Amazon  S3  User
+              Guide .
 
        --delete (structure)
           Container for the request.
 
           Objects -> (list)
               The object to delete.
+
+              NOTE:
+                 Directory  buckets  - For directory buckets, an object that's
+                 composed entirely of whitespace characters is  not  supported
+                 by  the DeleteObjects API operation. The request will receive
+                 a 400 Bad Request error and none of the objects  in  the  re-
+                 quest will be deleted.
 
               (structure)
                  Object Identifier is unique value to identify objects.
@@ -112,18 +211,22 @@ OPTIONS
                      Key name of the object.
 
                      WARNING:
-                        Replacement must be made for  object  keys  containing
+                        Replacement  must  be  made for object keys containing
                         special characters (such as carriage returns) when us-
-                        ing XML requests. For more information,  see  XML  re-
+                        ing  XML  requests.  For more information, see XML re-
                         lated object key constraints .
 
                  VersionId -> (string)
-                     VersionId  for  the  specific  version  of  the object to
+                     Version ID for the specific  version  of  the  object  to
                      delete.
+
+                     NOTE:
+                        This  functionality  is  not  supported  for directory
+                        buckets.
 
           Quiet -> (boolean)
               Element to enable quiet mode for the request. When you add  this
-              element, you must set its value to true.
+              element, you must set its value to true .
 
        Shorthand Syntax:
 
@@ -148,14 +251,29 @@ OPTIONS
           vice.  Required to permanently delete a versioned object if version-
           ing is configured with MFA delete enabled.
 
+          When performing the DeleteObjects operation on an MFA delete enabled
+          bucket,  which  attempts  to delete the specified versioned objects,
+          you must include an MFA token. If you don't provide  an  MFA  token,
+          the  entire  request  will fail, even if there are non-versioned ob-
+          jects that you are trying to delete. If you provide an  invalid  to-
+          ken,  whether there are versioned object keys in the request or not,
+          the entire Multi-Object Delete request will  fail.  For  information
+          about MFA Delete, see MFA Delete in the Amazon S3 User Guide .
+
+          NOTE:
+              This functionality is not supported for directory buckets.
+
        --request-payer (string)
-          Confirms that the requester knows that they will be charged for  the
-          request.  Bucket owners need not specify this parameter in their re-
-          quests. If either the source or destination Amazon S3 bucket has Re-
-          quester  Pays  enabled,  the  requester  will  pay for corresponding
-          charges to copy the object. For information  about  downloading  ob-
-          jects  from  Requester  Pays buckets, see Downloading Objects in Re-
-          quester Pays Buckets in the Amazon S3 User Guide .
+          Confirms  that the requester knows that they will be charged for the
+          request. Bucket owners need not specify this parameter in their  re-
+          quests.  If either the source or destination S3 bucket has Requester
+          Pays enabled, the requester will pay for  corresponding  charges  to
+          copy  the object. For information about downloading objects from Re-
+          quester Pays buckets, see  Downloading  Objects  in  Requester  Pays
+          Buckets in the Amazon S3 User Guide .
+
+          NOTE:
+              This functionality is not supported for directory buckets.
 
           Possible values:
 
@@ -163,31 +281,33 @@ OPTIONS
 
        --bypass-governance-retention | --no-bypass-governance-retention (bool-
        ean)
-          Specifies  whether  you  want to delete this object even if it has a
-          Governance-type Object Lock in place. To use this header,  you  must
+          Specifies whether you want to delete this object even if  it  has  a
+          Governance-type  Object  Lock in place. To use this header, you must
           have the s3:BypassGovernanceRetention permission.
 
+          NOTE:
+              This functionality is not supported for directory buckets.
+
        --expected-bucket-owner (string)
-          The  account ID of the expected bucket owner. If the bucket is owned
-          by a different account, the request fails with the HTTP status  code
-          403 Forbidden (access denied).
+          The account ID of the expected bucket owner. If the account ID  that
+          you  provide  does not match the actual owner of the bucket, the re-
+          quest fails with the HTTP status code 403 Forbidden (access denied).
 
        --checksum-algorithm (string)
-          Indicates  the  algorithm used to create the checksum for the object
-          when using the SDK. This header  will  not  provide  any  additional
-          functionality  if not using the SDK. When sending this header, there
-          must be a corresponding x-amz-checksum or x-amz-trailer header sent.
-          Otherwise, Amazon S3 fails the request with the HTTP status code 400
-          Bad Request . For more information, see Checking object integrity in
-          the Amazon S3 User Guide .
+          Indicates the algorithm used to create the checksum for  the  object
+          when  you  use  the SDK. This header will not provide any additional
+          functionality if you don't use the SDK. When you send  this  header,
+          there  must  be  a  corresponding  x-amz-checksum-*algorithm*  `` or
+          ``x-amz-trailer header sent. Otherwise, Amazon S3 fails the  request
+          with the HTTP status code 400 Bad Request .
 
-          If  you  provide  an individual checksum, Amazon S3 ignores any pro-
-          vided ChecksumAlgorithm parameter.
+          For the
+          ``
+          x-amz-checksum-algorithm `` header, replace `` algorithm `` with the
+          supported algorithm from the following list:
 
-          This checksum algorithm must be the same for all parts and it  match
-          the checksum value supplied in the CreateMultipartUpload request.
-
-          Possible values:
+          System Message: WARNING/2 (<string>:, line 363)
+                 Inline literal start-string without end-string.
 
           o CRC32
 
@@ -197,17 +317,44 @@ OPTIONS
 
           o SHA256
 
-       --cli-input-json  (string) Performs service operation based on the JSON
-       string provided. The JSON string follows the format provided by  --gen-
-       erate-cli-skeleton.  If  other  arguments  are  provided on the command
-       line, the CLI values will override the JSON-provided values. It is  not
+          For more information, see Checking object integrity in the Amazon S3
+          User Guide .
+
+          If  the  individual  checksum value you provide through x-amz-check-
+          sum-*algorithm* `` doesn't match  the  checksum  algorithm  you  set
+          through  ``x-amz-sdk-checksum-algorithm , Amazon S3 ignores any pro-
+          vided ChecksumAlgorithm parameter and uses  the  checksum  algorithm
+          that matches the provided value in
+          ``
+          x-amz-checksum-algorithm `` .
+
+          System Message: WARNING/2 (<string>:, line 383)
+                 Inline literal start-string without end-string.
+
+                 If  you provide an individual checksum, Amazon S3 ignores any
+                 provided ChecksumAlgorithm parameter.
+
+                 Possible values:
+
+          o CRC32
+
+          o CRC32C
+
+          o SHA1
+
+          o SHA256
+
+       --cli-input-json (string) Performs service operation based on the  JSON
+       string  provided. The JSON string follows the format provided by --gen-
+       erate-cli-skeleton. If other arguments  are  provided  on  the  command
+       line,  the CLI values will override the JSON-provided values. It is not
        possible to pass arbitrary binary values using a JSON-provided value as
        the string will be taken literally.
 
-       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
+       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
        output without sending an API request. If provided with no value or the
        value input, prints a sample input JSON that can be used as an argument
-       for  --cli-input-json.  If provided with the value output, it validates
+       for --cli-input-json. If provided with the value output,  it  validates
        the command inputs and returns a sample output JSON for that command.
 
 GLOBAL OPTIONS
@@ -221,7 +368,7 @@ GLOBAL OPTIONS
 
        --no-verify-ssl (boolean)
 
-       By default, the AWS CLI uses SSL when communicating with AWS  services.
+       By  default, the AWS CLI uses SSL when communicating with AWS services.
        For each SSL connection, the AWS CLI will verify SSL certificates. This
        option overrides the default behavior of verifying SSL certificates.
 
@@ -267,7 +414,7 @@ GLOBAL OPTIONS
 
        --no-sign-request (boolean)
 
-       Do not sign requests. Credentials will not be loaded if  this  argument
+       Do  not  sign requests. Credentials will not be loaded if this argument
        is provided.
 
        --ca-bundle (string)
@@ -277,24 +424,24 @@ GLOBAL OPTIONS
 
        --cli-read-timeout (int)
 
-       The maximum socket read time in seconds. If the value is set to 0,  the
-       socket  read  will be blocking and not timeout. The default value is 60
+       The  maximum socket read time in seconds. If the value is set to 0, the
+       socket read will be blocking and not timeout. The default value  is  60
        seconds.
 
        --cli-connect-timeout (int)
 
-       The maximum socket connect time in seconds. If the value is set  to  0,
-       the  socket connect will be blocking and not timeout. The default value
+       The  maximum  socket connect time in seconds. If the value is set to 0,
+       the socket connect will be blocking and not timeout. The default  value
        is 60 seconds.
 
 EXAMPLES
        NOTE:
-          To use the following examples, you must have the AWS  CLI  installed
-          and  configured.  See  the Getting started guide in the AWS CLI User
+          To  use  the following examples, you must have the AWS CLI installed
+          and configured. See the Getting started guide in the  AWS  CLI  User
           Guide for more information.
 
-          Unless otherwise  stated,  all  examples  have  unix-like  quotation
-          rules.  These  examples  will  need to be adapted to your terminal's
+          Unless  otherwise  stated,  all  examples  have  unix-like quotation
+          rules. These examples will need to be  adapted  to  your  terminal's
           quoting rules. See Using quotation marks with strings in the AWS CLI
           User Guide .
 
@@ -302,7 +449,7 @@ EXAMPLES
 
           aws s3api delete-objects --bucket my-bucket --delete file://delete.json
 
-       delete.json  is a JSON document in the current directory that specifies
+       delete.json is a JSON document in the current directory that  specifies
        the object to delete:
 
           {
@@ -328,7 +475,7 @@ EXAMPLES
 
 OUTPUT
        Deleted -> (list)
-          Container element for a successful delete. It identifies the  object
+          Container  element for a successful delete. It identifies the object
           that was successfully deleted.
 
           (structure)
@@ -340,6 +487,10 @@ OUTPUT
               VersionId -> (string)
                  The version ID of the deleted object.
 
+                 NOTE:
+                     This functionality is not supported for  directory  buck-
+                     ets.
+
               DeleteMarker -> (boolean)
                  Indicates  whether the specified object version that was per-
                  manently deleted was (true)  or  was  not  (false)  a  delete
@@ -347,15 +498,26 @@ OUTPUT
                  cates whether (true) or not (false) the  current  version  of
                  the object is a delete marker.
 
+                 NOTE:
+                     This  functionality  is not supported for directory buck-
+                     ets.
+
               DeleteMarkerVersionId -> (string)
-                 The  version  ID  of the delete marker created as a result of
-                 the DELETE operation. If you delete a  specific  object  ver-
-                 sion,  the value returned by this header is the version ID of
+                 The version ID of the delete marker created as  a  result  of
+                 the  DELETE  operation.  If you delete a specific object ver-
+                 sion, the value returned by this header is the version ID  of
                  the object version deleted.
+
+                 NOTE:
+                     This  functionality  is not supported for directory buck-
+                     ets.
 
        RequestCharged -> (string)
           If present, indicates that the requester  was  successfully  charged
           for the request.
+
+          NOTE:
+              This functionality is not supported for directory buckets.
 
        Errors -> (list)
           Container  for a failed delete action that describes the object that
@@ -370,11 +532,15 @@ OUTPUT
               VersionId -> (string)
                  The version ID of the error.
 
+                 NOTE:
+                     This functionality is not supported for  directory  buck-
+                     ets.
+
               Code -> (string)
-                 The error code is a string that uniquely identifies an  error
-                 condition.  It is meant to be read and understood by programs
-                 that detect and handle errors by type.  The  following  is  a
-                 list  of  Amazon  S3  error  codes. For more information, see
+                 The  error code is a string that uniquely identifies an error
+                 condition. It is meant to be read and understood by  programs
+                 that  detect  and  handle  errors by type. The following is a
+                 list of Amazon S3 error  codes.  For  more  information,  see
                  Error responses .
 
                  o
@@ -392,8 +558,8 @@ OUTPUT
                    o Code: AccountProblem
 
                    o Description: There is a problem with your Amazon Web Ser-
-                     vices  account  that  prevents the action from completing
-                     successfully. Contact Amazon  Web  Services  Support  for
+                     vices account that prevents the  action  from  completing
+                     successfully.  Contact  Amazon  Web  Services Support for
                      further assistance.
 
                    o HTTP Status Code: 403 Forbidden
@@ -404,8 +570,8 @@ OUTPUT
 
                    o Code: AllAccessDisabled
 
-                   o Description:  All  access  to this Amazon S3 resource has
-                     been disabled. Contact Amazon Web  Services  Support  for
+                   o Description: All access to this Amazon  S3  resource  has
+                     been  disabled.  Contact  Amazon Web Services Support for
                      further assistance.
 
                    o HTTP Status Code: 403 Forbidden
@@ -438,7 +604,7 @@ OUTPUT
 
                    o Code: BadDigest
 
-                   o Description:  The Content-MD5 you specified did not match
+                   o Description: The Content-MD5 you specified did not  match
                      what we received.
 
                    o HTTP Status Code: 400 Bad Request
@@ -449,8 +615,8 @@ OUTPUT
 
                    o Code: BucketAlreadyExists
 
-                   o Description: The requested bucket name is not  available.
-                     The  bucket  namespace is shared by all users of the sys-
+                   o Description:  The requested bucket name is not available.
+                     The bucket namespace is shared by all users of  the  sys-
                      tem. Please select a different name and try again.
 
                    o HTTP Status Code: 409 Conflict
@@ -461,15 +627,15 @@ OUTPUT
 
                    o Code: BucketAlreadyOwnedByYou
 
-                   o Description: The bucket you tried to create  already  ex-
+                   o Description:  The  bucket you tried to create already ex-
                      ists, and you own it. Amazon S3 returns this error in all
-                     Amazon Web Services Regions except in the North  Virginia
+                     Amazon  Web Services Regions except in the North Virginia
                      Region. For legacy compatibility, if you re-create an ex-
-                     isting bucket that you already own in the North  Virginia
-                     Region,  Amazon  S3  returns 200 OK and resets the bucket
+                     isting  bucket that you already own in the North Virginia
+                     Region, Amazon S3 returns 200 OK and  resets  the  bucket
                      access control lists (ACLs).
 
-                   o Code: 409 Conflict (in all Regions except the North  Vir-
+                   o Code:  409 Conflict (in all Regions except the North Vir-
                      ginia Region)
 
                    o SOAP Fault Code Prefix: Client
@@ -498,8 +664,8 @@ OUTPUT
 
                    o Code: CrossLocationLoggingProhibited
 
-                   o Description:  Cross-location logging not allowed. Buckets
-                     in one geographic location cannot log  information  to  a
+                   o Description: Cross-location logging not allowed.  Buckets
+                     in  one  geographic  location cannot log information to a
                      bucket in another location.
 
                    o HTTP Status Code: 403 Forbidden
@@ -510,7 +676,7 @@ OUTPUT
 
                    o Code: EntityTooSmall
 
-                   o Description:  Your  proposed  upload  is smaller than the
+                   o Description: Your proposed upload  is  smaller  than  the
                      minimum allowed object size.
 
                    o HTTP Status Code: 400 Bad Request
@@ -542,7 +708,7 @@ OUTPUT
 
                    o Code: IllegalVersioningConfigurationException
 
-                   o Description:  Indicates that the versioning configuration
+                   o Description: Indicates that the versioning  configuration
                      specified in the request is invalid.
 
                    o HTTP Status Code: 400 Bad Request
@@ -553,7 +719,7 @@ OUTPUT
 
                    o Code: IncompleteBody
 
-                   o Description: You did not  provide  the  number  of  bytes
+                   o Description:  You  did  not  provide  the number of bytes
                      specified by the Content-Length HTTP header
 
                    o HTTP Status Code: 400 Bad Request
@@ -564,7 +730,7 @@ OUTPUT
 
                    o Code: IncorrectNumberOfFilesInPostRequest
 
-                   o Description:  POST  requires  exactly one file upload per
+                   o Description: POST requires exactly one  file  upload  per
                      request.
 
                    o HTTP Status Code: 400 Bad Request
@@ -575,7 +741,7 @@ OUTPUT
 
                    o Code: InlineDataTooLarge
 
-                   o Description: Inline  data  exceeds  the  maximum  allowed
+                   o Description:  Inline  data  exceeds  the  maximum allowed
                      size.
 
                    o HTTP Status Code: 400 Bad Request
@@ -597,7 +763,7 @@ OUTPUT
 
                    o Code: InvalidAccessKeyId
 
-                   o Description: The Amazon Web Services access  key  ID  you
+                   o Description:  The  Amazon  Web Services access key ID you
                      provided does not exist in our records.
 
                    o HTTP Status Code: 403 Forbidden
@@ -638,7 +804,7 @@ OUTPUT
 
                    o Code: InvalidBucketState
 
-                   o Description:  The  request  is not valid with the current
+                   o Description: The request is not valid  with  the  current
                      state of the bucket.
 
                    o HTTP Status Code: 409 Conflict
@@ -659,7 +825,7 @@ OUTPUT
 
                    o Code: InvalidEncryptionAlgorithmError
 
-                   o Description: The encryption request you specified is  not
+                   o Description:  The encryption request you specified is not
                      valid. The valid value is AES256.
 
                    o HTTP Status Code: 400 Bad Request
@@ -670,7 +836,7 @@ OUTPUT
 
                    o Code: InvalidLocationConstraint
 
-                   o Description:  The  specified  location  constraint is not
+                   o Description: The specified  location  constraint  is  not
                      valid. For more information about Regions, see How to Se-
                      lect a Region for Your Buckets .
 
@@ -682,7 +848,7 @@ OUTPUT
 
                    o Code: InvalidObjectState
 
-                   o Description:  The  action  is  not  valid for the current
+                   o Description: The action is  not  valid  for  the  current
                      state of the object.
 
                    o HTTP Status Code: 403 Forbidden
@@ -694,8 +860,8 @@ OUTPUT
                    o Code: InvalidPart
 
                    o Description: One or more of the specified parts could not
-                     be  found.  The part might not have been uploaded, or the
-                     specified entity tag might not have  matched  the  part's
+                     be found. The part might not have been uploaded,  or  the
+                     specified  entity  tag  might not have matched the part's
                      entity tag.
 
                    o HTTP Status Code: 400 Bad Request
@@ -706,8 +872,8 @@ OUTPUT
 
                    o Code: InvalidPartOrder
 
-                   o Description:  The  list of parts was not in ascending or-
-                     der. Parts list must be specified in order by  part  num-
+                   o Description: The list of parts was not in  ascending  or-
+                     der.  Parts  list must be specified in order by part num-
                      ber.
 
                    o HTTP Status Code: 400 Bad Request
@@ -719,7 +885,7 @@ OUTPUT
                    o Code: InvalidPayer
 
                    o Description: All access to this object has been disabled.
-                     Please contact Amazon Web Services  Support  for  further
+                     Please  contact  Amazon  Web Services Support for further
                      assistance.
 
                    o HTTP Status Code: 403 Forbidden
@@ -730,7 +896,7 @@ OUTPUT
 
                    o Code: InvalidPolicyDocument
 
-                   o Description:  The  content  of the form does not meet the
+                   o Description: The content of the form does  not  meet  the
                      conditions specified in the policy document.
 
                    o HTTP Status Code: 400 Bad Request
@@ -761,7 +927,7 @@ OUTPUT
 
                    o Code: InvalidRequest
 
-                   o Description: SOAP requests must be  made  over  an  HTTPS
+                   o Description:  SOAP  requests  must  be made over an HTTPS
                      connection.
 
                    o HTTP Status Code: 400 Bad Request
@@ -772,7 +938,7 @@ OUTPUT
 
                    o Code: InvalidRequest
 
-                   o Description:  Amazon S3 Transfer Acceleration is not sup-
+                   o Description: Amazon S3 Transfer Acceleration is not  sup-
                      ported for buckets with non-DNS compliant names.
 
                    o HTTP Status Code: 400 Bad Request
@@ -783,7 +949,7 @@ OUTPUT
 
                    o Code: InvalidRequest
 
-                   o Description: Amazon S3 Transfer Acceleration is not  sup-
+                   o Description:  Amazon S3 Transfer Acceleration is not sup-
                      ported for buckets with periods (.) in their names.
 
                    o HTTP Status Code: 400 Bad Request
@@ -794,7 +960,7 @@ OUTPUT
 
                    o Code: InvalidRequest
 
-                   o Description:  Amazon S3 Transfer Accelerate endpoint only
+                   o Description: Amazon S3 Transfer Accelerate endpoint  only
                      supports virtual style requests.
 
                    o HTTP Status Code: 400 Bad Request
@@ -827,8 +993,8 @@ OUTPUT
 
                    o Code: InvalidRequest
 
-                   o Description: Amazon S3 Transfer Acceleration is not  sup-
-                     ported  on  this bucket. Contact Amazon Web Services Sup-
+                   o Description:  Amazon S3 Transfer Acceleration is not sup-
+                     ported on this bucket. Contact Amazon Web  Services  Sup-
                      port for more information.
 
                    o HTTP Status Code: 400 Bad Request
@@ -839,8 +1005,8 @@ OUTPUT
 
                    o Code: InvalidRequest
 
-                   o Description: Amazon S3 Transfer  Acceleration  cannot  be
-                     enabled  on this bucket. Contact Amazon Web Services Sup-
+                   o Description:  Amazon  S3  Transfer Acceleration cannot be
+                     enabled on this bucket. Contact Amazon Web Services  Sup-
                      port for more information.
 
                    o HTTP Status Code: 400 Bad Request
@@ -851,7 +1017,7 @@ OUTPUT
 
                    o Code: InvalidSecurity
 
-                   o Description: The provided security  credentials  are  not
+                   o Description:  The  provided  security credentials are not
                      valid.
 
                    o HTTP Status Code: 403 Forbidden
@@ -872,7 +1038,7 @@ OUTPUT
 
                    o Code: InvalidStorageClass
 
-                   o Description:  The  storage  class  you  specified  is not
+                   o Description: The  storage  class  you  specified  is  not
                      valid.
 
                    o HTTP Status Code: 400 Bad Request
@@ -883,8 +1049,8 @@ OUTPUT
 
                    o Code: InvalidTargetBucketForLogging
 
-                   o Description: The target bucket for logging does  not  ex-
-                     ist,  is not owned by you, or does not have the appropri-
+                   o Description:  The  target bucket for logging does not ex-
+                     ist, is not owned by you, or does not have the  appropri-
                      ate grants for the log-delivery group.
 
                    o HTTP Status Code: 400 Bad Request
@@ -926,7 +1092,7 @@ OUTPUT
 
                    o Code: MalformedACLError
 
-                   o Description:  The XML you provided was not well-formed or
+                   o Description: The XML you provided was not well-formed  or
                      did not validate against our published schema.
 
                    o HTTP Status Code: 400 Bad Request
@@ -948,10 +1114,10 @@ OUTPUT
 
                    o Code: MalformedXML
 
-                   o Description:  This  happens when the user sends malformed
-                     XML (XML that doesn't conform to the published  XSD)  for
-                     the  configuration.  The  error  message is, "The XML you
-                     provided was not well-formed or did not validate  against
+                   o Description: This happens when the user  sends  malformed
+                     XML  (XML  that doesn't conform to the published XSD) for
+                     the configuration. The error message  is,  "The  XML  you
+                     provided  was not well-formed or did not validate against
                      our published schema."
 
                    o HTTP Status Code: 400 Bad Request
@@ -972,7 +1138,7 @@ OUTPUT
 
                    o Code: MaxPostPreDataLengthExceededError
 
-                   o Description:  Your  POST request fields preceding the up-
+                   o Description: Your POST request fields preceding  the  up-
                      load file were too large.
 
                    o HTTP Status Code: 400 Bad Request
@@ -994,7 +1160,7 @@ OUTPUT
 
                    o Code: MethodNotAllowed
 
-                   o Description:  The specified method is not allowed against
+                   o Description: The specified method is not allowed  against
                      this resource.
 
                    o HTTP Status Code: 405 Method Not Allowed
@@ -1005,7 +1171,7 @@ OUTPUT
 
                    o Code: MissingAttachment
 
-                   o Description: A SOAP attachment  was  expected,  but  none
+                   o Description:  A  SOAP  attachment  was expected, but none
                      were found.
 
                    o HTTP Status Code: N/A
@@ -1016,7 +1182,7 @@ OUTPUT
 
                    o Code: MissingContentLength
 
-                   o Description:  You  must  provide  the Content-Length HTTP
+                   o Description: You must  provide  the  Content-Length  HTTP
                      header.
 
                    o HTTP Status Code: 411 Length Required
@@ -1027,7 +1193,7 @@ OUTPUT
 
                    o Code: MissingRequestBodyError
 
-                   o Description: This happens when the user  sends  an  empty
+                   o Description:  This  happens  when the user sends an empty
                      XML document as a request. The error message is, "Request
                      body is empty."
 
@@ -1039,7 +1205,7 @@ OUTPUT
 
                    o Code: MissingSecurityElement
 
-                   o Description: The SOAP 1.1 request is missing  a  security
+                   o Description:  The  SOAP 1.1 request is missing a security
                      element.
 
                    o HTTP Status Code: 400 Bad Request
@@ -1060,7 +1226,7 @@ OUTPUT
 
                    o Code: NoLoggingStatusForKey
 
-                   o Description:  There  is no such thing as a logging status
+                   o Description: There is no such thing as a  logging  status
                      subresource for a key.
 
                    o HTTP Status Code: 400 Bad Request
@@ -1081,7 +1247,7 @@ OUTPUT
 
                    o Code: NoSuchBucketPolicy
 
-                   o Description: The specified bucket does not have a  bucket
+                   o Description:  The specified bucket does not have a bucket
                      policy.
 
                    o HTTP Status Code: 404 Not Found
@@ -1112,7 +1278,7 @@ OUTPUT
 
                    o Code: NoSuchUpload
 
-                   o Description:  The specified multipart upload does not ex-
+                   o Description: The specified multipart upload does not  ex-
                      ist. The upload ID might be invalid, or the multipart up-
                      load might have been aborted or completed.
 
@@ -1124,7 +1290,7 @@ OUTPUT
 
                    o Code: NoSuchVersion
 
-                   o Description:  Indicates  that the version ID specified in
+                   o Description: Indicates that the version ID  specified  in
                      the request does not match an existing version.
 
                    o HTTP Status Code: 404 Not Found
@@ -1135,7 +1301,7 @@ OUTPUT
 
                    o Code: NotImplemented
 
-                   o Description: A header you provided implies  functionality
+                   o Description:  A header you provided implies functionality
                      that is not implemented.
 
                    o HTTP Status Code: 501 Not Implemented
@@ -1147,7 +1313,7 @@ OUTPUT
                    o Code: NotSignedUp
 
                    o Description: Your account is not signed up for the Amazon
-                     S3 service. You must sign up before you  can  use  Amazon
+                     S3  service.  You  must sign up before you can use Amazon
                      S3. You can sign up at the following URL: Amazon S3
 
                    o HTTP Status Code: 403 Forbidden
@@ -1158,7 +1324,7 @@ OUTPUT
 
                    o Code: OperationAborted
 
-                   o Description:  A  conflicting  conditional  action is cur-
+                   o Description: A conflicting  conditional  action  is  cur-
                      rently in progress against this resource. Try again.
 
                    o HTTP Status Code: 409 Conflict
@@ -1170,7 +1336,7 @@ OUTPUT
                    o Code: PermanentRedirect
 
                    o Description: The bucket you are attempting to access must
-                     be  addressed  using the specified endpoint. Send all fu-
+                     be addressed using the specified endpoint. Send  all  fu-
                      ture requests to this endpoint.
 
                    o HTTP Status Code: 301 Moved Permanently
@@ -1212,7 +1378,7 @@ OUTPUT
 
                    o Code: RequestIsNotMultiPartContent
 
-                   o Description:  Bucket  POST  must be of the enclosure-type
+                   o Description: Bucket POST must be  of  the  enclosure-type
                      multipart/form-data.
 
                    o HTTP Status Code: 400 Bad Request
@@ -1234,7 +1400,7 @@ OUTPUT
 
                    o Code: RequestTimeTooSkewed
 
-                   o Description:  The difference between the request time and
+                   o Description: The difference between the request time  and
                      the server's time is too large.
 
                    o HTTP Status Code: 403 Forbidden
@@ -1245,7 +1411,7 @@ OUTPUT
 
                    o Code: RequestTorrentOfBucketError
 
-                   o Description: Requesting the torrent file of a  bucket  is
+                   o Description:  Requesting  the torrent file of a bucket is
                      not permitted.
 
                    o HTTP Status Code: 400 Bad Request
@@ -1257,8 +1423,8 @@ OUTPUT
                    o Code: SignatureDoesNotMatch
 
                    o Description: The request signature we calculated does not
-                     match the signature you provided. Check your  Amazon  Web
-                     Services  secret  access key and signing method. For more
+                     match  the  signature you provided. Check your Amazon Web
+                     Services secret access key and signing method.  For  more
                      information, see REST Authentication and SOAP Authentica-
                      tion for details.
 
@@ -1311,7 +1477,7 @@ OUTPUT
 
                    o Code: TooManyBuckets
 
-                   o Description: You have attempted to  create  more  buckets
+                   o Description:  You  have  attempted to create more buckets
                      than allowed.
 
                    o HTTP Status Code: 400 Bad Request
@@ -1332,7 +1498,7 @@ OUTPUT
 
                    o Code: UnresolvableGrantByEmailAddress
 
-                   o Description:  The  email  address  you  provided does not
+                   o Description: The email  address  you  provided  does  not
                      match any account on record.
 
                    o HTTP Status Code: 400 Bad Request
@@ -1343,8 +1509,8 @@ OUTPUT
 
                    o Code: UserKeyMustBeSpecified
 
-                   o Description: The bucket POST must contain  the  specified
-                     field  name.  If  it is specified, check the order of the
+                   o Description:  The  bucket POST must contain the specified
+                     field name. If it is specified, check the  order  of  the
                      fields.
 
                    o HTTP Status Code: 400 Bad Request
@@ -1353,11 +1519,11 @@ OUTPUT
 
               Message -> (string)
                  The error message contains a generic description of the error
-                 condition  in  English.  It is intended for a human audience.
-                 Simple programs display the message directly to the end  user
-                 if  they  encounter an error condition they don't know how or
-                 don't care to handle. Sophisticated programs  with  more  ex-
-                 haustive  error  handling and proper internationalization are
+                 condition in English. It is intended for  a  human  audience.
+                 Simple  programs display the message directly to the end user
+                 if they encounter an error condition they don't know  how  or
+                 don't  care  to  handle. Sophisticated programs with more ex-
+                 haustive error handling and proper  internationalization  are
                  more likely to ignore the error message.
 
 

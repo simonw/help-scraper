@@ -11,219 +11,176 @@ DESCRIPTION
        part  upload. You specify this upload ID in each of your subsequent up-
        load part requests (see UploadPart ). You also include this  upload  ID
        in  the  final request to either complete or abort the multipart upload
-       request.
+       request. For more information about multipart  uploads,  see  Multipart
+       Upload Overview in the Amazon S3 User Guide .
 
-       For more information about  multipart  uploads,  see  Multipart  Upload
-       Overview .
+       NOTE:
+          After  you initiate a multipart upload and upload one or more parts,
+          to stop being charged for storing the uploaded parts, you  must  ei-
+          ther  complete or abort the multipart upload. Amazon S3 frees up the
+          space used to store the parts and stops  charging  you  for  storing
+          them only after you either complete or abort a multipart upload.
 
        If  you  have configured a lifecycle rule to abort incomplete multipart
-       uploads, the upload must complete within the number of  days  specified
-       in the bucket lifecycle configuration. Otherwise, the incomplete multi-
-       part upload becomes eligible for an abort action and Amazon  S3  aborts
-       the  multipart  upload.  For  more information, see Aborting Incomplete
-       Multipart Uploads Using a Bucket Lifecycle Configuration .
+       uploads, the created multipart upload must be completed within the num-
+       ber of days specified in the bucket lifecycle configuration. Otherwise,
+       the incomplete multipart upload becomes eligible for  an  abort  action
+       and  Amazon  S3  aborts the multipart upload. For more information, see
+       Aborting Incomplete Multipart Uploads Using a Bucket Lifecycle Configu-
+       ration .
 
-       For information about the permissions required to use the multipart up-
-       load API, see Multipart Upload and Permissions .
+       NOTE:
+
+          o Directory  buckets  -  S3  Lifecycle is not supported by directory
+            buckets.
+
+          o Directory buckets - For directory buckets, you must make  requests
+            for this API operation to the Zonal endpoint. These endpoints sup-
+            port virtual-hosted-style requests in the format
+            ``
+            https://bucket_name    .s3express-az_id     .*region*     .amazon-
+            aws.com/key-name  ``  . Path-style requests are not supported. For
+            more information, see Regional and Zonal endpoints in  the  Amazon
+            S3 User Guide .
+
+          System Message: WARNING/2 (<string>:, line 43)
+            Inline literal start-string without end-string.
+
+          Request signing
 
        For  request  signing, multipart upload is just a series of regular re-
        quests. You initiate a multipart upload, send one or more  requests  to
        upload  parts, and then complete the multipart upload process. You sign
        each request individually. There is nothing special about signing  mul-
        tipart  upload  requests.  For  more  information  about  signing,  see
-       Authenticating Requests (Amazon Web Services Signature Version 4) .
+       Authenticating Requests (Amazon Web Services Signature  Version  4)  in
+       the Amazon S3 User Guide .
+          Permissions
 
-       NOTE:
-          After you initiate a multipart upload and upload one or more  parts,
-          to  stop  being charged for storing the uploaded parts, you must ei-
-          ther complete or abort the multipart upload. Amazon S3 frees up  the
-          space used to store the parts and stop charging you for storing them
-          only after you either complete or abort a multipart upload.
+       o General  purpose  bucket permissions - For information about the per-
+         missions required to use the multipart upload API, see Multipart  up-
+         load and permissions in the Amazon S3 User Guide .  To perform a mul-
+         tipart upload with encryption by using an  Amazon  Web  Services  KMS
+         key,  the  requester  must  have  permission  to  the kms:Decrypt and
+         kms:GenerateDataKey* actions on the key. These  permissions  are  re-
+         quired  because  Amazon  S3  must  decrypt and read data from the en-
+         crypted file parts before it completes the multipart upload. For more
+         information,  see Multipart upload API and permissions and Protecting
+         data using server-side encryption with Amazon Web Services KMS in the
+         Amazon S3 User Guide .
 
-       Server-side encryption is for data encryption at rest.  Amazon  S3  en-
-       crypts  your  data as it writes it to disks in its data centers and de-
-       crypts it when you access it. Amazon S3 automatically encrypts all  new
-       objects  that  are uploaded to an S3 bucket. When doing a multipart up-
-       load, if you don't specify encryption information in your request,  the
-       encryption  setting of the uploaded parts is set to the default encryp-
-       tion configuration of the destination bucket. By default,  all  buckets
-       have a base level of encryption configuration that uses server-side en-
-       cryption with Amazon S3  managed  keys  (SSE-S3).  If  the  destination
-       bucket has a default encryption configuration that uses server-side en-
-       cryption with an Key Management Service (KMS) key (SSE-KMS), or a  cus-
-       tomer-provided encryption key (SSE-C), Amazon S3 uses the corresponding
-       KMS key, or a customer-provided key to encrypt the uploaded parts. When
-       you  perform  a  CreateMultipartUpload  operation, if you want to use a
-       different type of encryption setting for the uploaded  parts,  you  can
-       request that Amazon S3 encrypts the object with a KMS key, an Amazon S3
-       managed key, or a customer-provided key. If the encryption  setting  in
-       your  request is different from the default encryption configuration of
-       the destination bucket, the encryption setting in  your  request  takes
-       precedence.  If  you choose to provide your own encryption key, the re-
-       quest headers you provide in  UploadPart  and  UploadPartCopy  requests
-       must  match  the headers you used in the request to initiate the upload
-       by using CreateMultipartUpload . You can request that  Amazon  S3  save
-       the uploaded parts encrypted with server-side encryption with an Amazon
-       S3 managed key (SSE-S3), an Key Management Service (KMS) key (SSE-KMS),
-       or a customer-provided encryption key (SSE-C).
-
-       To  perform  a  multipart upload with encryption by using an Amazon Web
-       Services KMS key, the requester must have permission to the kms:Decrypt
-       and  kms:GenerateDataKey* actions on the key. These permissions are re-
-       quired because Amazon S3 must decrypt and read data from the  encrypted
-       file  parts before it completes the multipart upload. For more informa-
-       tion, see Multipart upload API and permissions and Protecting data  us-
-       ing  server-side  encryption with Amazon Web Services KMS in the Amazon
-       S3 User Guide .
-
-       If your Identity and Access Management (IAM) user or  role  is  in  the
-       same  Amazon  Web  Services  account as the KMS key, then you must have
-       these permissions on the key policy. If your IAM user or  role  belongs
-       to a different account than the key, then you must have the permissions
-       on both the key policy and your IAM user or role.
-
-       For more information, see Protecting Data Using Server-Side  Encryption
-       .
-          Access Permissions
-
-       When  copying  an  object,  you  can optionally specify the accounts or
-       groups that should be granted specific permissions on the  new  object.
-       There are two ways to grant the permissions using the request headers:
-
-       o Specify  a canned ACL with the x-amz-acl request header. For more in-
-         formation, see Canned ACL .
-
-       o Specify access permissions explicitly  with  the  x-amz-grant-read  ,
-         x-amz-grant-read-acp      ,      x-amz-grant-write-acp      ,     and
-         x-amz-grant-full-control headers. These parameters map to the set  of
-         permissions  that Amazon S3 supports in an ACL. For more information,
-         see Access Control List (ACL) Overview .
-
-       You can use either a canned ACL or specify access  permissions  explic-
-       itly. You cannot do both.
-          Server-Side- Encryption-Specific Request Headers
-
-       Amazon  S3 encrypts data by using server-side encryption with an Amazon
-       S3 managed key (SSE-S3) by default. Server-side encryption is for  data
-       encryption  at  rest.  Amazon  S3 encrypts your data as it writes it to
-       disks in its data centers and decrypts it when you access it.  You  can
-       request  that  Amazon S3 encrypts data at rest by using server-side en-
-       cryption with other key options. The option you use depends on  whether
-       you  want to use KMS keys (SSE-KMS) or provide your own encryption keys
-       (SSE-C).
-
-       o Use KMS keys (SSE-KMS) that include the Amazon Web  Services  managed
-         key  (aws/s3 ) and KMS customer managed keys stored in Key Management
-         Service (KMS)  If you want Amazon Web Services  to  manage  the  keys
-         used to encrypt data, specify the following headers in the request.
-
-         o x-amz-server-side-encryption
-
-         o x-amz-server-side-encryption-aws-kms-key-id
-
-         o x-amz-server-side-encryption-context
-
-       NOTE:
-          If you specify x-amz-server-side-encryption:aws:kms , but don't pro-
-          vide x-amz-server-side-encryption-aws-kms-key-id ,  Amazon  S3  uses
-          the  Amazon  Web Services managed key (aws/s3 key) in KMS to protect
-          the data.
-
-       WARNING:
-          All GET and PUT requests for an object protected by KMS fail if  you
-          don't make them by using Secure Sockets Layer (SSL), Transport Layer
-          Security (TLS), or Signature Version 4.
-
-       For  more  information  about  server-side  encryption  with  KMS  keys
-       (SSE-KMS),  see  Protecting  Data Using Server-Side Encryption with KMS
-       keys .
-
-       o Use customer-provided encryption keys (SSE-C)  If you want to  manage
-         your  own  encryption  keys, provide all the following headers in the
-         request.
-
-         o x-amz-server-side-encryption-customer-algorithm
-
-         o x-amz-server-side-encryption-customer-key
-
-         o x-amz-server-side-encryption-customer-key-MD5
-
-       For more information about server-side  encryption  with  customer-pro-
-       vided  encryption  keys  (SSE-C), see Protecting data using server-side
-       encryption with customer-provided encryption keys (SSE-C) .
-          Access-Control-List (ACL)-Specific Request Headers
-
-       You also can use the following access controlrelated headers with  this
-       operation. By default, all objects are private. Only the owner has full
-       access control. When adding a new object, you can grant permissions  to
-       individual Amazon Web Services accounts or to predefined groups defined
-       by Amazon S3. These permissions are then added to  the  access  control
-       list  (ACL)  on the object. For more information, see Using ACLs . With
-       this operation, you can grant access permissions using one of the  fol-
-       lowing two methods:
-
-       o Specify a canned ACL (x-amz-acl )  Amazon S3 supports a set of prede-
-         fined ACLs, known as canned ACLs . Each canned ACL has  a  predefined
-         set of grantees and permissions. For more information, see Canned ACL
+       o Directory  bucket permissions - To grant access to this API operation
+         on a directory bucket, we recommend that you use the `  CreateSession
+         https://docs.aws.amazon.com/AmazonS3/latest/API/API_CreateSession.html`__
+         API operation  for  session-based  authorization.  Specifically,  you
+         grant  the s3express:CreateSession permission to the directory bucket
+         in a bucket policy or an IAM identity-based policy.  Then,  you  make
+         the  CreateSession  API call on the bucket to obtain a session token.
+         With the session token in your request header, you can make  API  re-
+         quests  to  this operation. After the session token expires, you make
+         another CreateSession API call to generate a new  session  token  for
+         use.  Amazon  Web Services CLI or SDKs create session and refresh the
+         session token automatically to avoid  service  interruptions  when  a
+         session expires. For more information about authorization, see ` Cre-
+         ateSession
+         https://docs.aws.amazon.com/AmazonS3/latest/API/API_CreateSession.html`__
          .
 
-       o Specify access permissions explicitly   To  explicitly  grant  access
-         permissions  to  specific Amazon Web Services accounts or groups, use
-         the following headers. Each header maps to specific permissions  that
-         Amazon  S3  supports in an ACL. For more information, see Access Con-
-         trol List (ACL) Overview . In the  header,  you  specify  a  list  of
-         grantees  who  get  the specific permission. To grant permissions ex-
-         plicitly, use:
+         Encryption
 
-         o x-amz-grant-read
+       o General purpose buckets - Server-side encryption is for data  encryp-
+         tion  at  rest. Amazon S3 encrypts your data as it writes it to disks
+         in its data centers and decrypts it when you access it. Amazon S3 au-
+         tomatically  encrypts  all  new  objects  that  are uploaded to an S3
+         bucket. When doing a multipart upload, if you don't  specify  encryp-
+         tion  information  in your request, the encryption setting of the up-
+         loaded parts is set to the default encryption  configuration  of  the
+         destination  bucket. By default, all buckets have a base level of en-
+         cryption configuration that uses server-side encryption  with  Amazon
+         S3 managed keys (SSE-S3). If the destination bucket has a default en-
+         cryption configuration that uses server-side encryption with  an  Key
+         Management  Service  (KMS)  key (SSE-KMS), or a customer-provided en-
+         cryption key (SSE-C), Amazon S3 uses the corresponding KMS key, or  a
+         customer-provided key to encrypt the uploaded parts. When you perform
+         a CreateMultipartUpload operation, if you want  to  use  a  different
+         type  of  encryption  setting for the uploaded parts, you can request
+         that Amazon S3 encrypts the object with a  different  encryption  key
+         (such  as an Amazon S3 managed key, a KMS key, or a customer-provided
+         key). When the encryption setting in your request is  different  from
+         the  default  encryption configuration of the destination bucket, the
+         encryption setting in your request takes precedence. If you choose to
+         provide  your  own encryption key, the request headers you provide in
+         UploadPart and UploadPartCopy requests must  match  the  headers  you
+         used in the CreateMultipartUpload request.
 
-         o x-amz-grant-write
+         o Use KMS keys (SSE-KMS) that include the Amazon Web Services managed
+           key (aws/s3 ) and KMS customer managed keys stored in  Key  Manage-
+           ment  Service  (KMS)  If you want Amazon Web Services to manage the
+           keys used to encrypt data, specify the following headers in the re-
+           quest.
 
-         o x-amz-grant-read-acp
+           o x-amz-server-side-encryption
 
-         o x-amz-grant-write-acp
+           o x-amz-server-side-encryption-aws-kms-key-id
 
-         o x-amz-grant-full-control
+           o x-amz-server-side-encryption-context
 
-       You specify each grantee as a type=value pair, where the type is one of
-       the following:
+         NOTE:
 
-          o id   if  the value specified is the canonical user ID of an Amazon
-            Web Services account
+            o If  you specify x-amz-server-side-encryption:aws:kms , but don't
+              provide x-amz-server-side-encryption-aws-kms-key-id , Amazon  S3
+              uses  the Amazon Web Services managed key (aws/s3 key) in KMS to
+              protect the data.
 
-          o uri  if you are granting permissions to a predefined group
+            o To perform a multipart upload with encryption by using an Amazon
+              Web  Services KMS key, the requester must have permission to the
+              kms:Decrypt and kms:GenerateDataKey* actions on the  key.  These
+              permissions are required because Amazon S3 must decrypt and read
+              data from the encrypted file parts before it completes the  mul-
+              tipart  upload.  For  more information, see Multipart upload API
+              and permissions and Protecting data using server-side encryption
+              with Amazon Web Services KMS in the Amazon S3 User Guide .
 
-          o emailAddress  if the value specified is the email  address  of  an
-            Amazon Web Services account
+            o If  your Identity and Access Management (IAM) user or role is in
+              the same Amazon Web Services account as the KMS  key,  then  you
+              must  have these permissions on the key policy. If your IAM user
+              or role is in a different account from the key,  then  you  must
+              have the permissions on both the key policy and your IAM user or
+              role.
 
-          NOTE:
-                 Using  email addresses to specify a grantee is only supported
-                 in the following Amazon Web Services Regions:
+            o All GET and PUT requests for an object protected by KMS fail  if
+              you  don't make them by using Secure Sockets Layer (SSL), Trans-
+              port Layer Security (TLS), or Signature Version 4. For  informa-
+              tion  about  configuring  any of the officially supported Amazon
+              Web Services SDKs and Amazon Web Services  CLI,  see  Specifying
+              the Signature Version in Request Authentication in the Amazon S3
+              User Guide .
 
-                     o US East (N. Virginia)
+         For more information  about  server-side  encryption  with  KMS  keys
+         (SSE-KMS),  see Protecting Data Using Server-Side Encryption with KMS
+         keys in the Amazon S3 User Guide .
 
-                     o US West (N. California)
+         o Use customer-provided encryption keys (SSE-C)  If you want to  man-
+           age  your own encryption keys, provide all the following headers in
+           the request.
 
-                     o US West (Oregon)
+           o x-amz-server-side-encryption-customer-algorithm
 
-                     o Asia Pacific (Singapore)
+           o x-amz-server-side-encryption-customer-key
 
-                     o Asia Pacific (Sydney)
+           o x-amz-server-side-encryption-customer-key-MD5
 
-                     o Asia Pacific (Tokyo)
+         For more information about server-side encryption with  customer-pro-
+         vided  encryption keys (SSE-C), see Protecting data using server-side
+         encryption with customer-provided encryption keys (SSE-C) in the Ama-
+         zon S3 User Guide .
 
-                     o Europe (Ireland)
+       o Directory buckets -For directory buckets, only server-side encryption
+         with Amazon S3 managed keys (SSE-S3) (AES256 ) is supported.
 
-                     o South America (So Paulo)
-
-              For a list of all the Amazon S3 supported Regions and endpoints,
-              see  Regions  and  Endpoints  in the Amazon Web Services General
-              Reference.
-
-       For example, the following x-amz-grant-read header  grants  the  Amazon
-       Web Services accounts identified by account IDs permissions to read ob-
-       ject data and its metadata:
-          x-amz-grant-read: id="11112222333", id="444455556666"
+         HTTP Host header syntax
+          Directory buckets - The HTTP Host header syntax  is  ``  Bucket_name
+          .s3express-az_id .*region* .amazonaws.com`` .
 
        The following operations are related to CreateMultipartUpload :
 
@@ -290,9 +247,25 @@ SYNOPSIS
 
 OPTIONS
        --acl (string)
-          The canned ACL to apply to the object.
+          The  canned  ACL to apply to the object. Amazon S3 supports a set of
+          predefined ACLs, known as canned ACLs . Each canned ACL has a prede-
+          fined  set  of  grantees  and permissions. For more information, see
+          Canned ACL in the Amazon S3 User Guide .
 
-          This action is not supported by Amazon S3 on Outposts.
+          By default, all objects are private. Only the owner has full  access
+          control.  When uploading an object, you can grant access permissions
+          to individual Amazon Web Services accounts or to  predefined  groups
+          defined by Amazon S3. These permissions are then added to the access
+          control list (ACL) on the new  object.  For  more  information,  see
+          Using  ACLs  .  One  way  to grant the permissions using the request
+          headers is to specify  a  canned  ACL  with  the  x-amz-acl  request
+          header.
+
+          NOTE:
+
+              o This functionality is not supported for directory buckets.
+
+              o This functionality is not supported for Amazon S3 on Outposts.
 
           Possible values:
 
@@ -311,24 +284,42 @@ OPTIONS
           o bucket-owner-full-control
 
        --bucket (string)
-          The name of the bucket to which to initiate the upload
+          The  name  of the bucket where the multipart upload is initiated and
+          where the object is uploaded.
+              Directory buckets - When you use this operation with a directory
+              bucket, you must use virtual-hosted-style requests in the format
+              `` Bucket_name  .s3express-az_id  .*region*  .amazonaws.com``  .
+              Path-style  requests  are  not supported. Directory bucket names
+              must be unique in the chosen  Availability  Zone.  Bucket  names
+              must follow the format `` bucket_base_name --az-id --x-s3`` (for
+              example, `` DOC-EXAMPLE-BUCKET --usw2-az2 --x-s3`` ). For infor-
+              mation  about  bucket  naming restrictions, see Directory bucket
+              naming rules in the Amazon S3 User Guide .
 
-          When using this action with an access point,  you  must  direct  re-
-          quests to the access point hostname. The access point hostname takes
-          the form AccessPointName -AccountId  .s3-accesspoint.*Region*  .ama-
-          zonaws.com.  When using this action with an access point through the
-          Amazon Web Services SDKs, you provide the access point ARN in  place
-          of  the  bucket  name. For more information about access point ARNs,
-          see Using access points in the Amazon S3 User Guide .
+              Access points - When you use this action with an  access  point,
+              you  must  provide the alias of the access point in place of the
+              bucket name or specify the access point ARN. When using the  ac-
+              cess  point  ARN,  you  must direct requests to the access point
+              hostname. The access point hostname takes the form  AccessPoint-
+              Name  -AccountId  .s3-accesspoint.*Region*  .amazonaws.com. When
+              using this action with an access point through  the  Amazon  Web
+              Services  SDKs, you provide the access point ARN in place of the
+              bucket name. For more information about access point  ARNs,  see
+              Using access points in the Amazon S3 User Guide .
 
-          When you use this action with Amazon S3 on Outposts, you must direct
-          requests to the S3 on Outposts hostname. The S3 on Outposts hostname
-          takes the form `` AccessPointName -AccountId  .*outpostID*  .s3-out-
-          posts.*Region*  .amazonaws.com``  . When you use this action with S3
-          on Outposts through the Amazon Web Services SDKs,  you  provide  the
-          Outposts  access point ARN in place of the bucket name. For more in-
-          formation about S3 on Outposts ARNs, see What is S3 on Outposts?  in
-          the Amazon S3 User Guide .
+          NOTE:
+                 Access  points  and  Object Lambda access points are not sup-
+                 ported by directory buckets.
+
+              S3 on Outposts - When you use this action with Amazon S3 on Out-
+              posts,  you must direct requests to the S3 on Outposts hostname.
+              The S3 on Outposts hostname takes the  form  ``  AccessPointName
+              -AccountId .*outpostID* .s3-outposts.*Region* .amazonaws.com`` .
+              When you use this action with S3 on Outposts through the  Amazon
+              Web  Services SDKs, you provide the Outposts access point ARN in
+              place of the bucket name. For more information about S3 on  Out-
+              posts  ARNs,  see  What is S3 on Outposts? in the Amazon S3 User
+              Guide .
 
        --cache-control (string)
           Specifies caching behavior along the request/reply chain.
@@ -338,11 +329,15 @@ OPTIONS
 
        --content-encoding (string)
           Specifies what content encodings have been applied to the object and
-          thus what decoding mechanisms must be  applied  to  obtain  the  me-
+          thus  what  decoding  mechanisms  must  be applied to obtain the me-
           dia-type referenced by the Content-Type header field.
 
+          NOTE:
+              For directory buckets, only the aws-chunked value  is  supported
+              in this header field.
+
        --content-language (string)
-          The language the content is in.
+          The language that the content is in.
 
        --content-type (string)
           A standard MIME type describing the format of the object data.
@@ -351,25 +346,232 @@ OPTIONS
           The date and time at which the object is no longer cacheable.
 
        --grant-full-control (string)
-          Gives  the  grantee READ, READ_ACP, and WRITE_ACP permissions on the
-          object.
+          Specify  access  permissions  explicitly  to  give the grantee READ,
+          READ_ACP, and WRITE_ACP permissions on the object.
 
-          This action is not supported by Amazon S3 on Outposts.
+          By default, all objects are private. Only the owner has full  access
+          control.  When  uploading  an object, you can use this header to ex-
+          plicitly grant access permissions to specific  Amazon  Web  Services
+          accounts  or  groups.  This header maps to specific permissions that
+          Amazon S3 supports in an ACL. For more information, see Access  Con-
+          trol List (ACL) Overview in the Amazon S3 User Guide .
+
+          You specify each grantee as a type=value pair, where the type is one
+          of the following:
+
+          o id  if the value specified is the canonical user ID of  an  Amazon
+            Web Services account
+
+          o uri  if you are granting permissions to a predefined group
+
+          o emailAddress   if  the  value specified is the email address of an
+            Amazon Web Services account
+
+          NOTE:
+                 Using email addresses to specify a grantee is only  supported
+                 in the following Amazon Web Services Regions:
+
+                     o US East (N. Virginia)
+
+                     o US West (N. California)
+
+                     o US West (Oregon)
+
+                     o Asia Pacific (Singapore)
+
+                     o Asia Pacific (Sydney)
+
+                     o Asia Pacific (Tokyo)
+
+                     o Europe (Ireland)
+
+                     o South America (So Paulo)
+
+              For a list of all the Amazon S3 supported Regions and endpoints,
+              see Regions and Endpoints in the  Amazon  Web  Services  General
+              Reference.
+
+          For example, the following x-amz-grant-read header grants the Amazon
+          Web Services accounts identified by account IDs permissions to  read
+          object data and its metadata:
+              x-amz-grant-read: id="11112222333", id="444455556666"
+
+          NOTE:
+
+              o This functionality is not supported for directory buckets.
+
+              o This functionality is not supported for Amazon S3 on Outposts.
 
        --grant-read (string)
-          Allows grantee to read the object data and its metadata.
+          Specify  access  permissions explicitly to allow grantee to read the
+          object data and its metadata.
 
-          This action is not supported by Amazon S3 on Outposts.
+          By default, all objects are private. Only the owner has full  access
+          control.  When  uploading  an object, you can use this header to ex-
+          plicitly grant access permissions to specific  Amazon  Web  Services
+          accounts  or  groups.  This header maps to specific permissions that
+          Amazon S3 supports in an ACL. For more information, see Access  Con-
+          trol List (ACL) Overview in the Amazon S3 User Guide .
+
+          You specify each grantee as a type=value pair, where the type is one
+          of the following:
+
+          o id  if the value specified is the canonical user ID of  an  Amazon
+            Web Services account
+
+          o uri  if you are granting permissions to a predefined group
+
+          o emailAddress   if  the  value specified is the email address of an
+            Amazon Web Services account
+
+          NOTE:
+                 Using email addresses to specify a grantee is only  supported
+                 in the following Amazon Web Services Regions:
+
+                     o US East (N. Virginia)
+
+                     o US West (N. California)
+
+                     o US West (Oregon)
+
+                     o Asia Pacific (Singapore)
+
+                     o Asia Pacific (Sydney)
+
+                     o Asia Pacific (Tokyo)
+
+                     o Europe (Ireland)
+
+                     o South America (So Paulo)
+
+              For a list of all the Amazon S3 supported Regions and endpoints,
+              see Regions and Endpoints in the  Amazon  Web  Services  General
+              Reference.
+
+          For example, the following x-amz-grant-read header grants the Amazon
+          Web Services accounts identified by account IDs permissions to  read
+          object data and its metadata:
+              x-amz-grant-read: id="11112222333", id="444455556666"
+
+          NOTE:
+
+              o This functionality is not supported for directory buckets.
+
+              o This functionality is not supported for Amazon S3 on Outposts.
 
        --grant-read-acp (string)
-          Allows grantee to read the object ACL.
+          Specify  access permissions explicitly to allows grantee to read the
+          object ACL.
 
-          This action is not supported by Amazon S3 on Outposts.
+          By default, all objects are private. Only the owner has full  access
+          control.  When  uploading  an object, you can use this header to ex-
+          plicitly grant access permissions to specific  Amazon  Web  Services
+          accounts  or  groups.  This header maps to specific permissions that
+          Amazon S3 supports in an ACL. For more information, see Access  Con-
+          trol List (ACL) Overview in the Amazon S3 User Guide .
+
+          You specify each grantee as a type=value pair, where the type is one
+          of the following:
+
+          o id  if the value specified is the canonical user ID of  an  Amazon
+            Web Services account
+
+          o uri  if you are granting permissions to a predefined group
+
+          o emailAddress   if  the  value specified is the email address of an
+            Amazon Web Services account
+
+          NOTE:
+                 Using email addresses to specify a grantee is only  supported
+                 in the following Amazon Web Services Regions:
+
+                     o US East (N. Virginia)
+
+                     o US West (N. California)
+
+                     o US West (Oregon)
+
+                     o Asia Pacific (Singapore)
+
+                     o Asia Pacific (Sydney)
+
+                     o Asia Pacific (Tokyo)
+
+                     o Europe (Ireland)
+
+                     o South America (So Paulo)
+
+              For a list of all the Amazon S3 supported Regions and endpoints,
+              see Regions and Endpoints in the  Amazon  Web  Services  General
+              Reference.
+
+          For example, the following x-amz-grant-read header grants the Amazon
+          Web Services accounts identified by account IDs permissions to  read
+          object data and its metadata:
+              x-amz-grant-read: id="11112222333", id="444455556666"
+
+          NOTE:
+
+              o This functionality is not supported for directory buckets.
+
+              o This functionality is not supported for Amazon S3 on Outposts.
 
        --grant-write-acp (string)
-          Allows grantee to write the ACL for the applicable object.
+          Specify  access  permissions  explicitly  to allows grantee to allow
+          grantee to write the ACL for the applicable object.
 
-          This action is not supported by Amazon S3 on Outposts.
+          By default, all objects are private. Only the owner has full  access
+          control.  When  uploading  an object, you can use this header to ex-
+          plicitly grant access permissions to specific  Amazon  Web  Services
+          accounts  or  groups.  This header maps to specific permissions that
+          Amazon S3 supports in an ACL. For more information, see Access  Con-
+          trol List (ACL) Overview in the Amazon S3 User Guide .
+
+          You specify each grantee as a type=value pair, where the type is one
+          of the following:
+
+          o id  if the value specified is the canonical user ID of  an  Amazon
+            Web Services account
+
+          o uri  if you are granting permissions to a predefined group
+
+          o emailAddress   if  the  value specified is the email address of an
+            Amazon Web Services account
+
+          NOTE:
+                 Using email addresses to specify a grantee is only  supported
+                 in the following Amazon Web Services Regions:
+
+                     o US East (N. Virginia)
+
+                     o US West (N. California)
+
+                     o US West (Oregon)
+
+                     o Asia Pacific (Singapore)
+
+                     o Asia Pacific (Sydney)
+
+                     o Asia Pacific (Tokyo)
+
+                     o Europe (Ireland)
+
+                     o South America (So Paulo)
+
+              For a list of all the Amazon S3 supported Regions and endpoints,
+              see Regions and Endpoints in the  Amazon  Web  Services  General
+              Reference.
+
+          For example, the following x-amz-grant-read header grants the Amazon
+          Web Services accounts identified by account IDs permissions to  read
+          object data and its metadata:
+              x-amz-grant-read: id="11112222333", id="444455556666"
+
+          NOTE:
+
+              o This functionality is not supported for directory buckets.
+
+              o This functionality is not supported for Amazon S3 on Outposts.
 
        --key (string)
           Object key for which the multipart upload is to be initiated.
@@ -391,8 +593,12 @@ OPTIONS
             ...}
 
        --server-side-encryption (string)
-          The server-side encryption algorithm used when storing  this  object
+          The server-side encryption algorithm used when you store this object
           in Amazon S3 (for example, AES256 , aws:kms ).
+
+          NOTE:
+              For directory buckets, only server-side encryption  with  Amazon
+              S3 managed keys (SSE-S3) (AES256 ) is supported.
 
           Possible values:
 
@@ -406,9 +612,15 @@ OPTIONS
           By default, Amazon S3 uses the STANDARD Storage Class to store newly
           created objects. The STANDARD storage class provides high durability
           and high availability. Depending on performance needs, you can spec-
-          ify a different Storage Class. Amazon S3 on Outposts only  uses  the
-          OUTPOSTS Storage Class. For more information, see Storage Classes in
-          the Amazon S3 User Guide .
+          ify a different Storage Class. For  more  information,  see  Storage
+          Classes in the Amazon S3 User Guide .
+
+          NOTE:
+
+              o For  directory  buckets,  only the S3 Express One Zone storage
+                class is supported to store newly created objects.
+
+              o Amazon S3 on Outposts only uses the OUTPOSTS Storage Class.
 
           Possible values:
 
@@ -432,15 +644,23 @@ OPTIONS
 
           o SNOW
 
+          o EXPRESS_ONEZONE
+
        --website-redirect-location (string)
           If the bucket is configured as a  website,  redirects  requests  for
           this  object  to another object in the same bucket or to an external
           URL. Amazon S3 stores the value of this header in the  object  meta-
           data.
 
+          NOTE:
+              This functionality is not supported for directory buckets.
+
        --sse-customer-algorithm (string)
-          Specifies  the  algorithm  to use to when encrypting the object (for
-          example, AES256).
+          Specifies the algorithm to use when encrypting the object (for exam-
+          ple, AES256).
+
+          NOTE:
+              This functionality is not supported for directory buckets.
 
        --sse-customer-key (string)
           Specifies the customer-provided encryption key for Amazon S3 to  use
@@ -449,25 +669,33 @@ OPTIONS
           key  must be appropriate for use with the algorithm specified in the
           x-amz-server-side-encryption-customer-algorithm header.
 
+          NOTE:
+              This functionality is not supported for directory buckets.
+
        --sse-customer-key-md5 (string)
-          Specifies the 128-bit MD5 digest of the encryption key according  to
-          RFC  1321.  Amazon S3 uses this header for a message integrity check
-          to ensure that the encryption key was transmitted without error.
+          Specifies the 128-bit MD5 digest of the customer-provided encryption
+          key  according to RFC 1321. Amazon S3 uses this header for a message
+          integrity check to ensure that the encryption  key  was  transmitted
+          without error.
+
+          NOTE:
+              This functionality is not supported for directory buckets.
 
        --ssekms-key-id (string)
-          Specifies the ID (Key ID, Key ARN, or Key Alias)  of  the  symmetric
-          encryption  customer  managed  key to use for object encryption. All
-          GET and PUT requests for an object protected by  KMS  will  fail  if
-          they're  not made via SSL or using SigV4. For information about con-
-          figuring any of the officially supported Amazon  Web  Services  SDKs
-          and Amazon Web Services CLI, see Specifying the Signature Version in
-          Request Authentication in the Amazon S3 User Guide .
+          Specifies  the  ID  (Key ID, Key ARN, or Key Alias) of the symmetric
+          encryption customer managed key to use for object encryption.
+
+          NOTE:
+              This functionality is not supported for directory buckets.
 
        --ssekms-encryption-context (string)
           Specifies the Amazon Web Services KMS Encryption Context to use  for
           object  encryption.  The  value  of  this header is a base64-encoded
           UTF-8 string holding JSON  with  the  encryption  context  key-value
           pairs.
+
+          NOTE:
+              This functionality is not supported for directory buckets.
 
        --bucket-key-enabled | --no-bucket-key-enabled (boolean)
           Specifies  whether  Amazon S3 should use an S3 Bucket Key for object
@@ -478,14 +706,20 @@ OPTIONS
           Specifying  this  header  with  an  object  action   doesnt   affect
           bucket-level settings for S3 Bucket Key.
 
+          NOTE:
+              This functionality is not supported for directory buckets.
+
        --request-payer (string)
           Confirms  that the requester knows that they will be charged for the
           request. Bucket owners need not specify this parameter in their  re-
-          quests. If either the source or destination Amazon S3 bucket has Re-
-          quester Pays enabled,  the  requester  will  pay  for  corresponding
-          charges  to  copy  the object. For information about downloading ob-
-          jects from Requester Pays buckets, see Downloading  Objects  in  Re-
-          quester Pays Buckets in the Amazon S3 User Guide .
+          quests.  If either the source or destination S3 bucket has Requester
+          Pays enabled, the requester will pay for  corresponding  charges  to
+          copy  the object. For information about downloading objects from Re-
+          quester Pays buckets, see  Downloading  Objects  in  Requester  Pays
+          Buckets in the Amazon S3 User Guide .
+
+          NOTE:
+              This functionality is not supported for directory buckets.
 
           Possible values:
 
@@ -495,9 +729,15 @@ OPTIONS
           The tag-set for the object. The tag-set must be encoded as URL Query
           parameters.
 
+          NOTE:
+              This functionality is not supported for directory buckets.
+
        --object-lock-mode (string)
           Specifies the Object Lock mode that you want to  apply  to  the  up-
           loaded object.
+
+          NOTE:
+              This functionality is not supported for directory buckets.
 
           Possible values:
 
@@ -508,9 +748,15 @@ OPTIONS
        --object-lock-retain-until-date (timestamp)
           Specifies the date and time when you want the Object Lock to expire.
 
+          NOTE:
+              This functionality is not supported for directory buckets.
+
        --object-lock-legal-hold-status (string)
           Specifies whether you want to apply a legal hold to the uploaded ob-
           ject.
+
+          NOTE:
+              This functionality is not supported for directory buckets.
 
           Possible values:
 
@@ -519,12 +765,12 @@ OPTIONS
           o OFF
 
        --expected-bucket-owner (string)
-          The account ID of the expected bucket owner. If the bucket is  owned
-          by  a different account, the request fails with the HTTP status code
-          403 Forbidden (access denied).
+          The account ID of the expected bucket owner. If the account ID  that
+          you  provide  does not match the actual owner of the bucket, the re-
+          quest fails with the HTTP status code 403 Forbidden (access denied).
 
        --checksum-algorithm (string)
-          Indicates the algorithm you want Amazon S3  to  use  to  create  the
+          Indicates the algorithm that you want Amazon S3 to use to create the
           checksum  for  the object. For more information, see Checking object
           integrity in the Amazon S3 User Guide .
 
@@ -664,37 +910,29 @@ OUTPUT
           this header. The header indicates when the initiated  multipart  up-
           load  becomes eligible for an abort operation. For more information,
           see Aborting Incomplete Multipart Uploads Using a  Bucket  Lifecycle
-          Configuration .
+          Configuration in the Amazon S3 User Guide .
 
           The  response also includes the x-amz-abort-rule-id header that pro-
-          vides the ID of the lifecycle configuration rule that  defines  this
-          action.
+          vides the ID of the lifecycle configuration rule  that  defines  the
+          abort action.
+
+          NOTE:
+              This functionality is not supported for directory buckets.
 
        AbortRuleId -> (string)
           This  header  is returned along with the x-amz-abort-date header. It
           identifies the applicable lifecycle configuration rule that  defines
           the action to abort incomplete multipart uploads.
 
+          NOTE:
+              This functionality is not supported for directory buckets.
+
        Bucket -> (string)
           The  name of the bucket to which the multipart upload was initiated.
           Does not return the access point ARN or access point alias if used.
 
-          When using this action with an access point,  you  must  direct  re-
-          quests to the access point hostname. The access point hostname takes
-          the form AccessPointName -AccountId  .s3-accesspoint.*Region*  .ama-
-          zonaws.com.  When using this action with an access point through the
-          Amazon Web Services SDKs, you provide the access point ARN in  place
-          of  the  bucket  name. For more information about access point ARNs,
-          see Using access points in the Amazon S3 User Guide .
-
-          When you use this action with Amazon S3 on Outposts, you must direct
-          requests to the S3 on Outposts hostname. The S3 on Outposts hostname
-          takes the form `` AccessPointName -AccountId  .*outpostID*  .s3-out-
-          posts.*Region*  .amazonaws.com``  . When you use this action with S3
-          on Outposts through the Amazon Web Services SDKs,  you  provide  the
-          Outposts  access point ARN in place of the bucket name. For more in-
-          formation about S3 on Outposts ARNs, see What is S3 on Outposts?  in
-          the Amazon S3 User Guide .
+          NOTE:
+              Access points are not supported by directory buckets.
 
        Key -> (string)
           Object key for which the multipart upload was initiated.
@@ -703,39 +941,61 @@ OUTPUT
           ID for the initiated multipart upload.
 
        ServerSideEncryption -> (string)
-          The  server-side  encryption algorithm used when storing this object
+          The server-side encryption algorithm used when you store this object
           in Amazon S3 (for example, AES256 , aws:kms ).
+
+          NOTE:
+              For  directory  buckets, only server-side encryption with Amazon
+              S3 managed keys (SSE-S3) (AES256 ) is supported.
 
        SSECustomerAlgorithm -> (string)
           If server-side encryption with a  customer-provided  encryption  key
-          was  requested, the response will include this header confirming the
-          encryption algorithm used.
+          was  requested, the response will include this header to confirm the
+          encryption algorithm that's used.
+
+          NOTE:
+              This functionality is not supported for directory buckets.
 
        SSECustomerKeyMD5 -> (string)
           If server-side encryption with a  customer-provided  encryption  key
-          was  requested,  the  response  will  include this header to provide
+          was  requested, the response will include this header to provide the
           round-trip message integrity verification of  the  customer-provided
           encryption key.
 
+          NOTE:
+              This functionality is not supported for directory buckets.
+
        SSEKMSKeyId -> (string)
-          If  present,  specifies  the  ID of the Key Management Service (KMS)
+          If  present,  indicates  the  ID of the Key Management Service (KMS)
           symmetric encryption customer managed key that was used for the  ob-
           ject.
 
+          NOTE:
+              This functionality is not supported for directory buckets.
+
        SSEKMSEncryptionContext -> (string)
-          If present, specifies the Amazon Web Services KMS Encryption Context
+          If present, indicates the Amazon Web Services KMS Encryption Context
           to use for  object  encryption.  The  value  of  this  header  is  a
           base64-encoded UTF-8 string holding JSON with the encryption context
           key-value pairs.
+
+          NOTE:
+              This functionality is not supported for directory buckets.
 
        BucketKeyEnabled -> (boolean)
           Indicates whether the multipart upload uses an  S3  Bucket  Key  for
           server-side  encryption  with  Key  Management  Service  (KMS)  keys
           (SSE-KMS).
 
+          NOTE:
+              This functionality is not supported for directory buckets.
+
        RequestCharged -> (string)
           If present, indicates that the requester  was  successfully  charged
           for the request.
+
+          NOTE:
+              This functionality is not supported for directory buckets.
 
        ChecksumAlgorithm -> (string)
           The algorithm that was used to create a checksum of the object.

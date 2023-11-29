@@ -48,56 +48,124 @@ SYNOPSIS
 
 OPTIONS
        --bucket (string)
-          The name of the bucket containing the object.
+          The name of the bucket that contains the object.
+              Directory buckets - When you use this operation with a directory
+              bucket, you must use virtual-hosted-style requests in the format
+              ``  Bucket_name  .s3express-az_id  .*region*  .amazonaws.com`` .
+              Path-style requests are not supported.  Directory  bucket  names
+              must  be  unique  in  the chosen Availability Zone. Bucket names
+              must follow the format `` bucket_base_name --az-id --x-s3`` (for
+              example, `` DOC-EXAMPLE-BUCKET --usw2-az2 --x-s3`` ). For infor-
+              mation about bucket naming restrictions,  see  Directory  bucket
+              naming rules in the Amazon S3 User Guide .
 
-          When  using  this  action  with an access point, you must direct re-
-          quests to the access point hostname. The access point hostname takes
-          the  form  AccessPointName -AccountId .s3-accesspoint.*Region* .ama-
-          zonaws.com. When using this action with an access point through  the
-          Amazon  Web Services SDKs, you provide the access point ARN in place
-          of the bucket name. For more information about  access  point  ARNs,
-          see Using access points in the Amazon S3 User Guide .
+              Access  points  - When you use this action with an access point,
+              you must provide the alias of the access point in place  of  the
+              bucket  name or specify the access point ARN. When using the ac-
+              cess point ARN, you must direct requests  to  the  access  point
+              hostname.  The access point hostname takes the form AccessPoint-
+              Name -AccountId  .s3-accesspoint.*Region*  .amazonaws.com.  When
+              using  this  action  with an access point through the Amazon Web
+              Services SDKs, you provide the access point ARN in place of  the
+              bucket  name.  For more information about access point ARNs, see
+              Using access points in the Amazon S3 User Guide .
 
-          When you use this action with Amazon S3 on Outposts, you must direct
-          requests to the S3 on Outposts hostname. The S3 on Outposts hostname
-          takes  the  form `` AccessPointName -AccountId .*outpostID* .s3-out-
-          posts.*Region* .amazonaws.com`` . When you use this action  with  S3
-          on  Outposts  through  the Amazon Web Services SDKs, you provide the
-          Outposts access point ARN in place of the bucket name. For more  in-
-          formation  about S3 on Outposts ARNs, see What is S3 on Outposts? in
-          the Amazon S3 User Guide .
+          NOTE:
+                 Access points and Object Lambda access points  are  not  sup-
+                 ported by directory buckets.
+
+              S3 on Outposts - When you use this action with Amazon S3 on Out-
+              posts, you must direct requests to the S3 on Outposts  hostname.
+              The  S3  on  Outposts hostname takes the form `` AccessPointName
+              -AccountId .*outpostID* .s3-outposts.*Region* .amazonaws.com`` .
+              When  you use this action with S3 on Outposts through the Amazon
+              Web Services SDKs, you provide the Outposts access point ARN  in
+              place  of the bucket name. For more information about S3 on Out-
+              posts ARNs, see What is S3 on Outposts? in the  Amazon  S3  User
+              Guide .
 
        --if-match (string)
-          Return the object only if its entity tag (ETag) is the same  as  the
+          Return  the  object only if its entity tag (ETag) is the same as the
           one specified; otherwise, return a 412 (precondition failed) error.
+
+          If both of the If-Match and If-Unmodified-Since headers are  present
+          in the request as follows:
+
+          o If-Match condition evaluates to true , and;
+
+          o If-Unmodified-Since condition evaluates to false ;
+
+          Then Amazon S3 returns 200 OK and the data requested.
+
+          For more information about conditional requests, see RFC 7232 .
 
        --if-modified-since (timestamp)
           Return  the  object only if it has been modified since the specified
           time; otherwise, return a 304 (not modified) error.
 
+          If both of  the  If-None-Match  and  If-Modified-Since  headers  are
+          present in the request as follows:
+
+          o If-None-Match condition evaluates to false , and;
+
+          o If-Modified-Since condition evaluates to true ;
+
+          Then Amazon S3 returns the 304 Not Modified response code.
+
+          For more information about conditional requests, see RFC 7232 .
+
        --if-none-match (string)
-          Return the object only if its entity tag (ETag)  is  different  from
+          Return  the  object  only if its entity tag (ETag) is different from
           the one specified; otherwise, return a 304 (not modified) error.
+
+          If both of  the  If-None-Match  and  If-Modified-Since  headers  are
+          present in the request as follows:
+
+          o If-None-Match condition evaluates to false , and;
+
+          o If-Modified-Since condition evaluates to true ;
+
+          Then Amazon S3 returns the 304 Not Modified response code.
+
+          For more information about conditional requests, see RFC 7232 .
 
        --if-unmodified-since (timestamp)
           Return  the object only if it has not been modified since the speci-
           fied time; otherwise, return a 412 (precondition failed) error.
 
+          If both of the If-Match and If-Unmodified-Since headers are  present
+          in the request as follows:
+
+          o If-Match condition evaluates to true , and;
+
+          o If-Unmodified-Since condition evaluates to false ;
+
+          Then Amazon S3 returns 200 OK and the data requested.
+
+          For more information about conditional requests, see RFC 7232 .
+
        --key (string)
           The object key.
 
        --range (string)
-          HeadObject returns only the metadata for an object. If the Range  is
-          satisfiable,  only the ContentLength is affected in the response. If
+          HeadObject  returns only the metadata for an object. If the Range is
+          satisfiable, only the ContentLength is affected in the response.  If
           the Range is not satisfiable, S3 returns a 416 - Requested Range Not
           Satisfiable error.
 
        --version-id (string)
-          VersionId used to reference a specific version of the object.
+          Version ID used to reference a specific version of the object.
+
+          NOTE:
+              For directory buckets in this API operation, only the null value
+              of the version ID is supported.
 
        --sse-customer-algorithm (string)
-          Specifies  the  algorithm  to use to when encrypting the object (for
-          example, AES256).
+          Specifies the algorithm to use when encrypting the object (for exam-
+          ple, AES256).
+
+          NOTE:
+              This functionality is not supported for directory buckets.
 
        --sse-customer-key (string)
           Specifies the customer-provided encryption key for Amazon S3 to  use
@@ -106,19 +174,28 @@ OPTIONS
           key  must be appropriate for use with the algorithm specified in the
           x-amz-server-side-encryption-customer-algorithm header.
 
+          NOTE:
+              This functionality is not supported for directory buckets.
+
        --sse-customer-key-md5 (string)
           Specifies the 128-bit MD5 digest of the encryption key according  to
           RFC  1321.  Amazon S3 uses this header for a message integrity check
           to ensure that the encryption key was transmitted without error.
 
+          NOTE:
+              This functionality is not supported for directory buckets.
+
        --request-payer (string)
           Confirms that the requester knows that they will be charged for  the
           request.  Bucket owners need not specify this parameter in their re-
-          quests. If either the source or destination Amazon S3 bucket has Re-
-          quester  Pays  enabled,  the  requester  will  pay for corresponding
-          charges to copy the object. For information  about  downloading  ob-
-          jects  from  Requester  Pays buckets, see Downloading Objects in Re-
-          quester Pays Buckets in the Amazon S3 User Guide .
+          quests. If either the source or destination S3 bucket has  Requester
+          Pays  enabled,  the  requester will pay for corresponding charges to
+          copy the object. For information about downloading objects from  Re-
+          quester  Pays  buckets,  see  Downloading  Objects in Requester Pays
+          Buckets in the Amazon S3 User Guide .
+
+          NOTE:
+              This functionality is not supported for directory buckets.
 
           Possible values:
 
@@ -131,9 +208,9 @@ OPTIONS
           the number of parts in this object.
 
        --expected-bucket-owner (string)
-          The  account ID of the expected bucket owner. If the bucket is owned
-          by a different account, the request fails with the HTTP status  code
-          403 Forbidden (access denied).
+          The  account ID of the expected bucket owner. If the account ID that
+          you provide does not match the actual owner of the bucket,  the  re-
+          quest fails with the HTTP status code 403 Forbidden (access denied).
 
        --checksum-mode (string)
           To retrieve the checksum, this parameter must be enabled.

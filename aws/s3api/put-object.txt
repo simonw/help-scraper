@@ -6,93 +6,124 @@ NAME
        put-object -
 
 DESCRIPTION
-       Adds an object to a bucket. You must have WRITE permissions on a bucket
-       to add an object to it.
-
-       NOTE:
-          Amazon S3 never adds partial objects; if you receive a  success  re-
-          sponse,  Amazon S3 added the entire object to the bucket. You cannot
-          use PutObject to only update a single piece of metadata for  an  ex-
-          isting  object. You must put the entire object with updated metadata
-          if you want to update some values.
-
-       Amazon S3 is a distributed system. If it receives  multiple  write  re-
-       quests  for  the  same object simultaneously, it overwrites all but the
-       last object written. To prevent objects from being deleted or overwrit-
-       ten, you can use Amazon S3 Object Lock .
-
-       To  ensure  that  data is not corrupted traversing the network, use the
-       Content-MD5 header. When you use this header, Amazon S3 checks the  ob-
-       ject  against the provided MD5 value and, if they do not match, returns
-       an error. Additionally, you can calculate the MD5 while putting an  ob-
-       ject  to  Amazon S3 and compare the returned ETag to the calculated MD5
-       value.
+       Adds an object to a bucket.
 
        NOTE:
 
-          o To successfully complete the PutObject request, you must have  the
-            s3:PutObject in your IAM permissions.
+          o Amazon S3 never adds partial objects; if you receive a success re-
+            sponse, Amazon S3 added the entire object to the bucket. You  can-
+            not use PutObject to only update a single piece of metadata for an
+            existing object. You must put the entire object with updated meta-
+            data if you want to update some values.
 
-          o To  successfully change the objects acl of your PutObject request,
-            you must have the s3:PutObjectAcl in your IAM permissions.
+          o If  your  bucket uses the bucket owner enforced setting for Object
+            Ownership, ACLs are disabled and no longer affect permissions. All
+            objects  written to the bucket by any account will be owned by the
+            bucket owner.
 
-          o To successfully set the tag-set with your PutObject  request,  you
-            must have the s3:PutObjectTagging in your IAM permissions.
+          o Directory buckets - For directory buckets, you must make  requests
+            for this API operation to the Zonal endpoint. These endpoints sup-
+            port virtual-hosted-style requests in the format
+            ``
+            https://bucket_name    .s3express-az_id     .*region*     .amazon-
+            aws.com/key-name  ``  . Path-style requests are not supported. For
+            more information, see Regional and Zonal endpoints in  the  Amazon
+            S3 User Guide .
 
-          o The  Content-MD5  header  is required for any request to upload an
-            object with a retention period configured using Amazon  S3  Object
-            Lock. For more information about Amazon S3 Object Lock, see Amazon
-            S3 Object Lock Overview in the Amazon S3 User Guide .
+          System Message: WARNING/2 (<string>:, line 31)
+            Inline literal start-string without end-string.
 
-       You  have  four  mutually  exclusive  options  to  protect  data  using
-       server-side  encryption  in  Amazon  S3, depending on how you choose to
-       manage the encryption keys. Specifically, the  encryption  key  options
-       are  Amazon  S3  managed  keys  (SSE-S3),  Amazon Web Services KMS keys
-       (SSE-KMS or DSSE-KMS), and customer-provided keys  (SSE-C).  Amazon  S3
-       encrypts  data  with  server-side encryption by using Amazon S3 managed
-       keys (SSE-S3) by default. You can optionally tell Amazon S3 to  encrypt
-       data  at  rest  by using server-side encryption with other key options.
-       For more information, see Using Server-Side Encryption .
+       Amazon  S3  is  a distributed system. If it receives multiple write re-
+       quests for the same object simultaneously, it overwrites  all  but  the
+       last object written. However, Amazon S3 provides features that can mod-
+       ify this behavior:
 
-       When adding a new object, you can use headers to grant  ACL-based  per-
-       missions  to  individual  Amazon Web Services accounts or to predefined
-       groups defined by Amazon S3. These permissions are then  added  to  the
-       ACL  on the object. By default, all objects are private. Only the owner
-       has full access control. For more information, see Access Control  List
-       (ACL) Overview and Managing ACLs Using the REST API .
-
-       If  the  bucket  that you're uploading objects to uses the bucket owner
-       enforced setting for S3 Object Ownership,  ACLs  are  disabled  and  no
-       longer  affect  permissions.  Buckets that use this setting only accept
-       PUT requests that don't specify an ACL or  PUT  requests  that  specify
-       bucket  owner  full control ACLs, such as the bucket-owner-full-control
-       canned ACL or an equivalent form of this ACL expressed in the XML  for-
-       mat.  PUT  requests that contain other ACLs (for example, custom grants
-       to certain Amazon Web Services accounts) fail and return  a  400  error
-       with  the  error code AccessControlListNotSupported . For more informa-
-       tion, see Controlling ownership of objects and disabling  ACLs  in  the
-       Amazon S3 User Guide .
+       o S3 Object Lock - To prevent objects from being deleted  or  overwrit-
+         ten, you can use Amazon S3 Object Lock in the Amazon S3 User Guide .
 
        NOTE:
-          If  your  bucket  uses  the bucket owner enforced setting for Object
-          Ownership, all objects written to the bucket by any account will  be
-          owned by the bucket owner.
+          This functionality is not supported for directory buckets.
 
-       By  default,  Amazon  S3 uses the STANDARD Storage Class to store newly
-       created objects. The STANDARD storage class  provides  high  durability
-       and  high availability. Depending on performance needs, you can specify
-       a different Storage Class. Amazon S3 on Outposts only uses the OUTPOSTS
-       Storage  Class. For more information, see Storage Classes in the Amazon
-       S3 User Guide .
+       o S3 Versioning - When you enable versioning for a bucket, if Amazon S3
+         receives multiple write requests for the same object  simultaneously,
+         it stores all versions of the objects. For each write request that is
+         made to the same object, Amazon S3 automatically generates  a  unique
+         version  ID  of  that  object  being stored in Amazon S3. You can re-
+         trieve, replace, or delete any version of the object. For more infor-
+         mation  about  versioning,  see  Adding Objects to Versioning-Enabled
+         Buckets in the Amazon S3 User Guide . For information about returning
+         the versioning state of a bucket, see GetBucketVersioning .
 
-       If you enable versioning for a bucket, Amazon S3  automatically  gener-
-       ates a unique version ID for the object being stored. Amazon S3 returns
-       this ID in the response. When you enable versioning for  a  bucket,  if
-       Amazon S3 receives multiple write requests for the same object simulta-
-       neously, it stores all of the objects. For more information about  ver-
-       sioning,  see Adding Objects to Versioning-Enabled Buckets . For infor-
-       mation  about  returning  the  versioning  state  of  a   bucket,   see
-       GetBucketVersioning .
+       NOTE:
+              This functionality is not supported for directory buckets.
+
+          Permissions
+
+       o General  purpose  bucket  permissions - The following permissions are
+         required in your policies when your PutObject request  includes  spe-
+         cific headers.
+
+         o
+
+           **
+           s3:PutObject  **  - To successfully complete the PutObject request,
+           you must always have the s3:PutObject permission on a bucket to add
+           an object to it.
+
+         System Message: WARNING/2 (<string>:, line 66)
+           Inline strong start-string without end-string.
+
+         o
+
+           **
+           s3:PutObjectAcl ** - To successfully change the objects ACL of your
+           PutObject request, you must have the s3:PutObjectAcl .
+
+         System Message: WARNING/2 (<string>:, line 68)
+           Inline strong start-string without end-string.
+
+         o
+
+           **
+           s3:PutObjectTagging ** - To successfully set the tag-set with  your
+           PutObject request, you must have the s3:PutObjectTagging .
+
+         System Message: WARNING/2 (<string>:, line 70)
+           Inline strong start-string without end-string.
+
+       o Directory  bucket permissions - To grant access to this API operation
+         on a directory bucket, we recommend that you use the `  CreateSession
+         https://docs.aws.amazon.com/AmazonS3/latest/API/API_CreateSession.html`__
+         API operation  for  session-based  authorization.  Specifically,  you
+         grant  the s3express:CreateSession permission to the directory bucket
+         in a bucket policy or an IAM identity-based policy.  Then,  you  make
+         the  CreateSession  API call on the bucket to obtain a session token.
+         With the session token in your request header, you can make  API  re-
+         quests  to  this operation. After the session token expires, you make
+         another CreateSession API call to generate a new  session  token  for
+         use.  Amazon  Web Services CLI or SDKs create session and refresh the
+         session token automatically to avoid  service  interruptions  when  a
+         session expires. For more information about authorization, see ` Cre-
+         ateSession
+         https://docs.aws.amazon.com/AmazonS3/latest/API/API_CreateSession.html`__
+         .
+
+         Data integrity with Content-MD5
+
+       o General purpose bucket  -  To  ensure  that  data  is  not  corrupted
+         traversing the network, use the Content-MD5 header. When you use this
+         header, Amazon S3 checks the object against the  provided  MD5  value
+         and, if they do not match, Amazon S3 returns an error. Alternatively,
+         when the object's ETag is its MD5 digest, you can calculate  the  MD5
+         while  putting  the object to Amazon S3 and compare the returned ETag
+         to the calculated MD5 value.
+
+       o Directory bucket - This functionality is not supported for  directory
+         buckets.
+
+         HTTP Host header syntax
+          Directory  buckets  -  The HTTP Host header syntax is `` Bucket_name
+          .s3express-az_id .*region* .amazonaws.com`` .
 
        For more information about related Amazon S3 APIs, see the following:
 
@@ -160,10 +191,34 @@ SYNOPSIS
 
 OPTIONS
        --acl (string)
-          The  canned  ACL  to  apply to the object. For more information, see
-          Canned ACL .
+          The canned ACL to apply to the object.  For  more  information,  see
+          Canned ACL in the Amazon S3 User Guide .
 
-          This action is not supported by Amazon S3 on Outposts.
+          When  adding  a  new  object, you can use headers to grant ACL-based
+          permissions to individual Amazon Web Services accounts or to  prede-
+          fined  groups defined by Amazon S3. These permissions are then added
+          to the ACL on the object. By default, all objects are private.  Only
+          the  owner has full access control. For more information, see Access
+          Control List (ACL) Overview and Managing ACLs Using the REST API  in
+          the Amazon S3 User Guide .
+
+          If the bucket that you're uploading objects to uses the bucket owner
+          enforced setting for S3 Object Ownership, ACLs are disabled  and  no
+          longer affect permissions. Buckets that use this setting only accept
+          PUT requests that don't specify an ACL or PUT requests that  specify
+          bucket  owner  full control ACLs, such as the bucket-owner-full-con-
+          trol canned ACL or an equivalent form of this ACL expressed  in  the
+          XML  format. PUT requests that contain other ACLs (for example, cus-
+          tom grants to certain Amazon Web Services accounts) fail and  return
+          a  400 error with the error code AccessControlListNotSupported . For
+          more information, see Controlling ownership of objects and disabling
+          ACLs in the Amazon S3 User Guide .
+
+          NOTE:
+
+              o This functionality is not supported for directory buckets.
+
+              o This functionality is not supported for Amazon S3 on Outposts.
 
           Possible values:
 
@@ -185,29 +240,46 @@ OPTIONS
           Object data.
 
           NOTE:
-              This argument is of type: streaming blob. Its value must be  the
+              This  argument is of type: streaming blob. Its value must be the
               path to a file (e.g. path/to/file) and must not be prefixed with
               file:// or fileb://
 
        --bucket (string)
           The bucket name to which the PUT action was initiated.
+              Directory buckets - When you use this operation with a directory
+              bucket, you must use virtual-hosted-style requests in the format
+              ``  Bucket_name  .s3express-az_id  .*region*  .amazonaws.com`` .
+              Path-style requests are not supported.  Directory  bucket  names
+              must  be  unique  in  the chosen Availability Zone. Bucket names
+              must follow the format `` bucket_base_name --az-id --x-s3`` (for
+              example, `` DOC-EXAMPLE-BUCKET --usw2-az2 --x-s3`` ). For infor-
+              mation about bucket naming restrictions,  see  Directory  bucket
+              naming rules in the Amazon S3 User Guide .
 
-          When using this action with an access point,  you  must  direct  re-
-          quests to the access point hostname. The access point hostname takes
-          the form AccessPointName -AccountId  .s3-accesspoint.*Region*  .ama-
-          zonaws.com.  When using this action with an access point through the
-          Amazon Web Services SDKs, you provide the access point ARN in  place
-          of  the  bucket  name. For more information about access point ARNs,
-          see Using access points in the Amazon S3 User Guide .
+              Access  points  - When you use this action with an access point,
+              you must provide the alias of the access point in place  of  the
+              bucket  name or specify the access point ARN. When using the ac-
+              cess point ARN, you must direct requests  to  the  access  point
+              hostname.  The access point hostname takes the form AccessPoint-
+              Name -AccountId  .s3-accesspoint.*Region*  .amazonaws.com.  When
+              using  this  action  with an access point through the Amazon Web
+              Services SDKs, you provide the access point ARN in place of  the
+              bucket  name.  For more information about access point ARNs, see
+              Using access points in the Amazon S3 User Guide .
 
-          When you use this action with Amazon S3 on Outposts, you must direct
-          requests to the S3 on Outposts hostname. The S3 on Outposts hostname
-          takes the form `` AccessPointName -AccountId  .*outpostID*  .s3-out-
-          posts.*Region*  .amazonaws.com``  . When you use this action with S3
-          on Outposts through the Amazon Web Services SDKs,  you  provide  the
-          Outposts  access point ARN in place of the bucket name. For more in-
-          formation about S3 on Outposts ARNs, see What is S3 on Outposts?  in
-          the Amazon S3 User Guide .
+          NOTE:
+                 Access points and Object Lambda access points  are  not  sup-
+                 ported by directory buckets.
+
+              S3 on Outposts - When you use this action with Amazon S3 on Out-
+              posts, you must direct requests to the S3 on Outposts  hostname.
+              The  S3  on  Outposts hostname takes the form `` AccessPointName
+              -AccountId .*outpostID* .s3-outposts.*Region* .amazonaws.com`` .
+              When  you use this action with S3 on Outposts through the Amazon
+              Web Services SDKs, you provide the Outposts access point ARN  in
+              place  of the bucket name. For more information about S3 on Out-
+              posts ARNs, see What is S3 on Outposts? in the  Amazon  S3  User
+              Guide .
 
        --cache-control (string)
           Can  be  used  to  specify  caching behavior along the request/reply
@@ -243,22 +315,62 @@ OPTIONS
           formation about REST request authentication, see REST Authentication
           .
 
+          NOTE:
+              The  Content-MD5 header is required for any request to upload an
+              object with a retention period configured using Amazon S3 Object
+              Lock.  For  more  information  about  Amazon S3 Object Lock, see
+              Amazon S3 Object Lock Overview in the Amazon S3 User Guide .
+
+          NOTE:
+              This functionality is not supported for directory buckets.
+
        --content-type (string)
           A standard MIME type describing the format of the contents. For more
           information,                                                     see
           https://www.rfc-editor.org/rfc/rfc9110.html#name-content-type .
 
        --checksum-algorithm (string)
-          Indicates  the  algorithm used to create the checksum for the object
-          when using the SDK. This header  will  not  provide  any  additional
-          functionality  if not using the SDK. When sending this header, there
-          must be a corresponding x-amz-checksum or x-amz-trailer header sent.
-          Otherwise, Amazon S3 fails the request with the HTTP status code 400
-          Bad Request . For more information, see Checking object integrity in
-          the Amazon S3 User Guide .
+          Indicates the algorithm used to create the checksum for  the  object
+          when  you  use  the SDK. This header will not provide any additional
+          functionality if you don't use the SDK. When you send  this  header,
+          there  must  be  a  corresponding  x-amz-checksum-*algorithm*  `` or
+          ``x-amz-trailer header sent. Otherwise, Amazon S3 fails the  request
+          with the HTTP status code 400 Bad Request .
 
-          If  you  provide  an individual checksum, Amazon S3 ignores any pro-
-          vided ChecksumAlgorithm parameter.
+          For the
+          ``
+          x-amz-checksum-algorithm `` header, replace `` algorithm `` with the
+          supported algorithm from the following list:
+
+          System Message: WARNING/2 (<string>:, line 350)
+                 Inline literal start-string without end-string.
+
+          o CRC32
+
+          o CRC32C
+
+          o SHA1
+
+          o SHA256
+
+          For more information, see Checking object integrity in the Amazon S3
+          User Guide .
+
+          If  the  individual  checksum value you provide through x-amz-check-
+          sum-*algorithm* `` doesn't match  the  checksum  algorithm  you  set
+          through  ``x-amz-sdk-checksum-algorithm , Amazon S3 ignores any pro-
+          vided ChecksumAlgorithm parameter and uses  the  checksum  algorithm
+          that matches the provided value in
+          ``
+          x-amz-checksum-algorithm `` .
+
+          System Message: WARNING/2 (<string>:, line 370)
+                 Inline literal start-string without end-string.
+
+                 NOTE:
+              For  directory  buckets,  when you use Amazon Web Services SDKs,
+              CRC32 is the default checksum algorithm that's used for  perfor-
+              mance.
 
           Possible values:
 
@@ -273,56 +385,72 @@ OPTIONS
        --checksum-crc32 (string)
           This header can be used as a data integrity check to verify that the
           data received is the same data that was originally sent. This header
-          specifies the base64-encoded, 32-bit CRC32 checksum of  the  object.
+          specifies  the  base64-encoded, 32-bit CRC32 checksum of the object.
           For more information, see Checking object integrity in the Amazon S3
           User Guide .
 
        --checksum-crc32-c (string)
           This header can be used as a data integrity check to verify that the
           data received is the same data that was originally sent. This header
-          specifies the base64-encoded, 32-bit CRC32C checksum of the  object.
+          specifies  the base64-encoded, 32-bit CRC32C checksum of the object.
           For more information, see Checking object integrity in the Amazon S3
           User Guide .
 
        --checksum-sha1 (string)
           This header can be used as a data integrity check to verify that the
           data received is the same data that was originally sent. This header
-          specifies the base64-encoded, 160-bit SHA-1 digest  of  the  object.
+          specifies  the  base64-encoded,  160-bit SHA-1 digest of the object.
           For more information, see Checking object integrity in the Amazon S3
           User Guide .
 
        --checksum-sha256 (string)
           This header can be used as a data integrity check to verify that the
           data received is the same data that was originally sent. This header
-          specifies the base64-encoded, 256-bit SHA-256 digest of the  object.
+          specifies  the base64-encoded, 256-bit SHA-256 digest of the object.
           For more information, see Checking object integrity in the Amazon S3
           User Guide .
 
        --expires (timestamp)
-          The date and time at which the object is no  longer  cacheable.  For
-          more                         information,                        see
+          The  date  and  time at which the object is no longer cacheable. For
+          more                        information,                         see
           https://www.rfc-editor.org/rfc/rfc7234#section-5.3 .
 
        --grant-full-control (string)
-          Gives the grantee READ, READ_ACP, and WRITE_ACP permissions  on  the
+          Gives  the  grantee READ, READ_ACP, and WRITE_ACP permissions on the
           object.
 
-          This action is not supported by Amazon S3 on Outposts.
+          NOTE:
+
+              o This functionality is not supported for directory buckets.
+
+              o This functionality is not supported for Amazon S3 on Outposts.
 
        --grant-read (string)
           Allows grantee to read the object data and its metadata.
 
-          This action is not supported by Amazon S3 on Outposts.
+          NOTE:
+
+              o This functionality is not supported for directory buckets.
+
+              o This functionality is not supported for Amazon S3 on Outposts.
 
        --grant-read-acp (string)
           Allows grantee to read the object ACL.
 
-          This action is not supported by Amazon S3 on Outposts.
+          NOTE:
+
+              o This functionality is not supported for directory buckets.
+
+              o This functionality is not supported for Amazon S3 on Outposts.
 
        --grant-write-acp (string)
           Allows grantee to write the ACL for the applicable object.
 
-          This action is not supported by Amazon S3 on Outposts.
+          NOTE:
+
+              o This functionality is not supported for directory buckets.
+
+              o This functionality is not supported for Amazon S3 on Outposts.
 
        --key (string)
           Object key for which the PUT action was initiated.
@@ -344,8 +472,24 @@ OPTIONS
             ...}
 
        --server-side-encryption (string)
-          The  server-side  encryption algorithm used when storing this object
-          in Amazon S3 (for example, AES256 , aws:kms , aws:kms:dsse ).
+          The server-side encryption algorithm that was used  when  you  store
+          this   object  in  Amazon  S3  (for  example,  AES256  ,  aws:kms  ,
+          aws:kms:dsse ).
+              General purpose buckets - You have four mutually  exclusive  op-
+              tions to protect data using server-side encryption in Amazon S3,
+              depending on how you  choose  to  manage  the  encryption  keys.
+              Specifically,  the  encryption key options are Amazon S3 managed
+              keys  (SSE-S3),  Amazon  Web  Services  KMS  keys  (SSE-KMS   or
+              DSSE-KMS),  and  customer-provided  keys  (SSE-C). Amazon S3 en-
+              crypts data with server-side encryption by using Amazon S3  man-
+              aged keys (SSE-S3) by default. You can optionally tell Amazon S3
+              to encrypt data at rest by  using  server-side  encryption  with
+              other  key  options. For more information, see Using Server-Side
+              Encryption in the Amazon S3 User Guide .
+
+              Directory buckets - For directory buckets, only the  server-side
+              encryption  with Amazon S3 managed keys (SSE-S3) (AES256 ) value
+              is supported.
 
           Possible values:
 
@@ -359,9 +503,15 @@ OPTIONS
           By default, Amazon S3 uses the STANDARD Storage Class to store newly
           created objects. The STANDARD storage class provides high durability
           and high availability. Depending on performance needs, you can spec-
-          ify  a  different Storage Class. Amazon S3 on Outposts only uses the
-          OUTPOSTS Storage Class. For more information, see Storage Classes in
-          the Amazon S3 User Guide .
+          ify  a  different  Storage  Class. For more information, see Storage
+          Classes in the Amazon S3 User Guide .
+
+          NOTE:
+
+              o For directory buckets, only the S3 Express  One  Zone  storage
+                class is supported to store newly created objects.
+
+              o Amazon S3 on Outposts only uses the OUTPOSTS Storage Class.
 
           Possible values:
 
@@ -385,12 +535,14 @@ OPTIONS
 
           o SNOW
 
+          o EXPRESS_ONEZONE
+
        --website-redirect-location (string)
           If  the  bucket  is  configured as a website, redirects requests for
           this object to another object in the same bucket or to  an  external
           URL.  Amazon  S3 stores the value of this header in the object meta-
           data. For information about object  metadata,  see  Object  Key  and
-          Metadata .
+          Metadata in the Amazon S3 User Guide .
 
           In the following example, the request header sets the redirect to an
           object (anotherPage.html) in the same bucket:
@@ -401,62 +553,87 @@ OPTIONS
               x-amz-website-redirect-location: http://www.example.com/
 
           For more information about website hosting in Amazon S3, see Hosting
-          Websites on Amazon S3 and How to Configure Website Page Redirects .
+          Websites on Amazon S3 and How to Configure Website Page Redirects in
+          the Amazon S3 User Guide .
+
+          NOTE:
+              This functionality is not supported for directory buckets.
 
        --sse-customer-algorithm (string)
-          Specifies the algorithm to use to when encrypting  the  object  (for
-          example, AES256).
+          Specifies the algorithm to use when encrypting the object (for exam-
+          ple, AES256 ).
+
+          NOTE:
+              This functionality is not supported for directory buckets.
 
        --sse-customer-key (string)
-          Specifies  the customer-provided encryption key for Amazon S3 to use
-          in encrypting data. This value is used to store the object and  then
-          it  is  discarded;  Amazon S3 does not store the encryption key. The
-          key must be appropriate for use with the algorithm specified in  the
+          Specifies the customer-provided encryption key for Amazon S3 to  use
+          in  encrypting data. This value is used to store the object and then
+          it is discarded; Amazon S3 does not store the  encryption  key.  The
+          key  must be appropriate for use with the algorithm specified in the
           x-amz-server-side-encryption-customer-algorithm header.
 
+          NOTE:
+              This functionality is not supported for directory buckets.
+
        --sse-customer-key-md5 (string)
-          Specifies  the 128-bit MD5 digest of the encryption key according to
-          RFC 1321. Amazon S3 uses this header for a message  integrity  check
+          Specifies the 128-bit MD5 digest of the encryption key according  to
+          RFC  1321.  Amazon S3 uses this header for a message integrity check
           to ensure that the encryption key was transmitted without error.
 
+          NOTE:
+              This functionality is not supported for directory buckets.
+
        --ssekms-key-id (string)
-          If  x-amz-server-side-encryption  has  a  valid  value of aws:kms or
+          If x-amz-server-side-encryption has a  valid  value  of  aws:kms  or
           aws:kms:dsse , this header specifies the ID (Key ID, Key ARN, or Key
           Alias) of the Key Management Service (KMS) symmetric encryption cus-
-          tomer managed key that was used  for  the  object.  If  you  specify
-          x-amz-server-side-encryption:aws:kms   or  x-amz-server-side-encryp-
-          tion:aws:kms:dsse , but  do  not  provide``x-amz-server-side-encryp-
-          tion-aws-kms-key-id``  , Amazon S3 uses the Amazon Web Services man-
-          aged key (aws/s3 ) to protect the data. If the KMS key does not  ex-
+          tomer  managed  key  that  was  used  for the object. If you specify
+          x-amz-server-side-encryption:aws:kms  or   x-amz-server-side-encryp-
+          tion:aws:kms:dsse  ,  but  do not provide``x-amz-server-side-encryp-
+          tion-aws-kms-key-id`` , Amazon S3 uses the Amazon Web Services  man-
+          aged  key (aws/s3 ) to protect the data. If the KMS key does not ex-
           ist in the same account that's issuing the command, you must use the
           full ARN and not just the ID.
 
+          NOTE:
+              This functionality is not supported for directory buckets.
+
        --ssekms-encryption-context (string)
-          Specifies the Amazon Web Services KMS Encryption Context to use  for
-          object  encryption.  The  value  of  this header is a base64-encoded
-          UTF-8 string holding JSON  with  the  encryption  context  key-value
-          pairs.  This  value  is  stored as object metadata and automatically
-          gets passed on to Amazon Web Services KMS for  future  GetObject  or
-          CopyObject  operations on this object. This value must be explicitly
+          Specifies  the Amazon Web Services KMS Encryption Context to use for
+          object encryption. The value of  this  header  is  a  base64-encoded
+          UTF-8  string  holding  JSON  with  the encryption context key-value
+          pairs. This value is stored as  object  metadata  and  automatically
+          gets  passed  on  to Amazon Web Services KMS for future GetObject or
+          CopyObject operations on this object. This value must be  explicitly
           added during CopyObject operations.
 
+          NOTE:
+              This functionality is not supported for directory buckets.
+
        --bucket-key-enabled | --no-bucket-key-enabled (boolean)
-          Specifies whether Amazon S3 should use an S3 Bucket Key  for  object
-          encryption  with server-side encryption using Key Management Service
-          (KMS) keys (SSE-KMS). Setting this header to true causes  Amazon  S3
+          Specifies  whether  Amazon S3 should use an S3 Bucket Key for object
+          encryption with server-side encryption using Key Management  Service
+          (KMS)  keys  (SSE-KMS). Setting this header to true causes Amazon S3
           to use an S3 Bucket Key for object encryption with SSE-KMS.
 
-          Specifying  this header with a PUT action doesnt affect bucket-level
+          Specifying this header with a PUT action doesnt affect  bucket-level
           settings for S3 Bucket Key.
 
+          NOTE:
+              This functionality is not supported for directory buckets.
+
        --request-payer (string)
-          Confirms that the requester knows that they will be charged for  the
-          request.  Bucket owners need not specify this parameter in their re-
-          quests. If either the source or destination Amazon S3 bucket has Re-
-          quester  Pays  enabled,  the  requester  will  pay for corresponding
-          charges to copy the object. For information  about  downloading  ob-
-          jects  from  Requester  Pays buckets, see Downloading Objects in Re-
-          quester Pays Buckets in the Amazon S3 User Guide .
+          Confirms  that the requester knows that they will be charged for the
+          request. Bucket owners need not specify this parameter in their  re-
+          quests.  If either the source or destination S3 bucket has Requester
+          Pays enabled, the requester will pay for  corresponding  charges  to
+          copy  the object. For information about downloading objects from Re-
+          quester Pays buckets, see  Downloading  Objects  in  Requester  Pays
+          Buckets in the Amazon S3 User Guide .
+
+          NOTE:
+              This functionality is not supported for directory buckets.
 
           Possible values:
 
@@ -466,8 +643,14 @@ OPTIONS
           The tag-set for the object. The tag-set must be encoded as URL Query
           parameters. (For example, "Key1=Value1")
 
+          NOTE:
+              This functionality is not supported for directory buckets.
+
        --object-lock-mode (string)
           The Object Lock mode that you want to apply to this object.
+
+          NOTE:
+              This functionality is not supported for directory buckets.
 
           Possible values:
 
@@ -479,9 +662,16 @@ OPTIONS
           The date and time when you want this object's Object Lock to expire.
           Must be formatted as a timestamp parameter.
 
+          NOTE:
+              This functionality is not supported for directory buckets.
+
        --object-lock-legal-hold-status (string)
-          Specifies whether a legal hold will be applied to this  object.  For
-          more information about S3 Object Lock, see Object Lock .
+          Specifies  whether  a legal hold will be applied to this object. For
+          more information about S3 Object Lock, see Object Lock in the Amazon
+          S3 User Guide .
+
+          NOTE:
+              This functionality is not supported for directory buckets.
 
           Possible values:
 
@@ -490,9 +680,9 @@ OPTIONS
           o OFF
 
        --expected-bucket-owner (string)
-          The  account ID of the expected bucket owner. If the bucket is owned
-          by a different account, the request fails with the HTTP status  code
-          403 Forbidden (access denied).
+          The  account ID of the expected bucket owner. If the account ID that
+          you provide does not match the actual owner of the bucket,  the  re-
+          quest fails with the HTTP status code 403 Forbidden (access denied).
 
        --cli-input-json  (string) Performs service operation based on the JSON
        string provided. The JSON string follows the format provided by  --gen-
@@ -611,82 +801,139 @@ EXAMPLES
 OUTPUT
        Expiration -> (string)
           If   the   expiration   is   configured   for   the   object    (see
-          PutBucketLifecycleConfiguration   ),   the  response  includes  this
-          header. It includes the expiry-date and rule-id key-value pairs that
-          provide  information  about  object  expiration.  The  value  of the
-          rule-id is URL-encoded.
+          PutBucketLifecycleConfiguration  ) in the Amazon S3 User Guide , the
+          response includes this  header.  It  includes  the  expiry-date  and
+          rule-id  key-value pairs that provide information about object expi-
+          ration. The value of the rule-id is URL-encoded.
+
+          NOTE:
+              This functionality is not supported for directory buckets.
 
        ETag -> (string)
           Entity tag for the uploaded object.
+              General purpose buckets - To ensure that data is  not  corrupted
+              traversing  the  network,  for objects where the ETag is the MD5
+              digest of the object, you can calculate the MD5 while putting an
+              object  to Amazon S3 and compare the returned ETag to the calcu-
+              lated MD5 value.
+
+              Directory buckets - The ETag  for  the  object  in  a  directory
+              bucket isn't the MD5 digest of the object.
 
        ChecksumCRC32 -> (string)
-          The base64-encoded, 32-bit CRC32 checksum of the object.  This  will
-          only  be  present if it was uploaded with the object. With multipart
-          uploads, this may not be a checksum value of the  object.  For  more
-          information  about  how  checksums are calculated with multipart up-
-          loads, see Checking object integrity in the Amazon S3 User Guide .
+          The  base64-encoded,  32-bit CRC32 checksum of the object. This will
+          only be present if it was uploaded with the object. When you use  an
+          API  operation  on  an  object that was uploaded using multipart up-
+          loads, this value may not be a direct checksum value of the full ob-
+          ject.  Instead,  it's  a calculation based on the checksum values of
+          each individual part. For more information about how  checksums  are
+          calculated  with multipart uploads, see Checking object integrity in
+          the Amazon S3 User Guide .
 
        ChecksumCRC32C -> (string)
           The base64-encoded, 32-bit CRC32C checksum of the object. This  will
-          only  be  present if it was uploaded with the object. With multipart
-          uploads, this may not be a checksum value of the  object.  For  more
-          information  about  how  checksums are calculated with multipart up-
-          loads, see Checking object integrity in the Amazon S3 User Guide .
+          only  be present if it was uploaded with the object. When you use an
+          API operation on an object that was  uploaded  using  multipart  up-
+          loads, this value may not be a direct checksum value of the full ob-
+          ject. Instead, it's a calculation based on the  checksum  values  of
+          each  individual  part. For more information about how checksums are
+          calculated with multipart uploads, see Checking object integrity  in
+          the Amazon S3 User Guide .
 
        ChecksumSHA1 -> (string)
-          The base64-encoded, 160-bit SHA-1 digest of the  object.  This  will
-          only  be  present if it was uploaded with the object. With multipart
-          uploads, this may not be a checksum value of the  object.  For  more
-          information  about  how  checksums are calculated with multipart up-
-          loads, see Checking object integrity in the Amazon S3 User Guide .
+          The  base64-encoded,  160-bit  SHA-1 digest of the object. This will
+          only be present if it was uploaded with the object. When you use the
+          API  operation  on  an  object that was uploaded using multipart up-
+          loads, this value may not be a direct checksum value of the full ob-
+          ject.  Instead,  it's  a calculation based on the checksum values of
+          each individual part. For more information about how  checksums  are
+          calculated  with multipart uploads, see Checking object integrity in
+          the Amazon S3 User Guide .
 
        ChecksumSHA256 -> (string)
           The base64-encoded, 256-bit SHA-256 digest of the object. This  will
-          only  be  present if it was uploaded with the object. With multipart
-          uploads, this may not be a checksum value of the  object.  For  more
-          information  about  how  checksums are calculated with multipart up-
-          loads, see Checking object integrity in the Amazon S3 User Guide .
+          only  be present if it was uploaded with the object. When you use an
+          API operation on an object that was  uploaded  using  multipart  up-
+          loads, this value may not be a direct checksum value of the full ob-
+          ject. Instead, it's a calculation based on the  checksum  values  of
+          each  individual  part. For more information about how checksums are
+          calculated with multipart uploads, see Checking object integrity  in
+          the Amazon S3 User Guide .
 
        ServerSideEncryption -> (string)
-          The server-side encryption algorithm used when storing  this  object
+          The server-side encryption algorithm used when you store this object
           in Amazon S3 (for example, AES256 , aws:kms , aws:kms:dsse ).
 
+          NOTE:
+              For directory buckets, only server-side encryption  with  Amazon
+              S3 managed keys (SSE-S3) (AES256 ) is supported.
+
        VersionId -> (string)
-          Version of the object.
+          Version ID of the object.
+
+          If  you enable versioning for a bucket, Amazon S3 automatically gen-
+          erates a unique version ID for the object being  stored.  Amazon  S3
+          returns  this  ID  in the response. When you enable versioning for a
+          bucket, if Amazon S3 receives multiple write requests for  the  same
+          object simultaneously, it stores all of the objects. For more infor-
+          mation about versioning, see Adding  Objects  to  Versioning-Enabled
+          Buckets  in the Amazon S3 User Guide . For information about return-
+          ing the versioning state of a bucket, see GetBucketVersioning .
+
+          NOTE:
+              This functionality is not supported for directory buckets.
 
        SSECustomerAlgorithm -> (string)
-          If  server-side  encryption  with a customer-provided encryption key
-          was requested, the response will include this header confirming  the
-          encryption algorithm used.
+          If server-side encryption with a  customer-provided  encryption  key
+          was  requested, the response will include this header to confirm the
+          encryption algorithm that's used.
+
+          NOTE:
+              This functionality is not supported for directory buckets.
 
        SSECustomerKeyMD5 -> (string)
-          If  server-side  encryption  with a customer-provided encryption key
-          was requested, the response will  include  this  header  to  provide
-          round-trip  message  integrity verification of the customer-provided
+          If server-side encryption with a  customer-provided  encryption  key
+          was  requested, the response will include this header to provide the
+          round-trip message integrity verification of  the  customer-provided
           encryption key.
 
+          NOTE:
+              This functionality is not supported for directory buckets.
+
        SSEKMSKeyId -> (string)
-          If x-amz-server-side-encryption has a  valid  value  of  aws:kms  or
-          aws:kms:dsse  ,  this  header specifies the ID of the Key Management
-          Service (KMS) symmetric encryption customer  managed  key  that  was
+          If  x-amz-server-side-encryption  has  a  valid  value of aws:kms or
+          aws:kms:dsse , this header indicates the ID of  the  Key  Management
+          Service  (KMS)  symmetric  encryption  customer managed key that was
           used for the object.
 
+          NOTE:
+              This functionality is not supported for directory buckets.
+
        SSEKMSEncryptionContext -> (string)
-          If present, specifies the Amazon Web Services KMS Encryption Context
-          to use for  object  encryption.  The  value  of  this  header  is  a
+          If present, indicates the Amazon Web Services KMS Encryption Context
+          to  use  for  object  encryption.  The  value  of  this  header is a
           base64-encoded UTF-8 string holding JSON with the encryption context
-          key-value pairs. This value is stored as object metadata  and  auto-
+          key-value  pairs.  This value is stored as object metadata and auto-
           matically gets passed on to Amazon Web Services KMS for future GetO-
           bject or CopyObject operations on this object.
 
+          NOTE:
+              This functionality is not supported for directory buckets.
+
        BucketKeyEnabled -> (boolean)
-          Indicates whether the uploaded object uses  an  S3  Bucket  Key  for
+          Indicates  whether  the  uploaded  object  uses an S3 Bucket Key for
           server-side  encryption  with  Key  Management  Service  (KMS)  keys
           (SSE-KMS).
 
+          NOTE:
+              This functionality is not supported for directory buckets.
+
        RequestCharged -> (string)
-          If present, indicates that the requester  was  successfully  charged
+          If  present,  indicates  that the requester was successfully charged
           for the request.
+
+          NOTE:
+              This functionality is not supported for directory buckets.
 
 
 

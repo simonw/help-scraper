@@ -9,78 +9,118 @@ DESCRIPTION
        Completes a multipart upload by assembling previously uploaded parts.
 
        You first initiate the multipart upload and then upload all parts using
-       the UploadPart operation. After  successfully  uploading  all  relevant
-       parts  of  an upload, you call this action to complete the upload. Upon
-       receiving this request, Amazon S3 concatenates all the parts in ascend-
-       ing order by part number to create a new object. In the Complete Multi-
-       part Upload request, you must provide the parts list. You  must  ensure
-       that  the  parts  list  is complete. This action concatenates the parts
-       that you provide in the list. For each part in the list, you must  pro-
-       vide  the  part number and the ETag value, returned after that part was
-       uploaded.
+       the UploadPart operation or the UploadPartCopy  operation.  After  suc-
+       cessfully uploading all relevant parts of an upload, you call this Com-
+       pleteMultipartUpload operation to complete the upload.  Upon  receiving
+       this  request,  Amazon S3 concatenates all the parts in ascending order
+       by part number to create a new object. In  the  CompleteMultipartUpload
+       request, you must provide the parts list and ensure that the parts list
+       is complete. The CompleteMultipartUpload API operation concatenates the
+       parts that you provide in the list. For each part in the list, you must
+       provide the PartNumber value and the ETag value that are returned after
+       that part was uploaded.
 
-       Processing of a Complete Multipart Upload request  could  take  several
-       minutes  to complete. After Amazon S3 begins processing the request, it
-       sends an HTTP response header that specifies a 200 OK  response.  While
-       processing  is  in  progress,  Amazon S3 periodically sends white space
+       The  processing of a CompleteMultipartUpload request could take several
+       minutes to finalize. After Amazon S3 begins processing the request,  it
+       sends  an  HTTP response header that specifies a 200 OK response. While
+       processing is in progress, Amazon S3  periodically  sends  white  space
        characters to keep the connection from timing out. A request could fail
-       after  the initial 200 OK response has been sent. This means that a 200
-       OK response can contain either a success or an error. If you  call  the
-       S3 API directly, make sure to design your application to parse the con-
-       tents of the response and handle it appropriately. If  you  use  Amazon
+       after the initial 200 OK response has been sent. This means that a  200
+       OK  response  can  contain  either a success or an error. The error re-
+       sponse might be embedded in the 200 OK response. If you call  this  API
+       operation  directly,  make sure to design your application to parse the
+       contents of the response and handle it appropriately. If you use Amazon
        Web  Services SDKs, SDKs handle this condition. The SDKs detect the em-
        bedded error and apply error handling per your  configuration  settings
        (including  automatically  retrying the request as appropriate). If the
-       condition persists, the SDKs throws an exception (or, for the SDKs that
-       don't use exceptions, they return the error).
+       condition persists, the SDKs throw an exception (or, for the SDKs  that
+       don't use exceptions, they return an error).
 
        Note that if CompleteMultipartUpload fails, applications should be pre-
        pared to retry the failed requests. For more information, see Amazon S3
        Error Best Practices .
 
        WARNING:
-          You  cannot use Content-Type: application/x-www-form-urlencoded with
-          Complete Multipart Upload requests. Also, if you do  not  provide  a
-          Content-Type  header,  CompleteMultipartUpload  returns a 200 OK re-
-          sponse.
+          You  can't  use  Content-Type: application/x-www-form-urlencoded for
+          the CompleteMultipartUpload requests. Also, if you don't  provide  a
+          Content-Type  header, CompleteMultipartUpload can still return a 200
+          OK response.
 
        For more information about multipart uploads, see Uploading Objects Us-
-       ing Multipart Upload .
+       ing Multipart Upload in the Amazon S3 User Guide .
 
-       For  information about permissions required to use the multipart upload
-       API, see Multipart Upload and Permissions .
-          CompleteMultipartUpload has the following special errors:
+       NOTE:
+              Directory  buckets  -  For  directory buckets, you must make re-
+              quests for this API operation to the Zonal endpoint. These  end-
+              points support virtual-hosted-style requests in the format
+              ``
+              https://bucket_name    .s3express-az_id    .*region*    .amazon-
+              aws.com/key-name `` . Path-style requests are not supported. For
+              more information, see Regional and Zonal endpoints in the Amazon
+              S3 User Guide .
 
-       o Error code: EntityTooSmall
+              System Message: WARNING/2 (<string>:, line 52)
+                     Inline literal start-string without end-string.
 
-         o Description: Your proposed upload is smaller than the  minimum  al-
-           lowed  object size. Each part must be at least 5 MB in size, except
+          Permissions
+
+       o General purpose bucket permissions - For  information  about  permis-
+         sions  required to use the multipart upload API, see Multipart Upload
+         and Permissions in the Amazon S3 User Guide .
+
+       o Directory bucket permissions - To grant access to this API  operation
+         on  a directory bucket, we recommend that you use the ` CreateSession
+         https://docs.aws.amazon.com/AmazonS3/latest/API/API_CreateSession.html`__
+         API  operation  for  session-based  authorization.  Specifically, you
+         grant the s3express:CreateSession permission to the directory  bucket
+         in  a  bucket  policy or an IAM identity-based policy. Then, you make
+         the CreateSession API call on the bucket to obtain a  session  token.
+         With  the  session token in your request header, you can make API re-
+         quests to this operation. After the session token expires,  you  make
+         another  CreateSession  API  call to generate a new session token for
+         use. Amazon Web Services CLI or SDKs create session and  refresh  the
+         session  token  automatically  to  avoid service interruptions when a
+         session expires. For more information about authorization, see ` Cre-
+         ateSession
+         https://docs.aws.amazon.com/AmazonS3/latest/API/API_CreateSession.html`__
+         .
+
+         Special errors
+
+       o Error Code: EntityTooSmall
+
+         o Description:  Your  proposed upload is smaller than the minimum al-
+           lowed object size. Each part must be at least 5 MB in size,  except
            the last part.
 
-         o 400 Bad Request
+         o HTTP Status Code: 400 Bad Request
 
-       o Error code: InvalidPart
+       o Error Code: InvalidPart
 
          o Description: One or more of the specified parts could not be found.
-           The  part might not have been uploaded, or the specified entity tag
-           might not have matched the part's entity tag.
+           The part might not have been uploaded, or the specified ETag  might
+           not have matched the uploaded part's ETag.
 
-         o 400 Bad Request
+         o HTTP Status Code: 400 Bad Request
 
-       o Error code: InvalidPartOrder
+       o Error Code: InvalidPartOrder
 
-         o Description: The list of parts was  not  in  ascending  order.  The
+         o Description:  The  list  of  parts  was not in ascending order. The
            parts list must be specified in order by part number.
 
-         o 400 Bad Request
+         o HTTP Status Code: 400 Bad Request
 
-       o Error code: NoSuchUpload
+       o Error Code: NoSuchUpload
 
          o Description: The specified multipart upload does not exist. The up-
-           load ID might be invalid, or the multipart upload might  have  been
+           load  ID  might be invalid, or the multipart upload might have been
            aborted or completed.
 
-         o 404 Not Found
+         o HTTP Status Code: 404 Not Found
+
+         HTTP Host header syntax
+          Directory buckets - The HTTP Host header syntax  is  ``  Bucket_name
+          .s3express-az_id .*region* .amazonaws.com`` .
 
        The following operations are related to CompleteMultipartUpload :
 
@@ -131,23 +171,40 @@ SYNOPSIS
 OPTIONS
        --bucket (string)
           Name of the bucket to which the multipart upload was initiated.
+              Directory buckets - When you use this operation with a directory
+              bucket, you must use virtual-hosted-style requests in the format
+              ``  Bucket_name  .s3express-az_id  .*region*  .amazonaws.com`` .
+              Path-style requests are not supported.  Directory  bucket  names
+              must  be  unique  in  the chosen Availability Zone. Bucket names
+              must follow the format `` bucket_base_name --az-id --x-s3`` (for
+              example, `` DOC-EXAMPLE-BUCKET --usw2-az2 --x-s3`` ). For infor-
+              mation about bucket naming restrictions,  see  Directory  bucket
+              naming rules in the Amazon S3 User Guide .
 
-          When  using  this  action  with an access point, you must direct re-
-          quests to the access point hostname. The access point hostname takes
-          the  form  AccessPointName -AccountId .s3-accesspoint.*Region* .ama-
-          zonaws.com. When using this action with an access point through  the
-          Amazon  Web Services SDKs, you provide the access point ARN in place
-          of the bucket name. For more information about  access  point  ARNs,
-          see Using access points in the Amazon S3 User Guide .
+              Access  points  - When you use this action with an access point,
+              you must provide the alias of the access point in place  of  the
+              bucket  name or specify the access point ARN. When using the ac-
+              cess point ARN, you must direct requests  to  the  access  point
+              hostname.  The access point hostname takes the form AccessPoint-
+              Name -AccountId  .s3-accesspoint.*Region*  .amazonaws.com.  When
+              using  this  action  with an access point through the Amazon Web
+              Services SDKs, you provide the access point ARN in place of  the
+              bucket  name.  For more information about access point ARNs, see
+              Using access points in the Amazon S3 User Guide .
 
-          When you use this action with Amazon S3 on Outposts, you must direct
-          requests to the S3 on Outposts hostname. The S3 on Outposts hostname
-          takes  the  form `` AccessPointName -AccountId .*outpostID* .s3-out-
-          posts.*Region* .amazonaws.com`` . When you use this action  with  S3
-          on  Outposts  through  the Amazon Web Services SDKs, you provide the
-          Outposts access point ARN in place of the bucket name. For more  in-
-          formation  about S3 on Outposts ARNs, see What is S3 on Outposts? in
-          the Amazon S3 User Guide .
+          NOTE:
+                 Access points and Object Lambda access points  are  not  sup-
+                 ported by directory buckets.
+
+              S3 on Outposts - When you use this action with Amazon S3 on Out-
+              posts, you must direct requests to the S3 on Outposts  hostname.
+              The  S3  on  Outposts hostname takes the form `` AccessPointName
+              -AccountId .*outpostID* .s3-outposts.*Region* .amazonaws.com`` .
+              When  you use this action with S3 on Outposts through the Amazon
+              Web Services SDKs, you provide the Outposts access point ARN  in
+              place  of the bucket name. For more information about S3 on Out-
+              posts ARNs, see What is S3 on Outposts? in the  Amazon  S3  User
+              Guide .
 
        --key (string)
           Object key for which the multipart upload was initiated.
@@ -168,40 +225,67 @@ OPTIONS
                      Entity tag returned when the part was uploaded.
 
                  ChecksumCRC32 -> (string)
-                     The  base64-encoded, 32-bit CRC32 checksum of the object.
+                     The base64-encoded, 32-bit CRC32 checksum of the  object.
                      This will only be present if it was uploaded with the ob-
-                     ject.  With multipart uploads, this may not be a checksum
-                     value of the  object.  For  more  information  about  how
-                     checksums  are  calculated  with  multipart  uploads, see
-                     Checking object integrity in the Amazon S3 User Guide .
+                     ject. When you use an API operation on an object that was
+                     uploaded using multipart uploads, this value may not be a
+                     direct checksum value of the full object. Instead, it's a
+                     calculation based on the checksum values of each individ-
+                     ual part. For more information about  how  checksums  are
+                     calculated  with  multipart  uploads, see Checking object
+                     integrity in the Amazon S3 User Guide .
 
                  ChecksumCRC32C -> (string)
                      The base64-encoded, 32-bit CRC32C checksum of the object.
                      This will only be present if it was uploaded with the ob-
-                     ject. With multipart uploads, this may not be a  checksum
-                     value  of  the  object.  For  more  information about how
-                     checksums are  calculated  with  multipart  uploads,  see
-                     Checking object integrity in the Amazon S3 User Guide .
+                     ject. When you use an API operation on an object that was
+                     uploaded using multipart uploads, this value may not be a
+                     direct checksum value of the full object. Instead, it's a
+                     calculation based on the checksum values of each individ-
+                     ual part. For more information about  how  checksums  are
+                     calculated  with  multipart  uploads, see Checking object
+                     integrity in the Amazon S3 User Guide .
 
                  ChecksumSHA1 -> (string)
-                     The  base64-encoded,  160-bit SHA-1 digest of the object.
+                     The base64-encoded, 160-bit SHA-1 digest of  the  object.
                      This will only be present if it was uploaded with the ob-
-                     ject.  With multipart uploads, this may not be a checksum
-                     value of the  object.  For  more  information  about  how
-                     checksums  are  calculated  with  multipart  uploads, see
-                     Checking object integrity in the Amazon S3 User Guide .
+                     ject. When you use the API operation on  an  object  that
+                     was  uploaded using multipart uploads, this value may not
+                     be a direct checksum value of the full  object.  Instead,
+                     it's  a  calculation based on the checksum values of each
+                     individual part. For more information about how checksums
+                     are  calculated  with multipart uploads, see Checking ob-
+                     ject integrity in the Amazon S3 User Guide .
 
                  ChecksumSHA256 -> (string)
                      The base64-encoded, 256-bit SHA-256 digest of the object.
                      This will only be present if it was uploaded with the ob-
-                     ject. With multipart uploads, this may not be a  checksum
-                     value  of  the  object.  For  more  information about how
-                     checksums are  calculated  with  multipart  uploads,  see
-                     Checking object integrity in the Amazon S3 User Guide .
+                     ject. When you use an API operation on an object that was
+                     uploaded using multipart uploads, this value may not be a
+                     direct checksum value of the full object. Instead, it's a
+                     calculation based on the checksum values of each individ-
+                     ual part. For more information about  how  checksums  are
+                     calculated  with  multipart  uploads, see Checking object
+                     integrity in the Amazon S3 User Guide .
 
                  PartNumber -> (integer)
-                     Part  number that identifies the part. This is a positive
+                     Part number that identifies the part. This is a  positive
                      integer between 1 and 10,000.
+
+                     NOTE:
+
+                        o General purpose buckets - In CompleteMultipartUpload
+                          , when a additional checksum (including x-amz-check-
+                          sum-crc32  ,  x-amz-checksum-crc32c  ,  x-amz-check-
+                          sum-sha1 , or x-amz-checksum-sha256 ) is applied  to
+                          each  part,  the  PartNumber must start at 1 and the
+                          part numbers must be consecutive. Otherwise,  Amazon
+                          S3 generates an HTTP 400 Bad Request status code and
+                          an InvalidPartOrder error code.
+
+                        o Directory buckets - In CompleteMultipartUpload , the
+                          PartNumber must start at 1 and the part numbers must
+                          be consecutive.
 
        Shorthand Syntax:
 
@@ -257,20 +341,23 @@ OPTIONS
        --request-payer (string)
           Confirms that the requester knows that they will be charged for  the
           request.  Bucket owners need not specify this parameter in their re-
-          quests. If either the source or destination Amazon S3 bucket has Re-
-          quester  Pays  enabled,  the  requester  will  pay for corresponding
-          charges to copy the object. For information  about  downloading  ob-
-          jects  from  Requester  Pays buckets, see Downloading Objects in Re-
-          quester Pays Buckets in the Amazon S3 User Guide .
+          quests. If either the source or destination S3 bucket has  Requester
+          Pays  enabled,  the  requester will pay for corresponding charges to
+          copy the object. For information about downloading objects from  Re-
+          quester  Pays  buckets,  see  Downloading  Objects in Requester Pays
+          Buckets in the Amazon S3 User Guide .
+
+          NOTE:
+              This functionality is not supported for directory buckets.
 
           Possible values:
 
           o requester
 
        --expected-bucket-owner (string)
-          The account ID of the expected bucket owner. If the bucket is  owned
-          by  a different account, the request fails with the HTTP status code
-          403 Forbidden (access denied).
+          The account ID of the expected bucket owner. If the account ID  that
+          you  provide  does not match the actual owner of the bucket, the re-
+          quest fails with the HTTP status code 403 Forbidden (access denied).
 
        --sse-customer-algorithm (string)
           The server-side encryption (SSE) algorithm used to encrypt  the  ob-
@@ -279,17 +366,26 @@ OPTIONS
           of SSE-C. For more information, see Protecting data using SSE-C keys
           in the Amazon S3 User Guide .
 
+          NOTE:
+              This functionality is not supported for directory buckets.
+
        --sse-customer-key (string)
           The server-side encryption (SSE) customer managed key. This  parame-
           ter  is needed only when the object was created using a checksum al-
           gorithm. For more information, see Protecting data using SSE-C  keys
           in the Amazon S3 User Guide .
 
+          NOTE:
+              This functionality is not supported for directory buckets.
+
        --sse-customer-key-md5 (string)
           The  MD5 server-side encryption (SSE) customer managed key. This pa-
           rameter is needed only when the object was created using a  checksum
           algorithm.  For  more  information,  see Protecting data using SSE-C
           keys in the Amazon S3 User Guide .
+
+          NOTE:
+              This functionality is not supported for directory buckets.
 
        --cli-input-json (string) Performs service operation based on the  JSON
        string  provided. The JSON string follows the format provided by --gen-
@@ -446,91 +542,108 @@ OUTPUT
           The name of the bucket that contains the newly created object.  Does
           not return the access point ARN or access point alias if used.
 
-          When  using  this  action  with an access point, you must direct re-
-          quests to the access point hostname. The access point hostname takes
-          the  form  AccessPointName -AccountId .s3-accesspoint.*Region* .ama-
-          zonaws.com. When using this action with an access point through  the
-          Amazon  Web Services SDKs, you provide the access point ARN in place
-          of the bucket name. For more information about  access  point  ARNs,
-          see Using access points in the Amazon S3 User Guide .
-
-          When you use this action with Amazon S3 on Outposts, you must direct
-          requests to the S3 on Outposts hostname. The S3 on Outposts hostname
-          takes  the  form `` AccessPointName -AccountId .*outpostID* .s3-out-
-          posts.*Region* .amazonaws.com`` . When you use this action  with  S3
-          on  Outposts  through  the Amazon Web Services SDKs, you provide the
-          Outposts access point ARN in place of the bucket name. For more  in-
-          formation  about S3 on Outposts ARNs, see What is S3 on Outposts? in
-          the Amazon S3 User Guide .
+          NOTE:
+              Access points are not supported by directory buckets.
 
        Key -> (string)
           The object key of the newly created object.
 
        Expiration -> (string)
-          If the object expiration is configured, this will contain the  expi-
-          ration  date  (expiry-date  )  and  rule ID (rule-id ). The value of
+          If  the object expiration is configured, this will contain the expi-
+          ration date (expiry-date ) and rule ID  (rule-id  ).  The  value  of
           rule-id is URL-encoded.
 
+          NOTE:
+              This functionality is not supported for directory buckets.
+
        ETag -> (string)
-          Entity tag that identifies the newly created object's data.  Objects
-          with  different object data will have different entity tags. The en-
-          tity tag is an opaque string. The entity tag may or may  not  be  an
-          MD5  digest  of the object data. If the entity tag is not an MD5 di-
-          gest of the object data, it will contain one or more  nonhexadecimal
+          Entity  tag that identifies the newly created object's data. Objects
+          with different object data will have different entity tags. The  en-
+          tity  tag  is  an opaque string. The entity tag may or may not be an
+          MD5 digest of the object data. If the entity tag is not an  MD5  di-
+          gest  of the object data, it will contain one or more nonhexadecimal
           characters and/or will consist of less than 32 or more than 32 hexa-
-          decimal digits. For more information about how  the  entity  tag  is
-          calculated,  see  Checking  object  integrity  in the Amazon S3 User
+          decimal  digits.  For  more  information about how the entity tag is
+          calculated, see Checking object integrity  in  the  Amazon  S3  User
           Guide .
 
        ChecksumCRC32 -> (string)
-          The base64-encoded, 32-bit CRC32 checksum of the object.  This  will
-          only  be  present if it was uploaded with the object. With multipart
-          uploads, this may not be a checksum value of the  object.  For  more
-          information  about  how  checksums are calculated with multipart up-
-          loads, see Checking object integrity in the Amazon S3 User Guide .
+          The  base64-encoded,  32-bit CRC32 checksum of the object. This will
+          only be present if it was uploaded with the object. When you use  an
+          API  operation  on  an  object that was uploaded using multipart up-
+          loads, this value may not be a direct checksum value of the full ob-
+          ject.  Instead,  it's  a calculation based on the checksum values of
+          each individual part. For more information about how  checksums  are
+          calculated  with multipart uploads, see Checking object integrity in
+          the Amazon S3 User Guide .
 
        ChecksumCRC32C -> (string)
           The base64-encoded, 32-bit CRC32C checksum of the object. This  will
-          only  be  present if it was uploaded with the object. With multipart
-          uploads, this may not be a checksum value of the  object.  For  more
-          information  about  how  checksums are calculated with multipart up-
-          loads, see Checking object integrity in the Amazon S3 User Guide .
+          only  be present if it was uploaded with the object. When you use an
+          API operation on an object that was  uploaded  using  multipart  up-
+          loads, this value may not be a direct checksum value of the full ob-
+          ject. Instead, it's a calculation based on the  checksum  values  of
+          each  individual  part. For more information about how checksums are
+          calculated with multipart uploads, see Checking object integrity  in
+          the Amazon S3 User Guide .
 
        ChecksumSHA1 -> (string)
-          The base64-encoded, 160-bit SHA-1 digest of the  object.  This  will
-          only  be  present if it was uploaded with the object. With multipart
-          uploads, this may not be a checksum value of the  object.  For  more
-          information  about  how  checksums are calculated with multipart up-
-          loads, see Checking object integrity in the Amazon S3 User Guide .
+          The  base64-encoded,  160-bit  SHA-1 digest of the object. This will
+          only be present if it was uploaded with the object. When you use the
+          API  operation  on  an  object that was uploaded using multipart up-
+          loads, this value may not be a direct checksum value of the full ob-
+          ject.  Instead,  it's  a calculation based on the checksum values of
+          each individual part. For more information about how  checksums  are
+          calculated  with multipart uploads, see Checking object integrity in
+          the Amazon S3 User Guide .
 
        ChecksumSHA256 -> (string)
           The base64-encoded, 256-bit SHA-256 digest of the object. This  will
-          only  be  present if it was uploaded with the object. With multipart
-          uploads, this may not be a checksum value of the  object.  For  more
-          information  about  how  checksums are calculated with multipart up-
-          loads, see Checking object integrity in the Amazon S3 User Guide .
+          only  be present if it was uploaded with the object. When you use an
+          API operation on an object that was  uploaded  using  multipart  up-
+          loads, this value may not be a direct checksum value of the full ob-
+          ject. Instead, it's a calculation based on the  checksum  values  of
+          each  individual  part. For more information about how checksums are
+          calculated with multipart uploads, see Checking object integrity  in
+          the Amazon S3 User Guide .
 
        ServerSideEncryption -> (string)
-          The server-side encryption algorithm used when storing  this  object
+          The  server-side  encryption algorithm used when storing this object
           in Amazon S3 (for example, AES256 , aws:kms ).
+
+          NOTE:
+              For directory buckets, only server-side encryption  with  Amazon
+              S3 managed keys (SSE-S3) (AES256 ) is supported.
 
        VersionId -> (string)
           Version  ID of the newly created object, in case the bucket has ver-
           sioning turned on.
 
+          NOTE:
+              This functionality is not supported for directory buckets.
+
        SSEKMSKeyId -> (string)
-          If present, specifies the ID of the  Key  Management  Service  (KMS)
+          If present, indicates the ID of the  Key  Management  Service  (KMS)
           symmetric  encryption customer managed key that was used for the ob-
           ject.
+
+          NOTE:
+              This functionality is not supported for directory buckets.
 
        BucketKeyEnabled -> (boolean)
           Indicates whether the multipart upload uses an  S3  Bucket  Key  for
           server-side  encryption  with  Key  Management  Service  (KMS)  keys
           (SSE-KMS).
 
+          NOTE:
+              This functionality is not supported for directory buckets.
+
        RequestCharged -> (string)
           If present, indicates that the requester  was  successfully  charged
           for the request.
+
+          NOTE:
+              This functionality is not supported for directory buckets.
 
 
 

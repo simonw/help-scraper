@@ -1,0 +1,813 @@
+BATCH-PUT-DOCUMENT()                                      BATCH-PUT-DOCUMENT()
+
+
+
+NAME
+       batch-put-document -
+
+DESCRIPTION
+       Adds one or more documents to an Amazon Q index.
+
+       You use this API to:
+
+       o ingest  your  structured  and  unstructured  documents  and documents
+         stored in an Amazon S3 bucket into an Amazon Q index.
+
+       o add custom attributes to documents in an Amazon Q index.
+
+       o attach an access control list to the documents added to an  Amazon  Q
+         index.
+
+       You  can  see  the progress of the deletion, and any error messages re-
+       lated to the process, by using CloudWatch.
+
+       See also: AWS API Documentation
+
+SYNOPSIS
+            batch-put-document
+          --application-id <value>
+          [--data-source-sync-id <value>]
+          --documents <value>
+          --index-id <value>
+          [--role-arn <value>]
+          [--cli-input-json <value>]
+          [--generate-cli-skeleton <value>]
+          [--debug]
+          [--endpoint-url <value>]
+          [--no-verify-ssl]
+          [--no-paginate]
+          [--output <value>]
+          [--query <value>]
+          [--profile <value>]
+          [--region <value>]
+          [--version <value>]
+          [--color <value>]
+          [--no-sign-request]
+          [--ca-bundle <value>]
+          [--cli-read-timeout <value>]
+          [--cli-connect-timeout <value>]
+
+OPTIONS
+       --application-id (string)
+          The identifier of the Amazon Q application.
+
+       --data-source-sync-id (string)
+          The identifier of the data source sync during  which  the  documents
+          were added.
+
+       --documents (list)
+          One or more documents to add to the index.
+
+          (structure)
+              A document in an Amazon Q application.
+
+              accessConfiguration -> (structure)
+                 Configuration  information  for  access permission to a docu-
+                 ment.
+
+                 accessControls -> (list)
+                     A list of AccessControlList objects.
+
+                     (structure)
+                        A list of principals. Each principal can be  either  a
+                        USER  or a GROUP and can be designated document access
+                        permissions of either ALLOW or DENY .
+
+                        memberRelation -> (string)
+                            Describes the member relation within  a  principal
+                            list.
+
+                        principals -> (list)
+                            Contains  a  list of principals, where a principal
+                            can be either a USER or a GROUP .  Each  principal
+                            can be have the following type of document access:
+                            ALLOW or DENY .
+
+                            (tagged union structure)
+                               Provides user and group  information  used  for
+                               filtering  documents to use for generating Ama-
+                               zon Q conversation responses.
+
+                               NOTE:
+                                   This is a Tagged Union structure. Only  one
+                                   of the following top level keys can be set:
+                                   group, user.
+
+                               group -> (structure)
+                                   The group associated with the principal.
+
+                                   access -> (string)
+                                      Provides information  about  whether  to
+                                      allow or deny access to the principal.
+
+                                   membershipType -> (string)
+                                      The type of group.
+
+                                   name -> (string)
+                                      The name of the group.
+
+                               user -> (structure)
+                                   The user associated with the principal.
+
+                                   access -> (string)
+                                      Provides  information  about  whether to
+                                      allow or deny access to the principal.
+
+                                   id -> (string)
+                                      The identifier of the user.
+
+                                   membershipType -> (string)
+                                      The type of group.
+
+                 memberRelation -> (string)
+                     Describes the member relation within  the  AccessControl-
+                     List object.
+
+              attributes -> (list)
+                 Custom  attributes to apply to the document for refining Ama-
+                 zon Q web experience responses.
+
+                 (structure)
+                     A document attribute or metadata field.
+
+                     name -> (string)
+                        The identifier for the attribute.
+
+                     value -> (tagged union structure)
+                        The value of the attribute.
+
+                        NOTE:
+                            This is a Tagged Union structure. Only one of  the
+                            following  top  level  keys can be set: dateValue,
+                            longValue, stringListValue, stringValue.
+
+                        dateValue -> (timestamp)
+                            A date expressed as an ISO 8601 string.
+
+                            It's important for the time zone to be included in
+                            the   ISO  8601  date-time  format.  For  example,
+                            2012-03-25T12:30:10+01:00   is   the   ISO    8601
+                            date-time  format  for  March 25th 2012 at 12:30PM
+                            (plus 10 seconds) in Central European Time.
+
+                        longValue -> (long)
+                            A long integer value.
+
+                        stringListValue -> (list)
+                            A list of strings.
+
+                            (string)
+
+                        stringValue -> (string)
+                            A string.
+
+              content -> (tagged union structure)
+                 The contents of the document.
+
+                 NOTE:
+                     This is a Tagged Union structure. Only one of the follow-
+                     ing top level keys can be set: blob, s3.
+
+                 blob -> (blob)
+                     The  contents  of  the  document. Documents passed to the
+                     blob parameter must be base64 encoded.  Your  code  might
+                     not  need to encode the document file bytes if you're us-
+                     ing an Amazon Web Services SDK to call Amazon Q APIs.  If
+                     you  are  calling  the  Amazon  Q endpoint directly using
+                     REST, you must base64 encode the contents before sending.
+
+                 s3 -> (structure)
+                     The path to the document in an Amazon S3 bucket.
+
+                     bucket -> (string)
+                        The name of the S3 bucket that contains the file.
+
+                     key -> (string)
+                        The name of the file.
+
+              contentType -> (string)
+                 The file type of the document in the Blob field.
+
+                 If you want to index snippets or subsets  of  HTML  documents
+                 instead  of  the  entirety of the HTML documents, you add the
+                 HTML start and closing tags  (<HTML>content</HTML>  )  around
+                 the content.
+
+              documentEnrichmentConfiguration -> (structure)
+                 The  configuration information for altering document metadata
+                 and content during the document ingestion process.
+
+                 inlineConfigurations -> (list)
+                     Configuration information to alter document attributes or
+                     metadata fields and content when ingesting documents into
+                     Amazon Q.
+
+                     (structure)
+                        Provides the configuration  information  for  applying
+                        basic  logic  to  alter  document metadata and content
+                        when ingesting documents into Amazon Q.
+
+                        To apply advanced logic, to go beyond what you can  do
+                        with    basic    logic,    see   `   HookConfiguration
+                        https://docs.aws.amazon.com/enterpriseq/latest/APIReference/API_HookConfiguration.html`__
+                        .
+
+                        For more information, see Custom document enrichment .
+
+                        condition -> (structure)
+                            The  condition used for the target document attri-
+                            bute or metadata field  when  ingesting  documents
+                            into  Amazon  Q.  You  use this with ` DocumentAt-
+                            tributeTarget
+                            https://docs.aws.amazon.com/enterpriseq/latest/APIReference/API_DocumentAttributeTarget.html`__
+                            to apply the condition.
+
+                            For example, you can create the 'Department'  tar-
+                            get field and have it prefill department names as-
+                            sociated with the documents based  on  information
+                            in  the 'Source_URI' field. Set the condition that
+                            if the 'Source_URI' field contains 'financial'  in
+                            its  URI value, then prefill the target field 'De-
+                            partment' with the target value 'Finance' for  the
+                            document.
+
+                            Amazon Q can't create a target field if it has not
+                            already been created as an index field. After  you
+                            create your index field, you can create a document
+                            metadata  field  using  DocumentAttributeTarget  .
+                            Amazon Q then will map your newly created metadata
+                            field to your index field.
+
+                            key -> (string)
+                               The identifier of the document  attribute  used
+                               for the condition.
+
+                               For  example,  'Source_URI' could be an identi-
+                               fier for the attribute or metadata  field  that
+                               contains  source URIs associated with the docu-
+                               ments.
+
+                               Amazon  Q  currently  doesn't  support   _docu-
+                               ment_body as an attribute key used for the con-
+                               dition.
+
+                            operator -> (string)
+                               The identifier of the document  attribute  used
+                               for the condition.
+
+                               For  example,  'Source_URI' could be an identi-
+                               fier for the attribute or metadata  field  that
+                               contains  source URIs associated with the docu-
+                               ments.
+
+                               Amazon Kendra currently does not support _docu-
+                               ment_body as an attribute key used for the con-
+                               dition.
+
+                            value -> (tagged union structure)
+                               The value of a document attribute. You can only
+                               provide one value for a document attribute.
+
+                               NOTE:
+                                   This  is a Tagged Union structure. Only one
+                                   of the following top level keys can be set:
+                                   dateValue,    longValue,   stringListValue,
+                                   stringValue.
+
+                               dateValue -> (timestamp)
+                                   A date expressed as an ISO 8601 string.
+
+                                   It's important for the time zone to be  in-
+                                   cluded  in  the  ISO 8601 date-time format.
+                                   For example,  2012-03-25T12:30:10+01:00  is
+                                   the  ISO  8601  date-time  format for March
+                                   25th 2012 at 12:30PM (plus 10  seconds)  in
+                                   Central European Time.
+
+                               longValue -> (long)
+                                   A long integer value.
+
+                               stringListValue -> (list)
+                                   A list of strings.
+
+                                   (string)
+
+                               stringValue -> (string)
+                                   A string.
+
+                        documentContentOperator -> (string)
+                            TRUE  to  delete content if the condition used for
+                            the target attribute is met.
+
+                        target -> (structure)
+                            The target document attribute  or  metadata  field
+                            you  want  to  alter when ingesting documents into
+                            Amazon Q.
+
+                            For example, you can delete all customer identifi-
+                            cation  numbers  associated  with  the  documents,
+                            stored in the document metadata field called 'Cus-
+                            tomer_ID'  by  setting  the  target  key  as 'Cus-
+                            tomer_ID' and the deletion flag to TRUE . This re-
+                            moves  all  customer  ID values in the field 'Cus-
+                            tomer_ID'. This would scrub  personally  identifi-
+                            able information from each document's metadata.
+
+                            Amazon Q can't create a target field if it has not
+                            already been created as an index field. After  you
+                            create your index field, you can create a document
+                            metadata  field  using  `  DocumentAttributeTarget
+                            https://docs.aws.amazon.com/enterpriseq/latest/APIReference/API_DocumentAttributeTarget.html`__
+                            . Amazon Q will then map your newly created  docu-
+                            ment attribute to your index field.
+
+                            You can also use this with ` DocumentAttributeCon-
+                            dition
+                            https://docs.aws.amazon.com/enterpriseq/latest/APIReference/API_DocumentAttributeCondition.html`__
+                            .
+
+                            attributeValueOperator -> (string)
+                               TRUE to delete the existing  target  value  for
+                               your specified target attribute key. You cannot
+                               create a target value and set this to TRUE .
+
+                            key -> (string)
+                               The identifier of the target document attribute
+                               or  metadata  field.  For example, 'Department'
+                               could be an identifier for the target attribute
+                               or  metadata field that includes the department
+                               names associated with the documents.
+
+                            value -> (tagged union structure)
+                               The value of a document attribute. You can only
+                               provide one value for a document attribute.
+
+                               NOTE:
+                                   This  is a Tagged Union structure. Only one
+                                   of the following top level keys can be set:
+                                   dateValue,    longValue,   stringListValue,
+                                   stringValue.
+
+                               dateValue -> (timestamp)
+                                   A date expressed as an ISO 8601 string.
+
+                                   It's important for the time zone to be  in-
+                                   cluded  in  the  ISO 8601 date-time format.
+                                   For example,  2012-03-25T12:30:10+01:00  is
+                                   the  ISO  8601  date-time  format for March
+                                   25th 2012 at 12:30PM (plus 10  seconds)  in
+                                   Central European Time.
+
+                               longValue -> (long)
+                                   A long integer value.
+
+                               stringListValue -> (list)
+                                   A list of strings.
+
+                                   (string)
+
+                               stringValue -> (string)
+                                   A string.
+
+                 postExtractionHookConfiguration -> (structure)
+                     Provides  the  configuration  information  for invoking a
+                     Lambda function in Lambda to alter document metadata  and
+                     content when ingesting documents into Amazon Q.
+
+                     You    can   configure   your   Lambda   function   using
+                     PreExtractionHookConfiguration if you want to  apply  ad-
+                     vanced alterations on the original or raw documents.
+
+                     If you want to apply advanced alterations on the Amazon Q
+                     structured documents,  you  must  configure  your  Lambda
+                     function using PostExtractionHookConfiguration .
+
+                     You  can  only  invoke one Lambda function. However, this
+                     function can invoke other functions it requires.
+
+                     For more information, see Custom document enrichment .
+
+                     invocationCondition -> (structure)
+                        The condition used for when a Lambda  function  should
+                        be invoked.
+
+                        For example, you can specify a condition that if there
+                        are empty date-time values, then Amazon Q  should  in-
+                        voke a function that inserts the current date-time.
+
+                        key -> (string)
+                            The  identifier of the document attribute used for
+                            the condition.
+
+                            For example, 'Source_URI' could be  an  identifier
+                            for  the attribute or metadata field that contains
+                            source URIs associated with the documents.
+
+                            Amazon Q currently doesn't support  _document_body
+                            as an attribute key used for the condition.
+
+                        operator -> (string)
+                            The  identifier of the document attribute used for
+                            the condition.
+
+                            For example, 'Source_URI' could be  an  identifier
+                            for  the attribute or metadata field that contains
+                            source URIs associated with the documents.
+
+                            Amazon Kendra currently does  not  support  _docu-
+                            ment_body  as an attribute key used for the condi-
+                            tion.
+
+                        value -> (tagged union structure)
+                            The value of a document attribute.  You  can  only
+                            provide one value for a document attribute.
+
+                            NOTE:
+                               This  is  a Tagged Union structure. Only one of
+                               the following top level keys can be set:  date-
+                               Value, longValue, stringListValue, stringValue.
+
+                            dateValue -> (timestamp)
+                               A date expressed as an ISO 8601 string.
+
+                               It's important for the time zone to be included
+                               in the ISO 8601 date-time format. For  example,
+                               2012-03-25T12:30:10+01:00   is   the  ISO  8601
+                               date-time format for March 25th 2012 at 12:30PM
+                               (plus 10 seconds) in Central European Time.
+
+                            longValue -> (long)
+                               A long integer value.
+
+                            stringListValue -> (list)
+                               A list of strings.
+
+                               (string)
+
+                            stringValue -> (string)
+                               A string.
+
+                     lambdaArn -> (string)
+                        The  Amazon Resource Name (ARN) of a role with permis-
+                        sion to run a Lambda function  during  ingestion.  For
+                        more  information,  see  IAM roles for Custom Document
+                        Enrichment (CDE) .
+
+                     roleArn -> (string)
+                        The Amazon Resource Name (ARN) of a role with  permis-
+                        sion to run PreExtractionHookConfiguration and PostEx-
+                        tractionHookConfiguration for altering document  meta-
+                        data   and   content  during  the  document  ingestion
+                        process.
+
+                     s3BucketName -> (string)
+                        Stores the original, raw documents or the  structured,
+                        parsed  documents  before and after altering them. For
+                        more information, see Data contracts for Lambda  func-
+                        tions .
+
+                 preExtractionHookConfiguration -> (structure)
+                     Provides  the  configuration  information  for invoking a
+                     Lambda function in Lambda to alter document metadata  and
+                     content when ingesting documents into Amazon Q.
+
+                     You    can   configure   your   Lambda   function   using
+                     PreExtractionHookConfiguration if you want to  apply  ad-
+                     vanced alterations on the original or raw documents.
+
+                     If you want to apply advanced alterations on the Amazon Q
+                     structured documents,  you  must  configure  your  Lambda
+                     function using PostExtractionHookConfiguration .
+
+                     You  can  only  invoke one Lambda function. However, this
+                     function can invoke other functions it requires.
+
+                     For more information, see Custom document enrichment .
+
+                     invocationCondition -> (structure)
+                        The condition used for when a Lambda  function  should
+                        be invoked.
+
+                        For example, you can specify a condition that if there
+                        are empty date-time values, then Amazon Q  should  in-
+                        voke a function that inserts the current date-time.
+
+                        key -> (string)
+                            The  identifier of the document attribute used for
+                            the condition.
+
+                            For example, 'Source_URI' could be  an  identifier
+                            for  the attribute or metadata field that contains
+                            source URIs associated with the documents.
+
+                            Amazon Q currently doesn't support  _document_body
+                            as an attribute key used for the condition.
+
+                        operator -> (string)
+                            The  identifier of the document attribute used for
+                            the condition.
+
+                            For example, 'Source_URI' could be  an  identifier
+                            for  the attribute or metadata field that contains
+                            source URIs associated with the documents.
+
+                            Amazon Kendra currently does  not  support  _docu-
+                            ment_body  as an attribute key used for the condi-
+                            tion.
+
+                        value -> (tagged union structure)
+                            The value of a document attribute.  You  can  only
+                            provide one value for a document attribute.
+
+                            NOTE:
+                               This  is  a Tagged Union structure. Only one of
+                               the following top level keys can be set:  date-
+                               Value, longValue, stringListValue, stringValue.
+
+                            dateValue -> (timestamp)
+                               A date expressed as an ISO 8601 string.
+
+                               It's important for the time zone to be included
+                               in the ISO 8601 date-time format. For  example,
+                               2012-03-25T12:30:10+01:00   is   the  ISO  8601
+                               date-time format for March 25th 2012 at 12:30PM
+                               (plus 10 seconds) in Central European Time.
+
+                            longValue -> (long)
+                               A long integer value.
+
+                            stringListValue -> (list)
+                               A list of strings.
+
+                               (string)
+
+                            stringValue -> (string)
+                               A string.
+
+                     lambdaArn -> (string)
+                        The  Amazon Resource Name (ARN) of a role with permis-
+                        sion to run a Lambda function  during  ingestion.  For
+                        more  information,  see  IAM roles for Custom Document
+                        Enrichment (CDE) .
+
+                     roleArn -> (string)
+                        The Amazon Resource Name (ARN) of a role with  permis-
+                        sion to run PreExtractionHookConfiguration and PostEx-
+                        tractionHookConfiguration for altering document  meta-
+                        data   and   content  during  the  document  ingestion
+                        process.
+
+                     s3BucketName -> (string)
+                        Stores the original, raw documents or the  structured,
+                        parsed  documents  before and after altering them. For
+                        more information, see Data contracts for Lambda  func-
+                        tions .
+
+              id -> (string)
+                 The identifier of the document.
+
+              title -> (string)
+                 The title of the document.
+
+       JSON Syntax:
+
+          [
+            {
+              "accessConfiguration": {
+                "accessControls": [
+                  {
+                    "memberRelation": "AND"|"OR",
+                    "principals": [
+                      {
+                        "group": {
+                          "access": "ALLOW"|"DENY",
+                          "membershipType": "INDEX"|"DATASOURCE",
+                          "name": "string"
+                        },
+                        "user": {
+                          "access": "ALLOW"|"DENY",
+                          "id": "string",
+                          "membershipType": "INDEX"|"DATASOURCE"
+                        }
+                      }
+                      ...
+                    ]
+                  }
+                  ...
+                ],
+                "memberRelation": "AND"|"OR"
+              },
+              "attributes": [
+                {
+                  "name": "string",
+                  "value": {
+                    "dateValue": timestamp,
+                    "longValue": long,
+                    "stringListValue": ["string", ...],
+                    "stringValue": "string"
+                  }
+                }
+                ...
+              ],
+              "content": {
+                "blob": blob,
+                "s3": {
+                  "bucket": "string",
+                  "key": "string"
+                }
+              },
+              "contentType": "PDF"|"HTML"|"MS_WORD"|"PLAIN_TEXT"|"PPT"|"RTF"|"XML"|"XSLT"|"MS_EXCEL"|"CSV"|"JSON"|"MD",
+              "documentEnrichmentConfiguration": {
+                "inlineConfigurations": [
+                  {
+                    "condition": {
+                      "key": "string",
+                      "operator": "GREATER_THAN"|"GREATER_THAN_OR_EQUALS"|"LESS_THAN"|"LESS_THAN_OR_EQUALS"|"EQUALS"|"NOT_EQUALS"|"CONTAINS"|"NOT_CONTAINS"|"EXISTS"|"NOT_EXISTS"|"BEGINS_WITH",
+                      "value": {
+                        "dateValue": timestamp,
+                        "longValue": long,
+                        "stringListValue": ["string", ...],
+                        "stringValue": "string"
+                      }
+                    },
+                    "documentContentOperator": "DELETE",
+                    "target": {
+                      "attributeValueOperator": "DELETE",
+                      "key": "string",
+                      "value": {
+                        "dateValue": timestamp,
+                        "longValue": long,
+                        "stringListValue": ["string", ...],
+                        "stringValue": "string"
+                      }
+                    }
+                  }
+                  ...
+                ],
+                "postExtractionHookConfiguration": {
+                  "invocationCondition": {
+                    "key": "string",
+                    "operator": "GREATER_THAN"|"GREATER_THAN_OR_EQUALS"|"LESS_THAN"|"LESS_THAN_OR_EQUALS"|"EQUALS"|"NOT_EQUALS"|"CONTAINS"|"NOT_CONTAINS"|"EXISTS"|"NOT_EXISTS"|"BEGINS_WITH",
+                    "value": {
+                      "dateValue": timestamp,
+                      "longValue": long,
+                      "stringListValue": ["string", ...],
+                      "stringValue": "string"
+                    }
+                  },
+                  "lambdaArn": "string",
+                  "roleArn": "string",
+                  "s3BucketName": "string"
+                },
+                "preExtractionHookConfiguration": {
+                  "invocationCondition": {
+                    "key": "string",
+                    "operator": "GREATER_THAN"|"GREATER_THAN_OR_EQUALS"|"LESS_THAN"|"LESS_THAN_OR_EQUALS"|"EQUALS"|"NOT_EQUALS"|"CONTAINS"|"NOT_CONTAINS"|"EXISTS"|"NOT_EXISTS"|"BEGINS_WITH",
+                    "value": {
+                      "dateValue": timestamp,
+                      "longValue": long,
+                      "stringListValue": ["string", ...],
+                      "stringValue": "string"
+                    }
+                  },
+                  "lambdaArn": "string",
+                  "roleArn": "string",
+                  "s3BucketName": "string"
+                }
+              },
+              "id": "string",
+              "title": "string"
+            }
+            ...
+          ]
+
+       --index-id (string)
+          The identifier of the Amazon Q index to add the documents to.
+
+       --role-arn (string)
+          The Amazon Resource Name (ARN) of an IAM role with permission to ac-
+          cess your S3 bucket.
+
+       --cli-input-json (string) Performs service operation based on the  JSON
+       string  provided. The JSON string follows the format provided by --gen-
+       erate-cli-skeleton. If other arguments  are  provided  on  the  command
+       line,  the CLI values will override the JSON-provided values. It is not
+       possible to pass arbitrary binary values using a JSON-provided value as
+       the string will be taken literally.
+
+       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
+       output without sending an API request. If provided with no value or the
+       value input, prints a sample input JSON that can be used as an argument
+       for --cli-input-json. If provided with the value output,  it  validates
+       the command inputs and returns a sample output JSON for that command.
+
+GLOBAL OPTIONS
+       --debug (boolean)
+
+       Turn on debug logging.
+
+       --endpoint-url (string)
+
+       Override command's default URL with the given URL.
+
+       --no-verify-ssl (boolean)
+
+       By  default, the AWS CLI uses SSL when communicating with AWS services.
+       For each SSL connection, the AWS CLI will verify SSL certificates. This
+       option overrides the default behavior of verifying SSL certificates.
+
+       --no-paginate (boolean)
+
+       Disable automatic pagination.
+
+       --output (string)
+
+       The formatting style for command output.
+
+       o json
+
+       o text
+
+       o table
+
+       --query (string)
+
+       A JMESPath query to use in filtering the response data.
+
+       --profile (string)
+
+       Use a specific profile from your credential file.
+
+       --region (string)
+
+       The region to use. Overrides config/env settings.
+
+       --version (string)
+
+       Display the version of this tool.
+
+       --color (string)
+
+       Turn on/off color output.
+
+       o on
+
+       o off
+
+       o auto
+
+       --no-sign-request (boolean)
+
+       Do  not  sign requests. Credentials will not be loaded if this argument
+       is provided.
+
+       --ca-bundle (string)
+
+       The CA certificate bundle to use when verifying SSL certificates. Over-
+       rides config/env settings.
+
+       --cli-read-timeout (int)
+
+       The  maximum socket read time in seconds. If the value is set to 0, the
+       socket read will be blocking and not timeout. The default value  is  60
+       seconds.
+
+       --cli-connect-timeout (int)
+
+       The  maximum  socket connect time in seconds. If the value is set to 0,
+       the socket connect will be blocking and not timeout. The default  value
+       is 60 seconds.
+
+OUTPUT
+       failedDocuments -> (list)
+          A  list  of  documents that were not added to the Amazon Q index be-
+          cause the document failed a validation check. Each document contains
+          an  error  message that indicates why the document couldn't be added
+          to the index.
+
+          (structure)
+              A list of documents that could not be removed from an  Amazon  Q
+              index.  Each  entry contains an error message that indicates why
+              the document couldn't be removed from the index.
+
+              dataSourceId -> (string)
+                 The identifier of the Amazon Q  data  source  connector  that
+                 contains the failed document.
+
+              error -> (structure)
+                 An  explanation for why the document couldn't be removed from
+                 the index.
+
+                 errorCode -> (string)
+                     The code associated with the data source sync error.
+
+                 errorMessage -> (string)
+                     The message explaining the data source sync error.
+
+              id -> (string)
+                 The identifier of the document that couldn't be removed  from
+                 the Amazon Q index.
+
+
+
+                                                          BATCH-PUT-DOCUMENT()

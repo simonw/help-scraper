@@ -6,12 +6,17 @@ NAME
        create-job -
 
 DESCRIPTION
+       This operation creates an S3 Batch Operations job.
+
        You can use S3 Batch Operations to perform large-scale batch actions on
        Amazon S3 objects. Batch Operations can run a single action on lists of
        Amazon  S3 objects that you specify. For more information, see S3 Batch
        Operations in the Amazon S3 User Guide .
+          Permissions
 
-       This action creates a S3 Batch Operations job.
+       For information about permissions required to use the Batch Operations,
+       see  Granting permissions for S3 Batch Operations in the Amazon S3 User
+       Guide .
 
        Related actions include:
 
@@ -80,19 +85,69 @@ OPTIONS
                  the specified job will invoke on every object  in  the  mani-
                  fest.
 
+              InvocationSchemaVersion -> (string)
+                 Specifies the schema version for the payload that Batch Oper-
+                 ations sends when invoking an Lambda function. Version 1.0 is
+                 the default. Version 2.0 is required when you use Batch Oper-
+                 ations to invoke Lambda functions that act on directory buck-
+                 ets,  or  if you need to specify UserArguments . For more in-
+                 formation, see Using Lambda with Amazon S3  Batch  Operations
+                 and  Amazon  S3  Express  One Zone in the Amazon Web Services
+                 Storage Blog .
+
+                 WARNING:
+                     Ensure that your Lambda function code expects Invocation-
+                     SchemaVersion   2.0  and  uses  bucket  name  rather than
+                     bucket ARN. If the InvocationSchemaVersion does not match
+                     what  your  Lambda  function expects, your function might
+                     not work as expected.
+
+                 NOTE:
+                     Directory buckets  -  To  initiate  Amazon  Web  Services
+                     Lambda  function  to perform custom actions on objects in
+                     directory buckets, you must specify 2.0 .
+
+              UserArguments -> (map)
+                 Key-value pairs that are passed in the payload that Batch Op-
+                 erations  sends  when  invoking  an Lambda function. You must
+                 specify InvocationSchemaVersion  2.0 for LambdaInvoke  opera-
+                 tions  that include UserArguments . For more information, see
+                 Using Lambda with Amazon S3 Batch Operations  and  Amazon  S3
+                 Express One Zone in the Amazon Web Services Storage Blog .
+
+                 key -> (string)
+
+                 value -> (string)
+
           S3PutObjectCopy -> (structure)
               Directs the specified job to run a PUT Copy object call on every
               object in the manifest.
 
               TargetResource -> (string)
                  Specifies the destination bucket Amazon Resource  Name  (ARN)
-                 for the batch copy operation. For example, to copy objects to
-                 a bucket named destinationBucket  ,  set  the  TargetResource
-                 property to arn:aws:s3:::destinationBucket .
+                 for the batch copy operation.
+
+                 o General purpose buckets - For example, to copy objects to a
+                   general purpose bucket named destinationBucket  ,  set  the
+                   TargetResource property to arn:aws:s3:::destinationBucket .
+
+                 o Directory  buckets  - For example, to copy objects to a di-
+                   rectory bucket named destinationBucket in the  Availability
+                   Zone;  identified by the AZ ID usw2-az2 , set the TargetRe-
+                   source property to arn:aws:s3express:*region* :*account_id*
+                   :/bucket/*destination_bucket_base_name* --*usw2-az2* --x-s3
+                   .
 
               CannedAccessControlList -> (string)
 
+                 NOTE:
+                     This functionality is not supported by directory buckets.
+
               AccessControlGrants -> (list)
+
+                 NOTE:
+                     This functionality is not supported by directory buckets.
+
                  (structure)
                      Grantee -> (structure)
                         TypeIdentifier -> (string)
@@ -109,8 +164,8 @@ OPTIONS
 
               NewObjectMetadata -> (structure)
                  If you don't provide this parameter, Amazon S3 copies all the
-                 metadata from the original objects. If you specify  an  empty
-                 set,  the new objects will have no tags. Otherwise, Amazon S3
+                 metadata  from  the original objects. If you specify an empty
+                 set, the new objects will have no tags. Otherwise, Amazon  S3
                  assigns the supplied tags to the new objects.
 
                  CacheControl -> (string)
@@ -127,18 +182,38 @@ OPTIONS
                      value -> (string)
 
                  ContentLength -> (long)
+                     This member has been deprecated.
 
                  ContentMD5 -> (string)
+                     This member has been deprecated.
 
                  ContentType -> (string)
 
                  HttpExpiresDate -> (timestamp)
 
                  RequesterCharged -> (boolean)
+                     This member has been deprecated.
 
                  SSEAlgorithm -> (string)
 
+                     NOTE:
+                        For directory buckets, only the server-side encryption
+                        with Amazon S3 managed keys (SSE-S3) (AES256 ) is sup-
+                        ported.
+
               NewObjectTagging -> (list)
+                 Specifies  a  list  of tags to add to the destination objects
+                 after they are copied. If NewObjectTagging is not  specified,
+                 the  tags of the source objects are copied to destination ob-
+                 jects by default.
+
+                 NOTE:
+                     Directory buckets - Tags aren't  supported  by  directory
+                     buckets. If your source objects have tags and your desti-
+                     nation bucket is a directory bucket, specify an empty tag
+                     set  in the NewObjectTagging field to prevent copying the
+                     source object tags to the directory bucket.
+
                  (structure)
                      A container for a key-value name pair.
 
@@ -149,54 +224,85 @@ OPTIONS
                         Value of the tag
 
               RedirectLocation -> (string)
-                 Specifies an optional metadata  property  for  website  redi-
-                 rects, x-amz-website-redirect-location . Allows webpage redi-
-                 rects if the object is accessed through a website endpoint.
+                 If the destination bucket is configured as a website,  speci-
+                 fies  an  optional  metadata  property for website redirects,
+                 x-amz-website-redirect-location . Allows webpage redirects if
+                 the object copy is accessed through a website endpoint.
+
+                 NOTE:
+                     This functionality is not supported by directory buckets.
 
               RequesterPays -> (boolean)
 
+                 NOTE:
+                     This functionality is not supported by directory buckets.
+
               StorageClass -> (string)
+                 Specify  the  storage  class for the destination objects in a
+                 Copy operation.
+
+                 NOTE:
+                     Directory buckets - This functionality is  not  supported
+                     by directory buckets.
 
               UnModifiedSinceConstraint -> (timestamp)
 
               SSEAwsKmsKeyId -> (string)
 
+                 NOTE:
+                     This functionality is not supported by directory buckets.
+
               TargetKeyPrefix -> (string)
-                 Specifies the folder prefix that you want the objects  to  be
+                 Specifies  the  folder prefix that you want the objects to be
                  copied into. For example, to copy objects into a folder named
-                 Folder1 in the destination bucket,  set  the  TargetKeyPrefix
+                 Folder1  in  the  destination bucket, set the TargetKeyPrefix
                  property to Folder1 .
 
               ObjectLockLegalHoldStatus -> (string)
-                 The  legal  hold  status  to be applied to all objects in the
+                 The legal hold status to be applied to  all  objects  in  the
                  Batch Operations job.
 
+                 NOTE:
+                     This functionality is not supported by directory buckets.
+
               ObjectLockMode -> (string)
-                 The retention mode to be applied to all objects in the  Batch
+                 The  retention mode to be applied to all objects in the Batch
                  Operations job.
 
+                 NOTE:
+                     This functionality is not supported by directory buckets.
+
               ObjectLockRetainUntilDate -> (timestamp)
-                 The  date when the applied object retention configuration ex-
+                 The date when the applied object retention configuration  ex-
                  pires on all objects in the Batch Operations job.
 
+                 NOTE:
+                     This functionality is not supported by directory buckets.
+
               BucketKeyEnabled -> (boolean)
-                 Specifies whether Amazon S3 should use an S3 Bucket  Key  for
-                 object  encryption  with  server-side encryption using Amazon
-                 Web Services KMS  (SSE-KMS).  Setting  this  header  to  true
-                 causes  Amazon  S3 to use an S3 Bucket Key for object encryp-
+                 Specifies  whether  Amazon S3 should use an S3 Bucket Key for
+                 object encryption with server-side  encryption  using  Amazon
+                 Web  Services  KMS  (SSE-KMS).  Setting  this  header to true
+                 causes Amazon S3 to use an S3 Bucket Key for  object  encryp-
                  tion with SSE-KMS.
 
-                 Specifying this header with an object  action  doesnt  affect
+                 Specifying  this  header  with an object action doesnt affect
                  bucket-level settings for S3 Bucket Key.
 
+                 NOTE:
+                     This functionality is not supported by directory buckets.
+
               ChecksumAlgorithm -> (string)
-                 Indicates  the  algorithm  that  you want Amazon S3 to use to
-                 create the checksum. For more information, see  Checking  ob-
+                 Indicates the algorithm that you want Amazon  S3  to  use  to
+                 create  the  checksum. For more information, see Checking ob-
                  ject integrity in the Amazon S3 User Guide .
 
           S3PutObjectAcl -> (structure)
-              Directs  the  specified  job to run a PutObjectAcl call on every
+              Directs the specified job to run a PutObjectAcl  call  on  every
               object in the manifest.
+
+              NOTE:
+                 This functionality is not supported by directory buckets.
 
               AccessControlPolicy -> (structure)
                  AccessControlList -> (structure)
@@ -219,8 +325,11 @@ OPTIONS
                  CannedAccessControlList -> (string)
 
           S3PutObjectTagging -> (structure)
-              Directs the specified job to run a PUT Object  tagging  call  on
+              Directs  the  specified  job to run a PUT Object tagging call on
               every object in the manifest.
+
+              NOTE:
+                 This functionality is not supported by directory buckets.
 
               TagSet -> (list)
                  (structure)
@@ -233,88 +342,106 @@ OPTIONS
                         Value of the tag
 
           S3DeleteObjectTagging -> (structure)
-              Directs  the  specified  job  to execute a DELETE Object tagging
+              Directs the specified job to execute  a  DELETE  Object  tagging
               call on every object in the manifest.
+
+              NOTE:
+                 This functionality is not supported by directory buckets.
 
           S3InitiateRestoreObject -> (structure)
               Directs the specified job to initiate restore requests for every
               archived object in the manifest.
 
+              NOTE:
+                 This functionality is not supported by directory buckets.
+
               ExpirationInDays -> (integer)
                  This argument specifies how long the S3 Glacier or S3 Glacier
                  Deep Archive object remains available in Amazon S3. S3 Initi-
                  ate Restore Object jobs that target S3 Glacier and S3 Glacier
-                 Deep Archive objects require ExpirationInDays  set  to  1  or
+                 Deep  Archive  objects  require  ExpirationInDays set to 1 or
                  greater.
 
                  Conversely, do not set ExpirationInDays when creating S3 Ini-
-                 tiate Restore Object jobs that target S3  Intelligent-Tiering
-                 Archive  Access and Deep Archive Access tier objects. Objects
-                 in S3 Intelligent-Tiering archive access tiers are  not  sub-
-                 ject  to  restore  expiry, so specifying ExpirationInDays re-
+                 tiate  Restore Object jobs that target S3 Intelligent-Tiering
+                 Archive Access and Deep Archive Access tier objects.  Objects
+                 in  S3  Intelligent-Tiering archive access tiers are not sub-
+                 ject to restore expiry, so  specifying  ExpirationInDays  re-
                  sults in restore request failure.
 
                  S3 Batch Operations jobs can operate either on S3 Glacier and
                  S3 Glacier Deep Archive storage class objects or on S3 Intel-
                  ligent-Tiering Archive Access and Deep Archive Access storage
                  tier objects, but not both types in the same job. If you need
-                 to restore objects of both types  you  must  create  separate
+                 to  restore  objects  of  both types you must create separate
                  Batch Operations jobs.
 
               GlacierJobTier -> (string)
-                 S3  Batch  Operations  supports  STANDARD  and BULK retrieval
+                 S3 Batch Operations  supports  STANDARD  and  BULK  retrieval
                  tiers, but not the EXPEDITED retrieval tier.
 
           S3PutObjectLegalHold -> (structure)
-              Contains the configuration for an S3 Object Lock legal hold  op-
-              eration  that  an S3 Batch Operations job passes to every object
+              Contains  the configuration for an S3 Object Lock legal hold op-
+              eration that an S3 Batch Operations job passes to  every  object
               to the underlying PutObjectLegalHold API operation. For more in-
               formation, see Using S3 Object Lock legal hold with S3 Batch Op-
               erations in the Amazon S3 User Guide .
 
+              NOTE:
+                 This functionality is not supported by directory buckets.
+
               LegalHold -> (structure)
-                 Contains the Object Lock legal hold status to be  applied  to
+                 Contains  the  Object Lock legal hold status to be applied to
                  all objects in the Batch Operations job.
 
                  Status -> (string)
-                     The  Object  Lock  legal hold status to be applied to all
+                     The Object Lock legal hold status to be  applied  to  all
                      objects in the Batch Operations job.
 
           S3PutObjectRetention -> (structure)
               Contains the configuration parameters for the Object Lock reten-
-              tion  action  for  an  S3 Batch Operations job. Batch Operations
+              tion action for an S3 Batch  Operations  job.  Batch  Operations
               passes every object to the underlying PutObjectRetention API op-
-              eration.  For  more information, see Using S3 Object Lock reten-
+              eration. For more information, see Using S3 Object  Lock  reten-
               tion with S3 Batch Operations in the Amazon S3 User Guide .
 
+              NOTE:
+                 This functionality is not supported by directory buckets.
+
               BypassGovernanceRetention -> (boolean)
-                 Indicates if the action should be applied to objects  in  the
+                 Indicates  if  the action should be applied to objects in the
                  Batch Operations job even if they have Object Lock GOVERNANCE
                  type in place.
 
               Retention -> (structure)
-                 Contains the Object Lock retention mode to be applied to  all
-                 objects  in  the  Batch Operations job. For more information,
-                 see Using S3 Object Lock retention with S3  Batch  Operations
+                 Contains  the Object Lock retention mode to be applied to all
+                 objects in the Batch Operations job.  For  more  information,
+                 see  Using  S3 Object Lock retention with S3 Batch Operations
                  in the Amazon S3 User Guide .
 
                  RetainUntilDate -> (timestamp)
-                     The  date when the applied Object Lock retention will ex-
+                     The date when the applied Object Lock retention will  ex-
                      pire on all objects set by the Batch Operations job.
 
                  Mode -> (string)
-                     The Object Lock retention mode to be applied to  all  ob-
+                     The  Object  Lock retention mode to be applied to all ob-
                      jects in the Batch Operations job.
 
           S3ReplicateObject -> (structure)
               Directs the specified job to invoke ReplicateObject on every ob-
               ject in the job's manifest.
 
+              NOTE:
+                 This functionality is not supported by directory buckets.
+
        JSON Syntax:
 
           {
             "LambdaInvoke": {
-              "FunctionArn": "string"
+              "FunctionArn": "string",
+              "InvocationSchemaVersion": "string",
+              "UserArguments": {"string": "string"
+                ...}
             },
             "S3PutObjectCopy": {
               "TargetResource": "string",
@@ -424,19 +551,24 @@ OPTIONS
           Configuration parameters for the optional job-completion report.
 
           Bucket -> (string)
-              The Amazon Resource Name (ARN) for the  bucket  where  specified
+              The  Amazon  Resource  Name (ARN) for the bucket where specified
               job-completion report will be stored.
+
+              NOTE:
+                 Directory buckets - Directory buckets aren't supported  as  a
+                 location  for  Batch  Operations  to store job completion re-
+                 ports.
 
           Format -> (string)
               The format of the specified job-completion report.
 
           Enabled -> (boolean)
-              Indicates  whether the specified job will generate a job-comple-
+              Indicates whether the specified job will generate a  job-comple-
               tion report.
 
           Prefix -> (string)
               An optional prefix to describe where in the specified bucket the
-              job-completion  report  will  be  stored.  Amazon  S3 stores the
+              job-completion report will  be  stored.  Amazon  S3  stores  the
               job-completion report at <prefix>/job-<job-id>/report.json .
 
           ReportScope -> (string)
@@ -458,32 +590,33 @@ OPTIONS
           }
 
        --client-request-token (string)
-          An  idempotency  token  to ensure that you don't accidentally submit
-          the same request twice. You can use any string  up  to  the  maximum
+          An idempotency token to ensure that you  don't  accidentally  submit
+          the  same  request  twice.  You can use any string up to the maximum
           length.
 
        --manifest (structure)
           Configuration parameters for the manifest.
 
           Spec -> (structure)
-              Describes  the  format  of  the specified job's manifest. If the
-              manifest is in CSV format, also describes the columns  contained
+              Describes the format of the specified  job's  manifest.  If  the
+              manifest  is in CSV format, also describes the columns contained
               within the manifest.
 
               Format -> (string)
-                 Indicates  which of the available formats the specified mani-
+                 Indicates which of the available formats the specified  mani-
                  fest uses.
 
               Fields -> (list)
-                 If the specified manifest  object  is  in  the  S3BatchOpera-
-                 tions_CSV_20180820  format, this element describes which col-
+                 If  the  specified  manifest  object  is in the S3BatchOpera-
+                 tions_CSV_20180820 format, this element describes which  col-
                  umns contain the required data.
 
                  (string)
 
           Location -> (structure)
-              Contains the information required to locate the specified  job's
-              manifest.
+              Contains  the information required to locate the specified job's
+              manifest. Manifests can't be imported  from  directory  buckets.
+              For more information, see Directory buckets .
 
               ObjectArn -> (string)
                  The Amazon Resource Name (ARN) for a manifest object.
@@ -582,17 +715,27 @@ OPTIONS
               SourceBucket -> (string)
                  The source bucket used by the ManifestGenerator.
 
+                 NOTE:
+                     Directory buckets - Directory buckets aren't supported as
+                     the source buckets used by S3JobManifestGenerator to gen-
+                     erate the job manifest.
+
               ManifestOutputLocation -> (structure)
                  Specifies the location the generated manifest will be written
-                 to.
+                 to. Manifests can't be written to directory buckets. For more
+                 information, see Directory buckets .
 
                  ExpectedManifestBucketOwner -> (string)
-                     The  Account  ID that owns the bucket the generated mani-
+                     The Account ID that owns the bucket the  generated  mani-
                      fest is written to.
 
                  Bucket -> (string)
-                     The bucket ARN the generated manifest should  be  written
+                     The  bucket  ARN the generated manifest should be written
                      to.
+
+                     NOTE:
+                        Directory buckets - Directory buckets aren't supported
+                        as the buckets to store the generated manifest.
 
                  ManifestPrefix -> (string)
                      Prefix identifying one or more objects to which the mani-
@@ -620,9 +763,9 @@ OPTIONS
                      The format of the generated manifest.
 
               Filter -> (structure)
-                 Specifies rules the S3JobManifestGenerator should use to  use
-                 to  decide  whether  an object in the source bucket should or
-                 should not be included in the generated job manifest.
+                 Specifies rules the S3JobManifestGenerator should use to  de-
+                 cide  whether an object in the source bucket should or should
+                 not be included in the generated job manifest.
 
                  EligibleForReplication -> (boolean)
                      Include objects in the generated manifest  only  if  they

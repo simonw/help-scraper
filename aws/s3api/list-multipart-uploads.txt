@@ -6,31 +6,96 @@ NAME
        list-multipart-uploads -
 
 DESCRIPTION
-       This  action lists in-progress multipart uploads. An in-progress multi-
-       part upload is a multipart upload that has  been  initiated  using  the
-       Initiate  Multipart  Upload  request, but has not yet been completed or
-       aborted.
+       This  operation  lists  in-progress  multipart  uploads in a bucket. An
+       in-progress multipart upload is a multipart upload that has been initi-
+       ated  by  the  CreateMultipartUpload request, but has not yet been com-
+       pleted or aborted.
 
-       This action returns at most 1,000 multipart uploads  in  the  response.
-       1,000 multipart uploads is the maximum number of uploads a response can
-       include, which is also the default value. You  can  further  limit  the
-       number of uploads in a response by specifying the max-uploads parameter
-       in the response. If additional multipart uploads satisfy the list  cri-
-       teria,  the response will contain an IsTruncated element with the value
-       true. To list the additional multipart uploads, use the key-marker  and
-       upload-id-marker request parameters.
+       NOTE:
+          Directory buckets - If multipart uploads in a directory  bucket  are
+          in  progress,  you can't delete the bucket until all the in-progress
+          multipart uploads are aborted or completed.
 
-       In the response, the uploads are sorted by key. If your application has
-       initiated more than one multipart upload using  the  same  object  key,
-       then uploads in the response are first sorted by key. Additionally, up-
-       loads are sorted in ascending order within each key by the upload  ini-
-       tiation time.
+       The ListMultipartUploads operation returns a maximum of 1,000 multipart
+       uploads  in  the response. The limit of 1,000 multipart uploads is also
+       the default value. You can further limit the number of uploads in a re-
+       sponse  by  specifying  the max-uploads request parameter. If there are
+       more than 1,000 multipart uploads  that  satisfy  your  ListMultipartU-
+       ploads  request,  the  response returns an IsTruncated element with the
+       value of true , a NextKeyMarker element, and a NextUploadIdMarker  ele-
+       ment.  To list the remaining multipart uploads, you need to make subse-
+       quent ListMultipartUploads requests. In  these  requests,  include  two
+       query  parameters:  key-marker  and upload-id-marker . Set the value of
+       key-marker to the NextKeyMarker value from the previous response. Simi-
+       larly,  set  the  value  of  upload-id-marker to the NextUploadIdMarker
+       value from the previous response.
 
-       For  more information on multipart uploads, see Uploading Objects Using
-       Multipart Upload .
+       NOTE:
+          Directory buckets - The upload-id-marker element and the NextUpload-
+          IdMarker  element aren't supported by directory buckets. To list the
+          additional multipart uploads, you only need  to  set  the  value  of
+          key-marker to the NextKeyMarker value from the previous response.
 
-       For information on permissions required to  use  the  multipart  upload
-       API, see Multipart Upload and Permissions .
+       For more information about multipart uploads, see Uploading Objects Us-
+       ing Multipart Upload in the Amazon S3 User Guide .
+
+       NOTE:
+              Directory buckets - For directory buckets,  you  must  make  re-
+              quests  for this API operation to the Zonal endpoint. These end-
+              points support virtual-hosted-style requests in the format
+              ``
+              https://bucket_name    .s3express-az_id    .*region*    .amazon-
+              aws.com/key-name `` . Path-style requests are not supported. For
+              more information, see Regional and Zonal endpoints in the Amazon
+              S3 User Guide .
+
+              System Message: WARNING/2 (<string>:, line 54)
+                     Inline literal start-string without end-string.
+
+          Permissions
+
+       o General  purpose  bucket  permissions - For information about permis-
+         sions required to use the multipart upload API, see Multipart  Upload
+         and Permissions in the Amazon S3 User Guide .
+
+       o Directory  bucket permissions - To grant access to this API operation
+         on a directory bucket, we recommend that you use the `  CreateSession
+         https://docs.aws.amazon.com/AmazonS3/latest/API/API_CreateSession.html`__
+         API operation  for  session-based  authorization.  Specifically,  you
+         grant  the s3express:CreateSession permission to the directory bucket
+         in a bucket policy or an IAM identity-based policy.  Then,  you  make
+         the  CreateSession  API call on the bucket to obtain a session token.
+         With the session token in your request header, you can make  API  re-
+         quests  to  this operation. After the session token expires, you make
+         another CreateSession API call to generate a new  session  token  for
+         use.  Amazon  Web Services CLI or SDKs create session and refresh the
+         session token automatically to avoid  service  interruptions  when  a
+         session expires. For more information about authorization, see ` Cre-
+         ateSession
+         https://docs.aws.amazon.com/AmazonS3/latest/API/API_CreateSession.html`__
+         .
+
+         Sorting of multipart uploads in response
+
+       o General purpose bucket - In the  ListMultipartUploads  response,  the
+         multipart uploads are sorted based on two criteria:
+
+         o Key-based  sorting  - Multipart uploads are initially sorted in as-
+           cending order based on their object keys.
+
+         o Time-based sorting - For uploads that share the  same  object  key,
+           they are further sorted in ascending order based on the upload ini-
+           tiation time. Among uploads with the same key,  the  one  that  was
+           initiated  first  will  appear  before the ones that were initiated
+           later.
+
+       o Directory bucket - In the ListMultipartUploads response,  the  multi-
+         part  uploads  aren't  sorted  lexicographically  based on the object
+         keys.
+
+         HTTP Host header syntax
+          Directory buckets - The HTTP Host header syntax  is  ``  Bucket_name
+          .s3express-az_id .*region* .amazonaws.com`` .
 
        The following operations are related to ListMultipartUploads :
 
@@ -84,33 +149,54 @@ SYNOPSIS
 OPTIONS
        --bucket (string)
           The name of the bucket to which the multipart upload was initiated.
+              Directory buckets - When you use this operation with a directory
+              bucket, you must use virtual-hosted-style requests in the format
+              `` Bucket_name  .s3express-az_id  .*region*  .amazonaws.com``  .
+              Path-style  requests  are  not supported. Directory bucket names
+              must be unique in the chosen  Availability  Zone.  Bucket  names
+              must follow the format `` bucket_base_name --az-id --x-s3`` (for
+              example, `` DOC-EXAMPLE-BUCKET --usw2-az2 --x-s3`` ). For infor-
+              mation  about  bucket  naming restrictions, see Directory bucket
+              naming rules in the Amazon S3 User Guide .
 
-          When using this action with an access point,  you  must  direct  re-
-          quests to the access point hostname. The access point hostname takes
-          the form AccessPointName -AccountId  .s3-accesspoint.*Region*  .ama-
-          zonaws.com.  When using this action with an access point through the
-          Amazon Web Services SDKs, you provide the access point ARN in  place
-          of  the  bucket  name. For more information about access point ARNs,
-          see Using access points in the Amazon S3 User Guide .
+              Access points - When you use this action with an  access  point,
+              you  must  provide the alias of the access point in place of the
+              bucket name or specify the access point ARN. When using the  ac-
+              cess  point  ARN,  you  must direct requests to the access point
+              hostname. The access point hostname takes the form  AccessPoint-
+              Name  -AccountId  .s3-accesspoint.*Region*  .amazonaws.com. When
+              using this action with an access point through  the  Amazon  Web
+              Services  SDKs, you provide the access point ARN in place of the
+              bucket name. For more information about access point  ARNs,  see
+              Using access points in the Amazon S3 User Guide .
 
-          When you use this action with Amazon S3 on Outposts, you must direct
-          requests to the S3 on Outposts hostname. The S3 on Outposts hostname
-          takes the form `` AccessPointName -AccountId  .*outpostID*  .s3-out-
-          posts.*Region*  .amazonaws.com``  . When you use this action with S3
-          on Outposts through the Amazon Web Services SDKs,  you  provide  the
-          Outposts  access point ARN in place of the bucket name. For more in-
-          formation about S3 on Outposts ARNs, see What is S3 on Outposts?  in
-          the Amazon S3 User Guide .
+          NOTE:
+                 Access  points  and  Object Lambda access points are not sup-
+                 ported by directory buckets.
+
+              S3 on Outposts - When you use this action with Amazon S3 on Out-
+              posts,  you must direct requests to the S3 on Outposts hostname.
+              The S3 on Outposts hostname takes the  form  ``  AccessPointName
+              -AccountId .*outpostID* .s3-outposts.*Region* .amazonaws.com`` .
+              When you use this action with S3 on Outposts through the  Amazon
+              Web  Services SDKs, you provide the Outposts access point ARN in
+              place of the bucket name. For more information about S3 on  Out-
+              posts  ARNs,  see  What is S3 on Outposts? in the Amazon S3 User
+              Guide .
 
        --delimiter (string)
           Character you use to group keys.
 
-          All  keys that contain the same string between the prefix, if speci-
+          All keys that contain the same string between the prefix, if  speci-
           fied, and the first occurrence of the delimiter after the prefix are
           grouped under a single result element, CommonPrefixes . If you don't
-          specify the prefix parameter, then the substring starts at  the  be-
-          ginning  of  the key. The keys that are grouped under CommonPrefixes
+          specify  the  prefix parameter, then the substring starts at the be-
+          ginning of the key. The keys that are grouped  under  CommonPrefixes
           result element are not returned elsewhere in the response.
+
+          NOTE:
+              Directory  buckets  -  For directory buckets, / is the only sup-
+              ported delimiter.
 
        --encoding-type (string)
           Requests Amazon S3 to encode the object keys  in  the  response  and
@@ -130,63 +216,70 @@ OPTIONS
           different  grouping  of keys. (You can think of using prefix to make
           groups in the same way that you'd use a folder in a file system.)
 
+          NOTE:
+              Directory buckets - For directory buckets,  only  prefixes  that
+              end in a delimiter (/ ) are supported.
+
        --expected-bucket-owner (string)
-          The account ID of the expected bucket owner. If the bucket is  owned
-          by  a different account, the request fails with the HTTP status code
-          403 Forbidden (access denied).
+          The  account ID of the expected bucket owner. If the account ID that
+          you provide does not match the actual owner of the bucket,  the  re-
+          quest fails with the HTTP status code 403 Forbidden (access denied).
 
        --request-payer (string)
-          Confirms that the requester knows that they will be charged for  the
-          request.  Bucket owners need not specify this parameter in their re-
-          quests. If either the source or destination Amazon S3 bucket has Re-
-          quester  Pays  enabled,  the  requester  will  pay for corresponding
-          charges to copy the object. For information  about  downloading  ob-
-          jects  from  Requester  Pays buckets, see Downloading Objects in Re-
-          quester Pays Buckets in the Amazon S3 User Guide .
+          Confirms  that the requester knows that they will be charged for the
+          request. Bucket owners need not specify this parameter in their  re-
+          quests.  If either the source or destination S3 bucket has Requester
+          Pays enabled, the requester will pay for  corresponding  charges  to
+          copy  the object. For information about downloading objects from Re-
+          quester Pays buckets, see  Downloading  Objects  in  Requester  Pays
+          Buckets in the Amazon S3 User Guide .
+
+          NOTE:
+              This functionality is not supported for directory buckets.
 
           Possible values:
 
           o requester
 
-       --cli-input-json (string) Performs service operation based on the  JSON
-       string  provided. The JSON string follows the format provided by --gen-
-       erate-cli-skeleton. If other arguments  are  provided  on  the  command
-       line,  the CLI values will override the JSON-provided values. It is not
+       --cli-input-json  (string) Performs service operation based on the JSON
+       string provided. The JSON string follows the format provided by  --gen-
+       erate-cli-skeleton.  If  other  arguments  are  provided on the command
+       line, the CLI values will override the JSON-provided values. It is  not
        possible to pass arbitrary binary values using a JSON-provided value as
        the string will be taken literally.
 
        --starting-token (string)
-          A  token to specify where to start paginating. This is the NextToken
+          A token to specify where to start paginating. This is the  NextToken
           from a previously truncated response.
 
           For usage examples, see Pagination in the AWS Command Line Interface
           User Guide .
 
        --page-size (integer)
-          The  size of each page to get in the AWS service call. This does not
+          The size of each page to get in the AWS service call. This does  not
           affect the number of items returned in the command's output. Setting
-          a  smaller  page  size results in more calls to the AWS service, re-
-          trieving fewer items in each call. This can  help  prevent  the  AWS
+          a smaller page size results in more calls to the  AWS  service,  re-
+          trieving  fewer  items  in  each call. This can help prevent the AWS
           service calls from timing out.
 
           For usage examples, see Pagination in the AWS Command Line Interface
           User Guide .
 
        --max-items (integer)
-          The total number of items to return in the command's output. If  the
-          total  number of items available is more than the value specified, a
+          The  total number of items to return in the command's output. If the
+          total number of items available is more than the value specified,  a
           NextToken is provided in the command's output. To resume pagination,
           provide the NextToken value in the starting-token argument of a sub-
-          sequent command. Do not use the NextToken response element  directly
+          sequent  command. Do not use the NextToken response element directly
           outside of the AWS CLI.
 
           For usage examples, see Pagination in the AWS Command Line Interface
           User Guide .
 
-       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
+       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
        output without sending an API request. If provided with no value or the
        value input, prints a sample input JSON that can be used as an argument
-       for  --cli-input-json.  If provided with the value output, it validates
+       for --cli-input-json. If provided with the value output,  it  validates
        the command inputs and returns a sample output JSON for that command.
 
 GLOBAL OPTIONS
@@ -200,7 +293,7 @@ GLOBAL OPTIONS
 
        --no-verify-ssl (boolean)
 
-       By default, the AWS CLI uses SSL when communicating with AWS  services.
+       By  default, the AWS CLI uses SSL when communicating with AWS services.
        For each SSL connection, the AWS CLI will verify SSL certificates. This
        option overrides the default behavior of verifying SSL certificates.
 
@@ -246,7 +339,7 @@ GLOBAL OPTIONS
 
        --no-sign-request (boolean)
 
-       Do not sign requests. Credentials will not be loaded if  this  argument
+       Do  not  sign requests. Credentials will not be loaded if this argument
        is provided.
 
        --ca-bundle (string)
@@ -256,28 +349,28 @@ GLOBAL OPTIONS
 
        --cli-read-timeout (int)
 
-       The maximum socket read time in seconds. If the value is set to 0,  the
-       socket  read  will be blocking and not timeout. The default value is 60
+       The  maximum socket read time in seconds. If the value is set to 0, the
+       socket read will be blocking and not timeout. The default value  is  60
        seconds.
 
        --cli-connect-timeout (int)
 
-       The maximum socket connect time in seconds. If the value is set  to  0,
-       the  socket connect will be blocking and not timeout. The default value
+       The  maximum  socket connect time in seconds. If the value is set to 0,
+       the socket connect will be blocking and not timeout. The default  value
        is 60 seconds.
 
 EXAMPLES
        NOTE:
-          To use the following examples, you must have the AWS  CLI  installed
-          and  configured.  See  the Getting started guide in the AWS CLI User
+          To  use  the following examples, you must have the AWS CLI installed
+          and configured. See the Getting started guide in the  AWS  CLI  User
           Guide for more information.
 
-          Unless otherwise  stated,  all  examples  have  unix-like  quotation
-          rules.  These  examples  will  need to be adapted to your terminal's
+          Unless  otherwise  stated,  all  examples  have  unix-like quotation
+          rules. These examples will need to be  adapted  to  your  terminal's
           quoting rules. See Using quotation marks with strings in the AWS CLI
           User Guide .
 
-       The  following  command lists all of the active multipart uploads for a
+       The following command lists all of the active multipart uploads  for  a
        bucket named my-bucket:
 
           aws s3api list-multipart-uploads --bucket my-bucket
@@ -304,13 +397,13 @@ EXAMPLES
               "CommonPrefixes": []
           }
 
-       In progress multipart uploads incur storage costs in  Amazon  S3.  Com-
+       In  progress  multipart  uploads incur storage costs in Amazon S3. Com-
        plete or abort an active multipart upload to remove its parts from your
        account.
 
 OUTPUT
        Bucket -> (string)
-          The name of the bucket to which the multipart upload was  initiated.
+          The  name of the bucket to which the multipart upload was initiated.
           Does not return the access point ARN or access point alias if used.
 
        KeyMarker -> (string)
@@ -319,38 +412,52 @@ OUTPUT
        UploadIdMarker -> (string)
           Upload ID after which listing began.
 
+          NOTE:
+              This functionality is not supported for directory buckets.
+
        NextKeyMarker -> (string)
-          When  a  list  is  truncated,  this element specifies the value that
-          should be used for the key-marker request parameter in a  subsequent
+          When a list is truncated, this  element  specifies  the  value  that
+          should  be used for the key-marker request parameter in a subsequent
           request.
 
        Prefix -> (string)
-          When  a  prefix  is provided in the request, this field contains the
-          specified prefix. The result contains only keys  starting  with  the
+          When a prefix is provided in the request, this  field  contains  the
+          specified  prefix.  The  result contains only keys starting with the
           specified prefix.
+
+          NOTE:
+              Directory buckets - For directory buckets,  only  prefixes  that
+              end in a delimiter (/ ) are supported.
 
        Delimiter -> (string)
           Contains  the  delimiter  you specified in the request. If you don't
           specify a delimiter in your request, this element is absent from the
           response.
 
+          NOTE:
+              Directory  buckets  -  For directory buckets, / is the only sup-
+              ported delimiter.
+
        NextUploadIdMarker -> (string)
-          When  a  list  is  truncated,  this element specifies the value that
-          should be used for the upload-id-marker request parameter in a  sub-
+          When a list is truncated, this  element  specifies  the  value  that
+          should  be used for the upload-id-marker request parameter in a sub-
           sequent request.
+
+          NOTE:
+              This functionality is not supported for directory buckets.
 
        MaxUploads -> (integer)
           Maximum number of multipart uploads that could have been included in
           the response.
 
        IsTruncated -> (boolean)
-          Indicates whether the returned list of multipart  uploads  is  trun-
-          cated.  A  value  of true indicates that the list was truncated. The
+          Indicates  whether  the  returned list of multipart uploads is trun-
+          cated. A value of true indicates that the list  was  truncated.  The
           list can be truncated if the number of multipart uploads exceeds the
           limit allowed or specified by max uploads.
 
        Uploads -> (list)
-          Container  for  elements related to a particular multipart upload. A
+          Container for elements related to a particular multipart  upload.  A
           response can contain zero or more Upload elements.
 
           (structure)
@@ -360,7 +467,7 @@ OUTPUT
                  Upload ID that identifies the multipart upload.
 
               Key -> (string)
-                 Key of the object for which the multipart upload  was  initi-
+                 Key  of  the object for which the multipart upload was initi-
                  ated.
 
               Initiated -> (timestamp)
@@ -369,13 +476,21 @@ OUTPUT
               StorageClass -> (string)
                  The class of storage used to store the object.
 
+                 NOTE:
+                     Directory buckets - Only the S3 Express One Zone  storage
+                     class is supported by directory buckets to store objects.
+
               Owner -> (structure)
                  Specifies  the owner of the object that is part of the multi-
                  part upload.
 
+                 NOTE:
+                     Directory buckets - The bucket owner is returned  as  the
+                     object owner for all the objects.
+
                  DisplayName -> (string)
-                     Container for the display name of the owner.  This  value
-                     is  only  supported  in the following Amazon Web Services
+                     Container  for  the display name of the owner. This value
+                     is only supported in the following  Amazon  Web  Services
                      Regions:
 
                      o US East (N. Virginia)
@@ -394,6 +509,10 @@ OUTPUT
 
                      o South America (So Paulo)
 
+                     NOTE:
+                        This  functionality  is  not  supported  for directory
+                        buckets.
+
                  ID -> (string)
                      Container for the ID of the owner.
 
@@ -405,8 +524,18 @@ OUTPUT
                      provides  the  Canonical  User ID. If the principal is an
                      IAM User, it provides a user ARN value.
 
+                     NOTE:
+                        Directory buckets - If the principal is an Amazon  Web
+                        Services  account, it provides the Amazon Web Services
+                        account ID. If the principal is an IAM User,  it  pro-
+                        vides a user ARN value.
+
                  DisplayName -> (string)
                      Name of the Principal.
+
+                     NOTE:
+                        This  functionality  is  not  supported  for directory
+                        buckets.
 
               ChecksumAlgorithm -> (string)
                  The algorithm that was used to create a checksum of  the  ob-
@@ -418,29 +547,36 @@ OUTPUT
           fixes  element. The distinct key prefixes are returned in the Prefix
           child element.
 
+          NOTE:
+              Directory buckets - For directory buckets,  only  prefixes  that
+              end in a delimiter (/ ) are supported.
+
           (structure)
               Container for all (if there are any) keys between Prefix and the
-              next  occurrence of the string specified by a delimiter. Common-
-              Prefixes lists keys that act like subdirectories in  the  direc-
-              tory  specified  by Prefix. For example, if the prefix is notes/
-              and the delimiter is a slash (/) as  in  notes/summer/july,  the
+              next occurrence of the string specified by a delimiter.  Common-
+              Prefixes  lists  keys that act like subdirectories in the direc-
+              tory specified by Prefix. For example, if the prefix  is  notes/
+              and  the  delimiter  is a slash (/) as in notes/summer/july, the
               common prefix is notes/summer/.
 
               Prefix -> (string)
                  Container for the specified common prefix.
 
        EncodingType -> (string)
-          Encoding  type  used  by  Amazon S3 to encode object keys in the re-
+          Encoding type used by Amazon S3 to encode object  keys  in  the  re-
           sponse.
 
-          If you specify the encoding-type request parameter,  Amazon  S3  in-
-          cludes  this  element  in the response, and returns encoded key name
+          If  you  specify  the encoding-type request parameter, Amazon S3 in-
+          cludes this element in the response, and returns  encoded  key  name
           values in the following response elements:
               Delimiter , KeyMarker , Prefix , NextKeyMarker , Key .
 
        RequestCharged -> (string)
-          If present, indicates that the requester  was  successfully  charged
+          If  present,  indicates  that the requester was successfully charged
           for the request.
+
+          NOTE:
+              This functionality is not supported for directory buckets.
 
 
 
