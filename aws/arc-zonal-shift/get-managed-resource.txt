@@ -7,13 +7,14 @@ NAME
 
 DESCRIPTION
        Get  information  about  a  resource  that's  been registered for zonal
-       shifts with Amazon Route 53 Application Recovery Controller in this AWS
-       Region.  Resources that are registered for zonal shifts are managed re-
-       sources in Route 53 ARC.
+       shifts with Amazon Route 53 Application  Recovery  Controller  in  this
+       Amazon  Web  Services  Region.  Resources that are registered for zonal
+       shifts are managed resources in Route  53  ARC.  You  can  start  zonal
+       shifts and configure zonal autoshift for managed resources.
 
-       At this time, you can only start a zonal shift for  Network  Load  Bal-
-       ancers  and  Application  Load Balancers with cross-zone load balancing
-       turned off.
+       At  this  time, you can only start a zonal shift or configure zonal au-
+       toshift for Network Load Balancers and Application Load Balancers  with
+       cross-zone load balancing turned off.
 
        See also: AWS API Documentation
 
@@ -39,12 +40,11 @@ SYNOPSIS
 
 OPTIONS
        --resource-identifier (string)
-          The identifier for the resource to include in  a  zonal  shift.  The
-          identifier is the Amazon Resource Name (ARN) for the resource.
+          The identifier for the resource to shift away traffic for. The iden-
+          tifier is the Amazon Resource Name (ARN) for the resource.
 
-          At this time, you can only start a zonal shift for Network Load Bal-
-          ancers and Application Load Balancers with cross-zone load balancing
-          turned off.
+          At this time, supported resources are Network Load Balancers and Ap-
+          plication Load Balancers with cross-zone load balancing turned off.
 
        --cli-input-json  (string) Performs service operation based on the JSON
        string provided. The JSON string follows the format provided by  --gen-
@@ -149,8 +149,141 @@ OUTPUT
        arn -> (string)
           The Amazon Resource Name (ARN) for the resource.
 
+       autoshifts -> (list)
+          An array of the autoshifts that are active for the resource.
+
+          (structure)
+              A complex structure that lists an autoshift  that  is  currently
+              active  for  a  managed  resource  and information about the au-
+              toshift.
+
+              For more information, see How zonal autoshift and practice  runs
+              work  in the Amazon Route 53 Application Recovery Controller De-
+              veloper Guide.
+
+              appliedStatus -> (string)
+                 The appliedStatus field specifies which  application  traffic
+                 shift is in effect for a resource when there is more than one
+                 traffic shift active. There can be more than one  application
+                 traffic  shift  in progress at the same time - that is, prac-
+                 tice run zonal shifts, customer-started zonal shifts,  or  an
+                 autoshift. The appliedStatus field for an autoshift for a re-
+                 source can have one of two values: APPLIED or  NOT_APPLIED  .
+                 The  zonal shift or autoshift that is currently in effect for
+                 the resource has an applied status set to APPLIED .
+
+                 The overall principle for precedence  is  that  zonal  shifts
+                 that  you  start  as  a  customer take precedence autoshifts,
+                 which take precedence  over  practice  runs.  That  is,  cus-
+                 tomer-started  zonal shifts > autoshifts > practice run zonal
+                 shifts.
+
+                 For more information, see How zonal  autoshift  and  practice
+                 runs  work  in  the Amazon Route 53 Application Recovery Con-
+                 troller Developer Guide.
+
+              awayFrom -> (string)
+                 The Availability Zone that traffic is shifted away from for a
+                 resource, when Amazon Web Services starts an autoshift. Until
+                 the autoshift ends, traffic for the resource is  instead  di-
+                 rected to other Availability Zones in the Amazon Web Services
+                 Region. An autoshift can end for  a  resource,  for  example,
+                 when  Amazon  Web  Services ends the autoshift for the Avail-
+                 ability Zone or when you disable zonal autoshift for the  re-
+                 source.
+
+              startTime -> (timestamp)
+                 The time (UTC) when the autoshift started.
+
        name -> (string)
           The name of the resource.
+
+       practiceRunConfiguration -> (structure)
+          The practice run configuration for zonal autoshift that's associated
+          with the resource.
+
+          blockedDates -> (list)
+              An array of one or more dates that you can specify  when  Amazon
+              Web Services does not start practice runs for a resource.
+
+              Specify  blocked dates, in UTC, in the format YYYY-MM-DD , sepa-
+              rated by spaces.
+
+              (string)
+
+          blockedWindows -> (list)
+              An array of one or more windows of days and times that  you  can
+              block Route 53 ARC from starting practice runs for a resource.
+
+              Specify   the   blocked   windows   in  UTC,  using  the  format
+              DAY:HH:MM-DAY:HH:MM  ,  separated  by   spaces.   For   example,
+              MON:18:30-MON:19:30 TUE:18:30-TUE:19:30 .
+
+              (string)
+
+          blockingAlarms -> (list)
+              The  blocking  alarm for practice runs is an optional alarm that
+              you can specify that blocks practice runs when the alarm  is  in
+              an ALARM state.
+
+              (structure)
+                 A  control condition is an alarm that you specify for a prac-
+                 tice run. When you configure practice  runs  with  zonal  au-
+                 toshift for a resource, you specify Amazon CloudWatch alarms,
+                 which you create in CloudWatch to use with the practice  run.
+                 The alarms that you specify are an outcome alarm , to monitor
+                 application health during practice runs  and,  optionally,  a
+                 blocking alarm , to block practice runs from starting.
+
+                 Control condition alarms do not apply for autoshifts.
+
+                 For  more  information, see Considerations when you configure
+                 zonal autoshift in the Amazon Route 53  Application  Recovery
+                 Controller Developer Guide.
+
+                 alarmIdentifier -> (string)
+                     The  Amazon Resource Name (ARN) for the Amazon CloudWatch
+                     alarm that you specify as a control condition for a prac-
+                     tice run.
+
+                 type -> (string)
+                     The  type of alarm specified for a practice run. The only
+                     valid value is CLOUDWATCH .
+
+          outcomeAlarms -> (list)
+              The outcome alarm for practice runs is an alarm that you specify
+              that ends a practice run when the alarm is in an ALARM state.
+
+              (structure)
+                 A  control condition is an alarm that you specify for a prac-
+                 tice run. When you configure practice  runs  with  zonal  au-
+                 toshift for a resource, you specify Amazon CloudWatch alarms,
+                 which you create in CloudWatch to use with the practice  run.
+                 The alarms that you specify are an outcome alarm , to monitor
+                 application health during practice runs  and,  optionally,  a
+                 blocking alarm , to block practice runs from starting.
+
+                 Control condition alarms do not apply for autoshifts.
+
+                 For  more  information, see Considerations when you configure
+                 zonal autoshift in the Amazon Route 53  Application  Recovery
+                 Controller Developer Guide.
+
+                 alarmIdentifier -> (string)
+                     The  Amazon Resource Name (ARN) for the Amazon CloudWatch
+                     alarm that you specify as a control condition for a prac-
+                     tice run.
+
+                 type -> (string)
+                     The  type of alarm specified for a practice run. The only
+                     valid value is CLOUDWATCH .
+
+       zonalAutoshiftStatus -> (string)
+          The status for zonal autoshift for a resource.  When  the  autoshift
+          status  is  ENABLED  ,  Amazon Web Services shifts traffic for a re-
+          source away from an Availability Zone, on your behalf,  when  Amazon
+          Web  Services  determines  that there's an issue in the Availability
+          Zone that could potentially affect customers.
 
        zonalShifts -> (list)
           The zonal shifts that are currently active for a resource.
@@ -160,14 +293,32 @@ OUTPUT
               resource and their statuses for the resource.
 
               appliedStatus -> (string)
-                 An  appliedStatus  for  a zonal shift for a resource can have
-                 one of two values: APPLIED or NOT_APPLIED .
+                 The  appliedStatus  field specifies which application traffic
+                 shift is in effect for a resource when there is more than one
+                 traffic  shift active. There can be more than one application
+                 traffic shift in progress at the same time - that  is,  prac-
+                 tice  run  zonal shifts, customer-started zonal shifts, or an
+                 autoshift. The appliedStatus field for an autoshift for a re-
+                 source  can  have one of two values: APPLIED or NOT_APPLIED .
+                 The zonal shift or autoshift that is currently in effect  for
+                 the resource has an applied status set to APPLIED .
+
+                 The  overall  principle  for  precedence is that zonal shifts
+                 that you start as  a  customer  take  precedence  autoshifts,
+                 which  take  precedence  over  practice  runs.  That is, cus-
+                 tomer-started zonal shifts > autoshifts > practice run  zonal
+                 shifts.
+
+                 For  more  information,  see How zonal autoshift and practice
+                 runs work in the Amazon Route 53  Application  Recovery  Con-
+                 troller Developer Guide.
 
               awayFrom -> (string)
-                 The Availability Zone that traffic is moved away from  for  a
-                 resource  when you start a zonal shift. Until the zonal shift
+                 The  Availability  Zone that traffic is moved away from for a
+                 resource when you start a zonal shift. Until the zonal  shift
                  expires or you cancel it, traffic for the resource is instead
-                 moved to other Availability Zones in the AWS Region.
+                 moved to other Availability Zones in the Amazon Web  Services
+                 Region.
 
               comment -> (string)
                  A comment that you enter about the zonal shift. Only the lat-
@@ -176,18 +327,45 @@ OUTPUT
                  string.
 
               expiryTime -> (timestamp)
-                 The expiry time (expiration time)  for  the  zonal  shift.  A
-                 zonal  shift  is temporary and must be set to expire when you
-                 start the zonal shift. You can initially set a zonal shift to
-                 expire  in  a  maximum of three days (72 hours). However, you
-                 can update a zonal shift to set a new expiration at any time.
+                 The expiry time  (expiration  time)  for  a  customer-started
+                 zonal  shift.  A  zonal shift is temporary and must be set to
+                 expire when you start the zonal shift. You can initially  set
+                 a  zonal  shift  to  expire  in  a  maximum of three days (72
+                 hours). However, you can update a zonal shift to  set  a  new
+                 expiration at any time.
 
-                 When you start a zonal shift, you specify how long  you  want
-                 it  to  be  active,  which Route 53 ARC converts to an expiry
-                 time (expiration time). You can cancel a zonal shift, for ex-
-                 ample, if you're ready to restore traffic to the Availability
-                 Zone. Or you can update the zonal shift  to  specify  another
-                 length of time to expire in.
+                 When  you  start a zonal shift, you specify how long you want
+                 it to be active, which Route 53 ARC  converts  to  an  expiry
+                 time  (expiration  time).  You  can cancel a zonal shift when
+                 you're ready to restore traffic to the Availability Zone,  or
+                 just wait for it to expire. Or you can update the zonal shift
+                 to specify another length of time to expire in.
+
+              practiceRunOutcome -> (string)
+                 The outcome, or end state, returned for a practice  run.  The
+                 following values can be returned:
+
+                 o PENDING: Outcome value when a practice run is in progress.
+
+                 o SUCCEEDED:  Outcome  value when the outcome alarm specified
+                   for the practice run configuration  does  not  go  into  an
+                   ALARM  state  during the practice run, and the practice run
+                   was not interrupted before it  completed  the  expected  30
+                   minute zonal shift.
+
+                 o INTERRUPTED:  Outcome  value  when  the  practice  run  was
+                   stopped before the expected 30 minute zonal shift duration,
+                   or  there  was  another  problem with the practice run that
+                   created an inconclusive outcome.
+
+                 o FAILED: Outcome value when the outcome alarm specified  for
+                   the  practice  run  configuration  goes into an ALARM state
+                   during the practice run, and the practice run was  not  in-
+                   terrupted before it completed.
+
+                 For   more  information  about  practice  run  outcomes,  see
+                 Considerations when you configure zonal autoshift in the Ama-
+                 zon Route 53 Application Recovery Controller Developer Guide.
 
               resourceIdentifier -> (string)
                  The  identifier for the resource to include in a zonal shift.
@@ -199,7 +377,7 @@ OUTPUT
                  load balancing turned off.
 
               startTime -> (timestamp)
-                 The time (UTC) when the zonal shift is started.
+                 The time (UTC) when the zonal shift starts.
 
               zonalShiftId -> (string)
                  The identifier of a zonal shift.
