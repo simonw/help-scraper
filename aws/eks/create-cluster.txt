@@ -62,6 +62,7 @@ SYNOPSIS
           [--tags <value>]
           [--encryption-config <value>]
           [--outpost-config <value>]
+          [--access-config <value>]
           [--kubernetes-version <value>]
           [--cli-input-json <value>]
           [--generate-cli-skeleton <value>]
@@ -146,10 +147,10 @@ OPTIONS
               Kubernetes  API  server  endpoint. Communication to the endpoint
               from addresses outside of the CIDR blocks that  you  specify  is
               denied. The default value is 0.0.0.0/0 . If you've disabled pri-
-              vate endpoint access and you have nodes or Fargate pods  in  the
-              cluster, then ensure that you specify the necessary CIDR blocks.
-              For more information, see Amazon  EKS  cluster  endpoint  access
-              control in the * Amazon EKS User Guide * .
+              vate endpoint access, make sure that you specify  the  necessary
+              CIDR  blocks  for every node and Fargate Pod in the cluster. For
+              more information, see Amazon EKS cluster endpoint access control
+              in the * Amazon EKS User Guide * .
 
               (string)
 
@@ -185,12 +186,12 @@ OPTIONS
               o Doesn't overlap with any CIDR block assigned to the  VPC  that
                 you selected for VPC.
 
-              o Between /24 and /12.
+              o Between /24 and /12 .
 
               WARNING:
                  You  can  only  specify a custom CIDR block when you create a
-                 cluster and can't change this value once the cluster is  cre-
-                 ated.
+                 cluster. You can't change this value  after  the  cluster  is
+                 created.
 
           ipFamily -> (string)
               Specify  which  IP  family  is used to assign Kubernetes pod and
@@ -267,13 +268,13 @@ OPTIONS
           }
 
        --client-request-token (string)
-          Unique,  case-sensitive  identifier  that  you provide to ensure the
+          A  unique,  case-sensitive identifier that you provide to ensure the
           idempotency of the request.
 
        --tags (map)
-          The metadata to apply to the cluster to assist  with  categorization
-          and  organization. Each tag consists of a key and an optional value.
-          You define both.
+          Metadata that assists with categorization and organization. Each tag
+          consists of a key and an optional value. You define both. Tags don't
+          propagate to any other cluster or Amazon Web Services resources.
 
           key -> (string)
               One part of a key-value pair that make up a tag. A key is a gen-
@@ -301,7 +302,7 @@ OPTIONS
 
               resources -> (list)
                  Specifies  the  resources to be encrypted. The only supported
-                 value is "secrets".
+                 value is secrets .
 
                  (string)
 
@@ -384,6 +385,32 @@ OPTIONS
             "controlPlanePlacement": {
               "groupName": "string"
             }
+          }
+
+       --access-config (structure)
+          The access configuration for the cluster.
+
+          bootstrapClusterCreatorAdminPermissions -> (boolean)
+              Specifies whether or not the cluster creator IAM  principal  was
+              set  as  a  cluster  admin  access entry during cluster creation
+              time. The default value is true .
+
+          authenticationMode -> (string)
+              The desired authentication mode for the cluster. If you create a
+              cluster  by  using  the  EKS  API,  Amazon Web Services SDKs, or
+              CloudFormation, the default is CONFIG_MAP . If  you  create  the
+              cluster by using the Amazon Web Services Management Console, the
+              default value is API_AND_CONFIG_MAP .
+
+       Shorthand Syntax:
+
+          bootstrapClusterCreatorAdminPermissions=boolean,authenticationMode=string
+
+       JSON Syntax:
+
+          {
+            "bootstrapClusterCreatorAdminPermissions": true|false,
+            "authenticationMode": "API"|"API_AND_CONFIG_MAP"|"CONFIG_MAP"
           }
 
        --kubernetes-version (string)
@@ -594,14 +621,13 @@ OUTPUT
           The full description of your new cluster.
 
           name -> (string)
-              The name of the cluster.
+              The name of your cluster.
 
           arn -> (string)
               The Amazon Resource Name (ARN) of the cluster.
 
           createdAt -> (timestamp)
-              The Unix epoch timestamp in seconds for  when  the  cluster  was
-              created.
+              The Unix epoch timestamp at object creation.
 
           version -> (string)
               The Kubernetes server version for the cluster.
@@ -610,15 +636,15 @@ OUTPUT
               The endpoint for your Kubernetes API server.
 
           roleArn -> (string)
-              The  Amazon  Resource  Name  (ARN) of the IAM role that provides
-              permissions for the Kubernetes control plane to  make  calls  to
+              The Amazon Resource Name (ARN) of the  IAM  role  that  provides
+              permissions  for  the  Kubernetes control plane to make calls to
               Amazon Web Services API operations on your behalf.
 
           resourcesVpcConfig -> (structure)
-              The  VPC configuration used by the cluster control plane. Amazon
-              EKS VPC resources have specific requirements  to  work  properly
-              with Kubernetes. For more information, see Cluster VPC Consider-
-              ations and Cluster Security Group Considerations in  the  Amazon
+              The VPC configuration used by the cluster control plane.  Amazon
+              EKS  VPC  resources  have specific requirements to work properly
+              with Kubernetes. For more information, see Cluster VPC consider-
+              ations  and  Cluster security group considerations in the Amazon
               EKS User Guide .
 
               subnetIds -> (list)
@@ -628,47 +654,37 @@ OUTPUT
 
               securityGroupIds -> (list)
                  The security groups associated with the cross-account elastic
-                 network interfaces that are used to allow  communication  be-
+                 network  interfaces  that are used to allow communication be-
                  tween your nodes and the Kubernetes control plane.
 
                  (string)
 
               clusterSecurityGroupId -> (string)
                  The cluster security group that was created by Amazon EKS for
-                 the cluster. Managed node groups use this security group  for
+                 the  cluster. Managed node groups use this security group for
                  control-plane-to-data-plane communication.
 
               vpcId -> (string)
                  The VPC associated with your cluster.
 
               endpointPublicAccess -> (boolean)
-                 This  parameter  indicates  whether the Amazon EKS public API
-                 server endpoint is enabled. If  the  Amazon  EKS  public  API
-                 server  endpoint  is  disabled, your cluster's Kubernetes API
-                 server can only receive requests that originate  from  within
-                 the cluster VPC.
+                 Whether the public API server endpoint is enabled.
 
               endpointPrivateAccess -> (boolean)
-                 This  parameter  indicates whether the Amazon EKS private API
-                 server endpoint is enabled. If the  Amazon  EKS  private  API
-                 server  endpoint  is  enabled,  Kubernetes  API requests that
-                 originate from within your cluster's VPC use the private  VPC
+                 This parameter indicates whether the Amazon EKS  private  API
+                 server  endpoint  is  enabled.  If the Amazon EKS private API
+                 server endpoint is  enabled,  Kubernetes  API  requests  that
+                 originate  from within your cluster's VPC use the private VPC
                  endpoint instead of traversing the internet. If this value is
-                 disabled and you have nodes or Fargate pods in  the  cluster,
-                 then  ensure  that  publicAccessCidrs  includes the necessary
+                 disabled  and  you have nodes or Fargate pods in the cluster,
+                 then ensure that  publicAccessCidrs  includes  the  necessary
                  CIDR blocks for communication with the nodes or Fargate pods.
-                 For  more information, see Amazon EKS cluster endpoint access
+                 For more information, see Amazon EKS cluster endpoint  access
                  control in the * Amazon EKS User Guide * .
 
               publicAccessCidrs -> (list)
-                 The CIDR blocks that are allowed  access  to  your  cluster's
-                 public  Kubernetes  API server endpoint. Communication to the
-                 endpoint from addresses outside of the listed CIDR blocks  is
-                 denied.  The  default value is 0.0.0.0/0 . If you've disabled
-                 private endpoint access and you have nodes or Fargate pods in
-                 the  cluster,  then ensure that the necessary CIDR blocks are
-                 listed. For more information, see Amazon EKS cluster endpoint
-                 access control in the * Amazon EKS User Guide * .
+                 The  CIDR  blocks  that  are allowed access to your cluster's
+                 public Kubernetes API server endpoint.
 
                  (string)
 
@@ -676,36 +692,36 @@ OUTPUT
               The Kubernetes network configuration for the cluster.
 
               serviceIpv4Cidr -> (string)
-                 The  CIDR  block that Kubernetes pod and service IP addresses
-                 are assigned from. Kubernetes assigns addresses from an  IPv4
-                 CIDR  block  assigned to a subnet that the node is in. If you
-                 didn't specify a CIDR block when  you  created  the  cluster,
-                 then   Kubernetes   assigns   addresses   from   either   the
+                 The CIDR block that Kubernetes Pod and Service object IP  ad-
+                 dresses  are assigned from. Kubernetes assigns addresses from
+                 an IPv4 CIDR block assigned to a subnet that the node is  in.
+                 If you didn't specify a CIDR block when you created the clus-
+                 ter,  then  Kubernetes  assigns  addresses  from  either  the
                  10.100.0.0/16 or 172.20.0.0/16 CIDR blocks. If this was spec-
                  ified, then it was specified when the cluster was created and
                  it can't be changed.
 
               serviceIpv6Cidr -> (string)
-                 The CIDR block that Kubernetes pod and service  IP  addresses
+                 The  CIDR  block that Kubernetes pod and service IP addresses
                  are assigned from if you created a 1.21 or later cluster with
-                 version 1.10.1 or later of the  Amazon  VPC  CNI  add-on  and
+                 version  1.10.1  or  later  of  the Amazon VPC CNI add-on and
                  specified ipv6 for ipFamily when you created the cluster. Ku-
-                 bernetes assigns service addresses from the unique local  ad-
-                 dress  range  (fc00::/7  ) because you can't specify a custom
+                 bernetes  assigns service addresses from the unique local ad-
+                 dress range (fc00::/7 ) because you can't  specify  a  custom
                  IPv6 CIDR block when you create the cluster.
 
               ipFamily -> (string)
-                 The IP family used to assign Kubernetes pod  and  service  IP
-                 addresses.  The  IP family is always ipv4 , unless you have a
-                 1.21 or later cluster running version 1.10.1 or later of  the
-                 Amazon VPC CNI add-on and specified ipv6 when you created the
-                 cluster.
+                 The  IP  family used to assign Kubernetes Pod and Service ob-
+                 jects IP addresses. The IP family is always ipv4 , unless you
+                 have  a 1.21 or later cluster running version 1.10.1 or later
+                 of the Amazon VPC CNI plugin  for  Kubernetes  and  specified
+                 ipv6 when you created the cluster.
 
           logging -> (structure)
               The logging configuration for your cluster.
 
               clusterLogging -> (list)
-                 The cluster control  plane  logging  configuration  for  your
+                 The  cluster  control  plane  logging  configuration for your
                  cluster.
 
                  (structure)
@@ -718,17 +734,17 @@ OUTPUT
                         (string)
 
                      enabled -> (boolean)
-                        If a log type is enabled, that log  type  exports  its
-                        control  plane  logs to CloudWatch Logs. If a log type
-                        isn't enabled, that log type doesn't export  its  con-
-                        trol  plane  logs. Each individual log type can be en-
+                        If  a  log  type is enabled, that log type exports its
+                        control plane logs to CloudWatch Logs. If a  log  type
+                        isn't  enabled,  that log type doesn't export its con-
+                        trol plane logs. Each individual log type can  be  en-
                         abled or disabled independently.
 
           identity -> (structure)
               The identity provider information for the cluster.
 
               oidc -> (structure)
-                 An object representing the OpenID Connect  identity  provider
+                 An  object  representing the OpenID Connect identity provider
                  information.
 
                  issuer -> (string)
@@ -741,31 +757,35 @@ OUTPUT
               The certificate-authority-data for your cluster.
 
               data -> (string)
-                 The  Base64-encoded  certificate data required to communicate
+                 The Base64-encoded certificate data required  to  communicate
                  with your cluster. Add this to the certificate-authority-data
                  section of the kubeconfig file for your cluster.
 
           clientRequestToken -> (string)
-              Unique, case-sensitive identifier that you provide to ensure the
-              idempotency of the request.
+              A unique, case-sensitive identifier that you provide  to  ensure
+              the idempotency of the request.
 
           platformVersion -> (string)
               The platform version of your Amazon EKS cluster. For more infor-
-              mation, see Platform Versions in the * Amazon EKS User Guide * .
+              mation about clusters deployed on the Amazon Web Services Cloud,
+              see  Platform  versions  in  the * Amazon EKS User Guide * . For
+              more information about local clusters deployed  on  an  Outpost,
+              see  Amazon  EKS local cluster platform versions in the * Amazon
+              EKS User Guide * .
 
           tags -> (map)
-              The  metadata that you apply to the cluster to assist with cate-
-              gorization and organization. Each tag consists of a key  and  an
-              optional  value.  You define both. Cluster tags do not propagate
-              to any other resources associated with the cluster.
+              Metadata that assists with categorization and organization. Each
+              tag  consists  of  a key and an optional value. You define both.
+              Tags don't propagate to any other cluster or Amazon Web Services
+              resources.
 
               key -> (string)
-                 One part of a key-value pair that make up a tag. A key  is  a
+                 One  part  of a key-value pair that make up a tag. A key is a
                  general label that acts like a category for more specific tag
                  values.
 
               value -> (string)
-                 The optional part of a key-value pair that make up a  tag.  A
+                 The  optional  part of a key-value pair that make up a tag. A
                  value acts as a descriptor within a tag category (key).
 
           encryptionConfig -> (list)
@@ -775,23 +795,23 @@ OUTPUT
                  The encryption configuration for the cluster.
 
                  resources -> (list)
-                     Specifies  the  resources  to be encrypted. The only sup-
-                     ported value is "secrets".
+                     Specifies the resources to be encrypted.  The  only  sup-
+                     ported value is secrets .
 
                      (string)
 
                  provider -> (structure)
-                     Key Management Service (KMS) key. Either the ARN  or  the
+                     Key  Management  Service (KMS) key. Either the ARN or the
                      alias can be used.
 
                      keyArn -> (string)
-                        Amazon  Resource  Name  (ARN) or alias of the KMS key.
-                        The KMS key must be symmetric and created in the  same
-                        Amazon  Web Services Region as the cluster. If the KMS
-                        key was created in a different account, the IAM  prin-
+                        Amazon Resource Name (ARN) or alias of  the  KMS  key.
+                        The  KMS key must be symmetric and created in the same
+                        Amazon Web Services Region as the cluster. If the  KMS
+                        key  was created in a different account, the IAM prin-
                         cipal must have access to the KMS key. For more infor-
-                        mation, see Allowing users in other accounts to use  a
-                        KMS  key in the Key Management Service Developer Guide
+                        mation,  see Allowing users in other accounts to use a
+                        KMS key in the Key Management Service Developer  Guide
                         .
 
           connectorConfig -> (structure)
@@ -802,28 +822,28 @@ OUTPUT
                  poses.
 
               activationCode -> (string)
-                 A  unique  code  associated with the cluster for registration
+                 A unique code associated with the  cluster  for  registration
                  purposes.
 
               activationExpiry -> (timestamp)
-                 The expiration time of the connected cluster.  The  cluster's
+                 The  expiration  time of the connected cluster. The cluster's
                  YAML file must be applied through the native provider.
 
               provider -> (string)
                  The cluster's cloud service provider.
 
               roleArn -> (string)
-                 The  Amazon  Resource  Name  (ARN) of the role to communicate
+                 The Amazon Resource Name (ARN) of  the  role  to  communicate
                  with services from the connected Kubernetes cluster.
 
           id -> (string)
-              The ID of your local Amazon EKS cluster on an  Amazon  Web  Ser-
-              vices  Outpost.  This property isn't available for an Amazon EKS
+              The  ID  of  your local Amazon EKS cluster on an Amazon Web Ser-
+              vices Outpost. This property isn't available for an  Amazon  EKS
               cluster on the Amazon Web Services cloud.
 
           health -> (structure)
               An object representing the health of your local Amazon EKS clus-
-              ter  on an Amazon Web Services Outpost. This object isn't avail-
+              ter on an Amazon Web Services Outpost. This object isn't  avail-
               able for clusters on the Amazon Web Services cloud.
 
               issues -> (list)
@@ -831,7 +851,7 @@ OUTPUT
                  EKS cluster on an Amazon Web Services Outpost.
 
                  (structure)
-                     An  issue with your local Amazon EKS cluster on an Amazon
+                     An issue with your local Amazon EKS cluster on an  Amazon
                      Web Services Outpost. You can't use this API with an Ama-
                      zon EKS cluster on the Amazon Web Services cloud.
 
@@ -847,29 +867,40 @@ OUTPUT
                         (string)
 
           outpostConfig -> (structure)
-              An  object  representing  the configuration of your local Amazon
+              An object representing the configuration of  your  local  Amazon
               EKS cluster on an Amazon Web Services Outpost. This object isn't
               available for clusters on the Amazon Web Services cloud.
 
               outpostArns -> (list)
-                 The  ARN  of the Outpost that you specified for use with your
+                 The ARN of the Outpost that you specified for use  with  your
                  local Amazon EKS cluster on Outposts.
 
                  (string)
 
               controlPlaneInstanceType -> (string)
-                 The Amazon EC2 instance type used for the control plane.  The
+                 The  Amazon EC2 instance type used for the control plane. The
                  instance type is the same for all control plane instances.
 
               controlPlanePlacement -> (structure)
-                 An  object  representing  the placement configuration for all
-                 the control plane instances of your local Amazon EKS  cluster
-                 on  an Amazon Web Services Outpost. For more information, see
+                 An object representing the placement  configuration  for  all
+                 the  control plane instances of your local Amazon EKS cluster
+                 on an Amazon Web Services Outpost. For more information,  see
                  Capacity considerations in the Amazon EKS User Guide .
 
                  groupName -> (string)
-                     The name of the placement group for the  Kubernetes  con-
+                     The  name  of the placement group for the Kubernetes con-
                      trol plane instances.
+
+          accessConfig -> (structure)
+              The access configuration for the cluster.
+
+              bootstrapClusterCreatorAdminPermissions -> (boolean)
+                 Specifies whether or not the cluster  creator  IAM  principal
+                 was  set  as a cluster admin access entry during cluster cre-
+                 ation time.
+
+              authenticationMode -> (string)
+                 The current authentication mode of the cluster.
 
 
 

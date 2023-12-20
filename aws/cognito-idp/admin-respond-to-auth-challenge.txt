@@ -6,7 +6,15 @@ NAME
        admin-respond-to-auth-challenge -
 
 DESCRIPTION
-       Responds to an authentication challenge, as an administrator.
+       Some  API operations in a user pool generate a challenge, like a prompt
+       for an MFA code, for device authentication that bypasses MFA, or for  a
+       custom authentication challenge. An AdminRespondToAuthChallenge API re-
+       quest provides the answer to that challenge, like a code  or  a  secure
+       remote  password  (SRP). The parameters of a response to an authentica-
+       tion challenge vary with the type of challenge.
+
+       For more information about custom authentication challenges, see Custom
+       authentication challenge Lambda triggers .
 
        NOTE:
           This  action  might  generate  an SMS text message. Starting June 1,
@@ -100,52 +108,78 @@ OPTIONS
           o NEW_PASSWORD_REQUIRED
 
        --challenge-responses (map)
-          The challenge responses. These are inputs corresponding to the value
-          of ChallengeName , for example:
+          The responses to the challenge that you received in the previous re-
+          quest.  Each challenge has its own required response parameters. The
+          following examples are partial JSON request  bodies  that  highlight
+          challenge-response parameters.
 
-          o SMS_MFA  : SMS_MFA_CODE , USERNAME , SECRET_HASH (if app client is
-            configured with client secret).
+          WARNING:
+                 You must provide a SECRET_HASH parameter in all challenge re-
+                 sponses to an app client that has a client secret.
 
-          o PASSWORD_VERIFIER : PASSWORD_CLAIM_SIGNATURE ,  PASSWORD_CLAIM_SE-
-            CRET_BLOCK  , TIMESTAMP , USERNAME , SECRET_HASH (if app client is
-            configured with client secret).
+                 SMS_MFA
+
+              "ChallengeName":        "SMS_MFA",         "ChallengeResponses":
+              {"SMS_MFA_CODE": "[SMS_code]", "USERNAME": "[username]"}
+                 PASSWORD_VERIFIER
+
+              "ChallengeName":    "PASSWORD_VERIFIER",   "ChallengeResponses":
+              {"PASSWORD_CLAIM_SIGNATURE":     "[claim_signature]",     "PASS-
+              WORD_CLAIM_SECRET_BLOCK":  "[secret_block]", "TIMESTAMP": [time-
+              stamp], "USERNAME": "[username]"}
+
+          Add "DEVICE_KEY" when you sign in with a remembered device.
+                 CUSTOM_CHALLENGE
+
+              "ChallengeName":    "CUSTOM_CHALLENGE",    "ChallengeResponses":
+              {"USERNAME": "[username]", "ANSWER": "[challenge_answer]"}
+
+          Add "DEVICE_KEY" when you sign in with a remembered device.
+                 NEW_PASSWORD_REQUIRED
+
+              "ChallengeName":  "NEW_PASSWORD_REQUIRED", "ChallengeResponses":
+              {"NEW_PASSWORD": "[new_password]", "USERNAME": "[username]"}
+
+          To set any required attributes that InitiateAuth returned in an  re-
+          quiredAttributes  parameter,  add "userAttributes.[attribute_name]":
+          "[attribute_value]"  .  This  parameter  can  also  set  values  for
+          writable attributes that aren't required by your user pool.
 
           NOTE:
-              PASSWORD_VERIFIER requires DEVICE_KEY when signing in with a re-
-              membered device.
+                 In a NEW_PASSWORD_REQUIRED challenge response, you can't mod-
+                 ify a required attribute that already has  a  value.  In  Re-
+                 spondToAuthChallenge  ,  set a value for any keys that Amazon
+                 Cognito returned in the  requiredAttributes  parameter,  then
+                 use  the  UpdateUserAttributes  API  operation  to modify the
+                 value of any additional attributes.
 
-          o ADMIN_NO_SRP_AUTH  :  PASSWORD  ,  USERNAME  , SECRET_HASH (if app
-            client is configured with client secret).
+                 SOFTWARE_TOKEN_MFA
 
-          o NEW_PASSWORD_REQUIRED : NEW_PASSWORD , USERNAME , SECRET_HASH  (if
-            app  client is configured with client secret). To set any required
-            attributes that Amazon Cognito returned as  requiredAttributes  in
-            the AdminInitiateAuth response, add a
-            ``
-            userAttributes.*attributename*  ``  parameter.  This parameter can
-            also set values for writable attributes that  aren't  required  by
-            your user pool.
+              "ChallengeName":   "SOFTWARE_TOKEN_MFA",   "ChallengeResponses":
+              {"USERNAME": "[username]", "SOFTWARE_TOKEN_MFA_CODE": [authenti-
+              cator_code]}
+                 DEVICE_SRP_AUTH
 
-          System Message: WARNING/2 (<string>:, line 177)
-            Inline literal start-string without end-string.
+              "ChallengeName":    "DEVICE_SRP_AUTH",     "ChallengeResponses":
+              {"USERNAME":    "[username]",    "DEVICE_KEY":   "[device_key]",
+              "SRP_A": "[srp_a]"}
+                 DEVICE_PASSWORD_VERIFIER
 
-          NOTE:
-              In  a NEW_PASSWORD_REQUIRED challenge response, you can't modify
-              a required attribute that already has a value. In  AdminRespond-
-              ToAuthChallenge  ,  set a value for any keys that Amazon Cognito
-              returned in the requiredAttributes parameter, then use  the  Ad-
-              minUpdateUserAttributes API operation to modify the value of any
-              additional attributes.
+              "ChallengeName":    "DEVICE_PASSWORD_VERIFIER",    "ChallengeRe-
+              sponses":  {"DEVICE_KEY": "[device_key]", "PASSWORD_CLAIM_SIGNA-
+              TURE": "[claim_signature]", "PASSWORD_CLAIM_SECRET_BLOCK": "[se-
+              cret_block]",   "TIMESTAMP":  [timestamp],  "USERNAME":  "[user-
+              name]"}
+                 MFA_SETUP
 
-          o MFA_SETUP requires USERNAME , plus you must use the session  value
-            returned by VerifySoftwareToken in the Session parameter.
+              "ChallengeName": "MFA_SETUP", "ChallengeResponses": {"USERNAME":
+              "[username]"},  "SESSION":  "[Session  ID from VerifySoftwareTo-
+              ken]"
+                 SELECT_MFA_TYPE
 
-          The  value of the USERNAME attribute must be the user's actual user-
-          name, not an alias (such as an email address or  phone  number).  To
-          make  this  simpler, the AdminInitiateAuth response includes the ac-
-          tual username value in the USERNAMEUSER_ID_FOR_SRP  attribute.  This
-          happens  even  if you specified an alias in your call to AdminIniti-
-          ateAuth .
+              "ChallengeName":    "SELECT_MFA_TYPE",     "ChallengeResponses":
+              {"USERNAME":  "[username]",  "ANSWER": "[SMS_MFA or SOFTWARE_TO-
+              KEN_MFA]"}
 
           For more information about SECRET_HASH , see Computing  secret  hash
           values  .  For  information about DEVICE_KEY , see Working with user
