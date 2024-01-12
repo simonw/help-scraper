@@ -2105,23 +2105,35 @@ OUTPUT
                      tasks run on Fargate.
 
                  (structure)
-                     A data volume that's used in a task definition. For tasks
-                     that  use  the  Amazon  Elastic File System (Amazon EFS),
-                     specify an efsVolumeConfiguration  .  For  Windows  tasks
-                     that  use Amazon FSx for Windows File Server file system,
-                     specify a fsxWindowsFileServerVolumeConfiguration  .  For
-                     tasks  that  use a Docker volume, specify a DockerVolume-
-                     Configuration . For tasks that use a bind mount host vol-
-                     ume,  specify  a  host and optional sourcePath . For more
-                     information, see Using Data Volumes in Tasks .
+                     The data volume configuration for  tasks  launched  using
+                     this  task  definition. Specifying a volume configuration
+                     in a task definition is optional. The  volume  configura-
+                     tion  may  contain  multiple  volumes but only one volume
+                     configured at launch is supported. Each volume defined in
+                     the  volume configuration may only specify a name and one
+                     of either configuredAtLaunch ,  dockerVolumeConfiguration
+                     , efsVolumeConfiguration , fsxWindowsFileServerVolumeCon-
+                     figuration , or host . If an empty  volume  configuration
+                     is  specified,  by default Amazon ECS uses a host volume.
+                     For more information, see Using data volumes in tasks .
 
                      name -> (string)
                         The name of the volume. Up to 255  letters  (uppercase
                         and  lowercase), numbers, underscores, and hyphens are
-                        allowed. This name is referenced in  the  sourceVolume
-                        parameter of container definition mountPoints .
+                        allowed.
 
-                        This is required wwhen you use an Amazon EFS volume.
+                        When using a volume configured at launch, the name  is
+                        required and must also be specified as the volume name
+                        in the ServiceVolumeConfiguration or TaskVolumeConfig-
+                        uration parameter when creating your service or stand-
+                        alone task.
+
+                        For all other types of volumes, this  name  is  refer-
+                        enced in the sourceVolume parameter of the mountPoints
+                        object in the container definition.
+
+                        When a volume is using  the  efsVolumeConfiguration  ,
+                        the name is required.
 
                      host -> (structure)
                         This  parameter  is  specified when you use bind mount
@@ -2315,6 +2327,19 @@ OUTPUT
                                A  fully  qualified  domain  name  hosted by an
                                Directory Service Managed Microsoft AD  (Active
                                Directory) or self-hosted AD on Amazon EC2.
+
+                     configuredAtLaunch -> (boolean)
+                        Indicates  whether  the volume should be configured at
+                        launch time. This is used to create Amazon EBS volumes
+                        for  standalone  tasks  or  tasks created as part of a
+                        service. Each task definition revision may  only  have
+                        one volume configured at launch in the volume configu-
+                        ration.
+
+                        To configure a volume at launch time,  use  this  task
+                        definition revision and specify a volumeConfigurations
+                        object when calling the CreateService ,  UpdateService
+                        , RunTask or StartTask APIs.
 
               status -> (string)
                  The status of the task definition.
