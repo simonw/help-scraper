@@ -11,21 +11,30 @@ DESCRIPTION
        feature columns are set to null and the record is no longer retrievable
        by GetRecord or BatchGetRecord . For HardDelete , the  complete  Record
        is  removed from the OnlineStore . In both cases, Feature Store appends
-       the deleted record marker to the OfflineStore with feature  values  set
-       to  null  ,  is_deleted  value  set  to True , and EventTime set to the
-       delete input EventTime .
+       the deleted record marker to the  OfflineStore  .  The  deleted  record
+       marker  is  a record with the same RecordIdentifer as the original, but
+       with is_deleted value set to True , EventTime set to the  delete  input
+       EventTime , and other feature values set to null .
 
-       Note that the EventTime specified in DeleteRecord should be  set  later
-       than  the  EventTime of the existing record in the OnlineStore for that
+       Note  that  the EventTime specified in DeleteRecord should be set later
+       than the EventTime of the existing record in the OnlineStore  for  that
        RecordIdentifer . If it is not, the deletion does not occur:
 
-       o For SoftDelete , the existing (undeleted) record remains in  the  On-
-         lineStore  ,  though the delete record marker is still written to the
+       o For SoftDelete , the existing (not deleted) record remains in the On-
+         lineStore , though the delete record marker is still written  to  the
          OfflineStore .
 
-       o HardDelete returns EventTime : 400  ValidationException  to  indicate
-         that  the delete operation failed. No delete record marker is written
+       o HardDelete  returns  EventTime  : 400 ValidationException to indicate
+         that the delete operation failed. No delete record marker is  written
          to the OfflineStore .
+
+       When  a  record  is  deleted  from the OnlineStore , the deleted record
+       marker is appended to the OfflineStore . If you have the Iceberg  table
+       format  enabled for your OfflineStore , you can remove all history of a
+       record from the OfflineStore using Amazon Athena or Apache  Spark.  For
+       information  on  how to hard delete a record from the OfflineStore with
+       the Iceberg table format enabled, see Delete records from  the  offline
+       store .
 
        See also: AWS API Documentation
 
@@ -55,11 +64,11 @@ SYNOPSIS
 
 OPTIONS
        --feature-group-name (string)
-          The name or Amazon Resource Name  (ARN)  of  the  feature  group  to
+          The  name  or  Amazon  Resource  Name  (ARN) of the feature group to
           delete the record from.
 
        --record-identifier-value-as-string (string)
-          The  value  for  the  RecordIdentifier  that uniquely identifies the
+          The value for the  RecordIdentifier  that  uniquely  identifies  the
           record, in string format.
 
        --event-time (string)
@@ -67,8 +76,8 @@ OPTIONS
           be used to query data at a certain point in time.
 
        --target-stores (list)
-          A  list of stores from which you're deleting the record. By default,
-          Feature Store deletes the record from all of the stores that  you're
+          A list of stores from which you're deleting the record. By  default,
+          Feature  Store deletes the record from all of the stores that you're
           using for the FeatureGroup .
 
           (string)
@@ -82,7 +91,7 @@ OPTIONS
             OfflineStore
 
        --deletion-mode (string)
-          The  name  of the deletion mode for deleting the record. By default,
+          The name of the deletion mode for deleting the record.  By  default,
           the deletion mode is set to SoftDelete .
 
           Possible values:
@@ -91,17 +100,17 @@ OPTIONS
 
           o HardDelete
 
-       --cli-input-json (string) Performs service operation based on the  JSON
-       string  provided. The JSON string follows the format provided by --gen-
-       erate-cli-skeleton. If other arguments  are  provided  on  the  command
-       line,  the CLI values will override the JSON-provided values. It is not
+       --cli-input-json  (string) Performs service operation based on the JSON
+       string provided. The JSON string follows the format provided by  --gen-
+       erate-cli-skeleton.  If  other  arguments  are  provided on the command
+       line, the CLI values will override the JSON-provided values. It is  not
        possible to pass arbitrary binary values using a JSON-provided value as
        the string will be taken literally.
 
-       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
+       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
        output without sending an API request. If provided with no value or the
        value input, prints a sample input JSON that can be used as an argument
-       for --cli-input-json. If provided with the value output,  it  validates
+       for  --cli-input-json.  If provided with the value output, it validates
        the command inputs and returns a sample output JSON for that command.
 
 GLOBAL OPTIONS
@@ -115,7 +124,7 @@ GLOBAL OPTIONS
 
        --no-verify-ssl (boolean)
 
-       By  default, the AWS CLI uses SSL when communicating with AWS services.
+       By default, the AWS CLI uses SSL when communicating with AWS  services.
        For each SSL connection, the AWS CLI will verify SSL certificates. This
        option overrides the default behavior of verifying SSL certificates.
 
@@ -161,7 +170,7 @@ GLOBAL OPTIONS
 
        --no-sign-request (boolean)
 
-       Do  not  sign requests. Credentials will not be loaded if this argument
+       Do not sign requests. Credentials will not be loaded if  this  argument
        is provided.
 
        --ca-bundle (string)
@@ -171,14 +180,14 @@ GLOBAL OPTIONS
 
        --cli-read-timeout (int)
 
-       The  maximum socket read time in seconds. If the value is set to 0, the
-       socket read will be blocking and not timeout. The default value  is  60
+       The maximum socket read time in seconds. If the value is set to 0,  the
+       socket  read  will be blocking and not timeout. The default value is 60
        seconds.
 
        --cli-connect-timeout (int)
 
-       The  maximum  socket connect time in seconds. If the value is set to 0,
-       the socket connect will be blocking and not timeout. The default  value
+       The maximum socket connect time in seconds. If the value is set  to  0,
+       the  socket connect will be blocking and not timeout. The default value
        is 60 seconds.
 
 OUTPUT
