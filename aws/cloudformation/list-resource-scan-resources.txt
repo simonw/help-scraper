@@ -1,25 +1,33 @@
-LIST-DOCUMENT-VERSIONS()                              LIST-DOCUMENT-VERSIONS()
+LIST-RESOURCE-SCAN-RESOURCES()                  LIST-RESOURCE-SCAN-RESOURCES()
 
 
 
 NAME
-       list-document-versions -
+       list-resource-scan-resources -
 
 DESCRIPTION
-       List all versions for a document.
+       Lists  the  resources from a resource scan. The results can be filtered
+       by resource identifier, resource type prefix, tag key, and  tag  value.
+       Only  resources  that match all specified filters are returned. The re-
+       sponse indicates whether each returned resource is already  managed  by
+       CloudFormation.
 
        See also: AWS API Documentation
 
-       list-document-versions is a paginated operation. Multiple API calls may
-       be issued in order to retrieve the entire data set of results. You  can
-       disable pagination by providing the --no-paginate argument.  When using
-       --output text and the --query argument on  a  paginated  response,  the
-       --query  argument  must  extract data from the results of the following
-       query expressions: DocumentVersions
+       list-resource-scan-resources  is  a  paginated  operation. Multiple API
+       calls may be issued in order to retrieve the entire  data  set  of  re-
+       sults.  You can disable pagination by providing the --no-paginate argu-
+       ment.  When using --output text and the --query argument on a paginated
+       response,  the  --query  argument must extract data from the results of
+       the following query expressions: Resources
 
 SYNOPSIS
-            list-document-versions
-          --name <value>
+            list-resource-scan-resources
+          --resource-scan-id <value>
+          [--resource-identifier <value>]
+          [--resource-type-prefix <value>]
+          [--tag-key <value>]
+          [--tag-value <value>]
           [--cli-input-json <value>]
           [--starting-token <value>]
           [--page-size <value>]
@@ -41,9 +49,23 @@ SYNOPSIS
           [--cli-connect-timeout <value>]
 
 OPTIONS
-       --name (string)
-          The name of the document. You can specify an  Amazon  Resource  Name
-          (ARN).
+       --resource-scan-id (string)
+          The Amazon Resource Name (ARN) of the resource scan.
+
+       --resource-identifier (string)
+          If specified, the returned resources will  have  the  specified  re-
+          source identifier (or one of them in the case where the resource has
+          multiple identifiers).
+
+       --resource-type-prefix (string)
+          If specified, the returned resources will be of any of the  resource
+          types with the specified prefix.
+
+       --tag-key (string)
+          If specified, the returned resources will have a matching tag key.
+
+       --tag-value (string)
+          If specified, the returned resources will have a matching tag value.
 
        --cli-input-json  (string) Performs service operation based on the JSON
        string provided. The JSON string follows the format provided by  --gen-
@@ -163,94 +185,46 @@ GLOBAL OPTIONS
        the socket connect will be blocking and not timeout. The default  value
        is 60 seconds.
 
-EXAMPLES
-       NOTE:
-          To  use  the following examples, you must have the AWS CLI installed
-          and configured. See the Getting started guide in the  AWS  CLI  User
-          Guide for more information.
-
-          Unless  otherwise  stated,  all  examples  have  unix-like quotation
-          rules. These examples will need to be  adapted  to  your  terminal's
-          quoting rules. See Using quotation marks with strings in the AWS CLI
-          User Guide .
-
-       To list document versions
-
-       The following list-document-versions example lists all versions  for  a
-       Systems Manager document.
-
-          aws ssm list-document-versions \
-              --name "Example"
-
-       Output:
-
-          {
-              "DocumentVersions": [
-                  {
-                      "Name": "Example",
-                      "DocumentVersion": "1",
-                      "CreatedDate": 1583257938.266,
-                      "IsDefaultVersion": true,
-                      "DocumentFormat": "YAML",
-                      "Status": "Active"
-                  }
-              ]
-          }
-
-       For  more  information, see Sending Commands that Use the Document Ver-
-       sion Parameter in the AWS Systems Manager User Guide.
-
 OUTPUT
-       DocumentVersions -> (list)
-          The document versions.
+       Resources -> (list)
+          List  of  up  to MaxResults resources in the specified resource scan
+          that match all of the specified filters.
 
           (structure)
-              Version information about the document.
+              A scanned  resource  returned  by  ListResourceScanResources  or
+              ListResourceScanRelatedResources .
 
-              Name -> (string)
-                 The document name.
+              ResourceType -> (string)
+                 The  type of the resource, such as AWS::DynamoDB::Table . For
+                 the list of supported resources, see IaC generator  supported
+                 resource types In the CloudFormation User Guide
 
-              DisplayName -> (string)
-                 The friendly name of the SSM document. This value can  differ
-                 for  each version of the document. If you want to update this
-                 value, see  UpdateDocument .
+              ResourceIdentifier -> (map)
+                 A  list  of up to 256 key-value pairs that identifies for the
+                 scanned resource. The key is the name of one of  the  primary
+                 identifiers for the resource. (Primary identifiers are speci-
+                 fied in the primaryIdentifier list in the  resource  schema.)
+                 The  value is the value of that primary identifier. For exam-
+                 ple, for a AWS::DynamoDB::Table resource, the primary identi-
+                 fiers  is  TableName  so  the key-value pair could be "Table-
+                 Name":   "MyDDBTable"   .   For   more    information,    see
+                 primaryIdentifier  in  the CloudFormation Command Line Inter-
+                 face User guide for extension development .
 
-              DocumentVersion -> (string)
-                 The document version.
+                 key -> (string)
 
-              VersionName -> (string)
-                 The version of the artifact associated with the document. For
-                 example,  12.6. This value is unique across all versions of a
-                 document, and can't be changed.
+                 value -> (string)
 
-              CreatedDate -> (timestamp)
-                 The date the document was created.
-
-              IsDefaultVersion -> (boolean)
-                 An identifier for the default version of the document.
-
-              DocumentFormat -> (string)
-                 The document format, either JSON or YAML.
-
-              Status -> (string)
-                 The status of the SSM document, such as Creating ,  Active  ,
-                 Failed , and Deleting .
-
-              StatusInformation -> (string)
-                 A  message  returned  by  Amazon Web Services Systems Manager
-                 that explains the Status value. For example, a Failed  status
-                 might  be  explained  by  the StatusInformation message, "The
-                 specified S3 bucket doesn't exist. Verify that the URL of the
-                 S3 bucket is correct."
-
-              ReviewStatus -> (string)
-                 The current status of the approval review for the latest ver-
-                 sion of the document.
+              ManagedByStack -> (boolean)
+                 If true , the resource is managed by a CloudFormation stack.
 
        NextToken -> (string)
-          The token to use when requesting the next set of items. If there are
-          no additional items to return, the string is empty.
+          If the request doesn't return all the remaining  results,  NextToken
+          is set to a token. To retrieve the next set of results, call ListRe-
+          sourceScanResources again and use that value for the  NextToken  pa-
+          rameter.  If the request returns all results, NextToken is set to an
+          empty string.
 
 
 
-                                                      LIST-DOCUMENT-VERSIONS()
+                                                LIST-RESOURCE-SCAN-RESOURCES()
