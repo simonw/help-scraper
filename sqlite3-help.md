@@ -79,6 +79,8 @@ Version: `3.46.0`
                            If TABLE is specified, only show indexes for
                            tables matching TABLE using the LIKE operator.
 
+.intck ?STEPS_PER_UNLOCK?  Run an incremental integrity check on the db
+
 .limit ?LIMIT? ?VAL?     Display or change the value of an SQLITE_LIMIT
 
 .lint OPTIONS            Report potential schema issues.
