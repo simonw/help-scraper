@@ -18,6 +18,8 @@ SYNOPSIS
           [--customer-metadata-properties <value>]
           [--customer-metadata-properties-to-remove <value>]
           [--additional-inference-specifications-to-add <value>]
+          [--inference-specification <value>]
+          [--source-uri <value>]
           [--cli-input-json <value>]
           [--generate-cli-skeleton <value>]
           [--debug]
@@ -137,14 +139,136 @@ OPTIONS
                             The model artifacts must be in an S3  bucket  that
                             is in the same region as the model package.
 
+                     ModelDataSource -> (structure)
+                        Specifies the location of ML model data to deploy dur-
+                        ing endpoint creation.
+
+                        S3DataSource -> (structure)
+                            Specifies the S3 location of ML model data to  de-
+                            ploy.
+
+                            S3Uri -> (string)
+                               Specifies  the  S3 path of ML model data to de-
+                               ploy.
+
+                            S3DataType -> (string)
+                               Specifies the type of ML model data to deploy.
+
+                               If you choose S3Prefix , S3Uri identifies a key
+                               name  prefix.  SageMaker  uses all objects that
+                               match the specified key name prefix as part  of
+                               the  ML  model data to deploy. A valid key name
+                               prefix identified by S3Uri always ends  with  a
+                               forward slash (/).
+
+                               If  you  choose  S3Object , S3Uri identifies an
+                               object that is the ML model data to deploy.
+
+                            CompressionType -> (string)
+                               Specifies how the ML model data is prepared.
+
+                               If you choose Gzip and choose S3Object  as  the
+                               value  of  S3DataType , S3Uri identifies an ob-
+                               ject that is  a  gzip-compressed  TAR  archive.
+                               SageMaker  will attempt to decompress and untar
+                               the object during model deployment.
+
+                               If you choose None and chooose S3Object as  the
+                               value  of  S3DataType , S3Uri identifies an ob-
+                               ject that represents an uncompressed  ML  model
+                               to deploy.
+
+                               If  you  choose None and choose S3Prefix as the
+                               value of S3DataType , S3Uri  identifies  a  key
+                               name prefix, under which all objects represents
+                               the uncompressed ML model to deploy.
+
+                               If you choose None, then SageMaker will  follow
+                               rules  below when creating model data files un-
+                               der /opt/ml/model directory for use by your in-
+                               ference code:
+
+                               o If  you  choose  S3Object  as  the  value  of
+                                 S3DataType , then SageMaker  will  split  the
+                                 key  of  the S3 object referenced by S3Uri by
+                                 slash (/), and use the last part as the file-
+                                 name  of  the file holding the content of the
+                                 S3 object.
+
+                               o If  you  choose  S3Prefix  as  the  value  of
+                                 S3DataType  ,  then  for each S3 object under
+                                 the key name  pefix  referenced  by  S3Uri  ,
+                                 SageMaker  will  trim  its key by the prefix,
+                                 and use the remainder as the  path  (relative
+                                 to  /opt/ml/model  )  of the file holding the
+                                 content of  the  S3  object.  SageMaker  will
+                                 split  the  remainder by slash (/), using in-
+                                 termediate parts as directory names  and  the
+                                 last part as filename of the file holding the
+                                 content of the S3 object.
+
+                               o Do not use any of the following as file names
+                                 or directory names:
+
+                                 o An empty or blank string
+
+                                 o A string which contains null bytes
+
+                                 o A string longer than 255 bytes
+
+                                 o A single dot (. )
+
+                                 o A double dot (.. )
+
+                               o Ambiguous file names will result in model de-
+                                 ployment failure. For example, if your uncom-
+                                 pressed  ML  model consists of two S3 objects
+                                 s3://mybucket/model/weights   and    s3://my-
+                                 bucket/model/weights/part1  and  you  specify
+                                 s3://mybucket/model/ as the  value  of  S3Uri
+                                 and  S3Prefix  as  the  value of S3DataType ,
+                                 then it will result  in  name  clash  between
+                                 /opt/ml/model/weights  (a  regular  file) and
+                                 /opt/ml/model/weights/ (a directory).
+
+                               o Do not organize the  model  artifacts  in  S3
+                                 console  using  folders  .  When you create a
+                                 folder in S3 console, S3 creates a 0-byte ob-
+                                 ject  with  a  key set to the folder name you
+                                 provide. They key of the 0-byte  object  ends
+                                 with a slash (/) which violates SageMaker re-
+                                 strictions  on  model  artifact  file  names,
+                                 leading to model deployment failure.
+
+                            ModelAccessConfig -> (structure)
+                               Specifies the access configuration file for the
+                               ML model. You can explicitly accept  the  model
+                               end-user  license  agreement  (EULA) within the
+                               ModelAccessConfig . You are responsible for re-
+                               viewing  and  complying with any applicable li-
+                               cense terms and making sure they are acceptable
+                               for your use case before downloading or using a
+                               model.
+
+                               AcceptEula -> (boolean)
+                                   Specifies agreement to the  model  end-user
+                                   license  agreement  (EULA).  The AcceptEula
+                                   value must be explicitly defined as True in
+                                   order  to  accept  the EULA that this model
+                                   requires. You are responsible for reviewing
+                                   and  complying  with any applicable license
+                                   terms and making sure they  are  acceptable
+                                   for your use case before downloading or us-
+                                   ing a model.
+
                      ProductId -> (string)
-                        The  Amazon Web Services Marketplace product ID of the
+                        The Amazon Web Services Marketplace product ID of  the
                         model package.
 
                      Environment -> (map)
-                        The environment variables to set in  the  Docker  con-
-                        tainer.  Each  key and value in the Environment string
-                        to string map can have length of up to 1024.  We  sup-
+                        The  environment  variables  to set in the Docker con-
+                        tainer. Each key and value in the  Environment  string
+                        to  string  map can have length of up to 1024. We sup-
                         port up to 16 entries in the map.
 
                         key -> (string)
@@ -158,40 +282,40 @@ OPTIONS
                             The input configuration object for the model.
 
                      Framework -> (string)
-                        The  machine  learning  framework of the model package
+                        The machine learning framework of  the  model  package
                         container image.
 
                      FrameworkVersion -> (string)
-                        The framework version of the Model  Package  Container
+                        The  framework  version of the Model Package Container
                         Image.
 
                      NearestModelName -> (string)
                         The name of a pre-trained machine learning benchmarked
-                        by Amazon SageMaker Inference Recommender  model  that
+                        by  Amazon  SageMaker Inference Recommender model that
                         matches your model. You can find a list of benchmarked
                         models by calling ListModelMetadata .
 
                      AdditionalS3DataSource -> (structure)
-                        The additional data source that is used during  infer-
+                        The  additional data source that is used during infer-
                         ence in the Docker container for your model package.
 
                         S3DataType -> (string)
-                            The  data  type of the additional data source that
+                            The data type of the additional data  source  that
                             you specify for use in inference or training.
 
                         S3Uri -> (string)
-                            The uniform  resource  identifier  (URI)  used  to
-                            identify  an additional data source used in infer-
+                            The  uniform  resource  identifier  (URI)  used to
+                            identify an additional data source used in  infer-
                             ence or training.
 
                         CompressionType -> (string)
-                            The type of compression  used  for  an  additional
+                            The  type  of  compression  used for an additional
                             data source used in inference or training. Specify
-                            None if your additional data source  is  not  com-
+                            None  if  your  additional data source is not com-
                             pressed.
 
               SupportedTransformInstanceTypes -> (list)
-                 A  list  of  the instance types on which a transformation job
+                 A list of the instance types on which  a  transformation  job
                  can be run or on which an endpoint can be deployed.
 
                  (string)
@@ -224,6 +348,16 @@ OPTIONS
                   "Image": "string",
                   "ImageDigest": "string",
                   "ModelDataUrl": "string",
+                  "ModelDataSource": {
+                    "S3DataSource": {
+                      "S3Uri": "string",
+                      "S3DataType": "S3Prefix"|"S3Object",
+                      "CompressionType": "None"|"Gzip",
+                      "ModelAccessConfig": {
+                        "AcceptEula": true|false
+                      }
+                    }
+                  },
                   "ProductId": "string",
                   "Environment": {"string": "string"
                     ...},
@@ -249,17 +383,306 @@ OPTIONS
             ...
           ]
 
-       --cli-input-json  (string) Performs service operation based on the JSON
-       string provided. The JSON string follows the format provided by  --gen-
-       erate-cli-skeleton.  If  other  arguments  are  provided on the command
-       line, the CLI values will override the JSON-provided values. It is  not
+       --inference-specification (structure)
+          Specifies details about inference jobs that you can run with  models
+          based on this model package, including the following information:
+
+          o The Amazon ECR paths of containers that contain the inference code
+            and model artifacts.
+
+          o The instance types that the model package supports  for  transform
+            jobs and real-time endpoints used for inference.
+
+          o The  input  and output content formats that the model package sup-
+            ports for inference.
+
+          Containers -> (list)
+              The Amazon ECR registry path of the Docker image  that  contains
+              the inference code.
+
+              (structure)
+                 Describes the Docker container for the model package.
+
+                 ContainerHostname -> (string)
+                     The DNS host name for the Docker container.
+
+                 Image -> (string)
+                     The Amazon EC2 Container Registry (Amazon ECR) path where
+                     inference code is stored.
+
+                     If you are using your own custom algorithm instead of  an
+                     algorithm  provided by SageMaker, the inference code must
+                     meet SageMaker requirements. SageMaker supports both reg-
+                     istry/repository[:tag]  and  registry/repository[@digest]
+                     image path formats. For more information, see Using  Your
+                     Own Algorithms with Amazon SageMaker .
+
+                 ImageDigest -> (string)
+                     An MD5 hash of the training algorithm that identifies the
+                     Docker image used for training.
+
+                 ModelDataUrl -> (string)
+                     The Amazon S3 path where the model artifacts,  which  re-
+                     sult  from  model  training,  are  stored. This path must
+                     point to a single gzip compressed  tar  archive  (.tar.gz
+                     suffix).
+
+                     NOTE:
+                        The model artifacts must be in an S3 bucket that is in
+                        the same region as the model package.
+
+                 ModelDataSource -> (structure)
+                     Specifies the location of ML model data to deploy  during
+                     endpoint creation.
+
+                     S3DataSource -> (structure)
+                        Specifies the S3 location of ML model data to deploy.
+
+                        S3Uri -> (string)
+                            Specifies the S3 path of ML model data to deploy.
+
+                        S3DataType -> (string)
+                            Specifies the type of ML model data to deploy.
+
+                            If  you  choose  S3Prefix , S3Uri identifies a key
+                            name prefix. SageMaker uses all objects that match
+                            the  specified  key  name prefix as part of the ML
+                            model data to deploy.  A  valid  key  name  prefix
+                            identified  by  S3Uri  always  ends with a forward
+                            slash (/).
+
+                            If you choose S3Object , S3Uri identifies  an  ob-
+                            ject that is the ML model data to deploy.
+
+                        CompressionType -> (string)
+                            Specifies how the ML model data is prepared.
+
+                            If  you  choose  Gzip  and  choose S3Object as the
+                            value of S3DataType , S3Uri identifies  an  object
+                            that  is  a gzip-compressed TAR archive. SageMaker
+                            will attempt to decompress and  untar  the  object
+                            during model deployment.
+
+                            If  you  choose  None  and chooose S3Object as the
+                            value of S3DataType , S3Uri identifies  an  object
+                            that  represents  an  uncompressed ML model to de-
+                            ploy.
+
+                            If you choose None  and  choose  S3Prefix  as  the
+                            value  of S3DataType , S3Uri identifies a key name
+                            prefix, under which all objects represents the un-
+                            compressed ML model to deploy.
+
+                            If  you  choose  None,  then SageMaker will follow
+                            rules below when creating model data  files  under
+                            /opt/ml/model  directory for use by your inference
+                            code:
+
+                            o If  you  choose  S3Object  as   the   value   of
+                              S3DataType  ,  then SageMaker will split the key
+                              of the S3 object referenced by  S3Uri  by  slash
+                              (/),  and  use  the last part as the filename of
+                              the file holding the content of the S3 object.
+
+                            o If  you  choose  S3Prefix  as   the   value   of
+                              S3DataType  ,  then for each S3 object under the
+                              key name pefix referenced by S3Uri  ,  SageMaker
+                              will trim its key by the prefix, and use the re-
+                              mainder as the path (relative to /opt/ml/model )
+                              of  the  file  holding the content of the S3 ob-
+                              ject. SageMaker  will  split  the  remainder  by
+                              slash (/), using intermediate parts as directory
+                              names and the last part as filename of the  file
+                              holding the content of the S3 object.
+
+                            o Do not use any of the following as file names or
+                              directory names:
+
+                              o An empty or blank string
+
+                              o A string which contains null bytes
+
+                              o A string longer than 255 bytes
+
+                              o A single dot (. )
+
+                              o A double dot (.. )
+
+                            o Ambiguous file names will result  in  model  de-
+                              ployment  failure.  For  example, if your uncom-
+                              pressed ML model  consists  of  two  S3  objects
+                              s3://mybucket/model/weights     and     s3://my-
+                              bucket/model/weights/part1   and   you   specify
+                              s3://mybucket/model/  as  the value of S3Uri and
+                              S3Prefix as the value of S3DataType  ,  then  it
+                              will    result    in    name    clash    between
+                              /opt/ml/model/weights  (a  regular   file)   and
+                              /opt/ml/model/weights/ (a directory).
+
+                            o Do  not  organize the model artifacts in S3 con-
+                              sole using folders . When you create a folder in
+                              S3  console,  S3  creates a 0-byte object with a
+                              key set to the folder name you provide. They key
+                              of the 0-byte object ends with a slash (/) which
+                              violates SageMaker restrictions on  model  arti-
+                              fact  file  names,  leading  to model deployment
+                              failure.
+
+                        ModelAccessConfig -> (structure)
+                            Specifies the access configuration file for the ML
+                            model.   You   can  explicitly  accept  the  model
+                            end-user license agreement (EULA) within the  Mod-
+                            elAccessConfig . You are responsible for reviewing
+                            and complying with any  applicable  license  terms
+                            and  making  sure they are acceptable for your use
+                            case before downloading or using a model.
+
+                            AcceptEula -> (boolean)
+                               Specifies agreement to the model  end-user  li-
+                               cense  agreement  (EULA).  The AcceptEula value
+                               must be explicitly defined as True in order  to
+                               accept  the  EULA that this model requires. You
+                               are responsible  for  reviewing  and  complying
+                               with  any  applicable  license terms and making
+                               sure they are acceptable for your use case  be-
+                               fore downloading or using a model.
+
+                 ProductId -> (string)
+                     The  Amazon  Web  Services  Marketplace product ID of the
+                     model package.
+
+                 Environment -> (map)
+                     The environment variables to set in the Docker container.
+                     Each  key  and  value in the Environment string to string
+                     map can have length of up to 1024. We support  up  to  16
+                     entries in the map.
+
+                     key -> (string)
+
+                     value -> (string)
+
+                 ModelInput -> (structure)
+                     A structure with Model Input details.
+
+                     DataInputConfig -> (string)
+                        The input configuration object for the model.
+
+                 Framework -> (string)
+                     The  machine learning framework of the model package con-
+                     tainer image.
+
+                 FrameworkVersion -> (string)
+                     The framework version of the Model Package Container  Im-
+                     age.
+
+                 NearestModelName -> (string)
+                     The name of a pre-trained machine learning benchmarked by
+                     Amazon SageMaker Inference Recommender model that matches
+                     your  model. You can find a list of benchmarked models by
+                     calling ListModelMetadata .
+
+                 AdditionalS3DataSource -> (structure)
+                     The additional data source that is used during  inference
+                     in the Docker container for your model package.
+
+                     S3DataType -> (string)
+                        The  data  type of the additional data source that you
+                        specify for use in inference or training.
+
+                     S3Uri -> (string)
+                        The uniform resource identifier (URI) used to identify
+                        an  additional data source used in inference or train-
+                        ing.
+
+                     CompressionType -> (string)
+                        The type of compression used for  an  additional  data
+                        source  used in inference or training. Specify None if
+                        your additional data source is not compressed.
+
+          SupportedTransformInstanceTypes -> (list)
+              A list of the instance types on which a transformation  job  can
+              be run or on which an endpoint can be deployed.
+
+              This  parameter is required for unversioned models, and optional
+              for versioned models.
+
+              (string)
+
+          SupportedRealtimeInferenceInstanceTypes -> (list)
+              A list of the instance types that are used  to  generate  infer-
+              ences in real-time.
+
+              This  parameter is required for unversioned models, and optional
+              for versioned models.
+
+              (string)
+
+          SupportedContentTypes -> (list)
+              The supported MIME types for the input data.
+
+              (string)
+
+          SupportedResponseMIMETypes -> (list)
+              The supported MIME types for the output data.
+
+              (string)
+
+       JSON Syntax:
+
+          {
+            "Containers": [
+              {
+                "ContainerHostname": "string",
+                "Image": "string",
+                "ImageDigest": "string",
+                "ModelDataUrl": "string",
+                "ModelDataSource": {
+                  "S3DataSource": {
+                    "S3Uri": "string",
+                    "S3DataType": "S3Prefix"|"S3Object",
+                    "CompressionType": "None"|"Gzip",
+                    "ModelAccessConfig": {
+                      "AcceptEula": true|false
+                    }
+                  }
+                },
+                "ProductId": "string",
+                "Environment": {"string": "string"
+                  ...},
+                "ModelInput": {
+                  "DataInputConfig": "string"
+                },
+                "Framework": "string",
+                "FrameworkVersion": "string",
+                "NearestModelName": "string",
+                "AdditionalS3DataSource": {
+                  "S3DataType": "S3Object"|"S3Prefix",
+                  "S3Uri": "string",
+                  "CompressionType": "None"|"Gzip"
+                }
+              }
+              ...
+            ],
+            "SupportedTransformInstanceTypes": ["ml.m4.xlarge"|"ml.m4.2xlarge"|"ml.m4.4xlarge"|"ml.m4.10xlarge"|"ml.m4.16xlarge"|"ml.c4.xlarge"|"ml.c4.2xlarge"|"ml.c4.4xlarge"|"ml.c4.8xlarge"|"ml.p2.xlarge"|"ml.p2.8xlarge"|"ml.p2.16xlarge"|"ml.p3.2xlarge"|"ml.p3.8xlarge"|"ml.p3.16xlarge"|"ml.c5.xlarge"|"ml.c5.2xlarge"|"ml.c5.4xlarge"|"ml.c5.9xlarge"|"ml.c5.18xlarge"|"ml.m5.large"|"ml.m5.xlarge"|"ml.m5.2xlarge"|"ml.m5.4xlarge"|"ml.m5.12xlarge"|"ml.m5.24xlarge"|"ml.g4dn.xlarge"|"ml.g4dn.2xlarge"|"ml.g4dn.4xlarge"|"ml.g4dn.8xlarge"|"ml.g4dn.12xlarge"|"ml.g4dn.16xlarge", ...],
+            "SupportedRealtimeInferenceInstanceTypes": ["ml.t2.medium"|"ml.t2.large"|"ml.t2.xlarge"|"ml.t2.2xlarge"|"ml.m4.xlarge"|"ml.m4.2xlarge"|"ml.m4.4xlarge"|"ml.m4.10xlarge"|"ml.m4.16xlarge"|"ml.m5.large"|"ml.m5.xlarge"|"ml.m5.2xlarge"|"ml.m5.4xlarge"|"ml.m5.12xlarge"|"ml.m5.24xlarge"|"ml.m5d.large"|"ml.m5d.xlarge"|"ml.m5d.2xlarge"|"ml.m5d.4xlarge"|"ml.m5d.12xlarge"|"ml.m5d.24xlarge"|"ml.c4.large"|"ml.c4.xlarge"|"ml.c4.2xlarge"|"ml.c4.4xlarge"|"ml.c4.8xlarge"|"ml.p2.xlarge"|"ml.p2.8xlarge"|"ml.p2.16xlarge"|"ml.p3.2xlarge"|"ml.p3.8xlarge"|"ml.p3.16xlarge"|"ml.c5.large"|"ml.c5.xlarge"|"ml.c5.2xlarge"|"ml.c5.4xlarge"|"ml.c5.9xlarge"|"ml.c5.18xlarge"|"ml.c5d.large"|"ml.c5d.xlarge"|"ml.c5d.2xlarge"|"ml.c5d.4xlarge"|"ml.c5d.9xlarge"|"ml.c5d.18xlarge"|"ml.g4dn.xlarge"|"ml.g4dn.2xlarge"|"ml.g4dn.4xlarge"|"ml.g4dn.8xlarge"|"ml.g4dn.12xlarge"|"ml.g4dn.16xlarge"|"ml.r5.large"|"ml.r5.xlarge"|"ml.r5.2xlarge"|"ml.r5.4xlarge"|"ml.r5.12xlarge"|"ml.r5.24xlarge"|"ml.r5d.large"|"ml.r5d.xlarge"|"ml.r5d.2xlarge"|"ml.r5d.4xlarge"|"ml.r5d.12xlarge"|"ml.r5d.24xlarge"|"ml.inf1.xlarge"|"ml.inf1.2xlarge"|"ml.inf1.6xlarge"|"ml.inf1.24xlarge"|"ml.dl1.24xlarge"|"ml.c6i.large"|"ml.c6i.xlarge"|"ml.c6i.2xlarge"|"ml.c6i.4xlarge"|"ml.c6i.8xlarge"|"ml.c6i.12xlarge"|"ml.c6i.16xlarge"|"ml.c6i.24xlarge"|"ml.c6i.32xlarge"|"ml.g5.xlarge"|"ml.g5.2xlarge"|"ml.g5.4xlarge"|"ml.g5.8xlarge"|"ml.g5.12xlarge"|"ml.g5.16xlarge"|"ml.g5.24xlarge"|"ml.g5.48xlarge"|"ml.p4d.24xlarge"|"ml.c7g.large"|"ml.c7g.xlarge"|"ml.c7g.2xlarge"|"ml.c7g.4xlarge"|"ml.c7g.8xlarge"|"ml.c7g.12xlarge"|"ml.c7g.16xlarge"|"ml.m6g.large"|"ml.m6g.xlarge"|"ml.m6g.2xlarge"|"ml.m6g.4xlarge"|"ml.m6g.8xlarge"|"ml.m6g.12xlarge"|"ml.m6g.16xlarge"|"ml.m6gd.large"|"ml.m6gd.xlarge"|"ml.m6gd.2xlarge"|"ml.m6gd.4xlarge"|"ml.m6gd.8xlarge"|"ml.m6gd.12xlarge"|"ml.m6gd.16xlarge"|"ml.c6g.large"|"ml.c6g.xlarge"|"ml.c6g.2xlarge"|"ml.c6g.4xlarge"|"ml.c6g.8xlarge"|"ml.c6g.12xlarge"|"ml.c6g.16xlarge"|"ml.c6gd.large"|"ml.c6gd.xlarge"|"ml.c6gd.2xlarge"|"ml.c6gd.4xlarge"|"ml.c6gd.8xlarge"|"ml.c6gd.12xlarge"|"ml.c6gd.16xlarge"|"ml.c6gn.large"|"ml.c6gn.xlarge"|"ml.c6gn.2xlarge"|"ml.c6gn.4xlarge"|"ml.c6gn.8xlarge"|"ml.c6gn.12xlarge"|"ml.c6gn.16xlarge"|"ml.r6g.large"|"ml.r6g.xlarge"|"ml.r6g.2xlarge"|"ml.r6g.4xlarge"|"ml.r6g.8xlarge"|"ml.r6g.12xlarge"|"ml.r6g.16xlarge"|"ml.r6gd.large"|"ml.r6gd.xlarge"|"ml.r6gd.2xlarge"|"ml.r6gd.4xlarge"|"ml.r6gd.8xlarge"|"ml.r6gd.12xlarge"|"ml.r6gd.16xlarge"|"ml.p4de.24xlarge"|"ml.trn1.2xlarge"|"ml.trn1.32xlarge"|"ml.trn1n.32xlarge"|"ml.inf2.xlarge"|"ml.inf2.8xlarge"|"ml.inf2.24xlarge"|"ml.inf2.48xlarge"|"ml.p5.48xlarge"|"ml.m7i.large"|"ml.m7i.xlarge"|"ml.m7i.2xlarge"|"ml.m7i.4xlarge"|"ml.m7i.8xlarge"|"ml.m7i.12xlarge"|"ml.m7i.16xlarge"|"ml.m7i.24xlarge"|"ml.m7i.48xlarge"|"ml.c7i.large"|"ml.c7i.xlarge"|"ml.c7i.2xlarge"|"ml.c7i.4xlarge"|"ml.c7i.8xlarge"|"ml.c7i.12xlarge"|"ml.c7i.16xlarge"|"ml.c7i.24xlarge"|"ml.c7i.48xlarge"|"ml.r7i.large"|"ml.r7i.xlarge"|"ml.r7i.2xlarge"|"ml.r7i.4xlarge"|"ml.r7i.8xlarge"|"ml.r7i.12xlarge"|"ml.r7i.16xlarge"|"ml.r7i.24xlarge"|"ml.r7i.48xlarge", ...],
+            "SupportedContentTypes": ["string", ...],
+            "SupportedResponseMIMETypes": ["string", ...]
+          }
+
+       --source-uri (string)
+          The URI of the source for the model package.
+
+       --cli-input-json (string) Performs service operation based on the  JSON
+       string  provided. The JSON string follows the format provided by --gen-
+       erate-cli-skeleton. If other arguments  are  provided  on  the  command
+       line,  the CLI values will override the JSON-provided values. It is not
        possible to pass arbitrary binary values using a JSON-provided value as
        the string will be taken literally.
 
-       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
+       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
        output without sending an API request. If provided with no value or the
        value input, prints a sample input JSON that can be used as an argument
-       for  --cli-input-json.  If provided with the value output, it validates
+       for --cli-input-json. If provided with the value output,  it  validates
        the command inputs and returns a sample output JSON for that command.
 
 GLOBAL OPTIONS
@@ -273,7 +696,7 @@ GLOBAL OPTIONS
 
        --no-verify-ssl (boolean)
 
-       By default, the AWS CLI uses SSL when communicating with AWS  services.
+       By  default, the AWS CLI uses SSL when communicating with AWS services.
        For each SSL connection, the AWS CLI will verify SSL certificates. This
        option overrides the default behavior of verifying SSL certificates.
 
@@ -319,7 +742,7 @@ GLOBAL OPTIONS
 
        --no-sign-request (boolean)
 
-       Do not sign requests. Credentials will not be loaded if  this  argument
+       Do  not  sign requests. Credentials will not be loaded if this argument
        is provided.
 
        --ca-bundle (string)
@@ -329,14 +752,14 @@ GLOBAL OPTIONS
 
        --cli-read-timeout (int)
 
-       The maximum socket read time in seconds. If the value is set to 0,  the
-       socket  read  will be blocking and not timeout. The default value is 60
+       The  maximum socket read time in seconds. If the value is set to 0, the
+       socket read will be blocking and not timeout. The default value  is  60
        seconds.
 
        --cli-connect-timeout (int)
 
-       The maximum socket connect time in seconds. If the value is set  to  0,
-       the  socket connect will be blocking and not timeout. The default value
+       The  maximum  socket connect time in seconds. If the value is set to 0,
+       the socket connect will be blocking and not timeout. The default  value
        is 60 seconds.
 
 OUTPUT
