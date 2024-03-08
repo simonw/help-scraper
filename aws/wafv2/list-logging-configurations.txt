@@ -286,19 +286,35 @@ OUTPUT
                      UriPath , QueryString , SingleHeader , and Method .
 
                  (structure)
-                     The part of the web request that you want WAF to inspect.
-                     Include the single FieldToMatch type that you want to in-
-                     spect,  with additional specifications as needed, accord-
-                     ing to the type. You specify a single  request  component
-                     in FieldToMatch for each rule statement that requires it.
-                     To inspect more than one component of  the  web  request,
-                     create a separate rule statement for each component.
+                     Specifies  a  web  request component to be used in a rule
+                     match statement or in a logging configuration.
 
-                     Example JSON for a QueryString field to match:
-                        "FieldToMatch": { "QueryString": {} }
+                     o In a rule statement, this is the part of  the  web  re-
+                       quest  that you want WAF to inspect. Include the single
+                       FieldToMatch type that you want to inspect, with  addi-
+                       tional specifications as needed, according to the type.
+                       You specify a single request component in  FieldToMatch
+                       for  each  rule  statement that requires it. To inspect
+                       more than one component of the web  request,  create  a
+                       separate  rule  statement  for  each component. Example
+                       JSON  for  a  QueryString  field  to  match:    "Field-
+                       ToMatch":  {  "QueryString":  {} }   Example JSON for a
+                       Method field to match specification:  "FieldToMatch": {
+                       "Method": { "Name": "DELETE" } }
 
-                     Example JSON for a Method field to match specification:
-                        "FieldToMatch": { "Method": { "Name": "DELETE" } }
+                     o In a logging configuration, this is used in the Redact-
+                       edFields property to specify a field to redact from the
+                       logging records. For this use case, note the following:
+
+                       o Even  though all FieldToMatch settings are available,
+                         the only valid settings for field redaction are  Uri-
+                         Path , QueryString , SingleHeader , and Method .
+
+                       o In  this documentation, the descriptions of the indi-
+                         vidual fields talk about specifying the  web  request
+                         component  to  inspect,  but for field redaction, you
+                         are specifying the component type to redact from  the
+                         logs.
 
                      SingleHeader -> (structure)
                         Inspect  a  single  header.  Provide  the  name of the
@@ -344,49 +360,62 @@ OUTPUT
                         data that you want to send to your web server  as  the
                         HTTP request body, such as data from a form.
 
-                        A  limited  amount of the request body is forwarded to
-                        WAF for inspection by the underlying host service. For
-                        regional  resources,  the  limit is 8 KB (8,192 bytes)
-                        and for CloudFront distributions, the limit is  16  KB
-                        (16,384  bytes). For CloudFront distributions, you can
-                        increase the limit in the web ACL's  AssociationConfig
-                        , for additional processing fees.
+                        WAF does not support inspecting the entire contents of
+                        the web request body if the body exceeds the limit for
+                        the  resource  type. When a web request body is larger
+                        than the limit, the underlying host service only  for-
+                        wards  the  contents  that are within the limit to WAF
+                        for inspection.
+
+                        o For Application Load Balancer and AppSync, the limit
+                          is fixed at 8 KB (8,192 bytes).
+
+                        o For  CloudFront,  API  Gateway,  Amazon Cognito, App
+                          Runner, and Verified Access, the default limit is 16
+                          KB  (16,384  bytes),  and you can increase the limit
+                          for each resource type in the web  ACL  Association-
+                          Config , for additional processing fees.
 
                         For  information about how to handle oversized request
                         bodies, see the Body object configuration.
 
                         OversizeHandling -> (string)
                             What WAF should do if the body is larger than  WAF
-                            can  inspect.  WAF does not support inspecting the
-                            entire contents of the web  request  body  if  the
-                            body  exceeds  the limit for the resource type. If
-                            the body is larger than the limit, the  underlying
-                            host  service  only forwards the contents that are
-                            below the limit to WAF for inspection.
+                            can inspect.
 
-                            The default limit is 8 KB (8,192  bytes)  for  re-
-                            gional  resources  and  16  KB  (16,384 bytes) for
-                            CloudFront distributions. For CloudFront distribu-
-                            tions,  you  can increase the limit in the web ACL
-                            AssociationConfig  ,  for  additional   processing
-                            fees.
+                            WAF  does  not  support inspecting the entire con-
+                            tents of the web request body if the body  exceeds
+                            the  limit  for  the resource type. When a web re-
+                            quest body is larger than the limit, the  underly-
+                            ing  host  service only forwards the contents that
+                            are within the limit to WAF for inspection.
 
-                            The  options for oversize handling are the follow-
+                            o For Application Load Balancer and  AppSync,  the
+                              limit is fixed at 8 KB (8,192 bytes).
+
+                            o For CloudFront, API Gateway, Amazon Cognito, App
+                              Runner, and Verified Access, the  default  limit
+                              is  16  KB  (16,384 bytes), and you can increase
+                              the limit for each resource type in the web  ACL
+                              AssociationConfig  ,  for  additional processing
+                              fees.
+
+                            The options for oversize handling are the  follow-
                             ing:
 
-                            o CONTINUE - Inspect the available  body  contents
-                              normally,  according to the rule inspection cri-
+                            o CONTINUE  -  Inspect the available body contents
+                              normally, according to the rule inspection  cri-
                               teria.
 
-                            o MATCH - Treat the web request  as  matching  the
-                              rule  statement.  WAF applies the rule action to
+                            o MATCH  -  Treat  the web request as matching the
+                              rule statement. WAF applies the rule  action  to
                               the request.
 
                             o NO_MATCH - Treat the web request as not matching
                               the rule statement.
 
                             You can combine the MATCH or NO_MATCH settings for
-                            oversize handling with your rule and web  ACL  ac-
+                            oversize  handling  with your rule and web ACL ac-
                             tion settings, so that you block any request whose
                             body is over the limit.
 
@@ -394,47 +423,55 @@ OUTPUT
 
                      Method -> (structure)
                         Inspect the HTTP method. The method indicates the type
-                        of  operation that the request is asking the origin to
+                        of operation that the request is asking the origin  to
                         perform.
 
                      JsonBody -> (structure)
                         Inspect the request body as JSON. The request body im-
-                        mediately  follows  the  request  headers. This is the
-                        part of a request that contains  any  additional  data
-                        that  you  want to send to your web server as the HTTP
+                        mediately follows the request  headers.  This  is  the
+                        part  of  a  request that contains any additional data
+                        that you want to send to your web server as  the  HTTP
                         request body, such as data from a form.
 
-                        A limited amount of the request body is  forwarded  to
-                        WAF for inspection by the underlying host service. For
-                        regional resources, the limit is 8  KB  (8,192  bytes)
-                        and  for  CloudFront distributions, the limit is 16 KB
-                        (16,384 bytes). For CloudFront distributions, you  can
-                        increase  the limit in the web ACL's AssociationConfig
-                        , for additional processing fees.
+                        WAF does not support inspecting the entire contents of
+                        the web request body if the body exceeds the limit for
+                        the  resource  type. When a web request body is larger
+                        than the limit, the underlying host service only  for-
+                        wards  the  contents  that are within the limit to WAF
+                        for inspection.
 
-                        For information about how to handle oversized  request
+                        o For Application Load Balancer and AppSync, the limit
+                          is fixed at 8 KB (8,192 bytes).
+
+                        o For  CloudFront,  API  Gateway,  Amazon Cognito, App
+                          Runner, and Verified Access, the default limit is 16
+                          KB  (16,384  bytes),  and you can increase the limit
+                          for each resource type in the web  ACL  Association-
+                          Config , for additional processing fees.
+
+                        For  information about how to handle oversized request
                         bodies, see the JsonBody object configuration.
 
                         MatchPattern -> (structure)
                             The patterns to look for in the JSON body. WAF in-
-                            spects  the  results  of  these  pattern   matches
+                            spects   the  results  of  these  pattern  matches
                             against the rule inspection criteria.
 
                             All -> (structure)
-                               Match  all of the elements. See also MatchScope
+                               Match all of the elements. See also  MatchScope
                                in  JsonBody .
 
                                You must specify either this setting or the In-
                                cludedPaths setting, but not both.
 
                             IncludedPaths -> (list)
-                               Match  only  the  specified  include paths. See
+                               Match only the  specified  include  paths.  See
                                also MatchScope in  JsonBody .
 
-                               Provide the include paths  using  JSON  Pointer
-                               syntax.     For    example,    "IncludedPaths":
+                               Provide  the  include  paths using JSON Pointer
+                               syntax.    For    example,     "IncludedPaths":
                                ["/dogs/0/name", "/dogs/1/name"] . For informa-
-                               tion  about this syntax, see the Internet Engi-
+                               tion about this syntax, see the Internet  Engi-
                                neering   Task   Force   (IETF)   documentation
                                JavaScript Object Notation (JSON) Pointer .
 
@@ -448,44 +485,44 @@ OUTPUT
                                (string)
 
                         MatchScope -> (string)
-                            The  parts  of the JSON to match against using the
-                            MatchPattern . If you specify ALL  ,  WAF  matches
+                            The parts of the JSON to match against  using  the
+                            MatchPattern  .  If  you specify ALL , WAF matches
                             against keys and values.
                                All does not require a match to be found in the
-                               keys and a match to be found in the values.  It
+                               keys  and a match to be found in the values. It
                                requires a match to be found in the keys or the
-                               values or both. To require a match in the  keys
-                               and  in the values, use a logical AND statement
-                               to combine two match rules, one  that  inspects
+                               values  or both. To require a match in the keys
+                               and in the values, use a logical AND  statement
+                               to  combine  two match rules, one that inspects
                                the keys and another that inspects the values.
 
                         InvalidFallbackBehavior -> (string)
                             What WAF should do if it fails to completely parse
                             the JSON body. The options are the following:
 
-                            o EVALUATE_AS_STRING - Inspect the body  as  plain
-                              text.  WAF  applies the text transformations and
-                              inspection criteria that  you  defined  for  the
+                            o EVALUATE_AS_STRING  -  Inspect the body as plain
+                              text. WAF applies the text  transformations  and
+                              inspection  criteria  that  you  defined for the
                               JSON inspection to the body text string.
 
-                            o MATCH  -  Treat  the web request as matching the
-                              rule statement. WAF applies the rule  action  to
+                            o MATCH - Treat the web request  as  matching  the
+                              rule  statement.  WAF applies the rule action to
                               the request.
 
                             o NO_MATCH - Treat the web request as not matching
                               the rule statement.
 
-                            If you don't provide this setting, WAF parses  and
+                            If  you don't provide this setting, WAF parses and
                             evaluates the content only up to the first parsing
                             failure that it encounters.
 
-                            WAF does its best to parse the entire  JSON  body,
-                            but  might  be  forced to stop for reasons such as
-                            invalid characters,  duplicate  keys,  truncation,
+                            WAF  does  its best to parse the entire JSON body,
+                            but might be forced to stop for  reasons  such  as
+                            invalid  characters,  duplicate  keys, truncation,
                             and any content whose root node isn't an object or
                             an array.
 
-                            WAF parses the JSON in the following  examples  as
+                            WAF  parses  the JSON in the following examples as
                             two valid key, value pairs:
 
                             o Missing comma: {"key1":"value1""key2":"value2"}
@@ -495,20 +532,25 @@ OUTPUT
                             o Extra colons: {"key1"::"value1","key2""value2"}
 
                         OversizeHandling -> (string)
-                            What  WAF should do if the body is larger than WAF
-                            can inspect. WAF does not support  inspecting  the
-                            entire  contents  of  the  web request body if the
-                            body exceeds the limit for the resource  type.  If
-                            the  body is larger than the limit, the underlying
-                            host service only forwards the contents  that  are
-                            below the limit to WAF for inspection.
+                            What WAF should do if the body is larger than  WAF
+                            can inspect.
 
-                            The  default  limit  is 8 KB (8,192 bytes) for re-
-                            gional resources and  16  KB  (16,384  bytes)  for
-                            CloudFront distributions. For CloudFront distribu-
-                            tions, you can increase the limit in the  web  ACL
-                            AssociationConfig   ,  for  additional  processing
-                            fees.
+                            WAF  does  not  support inspecting the entire con-
+                            tents of the web request body if the body  exceeds
+                            the  limit  for  the resource type. When a web re-
+                            quest body is larger than the limit, the  underly-
+                            ing  host  service only forwards the contents that
+                            are within the limit to WAF for inspection.
+
+                            o For Application Load Balancer and  AppSync,  the
+                              limit is fixed at 8 KB (8,192 bytes).
+
+                            o For CloudFront, API Gateway, Amazon Cognito, App
+                              Runner, and Verified Access, the  default  limit
+                              is  16  KB  (16,384 bytes), and you can increase
+                              the limit for each resource type in the web  ACL
+                              AssociationConfig  ,  for  additional processing
+                              fees.
 
                             The options for oversize handling are the  follow-
                             ing:

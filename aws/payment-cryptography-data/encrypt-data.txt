@@ -6,24 +6,34 @@ NAME
        encrypt-data -
 
 DESCRIPTION
-       Encrypts  plaintext  data to ciphertext using symmetric, asymmetric, or
-       DUKPT data encryption key. For more information, see  Encrypt  data  in
-       the Amazon Web Services Payment Cryptography User Guide .
+       Encrypts  plaintext  data  to ciphertext using a symmetric (TDES, AES),
+       asymmetric (RSA), or derived (DUKPT or EMV) encryption key scheme.  For
+       more  information,  see Encrypt data in the Amazon Web Services Payment
+       Cryptography User Guide .
 
-       You  can  generate an encryption key within Amazon Web Services Payment
-       Cryptography by calling CreateKey . You can import your own  encryption
-       key  by  calling ImportKey . For this operation, the key must have Key-
-       ModesOfUse set to Encrypt . In asymmetric encryption, plaintext is  en-
-       crypted  using public component. You can import the public component of
-       an asymmetric key pair created  outside  Amazon  Web  Services  Payment
-       Cryptography by calling ImportKey ).
+       You can generate an encryption key within Amazon Web  Services  Payment
+       Cryptography  by calling CreateKey . You can import your own encryption
+       key by calling ImportKey . For this operation, the key must  have  Key-
+       ModesOfUse  set to Encrypt . In asymmetric encryption, plaintext is en-
+       crypted using public component. You can import the public component  of
+       an  asymmetric  key  pair  created  outside Amazon Web Services Payment
+       Cryptography by calling ImportKey .
 
-       for  symmetric  and DUKPT encryption, Amazon Web Services Payment Cryp-
-       tography supports TDES and AES algorithms. For  asymmetric  encryption,
-       Amazon  Web Services Payment Cryptography supports RSA . To encrypt us-
-       ing DUKPT, you must already have a DUKPT key in your account with  Key-
-       ModesOfUse  set  to  DeriveKey , or you can generate a new DUKPT key by
-       calling CreateKey .
+       For symmetric and DUKPT encryption, Amazon Web Services  Payment  Cryp-
+       tography  supports  TDES and AES algorithms. For EMV encryption, Amazon
+       Web Services Payment Cryptography supports TDES algorithms.For asymmet-
+       ric encryption, Amazon Web Services Payment Cryptography supports RSA .
+
+       When  you  use  TDES or TDES DUKPT, the plaintext data length must be a
+       multiple of 8 bytes. For AES or AES DUKPT, the  plaintext  data  length
+       must  be  a multiple of 16 bytes. For RSA, it sould be equal to the key
+       size unless padding is enabled.
+
+       To encrypt using DUKPT, you must already have a  BDK  (Base  Derivation
+       Key)  key  in your account with KeyModesOfUse set to DeriveKey , or you
+       can generate a new DUKPT key by calling CreateKey .  To  encrypt  using
+       EMV,  you  must already have an IMK (Issuer Master Key) key in your ac-
+       count with KeyModesOfUse set to DeriveKey .
 
        For information about valid keys for this operation, see  Understanding
        key attributes and Key types for specific data operations in the Amazon
@@ -71,7 +81,7 @@ OPTIONS
 
           NOTE:
               This  is a Tagged Union structure. Only one of the following top
-              level keys can be set: Asymmetric, Dukpt, Symmetric.
+              level keys can be set: Asymmetric, Dukpt, Emv, Symmetric.
 
           Asymmetric -> (structure)
               Parameters for plaintext encryption using asymmetric keys.
@@ -95,57 +105,69 @@ OPTIONS
                  tion, outgoing data encryption, or both.
 
               InitializationVector -> (string)
-                 An input to cryptographic primitive used to provide  the  in-
-                 tial  state.  Typically  the InitializationVector must have a
-                 random or psuedo-random value, but sometimes it only needs to
-                 be  unpredictable  or  unique.  If you don't provide a value,
-                 Amazon Web Services Payment Cryptography generates  a  random
-                 value.
+                 An input used to provide the intial state.  If  no  value  is
+                 provided,  Amazon  Web Services Payment Cryptography defaults
+                 it to zero.
 
               KeySerialNumber -> (string)
-                 The  unique  identifier known as Key Serial Number (KSN) that
+                 The unique identifier known as Key Serial Number  (KSN)  that
                  comes  from  an  encrypting  device  using  DUKPT  encryption
-                 method.  The KSN is derived from the encrypting device unique
+                 method. The KSN is derived from the encrypting device  unique
                  identifier and an internal transaction counter.
 
               Mode -> (string)
-                 The block cipher mode of operation.  Block  ciphers  are  de-
-                 signed to encrypt a block of data of fixed size, for example,
-                 128 bits. The size of the input block is usually same as  the
-                 size  of the encrypted output block, while the key length can
-                 be different. A mode of operation describes how to repeatedly
-                 apply a cipher's single-block operation to securely transform
-                 amounts of data larger than a block.
+                 The block cipher method to use for encryption.
 
                  The default is CBC.
+
+          Emv -> (structure)
+              Parameters for plaintext encryption using EMV keys.
+
+              InitializationVector -> (string)
+                 An  input  used  to  provide the intial state. If no value is
+                 provided, Amazon Web Services Payment  Cryptography  defaults
+                 it to zero.
+
+              MajorKeyDerivationMode -> (string)
+                 The  EMV derivation mode to use for ICC master key derivation
+                 as per EMV version 4.3 book 2.
+
+              Mode -> (string)
+                 The block cipher method to use for encryption.
+
+              PanSequenceNumber -> (string)
+                 A number that identifies  and  differentiates  payment  cards
+                 with the same Primary Account Number (PAN).
+
+              PrimaryAccountNumber -> (string)
+                 The  Primary  Account Number (PAN), a unique identifier for a
+                 payment credit or debit card and associates  the  card  to  a
+                 specific account holder.
+
+              SessionDerivationData -> (string)
+                 The  derivation  value used to derive the ICC session key. It
+                 is typically the application transaction counter value padded
+                 with  zeros  or  previous ARQC value padded with zeros as per
+                 EMV version 4.3 book 2.
 
           Symmetric -> (structure)
               Parameters that are required to perform encryption  and  decryp-
               tion using symmetric keys.
 
               InitializationVector -> (string)
-                 An  input  to cryptographic primitive used to provide the in-
-                 tial state. The InitializationVector  is  typically  required
-                 have  a  random or psuedo-random value, but sometimes it only
-                 needs to be unpredictable or unique. If a value is  not  pro-
-                 vided,  Amazon  Web Services Payment Cryptography generates a
-                 random value.
+                 An  input  used  to  provide the intial state. If no value is
+                 provided, Amazon Web Services Payment  Cryptography  defaults
+                 it to zero.
 
               Mode -> (string)
-                 The block cipher mode of operation.  Block  ciphers  are  de-
-                 signed to encrypt a block of data of fixed size (for example,
-                 128 bits). The size of the input block is usually same as the
-                 size  of the encrypted output block, while the key length can
-                 be different. A mode of operation describes how to repeatedly
-                 apply a cipher's single-block operation to securely transform
-                 amounts of data larger than a block.
+                 The block cipher method to use for encryption.
 
               PaddingType -> (string)
                  The padding to be included with the data.
 
        Shorthand Syntax:
 
-          Asymmetric={PaddingType=string},Dukpt={DukptKeyDerivationType=string,DukptKeyVariant=string,InitializationVector=string,KeySerialNumber=string,Mode=string},Symmetric={InitializationVector=string,Mode=string,PaddingType=string}
+          Asymmetric={PaddingType=string},Dukpt={DukptKeyDerivationType=string,DukptKeyVariant=string,InitializationVector=string,KeySerialNumber=string,Mode=string},Emv={InitializationVector=string,MajorKeyDerivationMode=string,Mode=string,PanSequenceNumber=string,PrimaryAccountNumber=string,SessionDerivationData=string},Symmetric={InitializationVector=string,Mode=string,PaddingType=string}
 
        JSON Syntax:
 
@@ -160,6 +182,14 @@ OPTIONS
               "KeySerialNumber": "string",
               "Mode": "ECB"|"CBC"
             },
+            "Emv": {
+              "InitializationVector": "string",
+              "MajorKeyDerivationMode": "EMV_OPTION_A"|"EMV_OPTION_B",
+              "Mode": "ECB"|"CBC",
+              "PanSequenceNumber": "string",
+              "PrimaryAccountNumber": "string",
+              "SessionDerivationData": "string"
+            },
             "Symmetric": {
               "InitializationVector": "string",
               "Mode": "ECB"|"CBC"|"CFB"|"CFB1"|"CFB8"|"CFB64"|"CFB128"|"OFB",
@@ -168,23 +198,30 @@ OPTIONS
           }
 
        --key-identifier (string)
-          The keyARN of the encryption key that Amazon  Web  Services  Payment
+          The  keyARN  of  the encryption key that Amazon Web Services Payment
           Cryptography uses for plaintext encryption.
 
        --plain-text (string)
           The plaintext to be encrypted.
 
-       --cli-input-json  (string) Performs service operation based on the JSON
-       string provided. The JSON string follows the format provided by  --gen-
-       erate-cli-skeleton.  If  other  arguments  are  provided on the command
-       line, the CLI values will override the JSON-provided values. It is  not
+          NOTE:
+              For encryption using asymmetric keys, plaintext data  length  is
+              constrained by encryption key strength that you define in KeyAl-
+              gorithm and padding type that you  define  in  AsymmetricEncryp-
+              tionAttributes  .  For more information, see Encrypt data in the
+              Amazon Web Services Payment Cryptography User Guide .
+
+       --cli-input-json (string) Performs service operation based on the  JSON
+       string  provided. The JSON string follows the format provided by --gen-
+       erate-cli-skeleton. If other arguments  are  provided  on  the  command
+       line,  the CLI values will override the JSON-provided values. It is not
        possible to pass arbitrary binary values using a JSON-provided value as
        the string will be taken literally.
 
-       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
+       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
        output without sending an API request. If provided with no value or the
        value input, prints a sample input JSON that can be used as an argument
-       for  --cli-input-json.  If provided with the value output, it validates
+       for --cli-input-json. If provided with the value output,  it  validates
        the command inputs and returns a sample output JSON for that command.
 
 GLOBAL OPTIONS
@@ -198,7 +235,7 @@ GLOBAL OPTIONS
 
        --no-verify-ssl (boolean)
 
-       By default, the AWS CLI uses SSL when communicating with AWS  services.
+       By  default, the AWS CLI uses SSL when communicating with AWS services.
        For each SSL connection, the AWS CLI will verify SSL certificates. This
        option overrides the default behavior of verifying SSL certificates.
 
@@ -244,7 +281,7 @@ GLOBAL OPTIONS
 
        --no-sign-request (boolean)
 
-       Do not sign requests. Credentials will not be loaded if  this  argument
+       Do  not  sign requests. Credentials will not be loaded if this argument
        is provided.
 
        --ca-bundle (string)
@@ -254,31 +291,31 @@ GLOBAL OPTIONS
 
        --cli-read-timeout (int)
 
-       The maximum socket read time in seconds. If the value is set to 0,  the
-       socket  read  will be blocking and not timeout. The default value is 60
+       The  maximum socket read time in seconds. If the value is set to 0, the
+       socket read will be blocking and not timeout. The default value  is  60
        seconds.
 
        --cli-connect-timeout (int)
 
-       The maximum socket connect time in seconds. If the value is set  to  0,
-       the  socket connect will be blocking and not timeout. The default value
+       The  maximum  socket connect time in seconds. If the value is set to 0,
+       the socket connect will be blocking and not timeout. The default  value
        is 60 seconds.
 
 EXAMPLES
        NOTE:
-          To use the following examples, you must have the AWS  CLI  installed
-          and  configured.  See  the Getting started guide in the AWS CLI User
+          To  use  the following examples, you must have the AWS CLI installed
+          and configured. See the Getting started guide in the  AWS  CLI  User
           Guide for more information.
 
-          Unless otherwise  stated,  all  examples  have  unix-like  quotation
-          rules.  These  examples  will  need to be adapted to your terminal's
+          Unless  otherwise  stated,  all  examples  have  unix-like quotation
+          rules. These examples will need to be  adapted  to  your  terminal's
           quoting rules. See Using quotation marks with strings in the AWS CLI
           User Guide .
 
        To encrypt data
 
        The following encrypt-data example encrypts plaintext data using a sym-
-       metric key. For this operation, the key must have KeyModesOfUse set  to
+       metric  key. For this operation, the key must have KeyModesOfUse set to
        Encrypt and KeyUsage set to TR31_D0_SYMMETRIC_DATA_ENCRYPTION_KEY.
 
           aws payment-cryptography-data encrypt-data \
@@ -294,7 +331,7 @@ EXAMPLES
               "CipherText": "33612AB9D6929C3A828EB6030082B2BD"
           }
 
-       For  more information, see Encrypt data in the AWS Payment Cryptography
+       For more information, see Encrypt data in the AWS Payment  Cryptography
        User Guide.
 
 OUTPUT
@@ -302,17 +339,16 @@ OUTPUT
           The encrypted ciphertext.
 
        KeyArn -> (string)
-          The keyARN of the encryption key that Amazon  Web  Services  Payment
+          The  keyARN  of  the encryption key that Amazon Web Services Payment
           Cryptography uses for plaintext encryption.
 
        KeyCheckValue -> (string)
-          The  key check value (KCV) of the encryption key. The KCV is used to
+          The key check value (KCV) of the encryption key. The KCV is used  to
           check if all parties holding a given key have the same key or to de-
-          tect  that a key has changed. Amazon Web Services Payment Cryptogra-
-          phy calculates the KCV by using standard  algorithms,  typically  by
-          encrypting 8 or 16 bytes or "00" or "01" and then truncating the re-
-          sult to the first 3 bytes, or 6 hex digits, of the resulting crypto-
-          gram.
+          tect that a key has changed.
+
+          Amazon Web Services Payment Cryptography computes the KCV  according
+          to the CMAC specification.
 
 
 
