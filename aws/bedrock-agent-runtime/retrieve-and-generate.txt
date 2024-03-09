@@ -6,16 +6,22 @@ NAME
        retrieve-and-generate -
 
 DESCRIPTION
-       RetrieveAndGenerate API
+       Queries a knowledge base and generates responses based on the retrieved
+       results. The response cites up to five sources  but  only  selects  the
+       ones that are relevant to the query.
+
+       NOTE:
+          The  numberOfResults field is currently unsupported for RetrieveAnd-
+          Generate . Don't include it in the vectorSearchConfiguration object.
 
        See also: AWS API Documentation
 
 SYNOPSIS
             retrieve-and-generate
-          [--session-id <value>]
           --input <value>
           [--retrieve-and-generate-configuration <value>]
           [--session-configuration <value>]
+          [--session-id <value>]
           [--cli-input-json <value>]
           [--generate-cli-skeleton <value>]
           [--debug]
@@ -34,14 +40,11 @@ SYNOPSIS
           [--cli-connect-timeout <value>]
 
 OPTIONS
-       --session-id (string)
-          Identifier of the session.
-
        --input (structure)
-          Customer input of the turn
+          Contains the query made to the knowledge base.
 
           text -> (string)
-              Customer input of the turn in text
+              The query made to the knowledge base.
 
        Shorthand Syntax:
 
@@ -54,37 +57,53 @@ OPTIONS
           }
 
        --retrieve-and-generate-configuration (structure)
-          Configures the retrieval and generation for the session.
-
-          type -> (string)
-              The type of RetrieveAndGenerate.
+          Contains details about the resource being queried and the foundation
+          model used for generation.
 
           knowledgeBaseConfiguration -> (structure)
-              Configurations for retrieval and generation for knowledge base.
+              Contains details about the resource being queried.
 
               knowledgeBaseId -> (string)
-                 Identifier of the KnowledgeBase
+                 The  unique  identifier of the knowledge base that is queried
+                 and the foundation model used for generation.
 
               modelArn -> (string)
-                 Arn of a Bedrock model.
+                 The ARN of the foundation model used to generate a response.
 
               retrievalConfiguration -> (structure)
-                 Search parameters for retrieving from knowledge base.
+                 Contains configurations for how to retrieve  and  return  the
+                 knowledge base query.
 
                  vectorSearchConfiguration -> (structure)
-                     Knowledge base vector search configuration
+                     Contains  details  about  how the results from the vector
+                     search should be returned.
 
                      numberOfResults -> (integer)
-                        Top-K results to retrieve from knowledge base.
+                        The number of results to return.
+
+                        NOTE:
+                            The numberOfResults field is currently unsupported
+                            for RetrieveAndGenerate . Don't include it in this
+                            field if you are sending a RetrieveAndGenerate re-
+                            quest.
 
                      overrideSearchType -> (string)
-                        Override  the  type  of  query to be performed on data
-                        store
+                        By  default,  Amazon Bedrock decides a search strategy
+                        for you. If you're using an Amazon OpenSearch  Server-
+                        less  vector  store  that  contains  a filterable text
+                        field, you can specify whether to query the  knowledge
+                        base with a HYBRID search using both vector embeddings
+                        and raw text, or SEMANTIC search using only vector em-
+                        beddings.  For other vector store configurations, only
+                        SEMANTIC search is available.  For  more  information,
+                        see Test a knowledge base .
+
+          type -> (string)
+              The type of resource that is queried by the request.
 
        JSON Syntax:
 
           {
-            "type": "KNOWLEDGE_BASE",
             "knowledgeBaseConfiguration": {
               "knowledgeBaseId": "string",
               "modelArn": "string",
@@ -94,14 +113,15 @@ OPTIONS
                   "overrideSearchType": "HYBRID"|"SEMANTIC"
                 }
               }
-            }
+            },
+            "type": "KNOWLEDGE_BASE"
           }
 
        --session-configuration (structure)
-          Configures common parameters of the session.
+          Contains details about the session with the knowledge base.
 
           kmsKeyArn -> (string)
-              The KMS key arn to encrypt the customer data of the session.
+              The ARN of the KMS key encrypting the session.
 
        Shorthand Syntax:
 
@@ -112,6 +132,10 @@ OPTIONS
           {
             "kmsKeyArn": "string"
           }
+
+       --session-id (string)
+          The  unique  identifier of the session. Reuse the same value to con-
+          tinue the same session with the knowledge base.
 
        --cli-input-json (string) Performs service operation based on the  JSON
        string  provided. The JSON string follows the format provided by --gen-
@@ -204,62 +228,75 @@ GLOBAL OPTIONS
        is 60 seconds.
 
 OUTPUT
-       sessionId -> (string)
-          Identifier of the session.
-
-       output -> (structure)
-          Service response of the turn
-
-          text -> (string)
-              Service response of the turn in text
-
        citations -> (list)
-          List of citations
+          A  list  of  segments  of  the  generated response that are based on
+          sources in the  knowledge  base,  alongside  information  about  the
+          sources.
 
           (structure)
-              Citation associated with the agent response
+              An object containing a segment of the generated response that is
+              based on a source in the knowledge base,  alongside  information
+              about the source.
 
               generatedResponsePart -> (structure)
-                 Generate response part
+                 Contains the generated response and metadata
 
                  textResponsePart -> (structure)
-                     Text response part
-
-                     text -> (string)
-                        Response part in text
+                     Contains  metadata  about a textual part of the generated
+                     response that is accompanied by a citation.
 
                      span -> (structure)
-                        Span of text
-
-                        start -> (integer)
-                            Start of span
+                        Contains information about where the text with a cita-
+                        tion begins and ends in the generated output.
 
                         end -> (integer)
-                            End of span
+                            Where  the text with a citation ends in the gener-
+                            ated output.
+
+                        start -> (integer)
+                            Where the text with a citation starts in the  gen-
+                            erated output.
+
+                     text -> (string)
+                        The  part  of the generated text that contains a cita-
+                        tion.
 
               retrievedReferences -> (list)
-                 list of retrieved references
+                 Contains metadata about the sources cited for  the  generated
+                 response.
 
                  (structure)
-                     Retrieved reference
+                     Contains metadata about a sources cited for the generated
+                     response.
 
                      content -> (structure)
-                        Content of a retrieval result.
+                        Contains the cited text from the data source.
 
                         text -> (string)
-                            Content of a retrieval result in text
+                            The cited text from the data source.
 
                      location -> (structure)
-                        The source location of a retrieval result.
-
-                        type -> (string)
-                            The location type of a retrieval result.
+                        Contains information about the location  of  the  data
+                        source.
 
                         s3Location -> (structure)
-                            The S3 location of a retrieval result.
+                            Contains the S3 location of the data source.
 
                             uri -> (string)
-                               URI of S3 location
+                               The S3 URI of the data source.
+
+                        type -> (string)
+                            The type of the location of the data source.
+
+       output -> (structure)
+          Contains the response generated from querying the knowledge base.
+
+          text -> (string)
+              The response generated from querying the knowledge base.
+
+       sessionId -> (string)
+          The  unique  identifier of the session. Reuse the same value to con-
+          tinue the same session with the knowledge base.
 
 
 
