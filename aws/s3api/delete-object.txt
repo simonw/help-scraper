@@ -9,104 +9,115 @@ DESCRIPTION
        Removes  an  object from a bucket. The behavior depends on the bucket's
        versioning state:
 
-       o If versioning is enabled, the operation removes the null version  (if
-         there is one) of an object and inserts a delete marker, which becomes
-         the latest version of the object. If there isn't a null version, Ama-
-         zon  S3  does  not remove any objects but will still respond that the
-         command was successful.
-
-       o If versioning is suspended or not enabled, the operation  permanently
+       o If bucket  versioning  is  not  enabled,  the  operation  permanently
          deletes the object.
+
+       o If  bucket  versioning  is  enabled,  the  operation inserts a delete
+         marker, which becomes the current version of the  object.  To  perma-
+         nently  delete  an object in a versioned bucket, you must include the
+         objects versionId in the request. For more information about version-
+         ing-enabled  buckets,  see  Deleting  object versions from a version-
+         ing-enabled bucket .
+
+       o If bucket versioning is suspended, the operation removes  the  object
+         that  has  a  null  versionId , if there is one, and inserts a delete
+         marker that becomes the current version of the object. If there isn't
+         an object with a null versionId , and all versions of the object have
+         a versionId , Amazon S3 does not remove the object and only inserts a
+         delete marker. To permanently delete an object that has a versionId ,
+         you must include the objects versionId in the request. For  more  in-
+         formation  about  versioning-suspended  buckets, see Deleting objects
+         from versioning-suspended buckets .
 
        NOTE:
 
-          o Directory  buckets - S3 Versioning isn't enabled and supported for
-            directory buckets. For this API operation, only the null value  of
-            the  version  ID  is  supported by directory buckets. You can only
+          o Directory buckets - S3 Versioning isn't enabled and supported  for
+            directory  buckets. For this API operation, only the null value of
+            the version ID is supported by directory  buckets.  You  can  only
             specify null to the versionId query parameter in the request.
 
-          o Directory buckets - For directory buckets, you must make  requests
+          o Directory  buckets - For directory buckets, you must make requests
             for this API operation to the Zonal endpoint. These endpoints sup-
             port virtual-hosted-style requests in the format
             ``
-            https://bucket_name    .s3express-az_id     .*region*     .amazon-
-            aws.com/key-name  ``  . Path-style requests are not supported. For
-            more information, see Regional and Zonal endpoints in  the  Amazon
+            https://bucket_name     .s3express-az_id     .*region*    .amazon-
+            aws.com/key-name `` . Path-style requests are not  supported.  For
+            more  information,  see Regional and Zonal endpoints in the Amazon
             S3 User Guide .
 
-          System Message: WARNING/2 (<string>:, line 37)
+          System Message: WARNING/2 (<string>:, line 39)
             Inline literal start-string without end-string.
 
-       To  remove a specific version, you must use the versionId query parame-
+       To remove a specific version, you must use the versionId query  parame-
        ter. Using this query parameter permanently deletes the version. If the
-       object  deleted  is a delete marker, Amazon S3 sets the response header
+       object deleted is a delete marker, Amazon S3 sets the  response  header
        x-amz-delete-marker to true.
 
-       If the object you want to delete is in a bucket where the  bucket  ver-
-       sioning  configuration  is  MFA  Delete  enabled,  you must include the
+       If  the  object you want to delete is in a bucket where the bucket ver-
+       sioning configuration is MFA  Delete  enabled,  you  must  include  the
        x-amz-mfa request header in the DELETE versionId request. Requests that
-       include  x-amz-mfa  must  use  HTTPS.  For  more  information about MFA
-       Delete, see Using MFA Delete in the Amazon S3 User Guide . To see  sam-
+       include x-amz-mfa must  use  HTTPS.  For  more  information  about  MFA
+       Delete,  see Using MFA Delete in the Amazon S3 User Guide . To see sam-
        ple requests that use versioning, see Sample Request .
 
        NOTE:
-          Directory  buckets  - MFA delete is not supported by directory buck-
+          Directory buckets - MFA delete is not supported by  directory  buck-
           ets.
 
-       You can delete objects by explicitly calling DELETE Object  or  calling
-       (PutBucketLifecycle  )  to  enable Amazon S3 to remove them for you. If
-       you want to block users or accounts from removing or  deleting  objects
+       You  can  delete objects by explicitly calling DELETE Object or calling
+       (PutBucketLifecycle ) to enable Amazon S3 to remove them  for  you.  If
+       you  want  to block users or accounts from removing or deleting objects
        from your bucket, you must deny them the s3:DeleteObject , s3:DeleteOb-
        jectVersion , and s3:PutLifeCycleConfiguration actions.
 
        NOTE:
-              Directory buckets - S3 Lifecycle is not supported  by  directory
+              Directory  buckets  - S3 Lifecycle is not supported by directory
               buckets.
 
           Permissions
 
-       o General  purpose  bucket  permissions - The following permissions are
-         required in your policies when your  DeleteObjects  request  includes
+       o General purpose bucket permissions - The  following  permissions  are
+         required  in  your  policies when your DeleteObjects request includes
          specific headers.
 
          o
 
            **
-           s3:DeleteObject  **  -  To delete an object from a bucket, you must
+           s3:DeleteObject ** - To delete an object from a  bucket,  you  must
            always have the s3:DeleteObject permission.
 
-         System Message: WARNING/2 (<string>:, line 80)
+         System Message: WARNING/2 (<string>:, line 82)
            Inline strong start-string without end-string.
 
          o
 
            **
-           s3:DeleteObjectVersion ** - To delete a specific version of an  ob-
-           ject from a versiong-enabled bucket, you must have the s3:DeleteOb-
-           jectVersion permission.
+           s3:DeleteObjectVersion  ** - To delete a specific version of an ob-
+           ject from a versioning-enabled bucket, you must have  the  s3:Dele-
+           teObjectVersion permission.
 
-         System Message: WARNING/2 (<string>:, line 82)
+         System Message: WARNING/2 (<string>:, line 84)
            Inline strong start-string without end-string.
 
-       o Directory bucket permissions - To grant access to this API  operation
-         on  a directory bucket, we recommend that you use the ` CreateSession
+       o Directory  bucket permissions - To grant access to this API operation
+         on a directory bucket, we recommend that you use the `  CreateSession
          https://docs.aws.amazon.com/AmazonS3/latest/API/API_CreateSession.html`__
-         API  operation  for  session-based  authorization.  Specifically, you
-         grant the s3express:CreateSession permission to the directory  bucket
-         in  a  bucket  policy or an IAM identity-based policy. Then, you make
-         the CreateSession API call on the bucket to obtain a  session  token.
-         With  the  session token in your request header, you can make API re-
-         quests to this operation. After the session token expires,  you  make
-         another  CreateSession  API  call to generate a new session token for
-         use. Amazon Web Services CLI or SDKs create session and  refresh  the
-         session  token  automatically  to  avoid service interruptions when a
+         API operation  for  session-based  authorization.  Specifically,  you
+         grant  the s3express:CreateSession permission to the directory bucket
+         in a bucket policy or an IAM identity-based policy.  Then,  you  make
+         the  CreateSession  API call on the bucket to obtain a session token.
+         With the session token in your request header, you can make  API  re-
+         quests  to  this operation. After the session token expires, you make
+         another CreateSession API call to generate a new  session  token  for
+         use.  Amazon  Web Services CLI or SDKs create session and refresh the
+         session token automatically to avoid  service  interruptions  when  a
          session expires. For more information about authorization, see ` Cre-
          ateSession
          https://docs.aws.amazon.com/AmazonS3/latest/API/API_CreateSession.html`__
          .
 
          HTTP Host header syntax
-          Directory  buckets  -  The HTTP Host header syntax is `` Bucket_name
+          Directory buckets - The HTTP Host header syntax  is  ``  Bucket_name
           .s3express-az_id .*region* .amazonaws.com`` .
 
        The following action is related to DeleteObject :
@@ -146,46 +157,46 @@ OPTIONS
           The bucket name of the bucket containing the object.
               Directory buckets - When you use this operation with a directory
               bucket, you must use virtual-hosted-style requests in the format
-              `` Bucket_name  .s3express-az_id  .*region*  .amazonaws.com``  .
-              Path-style  requests  are  not supported. Directory bucket names
-              must be unique in the chosen  Availability  Zone.  Bucket  names
+              ``  Bucket_name  .s3express-az_id  .*region*  .amazonaws.com`` .
+              Path-style requests are not supported.  Directory  bucket  names
+              must  be  unique  in  the chosen Availability Zone. Bucket names
               must follow the format `` bucket_base_name --az-id --x-s3`` (for
-              example, `` DOC-EXAMPLE-BUCKET --usw2-az2 --x-s3`` ). For infor-
-              mation  about  bucket  naming restrictions, see Directory bucket
+              example, `` DOC-EXAMPLE-BUCKET --usw2-az1 --x-s3`` ). For infor-
+              mation about bucket naming restrictions,  see  Directory  bucket
               naming rules in the Amazon S3 User Guide .
 
-              Access points - When you use this action with an  access  point,
-              you  must  provide the alias of the access point in place of the
-              bucket name or specify the access point ARN. When using the  ac-
-              cess  point  ARN,  you  must direct requests to the access point
-              hostname. The access point hostname takes the form  AccessPoint-
-              Name  -AccountId  .s3-accesspoint.*Region*  .amazonaws.com. When
-              using this action with an access point through  the  Amazon  Web
-              Services  SDKs, you provide the access point ARN in place of the
-              bucket name. For more information about access point  ARNs,  see
+              Access  points  - When you use this action with an access point,
+              you must provide the alias of the access point in place  of  the
+              bucket  name or specify the access point ARN. When using the ac-
+              cess point ARN, you must direct requests  to  the  access  point
+              hostname.  The access point hostname takes the form AccessPoint-
+              Name -AccountId  .s3-accesspoint.*Region*  .amazonaws.com.  When
+              using  this  action  with an access point through the Amazon Web
+              Services SDKs, you provide the access point ARN in place of  the
+              bucket  name.  For more information about access point ARNs, see
               Using access points in the Amazon S3 User Guide .
 
           NOTE:
-                 Access  points  and  Object Lambda access points are not sup-
+                 Access points and Object Lambda access points  are  not  sup-
                  ported by directory buckets.
 
               S3 on Outposts - When you use this action with Amazon S3 on Out-
-              posts,  you must direct requests to the S3 on Outposts hostname.
-              The S3 on Outposts hostname takes the  form  ``  AccessPointName
+              posts, you must direct requests to the S3 on Outposts  hostname.
+              The  S3  on  Outposts hostname takes the form `` AccessPointName
               -AccountId .*outpostID* .s3-outposts.*Region* .amazonaws.com`` .
-              When you use this action with S3 on Outposts through the  Amazon
-              Web  Services SDKs, you provide the Outposts access point ARN in
-              place of the bucket name. For more information about S3 on  Out-
-              posts  ARNs,  see  What is S3 on Outposts? in the Amazon S3 User
+              When  you use this action with S3 on Outposts through the Amazon
+              Web Services SDKs, you provide the Outposts access point ARN  in
+              place  of the bucket name. For more information about S3 on Out-
+              posts ARNs, see What is S3 on Outposts? in the  Amazon  S3  User
               Guide .
 
        --key (string)
           Key name of the object to delete.
 
        --mfa (string)
-          The concatenation of the authentication device's  serial  number,  a
-          space,  and  the  value that is displayed on your authentication de-
-          vice. Required to permanently delete a versioned object if  version-
+          The  concatenation  of  the authentication device's serial number, a
+          space, and the value that is displayed on  your  authentication  de-
+          vice.  Required to permanently delete a versioned object if version-
           ing is configured with MFA delete enabled.
 
           NOTE:
@@ -199,12 +210,12 @@ OPTIONS
               of the version ID is supported.
 
        --request-payer (string)
-          Confirms that the requester knows that they will be charged for  the
-          request.  Bucket owners need not specify this parameter in their re-
-          quests. If either the source or destination S3 bucket has  Requester
-          Pays  enabled,  the  requester will pay for corresponding charges to
-          copy the object. For information about downloading objects from  Re-
-          quester  Pays  buckets,  see  Downloading  Objects in Requester Pays
+          Confirms  that the requester knows that they will be charged for the
+          request. Bucket owners need not specify this parameter in their  re-
+          quests.  If either the source or destination S3 bucket has Requester
+          Pays enabled, the requester will pay for  corresponding  charges  to
+          copy  the object. For information about downloading objects from Re-
+          quester Pays buckets, see  Downloading  Objects  in  Requester  Pays
           Buckets in the Amazon S3 User Guide .
 
           NOTE:
@@ -216,29 +227,29 @@ OPTIONS
 
        --bypass-governance-retention | --no-bypass-governance-retention (bool-
        ean)
-          Indicates  whether  S3 Object Lock should bypass Governance-mode re-
-          strictions to process this operation. To use this header,  you  must
+          Indicates whether S3 Object Lock should bypass  Governance-mode  re-
+          strictions  to  process this operation. To use this header, you must
           have the s3:BypassGovernanceRetention permission.
 
           NOTE:
               This functionality is not supported for directory buckets.
 
        --expected-bucket-owner (string)
-          The  account ID of the expected bucket owner. If the account ID that
-          you provide does not match the actual owner of the bucket,  the  re-
+          The account ID of the expected bucket owner. If the account ID  that
+          you  provide  does not match the actual owner of the bucket, the re-
           quest fails with the HTTP status code 403 Forbidden (access denied).
 
-       --cli-input-json  (string) Performs service operation based on the JSON
-       string provided. The JSON string follows the format provided by  --gen-
-       erate-cli-skeleton.  If  other  arguments  are  provided on the command
-       line, the CLI values will override the JSON-provided values. It is  not
+       --cli-input-json (string) Performs service operation based on the  JSON
+       string  provided. The JSON string follows the format provided by --gen-
+       erate-cli-skeleton. If other arguments  are  provided  on  the  command
+       line,  the CLI values will override the JSON-provided values. It is not
        possible to pass arbitrary binary values using a JSON-provided value as
        the string will be taken literally.
 
-       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
+       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
        output without sending an API request. If provided with no value or the
        value input, prints a sample input JSON that can be used as an argument
-       for  --cli-input-json.  If provided with the value output, it validates
+       for --cli-input-json. If provided with the value output,  it  validates
        the command inputs and returns a sample output JSON for that command.
 
 GLOBAL OPTIONS
@@ -252,7 +263,7 @@ GLOBAL OPTIONS
 
        --no-verify-ssl (boolean)
 
-       By default, the AWS CLI uses SSL when communicating with AWS  services.
+       By  default, the AWS CLI uses SSL when communicating with AWS services.
        For each SSL connection, the AWS CLI will verify SSL certificates. This
        option overrides the default behavior of verifying SSL certificates.
 
@@ -298,7 +309,7 @@ GLOBAL OPTIONS
 
        --no-sign-request (boolean)
 
-       Do not sign requests. Credentials will not be loaded if  this  argument
+       Do  not  sign requests. Credentials will not be loaded if this argument
        is provided.
 
        --ca-bundle (string)
@@ -308,28 +319,28 @@ GLOBAL OPTIONS
 
        --cli-read-timeout (int)
 
-       The maximum socket read time in seconds. If the value is set to 0,  the
-       socket  read  will be blocking and not timeout. The default value is 60
+       The  maximum socket read time in seconds. If the value is set to 0, the
+       socket read will be blocking and not timeout. The default value  is  60
        seconds.
 
        --cli-connect-timeout (int)
 
-       The maximum socket connect time in seconds. If the value is set  to  0,
-       the  socket connect will be blocking and not timeout. The default value
+       The  maximum  socket connect time in seconds. If the value is set to 0,
+       the socket connect will be blocking and not timeout. The default  value
        is 60 seconds.
 
 EXAMPLES
        NOTE:
-          To use the following examples, you must have the AWS  CLI  installed
-          and  configured.  See  the Getting started guide in the AWS CLI User
+          To  use  the following examples, you must have the AWS CLI installed
+          and configured. See the Getting started guide in the  AWS  CLI  User
           Guide for more information.
 
-          Unless otherwise  stated,  all  examples  have  unix-like  quotation
-          rules.  These  examples  will  need to be adapted to your terminal's
+          Unless  otherwise  stated,  all  examples  have  unix-like quotation
+          rules. These examples will need to be  adapted  to  your  terminal's
           quoting rules. See Using quotation marks with strings in the AWS CLI
           User Guide .
 
-       The  following  command  deletes an object named test.txt from a bucket
+       The following command deletes an object named test.txt  from  a  bucket
        named my-bucket:
 
           aws s3api delete-object --bucket my-bucket --key test.txt
@@ -342,28 +353,28 @@ EXAMPLES
             "DeleteMarker": true
           }
 
-       For  more  information  about deleting objects, see Deleting Objects in
+       For more information about deleting objects, see  Deleting  Objects  in
        the Amazon S3 Developer Guide.
 
 OUTPUT
        DeleteMarker -> (boolean)
-          Indicates whether the specified object version that was  permanently
-          deleted  was  (true) or was not (false) a delete marker before dele-
-          tion. In a simple DELETE, this header indicates  whether  (true)  or
+          Indicates  whether the specified object version that was permanently
+          deleted was (true) or was not (false) a delete marker  before  dele-
+          tion.  In  a  simple DELETE, this header indicates whether (true) or
           not (false) the current version of the object is a delete marker.
 
           NOTE:
               This functionality is not supported for directory buckets.
 
        VersionId -> (string)
-          Returns  the  version ID of the delete marker created as a result of
+          Returns the version ID of the delete marker created as a  result  of
           the DELETE operation.
 
           NOTE:
               This functionality is not supported for directory buckets.
 
        RequestCharged -> (string)
-          If present, indicates that the requester  was  successfully  charged
+          If  present,  indicates  that the requester was successfully charged
           for the request.
 
           NOTE:
