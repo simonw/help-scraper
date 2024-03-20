@@ -23,6 +23,7 @@ SYNOPSIS
           [--changeset-id <value>]
           [--segment-configurations <value>]
           [--auto-update | --no-auto-update]
+          [--read-write | --no-read-write]
           [--description <value>]
           [--tags <value>]
           [--client-token <value>]
@@ -55,12 +56,9 @@ OPTIONS
           A unique identifier for the dataview.
 
        --az-mode (string)
-          The  number  of  availability  zones you want to assign per cluster.
-          This can be one of the following
-
-          o SINGLE  Assigns one availability zone per cluster.
-
-          o MULTI  Assigns all the availability zones per cluster.
+          The number of availability zones you want to assign per volume. Cur-
+          rently, FinSpace only  supports  SINGLE  for  volumes.  This  places
+          dataview in a single AZ.
 
           Possible values:
 
@@ -72,27 +70,27 @@ OPTIONS
           The identifier of the availability zones.
 
        --changeset-id (string)
-          A unique identifier of the changeset that you want to use to  ingest
+          A  unique identifier of the changeset that you want to use to ingest
           data.
 
        --segment-configurations (list)
-          The  configuration  that contains the database path of the data that
-          you want to place on each selected volume. Each segment must have  a
+          The configuration that contains the database path of the  data  that
+          you  want to place on each selected volume. Each segment must have a
           unique database path for each volume. If you do not explicitly spec-
-          ify any database path for a volume, they  are  accessible  from  the
+          ify  any  database  path  for a volume, they are accessible from the
           cluster through the default S3/object store segment.
 
           (structure)
-              The  configuration  that  contains the database path of the data
-              that you want to place on each  selected  volume.  Each  segment
-              must  have a unique database path for each volume. If you do not
-              explicitly specify any database path for a volume, they are  ac-
-              cessible  from  the  cluster through the default S3/object store
+              The configuration that contains the database path  of  the  data
+              that  you  want  to  place on each selected volume. Each segment
+              must have a unique database path for each volume. If you do  not
+              explicitly  specify any database path for a volume, they are ac-
+              cessible from the cluster through the  default  S3/object  store
               segment.
 
               dbPaths -> (list)
-                 The database path of the data that you want to place on  each
-                 selected  volume  for  the  segment. Each segment must have a
+                 The  database path of the data that you want to place on each
+                 selected volume for the segment. Each  segment  must  have  a
                  unique database path for each volume.
 
                  (string)
@@ -100,16 +98,24 @@ OPTIONS
               volumeName -> (string)
                  The name of the volume where you want to add data.
 
+              onDemand -> (boolean)
+                 Enables  on-demand caching on the selected database path when
+                 a particular file or a column of the  database  is  accessed.
+                 When  on  demand  caching is True , dataviews perform minimal
+                 loading of files on the filesystem as needed. When it is  set
+                 to False , everything is cached. The default value is False .
+
        Shorthand Syntax:
 
-          dbPaths=string,string,volumeName=string ...
+          dbPaths=string,string,volumeName=string,onDemand=boolean ...
 
        JSON Syntax:
 
           [
             {
               "dbPaths": ["string", ...],
-              "volumeName": "string"
+              "volumeName": "string",
+              "onDemand": true|false
             }
             ...
           ]
@@ -118,6 +124,24 @@ OPTIONS
           The option to specify whether you want to apply all the future addi-
           tions and corrections automatically to the dataview, when you ingest
           new changesets. The default value is false.
+
+       --read-write | --no-read-write (boolean)
+          The option to specify whether you want to make the dataview writable
+          to perform database maintenance. The following are  some  considera-
+          tions related to writable dataviews.
+
+          o You  cannot  create  partial  writable  dataviews. When you create
+            writeable dataviews you must provide the entire database path.
+
+          o You cannot perform updates on a writeable dataview. Hence, autoUp-
+            date must be set as False if readWrite is True for a dataview.
+
+          o You  must  also  use  a  unique  volume  for  creating a writeable
+            dataview. So, if you choose a volume that is already in use by an-
+            other dataview, the dataview creation fails.
+
+          o Once  you  create a dataview as writeable, you cannot change it to
+            read-only. So, you cannot update the readWrite parameter later.
 
        --description (string)
           A description of the dataview.
@@ -244,12 +268,9 @@ OUTPUT
           ate the dataview.
 
        azMode -> (string)
-          The  number  of  availability  zones you want to assign per cluster.
-          This can be one of the following
-
-          o SINGLE  Assigns one availability zone per cluster.
-
-          o MULTI  Assigns all the availability zones per cluster.
+          The number of availability zones you want to assign per volume. Cur-
+          rently, FinSpace only  supports  SINGLE  for  volumes.  This  places
+          dataview in a single AZ.
 
        availabilityZoneId -> (string)
           The identifier of the availability zones.
@@ -258,23 +279,23 @@ OUTPUT
           A unique identifier for the changeset.
 
        segmentConfigurations -> (list)
-          The configuration that contains the database path of the  data  that
-          you  want to place on each selected volume. Each segment must have a
+          The  configuration  that contains the database path of the data that
+          you want to place on each selected volume. Each segment must have  a
           unique database path for each volume. If you do not explicitly spec-
-          ify  any  database  path  for a volume, they are accessible from the
+          ify any database path for a volume, they  are  accessible  from  the
           cluster through the default S3/object store segment.
 
           (structure)
-              The configuration that contains the database path  of  the  data
-              that  you  want  to  place on each selected volume. Each segment
-              must have a unique database path for each volume. If you do  not
-              explicitly  specify any database path for a volume, they are ac-
-              cessible from the cluster through the  default  S3/object  store
+              The  configuration  that  contains the database path of the data
+              that you want to place on each  selected  volume.  Each  segment
+              must  have a unique database path for each volume. If you do not
+              explicitly specify any database path for a volume, they are  ac-
+              cessible  from  the  cluster through the default S3/object store
               segment.
 
               dbPaths -> (list)
-                 The  database path of the data that you want to place on each
-                 selected volume for the segment. Each  segment  must  have  a
+                 The database path of the data that you want to place on  each
+                 selected  volume  for  the  segment. Each segment must have a
                  unique database path for each volume.
 
                  (string)
@@ -282,13 +303,24 @@ OUTPUT
               volumeName -> (string)
                  The name of the volume where you want to add data.
 
+              onDemand -> (boolean)
+                 Enables on-demand caching on the selected database path  when
+                 a  particular  file  or a column of the database is accessed.
+                 When on demand caching is True ,  dataviews  perform  minimal
+                 loading  of files on the filesystem as needed. When it is set
+                 to False , everything is cached. The default value is False .
+
        description -> (string)
           A description of the dataview.
 
        autoUpdate -> (boolean)
-          The  option to select whether you want to apply all the future addi-
-          tions and corrections automatically to the dataview when you  ingest
+          The option to select whether you want to apply all the future  addi-
+          tions  and corrections automatically to the dataview when you ingest
           new changesets. The default value is false.
+
+       readWrite -> (boolean)
+          Returns True if the dataview is created as writeable and False  oth-
+          erwise.
 
        createdTimestamp -> (timestamp)
           The  timestamp  at  which  the dataview was created in FinSpace. The
