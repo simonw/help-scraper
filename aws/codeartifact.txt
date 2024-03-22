@@ -14,38 +14,35 @@ DESCRIPTION
        relationship between a CodeArtifact repository and another  repository,
        which  effectively  merges  their  contents from the point of view of a
        package manager client.
-          CodeArtifact Components
-
-       Use the information in this guide to help you work with  the  following
-       CodeArtifact components:
+          CodeArtifact concepts
 
        o Repository : A CodeArtifact repository contains a set of package ver-
          sions , each of which maps to a set of assets, or files. Repositories
          are polyglot, so a single repository can contain packages of any sup-
-         ported type. Each repository exposes endpoints for fetching and  pub-
-         lishing  packages  using  tools like the ** npm ** CLI, the Maven CLI
-         (** mvn ** ), Python CLIs (** pip ** and  twine  ),  and  NuGet  CLIs
-         (nuget and dotnet ).
+         ported  type. Each repository exposes endpoints for fetching and pub-
+         lishing packages using tools like the ** npm ** CLI,  the  Maven  CLI
+         (**  mvn  ** ), Python CLIs (** pip ** and twine ), NuGet CLIs (nuget
+         and dotnet ), and the Swift package manager (** swift ** ).
 
        o Domain : Repositories are aggregated into a higher-level entity known
-         as a domain . All package assets and metadata are stored in  the  do-
-         main,  but  are consumed through repositories. A given package asset,
-         such as a Maven JAR file, is stored once per domain,  no  matter  how
-         many  repositories it's present in. All of the assets and metadata in
+         as  a  domain . All package assets and metadata are stored in the do-
+         main, but are consumed through repositories. A given  package  asset,
+         such  as  a  Maven JAR file, is stored once per domain, no matter how
+         many repositories it's present in. All of the assets and metadata  in
          a domain are encrypted with the same customer master key (CMK) stored
-         in  Key  Management  Service  (KMS). Each repository is a member of a
-         single domain and can't be moved to a different  domain.  The  domain
-         allows  organizational policy to be applied across multiple reposito-
-         ries, such as which accounts can access repositories in  the  domain,
+         in Key Management Service (KMS). Each repository is  a  member  of  a
+         single  domain  and  can't be moved to a different domain. The domain
+         allows organizational policy to be applied across multiple  reposito-
+         ries,  such  as which accounts can access repositories in the domain,
          and which public repositories can be used as sources of packages. Al-
          though an organization can have multiple domains, we recommend a sin-
-         gle  production  domain that contains all published artifacts so that
+         gle production domain that contains all published artifacts  so  that
          teams can find and share packages across their organization.
 
        o Package : A package is a bundle of software and the metadata required
-         to  resolve  dependencies and install the software. CodeArtifact sup-
-         ports npm , PyPI , Maven , and NuGet package  formats.  In  CodeArti-
-         fact, a package consists of:
+         to resolve dependencies and install the software.  CodeArtifact  sup-
+         ports  npm  , PyPI , Maven , NuGet , Swift , and generic package for-
+         mats. In CodeArtifact, a package consists of:
 
          o A name (for example, webpack is the name of a popular npm package)
 
@@ -54,6 +51,15 @@ DESCRIPTION
          o A set of versions (for example, 1.0.0 , 1.0.1 , 1.0.2 , etc.)
 
          o Package-level metadata (for example, npm tags)
+
+       o Package group : A group of packages that match  a  specified  defini-
+         tion.  Package  groups can be used to apply configuration to multiple
+         packages that match a defined pattern using package  format,  package
+         namespace,  and package name. You can use package groups to more con-
+         veniently configure package origin controls  for  multiple  packages.
+         Package  origin controls are used to block or allow ingestion or pub-
+         lishing of new package versions, which protects users from  malicious
+         actions known as dependency substitution attacks.
 
        o Package  version : A version of a package, such as @types/node 12.6.9
          . The version number format and semantics vary for different  package
@@ -70,8 +76,7 @@ DESCRIPTION
 
        o Asset : An individual file stored in CodeArtifact associated  with  a
          package version, such as an npm .tgz file or Maven POM and JAR files.
-
-       CodeArtifact supports these operations:
+          CodeArtifact supported API operations
 
        o AssociateExternalConnection : Adds an existing external connection to
          a repository.
@@ -79,7 +84,9 @@ DESCRIPTION
        o CopyPackageVersions : Copies package versions from one repository  to
          another repository in the same domain.
 
-       o CreateDomain : Creates a domain
+       o CreateDomain : Creates a domain.
+
+       o CreatePackageGroup : Creates a package group.
 
        o CreateRepository : Creates a CodeArtifact repository in a domain.
 
@@ -92,21 +99,27 @@ DESCRIPTION
        o DeletePackage  :  Deletes  a  package and all associated package ver-
          sions.
 
-       o DeletePackageVersions : Deletes versions of a package. After a  pack-
+       o DeletePackageGroup : Deletes a package group. Does not  delete  pack-
+         ages or package versions that are associated with a package group.
+
+       o DeletePackageVersions  : Deletes versions of a package. After a pack-
          age has been deleted, it can be republished, but its assets and meta-
-         data cannot be restored because they have  been  permanently  removed
+         data  cannot  be  restored because they have been permanently removed
          from storage.
 
        o DeleteRepository : Deletes a repository.
 
-       o DeleteRepositoryPermissionsPolicy  : Deletes the resource policy that
+       o DeleteRepositoryPermissionsPolicy : Deletes the resource policy  that
          is set on a repository.
 
        o DescribeDomain : Returns a DomainDescription object that contains in-
          formation about the requested domain.
 
-       o DescribePackage  :  Returns a PackageDescription object that contains
+       o DescribePackage : Returns a PackageDescription object  that  contains
          details about a package.
+
+       o DescribePackageGroup  :  Returns  a PackageGroup object that contains
+         details about a package group.
 
        o DescribePackageVersion : Returns a  PackageVersionDescription  object
          that contains details about a package version.
@@ -121,23 +134,28 @@ DESCRIPTION
        o DisassociateExternalConnection : Removes an existing external connec-
          tion from a repository.
 
+       o GetAssociatedPackageGroup : Returns the most closely associated pack-
+         age group to the specified package.
+
        o GetAuthorizationToken : Generates a temporary authorization token for
-         accessing repositories in the domain. The token  expires  the  autho-
-         rization  period  has  passed. The default authorization period is 12
+         accessing  repositories  in  the domain. The token expires the autho-
+         rization period has passed. The default authorization  period  is  12
          hours and can be customized to any length with a maximum of 12 hours.
 
        o GetDomainPermissionsPolicy : Returns the policy of a resource that is
          attached to the specified domain.
 
-       o GetPackageVersionAsset  : Returns the contents of an asset that is in
+       o GetPackageVersionAsset : Returns the contents of an asset that is  in
          a package version.
 
-       o GetPackageVersionReadme : Gets the readme file  or  descriptive  text
+       o GetPackageVersionReadme  :  Gets  the readme file or descriptive text
          for a package version.
 
-       o GetRepositoryEndpoint  :  Returns  the endpoint of a repository for a
+       o GetRepositoryEndpoint : Returns the endpoint of a  repository  for  a
          specific package format. A repository has one endpoint for each pack-
          age format:
+
+         o generic
 
          o maven
 
@@ -147,18 +165,30 @@ DESCRIPTION
 
          o pypi
 
-       o GetRepositoryPermissionsPolicy  : Returns the resource policy that is
+         o swift
+
+       o GetRepositoryPermissionsPolicy : Returns the resource policy that  is
          set on a repository.
+
+       o ListAllowedRepositoriesForGroup  : Lists the allowed repositories for
+         a package group that  has  origin  configuration  set  to  ALLOW_SPE-
+         CIFIC_REPOSITORIES .
+
+       o ListAssociatedPackages  :  Returns a list of packages associated with
+         the requested package group.
 
        o ListDomains : Returns a list of DomainSummary objects. Each  returned
          DomainSummary object contains information about a domain.
 
        o ListPackages : Lists the packages in a repository.
 
-       o ListPackageVersionAssets  : Lists the assets for a given package ver-
+       o ListPackageGroups : Returns a list of package groups in the requested
+         domain.
+
+       o ListPackageVersionAssets : Lists the assets for a given package  ver-
          sion.
 
-       o ListPackageVersionDependencies : Returns a list of the direct  depen-
+       o ListPackageVersionDependencies  : Returns a list of the direct depen-
          dencies for a package version.
 
        o ListPackageVersions : Returns a list of package versions for a speci-
@@ -167,8 +197,11 @@ DESCRIPTION
        o ListRepositories : Returns a list of repositories owned by the Amazon
          Web Services account that called this method.
 
-       o ListRepositoriesInDomain  :  Returns  a list of the repositories in a
+       o ListRepositoriesInDomain : Returns a list of the  repositories  in  a
          domain.
+
+       o ListSubPackageGroups : Returns a list of direct children of the spec-
+         ified package group.
 
        o PublishPackageVersion : Creates a new package version containing  one
          or more assets.
@@ -182,6 +215,12 @@ DESCRIPTION
        o PutRepositoryPermissionsPolicy : Sets the resource policy on a repos-
          itory that specifies permissions to access it.
 
+       o UpdatePackageGroup : Updates a package group. This API cannot be used
+         to update a package group's origin configuration or pattern.
+
+       o UpdatePackageGroupOriginConfiguration  :  Updates  the package origin
+         configuration for a package group.
+
        o UpdatePackageVersionsStatus : Updates the status of one or more  ver-
          sions of a package.
 
@@ -194,6 +233,8 @@ AVAILABLE COMMANDS
 
        o create-domain
 
+       o create-package-group
+
        o create-repository
 
        o delete-domain
@@ -201,6 +242,8 @@ AVAILABLE COMMANDS
        o delete-domain-permissions-policy
 
        o delete-package
+
+       o delete-package-group
 
        o delete-package-versions
 
@@ -212,6 +255,8 @@ AVAILABLE COMMANDS
 
        o describe-package
 
+       o describe-package-group
+
        o describe-package-version
 
        o describe-repository
@@ -219,6 +264,8 @@ AVAILABLE COMMANDS
        o disassociate-external-connection
 
        o dispose-package-versions
+
+       o get-associated-package-group
 
        o get-authorization-token
 
@@ -234,7 +281,13 @@ AVAILABLE COMMANDS
 
        o help
 
+       o list-allowed-repositories-for-group
+
+       o list-associated-packages
+
        o list-domains
+
+       o list-package-groups
 
        o list-package-version-assets
 
@@ -247,6 +300,8 @@ AVAILABLE COMMANDS
        o list-repositories
 
        o list-repositories-in-domain
+
+       o list-sub-package-groups
 
        o list-tags-for-resource
 
@@ -263,6 +318,10 @@ AVAILABLE COMMANDS
        o tag-resource
 
        o untag-resource
+
+       o update-package-group
+
+       o update-package-group-origin-configuration
 
        o update-package-versions-status
 
