@@ -10,10 +10,6 @@ DESCRIPTION
        results. The response cites up to five sources  but  only  selects  the
        ones that are relevant to the query.
 
-       NOTE:
-          The  numberOfResults field is currently unsupported for RetrieveAnd-
-          Generate . Don't include it in the vectorSearchConfiguration object.
-
        See also: AWS API Documentation
 
 SYNOPSIS
@@ -41,7 +37,7 @@ SYNOPSIS
 
 OPTIONS
        --input (structure)
-          Contains the query made to the knowledge base.
+          Contains the query to be made to the knowledge base.
 
           text -> (string)
               The query made to the knowledge base.
@@ -57,11 +53,33 @@ OPTIONS
           }
 
        --retrieve-and-generate-configuration (structure)
-          Contains details about the resource being queried and the foundation
-          model used for generation.
+          Contains  configurations  for the knowledge base query and retrieval
+          process. For more information, see Query configurations .
 
           knowledgeBaseConfiguration -> (structure)
               Contains details about the resource being queried.
+
+              generationConfiguration -> (structure)
+                 Contains configurations for response generation based on  the
+                 knowwledge base query results.
+
+                 promptTemplate -> (structure)
+                     Contains  the  template for the prompt that's sent to the
+                     model for response generation.
+
+                     textPromptTemplate -> (string)
+                        The template for the prompt that's sent to  the  model
+                        for response generation. You can include prompt place-
+                        holders, which become replaced before  the  prompt  is
+                        sent  to the model to provide instructions and context
+                        to the model. In addition, you can include XML tags to
+                        delineate meaningful sections of the prompt template.
+
+                        For more information, see the following resources:
+
+                        o Knowledge base prompt templates
+
+                        o Use XML tags with Anthropic Claude models
 
               knowledgeBaseId -> (string)
                  The  unique  identifier of the knowledge base that is queried
@@ -76,16 +94,11 @@ OPTIONS
 
                  vectorSearchConfiguration -> (structure)
                      Contains  details  about  how the results from the vector
-                     search should be returned.
+                     search should be  returned.  For  more  information,  see
+                     Query configurations .
 
                      numberOfResults -> (integer)
-                        The number of results to return.
-
-                        NOTE:
-                            The numberOfResults field is currently unsupported
-                            for RetrieveAndGenerate . Don't include it in this
-                            field if you are sending a RetrieveAndGenerate re-
-                            quest.
+                        The number of source chunks to retrieve.
 
                      overrideSearchType -> (string)
                         By  default,  Amazon Bedrock decides a search strategy
@@ -105,6 +118,11 @@ OPTIONS
 
           {
             "knowledgeBaseConfiguration": {
+              "generationConfiguration": {
+                "promptTemplate": {
+                  "textPromptTemplate": "string"
+                }
+              },
               "knowledgeBaseId": "string",
               "modelArn": "string",
               "retrievalConfiguration": {
@@ -238,6 +256,12 @@ OUTPUT
               based on a source in the knowledge base,  alongside  information
               about the source.
 
+              This data type is used in the following API operations:
+
+              o Retrieve response  in the citations field
+
+              o RetrieveAndGenerate response  in the citations field
+
               generatedResponsePart -> (structure)
                  Contains the generated response and metadata
 
@@ -266,8 +290,15 @@ OUTPUT
                  response.
 
                  (structure)
-                     Contains metadata about a sources cited for the generated
+                     Contains  metadata about a source cited for the generated
                      response.
+
+                     This data type is used in the following API operations:
+
+                     o RetrieveAndGenerate response   in  the  retrievedRefer-
+                       ences field
+
+                     o Retrieve response  in the retrievedReferences field
 
                      content -> (structure)
                         Contains the cited text from the data source.
@@ -276,7 +307,7 @@ OUTPUT
                             The cited text from the data source.
 
                      location -> (structure)
-                        Contains information about the location  of  the  data
+                        Contains  information  about  the location of the data
                         source.
 
                         s3Location -> (structure)
@@ -295,7 +326,7 @@ OUTPUT
               The response generated from querying the knowledge base.
 
        sessionId -> (string)
-          The  unique  identifier of the session. Reuse the same value to con-
+          The unique identifier of the session. Reuse the same value  to  con-
           tinue the same session with the knowledge base.
 
 
