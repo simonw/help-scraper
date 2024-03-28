@@ -6,17 +6,50 @@ NAME
        create-knowledge-base -
 
 DESCRIPTION
-       Create a new knowledge base
+       Creates a knowledge base that contains data sources from which informa-
+       tion can be queried and used by LLMs. To create a knowledge  base,  you
+       must  first  set  up your data sources and configure a supported vector
+       store. For more information, see Set up your data for ingestion .
+
+       NOTE:
+          If you prefer to let Amazon Bedrock create and manage a vector store
+          for  you in Amazon OpenSearch Service, use the console. For more in-
+          formation, see Create a knowledge base .
+
+       o Provide the name and an optional description .
+
+       o Provide the ARN with permissions to create a knowledge  base  in  the
+         roleArn field.
+
+       o Provide  the embedding model to use in the embeddingModelArn field in
+         the knowledgeBaseConfiguration object.
+
+       o Provide the configuration for your vector store in the storageConfig-
+         uration object.
+
+         o For  an  Amazon  OpenSearch  Service  database, use the opensearch-
+           ServerlessConfiguration object. For more information, see Create  a
+           vector store in Amazon OpenSearch Service .
+
+         o For an Amazon Aurora database, use the RdsConfiguration object. For
+           more information, see Create a vector store in Amazon Aurora .
+
+         o For a Pinecone database, use the pineconeConfiguration object.  For
+           more information, see Create a vector store in Pinecone .
+
+         o For  a  Redis  Enterprise  Cloud database, use the redisEnterprise-
+           CloudConfiguration object. For more information, see Create a  vec-
+           tor store in Redis Enterprise Cloud .
 
        See also: AWS API Documentation
 
 SYNOPSIS
             create-knowledge-base
           [--client-token <value>]
-          --name <value>
           [--description <value>]
-          --role-arn <value>
           --knowledge-base-configuration <value>
+          --name <value>
+          --role-arn <value>
           --storage-configuration <value>
           [--tags <value>]
           [--cli-input-json <value>]
@@ -38,28 +71,29 @@ SYNOPSIS
 
 OPTIONS
        --client-token (string)
-          Client specified token used for idempotency checks
-
-       --name (string)
-          Name for a resource.
+          A  unique,  case-sensitive identifier to ensure that the API request
+          completes no more than one time. If this token  matches  a  previous
+          request,  Amazon Bedrock ignores the request, but does not return an
+          error. For more information, see Ensuring idempotency .
 
        --description (string)
-          Description of the Resource.
-
-       --role-arn (string)
-          ARN of a IAM role.
+          A description of the knowledge base.
 
        --knowledge-base-configuration (structure)
-          Configures a bedrock knowledge base.
+          Contains details about the embeddings model used for  the  knowledge
+          base.
 
           type -> (string)
-              The type of a knowledge base.
+              The  type of data that the data source is converted into for the
+              knowledge base.
 
           vectorKnowledgeBaseConfiguration -> (structure)
-              Configurations for a vector knowledge base.
+              Contains details about the embeddings model that'sused  to  con-
+              vert the data source.
 
               embeddingModelArn -> (string)
-                 Arn of a Bedrock model.
+                 The ARN of the model used to create vector embeddings for the
+                 knowledge base.
 
        Shorthand Syntax:
 
@@ -74,175 +108,201 @@ OPTIONS
             }
           }
 
-       --storage-configuration (structure)
-          Configures  the  physical  storage  of  ingested data in a knowledge
+       --name (string)
+          A name for the knowledge base.
+
+       --role-arn (string)
+          The ARN of the IAM role with permissions  to  create  the  knowledge
           base.
 
-          type -> (string)
-              The storage type of a knowledge base.
+       --storage-configuration (structure)
+          Contains details about the configuration of the vector database used
+          for the knowledge base.
 
           opensearchServerlessConfiguration -> (structure)
-              Contains the configurations  to  use  OpenSearch  Serverless  to
-              store knowledge base data.
+              Contains the storage configuration of the knowledge base in Ama-
+              zon OpenSearch Service.
 
               collectionArn -> (string)
-                 Arn of an OpenSearch Serverless collection.
-
-              vectorIndexName -> (string)
-                 Arn of an OpenSearch Serverless index.
+                 The ARN of the OpenSearch Service vector store.
 
               fieldMapping -> (structure)
-                 A  mapping  of  Bedrock  Knowledge  Base fields to OpenSearch
-                 Serverless field names
-
-                 vectorField -> (string)
-                     Name of the field
-
-                 textField -> (string)
-                     Name of the field
+                 Contains  the names of the fields to which to map information
+                 about the vector store.
 
                  metadataField -> (string)
-                     Name of the field
+                     The name of the field  in  which  Amazon  Bedrock  stores
+                     metadata about the vector store.
+
+                 textField -> (string)
+                     The  name of the field in which Amazon Bedrock stores the
+                     raw text from your data. The text is split  according  to
+                     the chunking strategy you choose.
+
+                 vectorField -> (string)
+                     The  name of the field in which Amazon Bedrock stores the
+                     vector embeddings for your data sources.
+
+              vectorIndexName -> (string)
+                 The name of the vector store.
 
           pineconeConfiguration -> (structure)
-              Contains the configurations to use Pinecone to  store  knowledge
-              base data.
+              Contains the storage configuration  of  the  knowledge  base  in
+              Pinecone.
 
               connectionString -> (string)
-                 Pinecone connection string
+                 The endpoint URL for your index management page.
 
               credentialsSecretArn -> (string)
-                 Arn of a SecretsManager Secret.
+                 The  ARN  of  the  secret that you created in Secrets Manager
+                 that is linked to your Pinecone API key.
+
+              fieldMapping -> (structure)
+                 Contains the names of the fields to which to map  information
+                 about the vector store.
+
+                 metadataField -> (string)
+                     The  name  of  the  field  in which Amazon Bedrock stores
+                     metadata about the vector store.
+
+                 textField -> (string)
+                     The name of the field in which Amazon Bedrock stores  the
+                     raw  text  from your data. The text is split according to
+                     the chunking strategy you choose.
 
               namespace -> (string)
-                 Pinecone namespace
-
-              fieldMapping -> (structure)
-                 A  mapping of Bedrock Knowledge Base fields to Pinecone field
-                 names
-
-                 textField -> (string)
-                     Name of the field
-
-                 metadataField -> (string)
-                     Name of the field
-
-          redisEnterpriseCloudConfiguration -> (structure)
-              Contains the configurations to use  Redis  Enterprise  Cloud  to
-              store knowledge base data.
-
-              endpoint -> (string)
-                 Redis enterprise cloud endpoint
-
-              vectorIndexName -> (string)
-                 Name of a redis enterprise cloud index
-
-              credentialsSecretArn -> (string)
-                 Arn of a SecretsManager Secret.
-
-              fieldMapping -> (structure)
-                 A  mapping  of  Bedrock  Knowledge Base fields to Redis Cloud
-                 field names
-
-                 vectorField -> (string)
-                     Name of the field
-
-                 textField -> (string)
-                     Name of the field
-
-                 metadataField -> (string)
-                     Name of the field
+                 The namespace to be used to write new data to your database.
 
           rdsConfiguration -> (structure)
-              Contains the configurations to use RDS to store  knowledge  base
-              data.
-
-              resourceArn -> (string)
-                 Arn of a RDS Resource.
+              Contains details about the storage configuration of  the  knowl-
+              edge base in Amazon RDS. For more information, see Create a vec-
+              tor index in Amazon RDS .
 
               credentialsSecretArn -> (string)
-                 Arn of a SecretsManager Secret.
+                 The ARN of the secret that you  created  in  Secrets  Manager
+                 that is linked to your Amazon RDS database.
 
               databaseName -> (string)
-                 Name of the database within RDS
-
-              tableName -> (string)
-                 Name of the table within RDS
+                 The name of your Amazon RDS database.
 
               fieldMapping -> (structure)
-                 A  mapping  of  Bedrock  Knowledge  Base fields to RDS column
-                 names
-
-                 primaryKeyField -> (string)
-                     Name of the column
-
-                 vectorField -> (string)
-                     Name of the column
-
-                 textField -> (string)
-                     Name of the column
+                 Contains  the names of the fields to which to map information
+                 about the vector store.
 
                  metadataField -> (string)
-                     Name of the column
+                     The name of the field  in  which  Amazon  Bedrock  stores
+                     metadata about the vector store.
+
+                 primaryKeyField -> (string)
+                     The  name of the field in which Amazon Bedrock stores the
+                     ID for each entry.
+
+                 textField -> (string)
+                     The name of the field in which Amazon Bedrock stores  the
+                     raw  text  from your data. The text is split according to
+                     the chunking strategy you choose.
+
+                 vectorField -> (string)
+                     The name of the field in which Amazon Bedrock stores  the
+                     vector embeddings for your data sources.
+
+              resourceArn -> (string)
+                 The ARN of the vector store.
+
+              tableName -> (string)
+                 The name of the table in the database.
+
+          redisEnterpriseCloudConfiguration -> (structure)
+              Contains  the storage configuration of the knowledge base in Re-
+              dis Enterprise Cloud.
+
+              credentialsSecretArn -> (string)
+                 The ARN of the secret that you  created  in  Secrets  Manager
+                 that is linked to your Redis Enterprise Cloud database.
+
+              endpoint -> (string)
+                 The endpoint URL of the Redis Enterprise Cloud database.
+
+              fieldMapping -> (structure)
+                 Contains  the names of the fields to which to map information
+                 about the vector store.
+
+                 metadataField -> (string)
+                     The name of the field  in  which  Amazon  Bedrock  stores
+                     metadata about the vector store.
+
+                 textField -> (string)
+                     The  name of the field in which Amazon Bedrock stores the
+                     raw text from your data. The text is split  according  to
+                     the chunking strategy you choose.
+
+                 vectorField -> (string)
+                     The  name of the field in which Amazon Bedrock stores the
+                     vector embeddings for your data sources.
+
+              vectorIndexName -> (string)
+                 The name of the vector index.
+
+          type -> (string)
+              The vector store service in which the knowledge base is stored.
 
        Shorthand Syntax:
 
-          type=string,opensearchServerlessConfiguration={collectionArn=string,vectorIndexName=string,fieldMapping={vectorField=string,textField=string,metadataField=string}},pineconeConfiguration={connectionString=string,credentialsSecretArn=string,namespace=string,fieldMapping={textField=string,metadataField=string}},redisEnterpriseCloudConfiguration={endpoint=string,vectorIndexName=string,credentialsSecretArn=string,fieldMapping={vectorField=string,textField=string,metadataField=string}},rdsConfiguration={resourceArn=string,credentialsSecretArn=string,databaseName=string,tableName=string,fieldMapping={primaryKeyField=string,vectorField=string,textField=string,metadataField=string}}
+          opensearchServerlessConfiguration={collectionArn=string,fieldMapping={metadataField=string,textField=string,vectorField=string},vectorIndexName=string},pineconeConfiguration={connectionString=string,credentialsSecretArn=string,fieldMapping={metadataField=string,textField=string},namespace=string},rdsConfiguration={credentialsSecretArn=string,databaseName=string,fieldMapping={metadataField=string,primaryKeyField=string,textField=string,vectorField=string},resourceArn=string,tableName=string},redisEnterpriseCloudConfiguration={credentialsSecretArn=string,endpoint=string,fieldMapping={metadataField=string,textField=string,vectorField=string},vectorIndexName=string},type=string
 
        JSON Syntax:
 
           {
-            "type": "OPENSEARCH_SERVERLESS"|"PINECONE"|"REDIS_ENTERPRISE_CLOUD"|"RDS",
             "opensearchServerlessConfiguration": {
               "collectionArn": "string",
-              "vectorIndexName": "string",
               "fieldMapping": {
-                "vectorField": "string",
+                "metadataField": "string",
                 "textField": "string",
-                "metadataField": "string"
-              }
+                "vectorField": "string"
+              },
+              "vectorIndexName": "string"
             },
             "pineconeConfiguration": {
               "connectionString": "string",
               "credentialsSecretArn": "string",
-              "namespace": "string",
               "fieldMapping": {
-                "textField": "string",
-                "metadataField": "string"
-              }
-            },
-            "redisEnterpriseCloudConfiguration": {
-              "endpoint": "string",
-              "vectorIndexName": "string",
-              "credentialsSecretArn": "string",
-              "fieldMapping": {
-                "vectorField": "string",
-                "textField": "string",
-                "metadataField": "string"
-              }
+                "metadataField": "string",
+                "textField": "string"
+              },
+              "namespace": "string"
             },
             "rdsConfiguration": {
-              "resourceArn": "string",
               "credentialsSecretArn": "string",
               "databaseName": "string",
-              "tableName": "string",
               "fieldMapping": {
+                "metadataField": "string",
                 "primaryKeyField": "string",
-                "vectorField": "string",
                 "textField": "string",
-                "metadataField": "string"
-              }
-            }
+                "vectorField": "string"
+              },
+              "resourceArn": "string",
+              "tableName": "string"
+            },
+            "redisEnterpriseCloudConfiguration": {
+              "credentialsSecretArn": "string",
+              "endpoint": "string",
+              "fieldMapping": {
+                "metadataField": "string",
+                "textField": "string",
+                "vectorField": "string"
+              },
+              "vectorIndexName": "string"
+            },
+            "type": "OPENSEARCH_SERVERLESS"|"PINECONE"|"REDIS_ENTERPRISE_CLOUD"|"RDS"
           }
 
        --tags (map)
-          A map of tag keys and values
+          Specify the key-value pairs for the tags that you want to attach  to
+          your knowledge base in this object.
 
           key -> (string)
-              Key of a tag
 
           value -> (string)
-              Value of a tag
 
        Shorthand Syntax:
 
@@ -253,17 +313,17 @@ OPTIONS
           {"string": "string"
             ...}
 
-       --cli-input-json (string) Performs service operation based on the  JSON
-       string  provided. The JSON string follows the format provided by --gen-
-       erate-cli-skeleton. If other arguments  are  provided  on  the  command
-       line,  the CLI values will override the JSON-provided values. It is not
+       --cli-input-json  (string) Performs service operation based on the JSON
+       string provided. The JSON string follows the format provided by  --gen-
+       erate-cli-skeleton.  If  other  arguments  are  provided on the command
+       line, the CLI values will override the JSON-provided values. It is  not
        possible to pass arbitrary binary values using a JSON-provided value as
        the string will be taken literally.
 
-       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
+       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
        output without sending an API request. If provided with no value or the
        value input, prints a sample input JSON that can be used as an argument
-       for --cli-input-json. If provided with the value output,  it  validates
+       for  --cli-input-json.  If provided with the value output, it validates
        the command inputs and returns a sample output JSON for that command.
 
 GLOBAL OPTIONS
@@ -277,7 +337,7 @@ GLOBAL OPTIONS
 
        --no-verify-ssl (boolean)
 
-       By  default, the AWS CLI uses SSL when communicating with AWS services.
+       By default, the AWS CLI uses SSL when communicating with AWS  services.
        For each SSL connection, the AWS CLI will verify SSL certificates. This
        option overrides the default behavior of verifying SSL certificates.
 
@@ -323,7 +383,7 @@ GLOBAL OPTIONS
 
        --no-sign-request (boolean)
 
-       Do  not  sign requests. Credentials will not be loaded if this argument
+       Do not sign requests. Credentials will not be loaded if  this  argument
        is provided.
 
        --ca-bundle (string)
@@ -333,172 +393,211 @@ GLOBAL OPTIONS
 
        --cli-read-timeout (int)
 
-       The  maximum socket read time in seconds. If the value is set to 0, the
-       socket read will be blocking and not timeout. The default value  is  60
+       The maximum socket read time in seconds. If the value is set to 0,  the
+       socket  read  will be blocking and not timeout. The default value is 60
        seconds.
 
        --cli-connect-timeout (int)
 
-       The  maximum  socket connect time in seconds. If the value is set to 0,
-       the socket connect will be blocking and not timeout. The default  value
+       The maximum socket connect time in seconds. If the value is set  to  0,
+       the  socket connect will be blocking and not timeout. The default value
        is 60 seconds.
 
 OUTPUT
        knowledgeBase -> (structure)
-          Contains the information of a knowledge base.
-
-          knowledgeBaseId -> (string)
-              Identifier for a resource.
-
-          name -> (string)
-              Name for a resource.
-
-          knowledgeBaseArn -> (string)
-              ARN of a KnowledgeBase
-
-          description -> (string)
-              Description of the Resource.
-
-          roleArn -> (string)
-              ARN of a IAM role.
-
-          knowledgeBaseConfiguration -> (structure)
-              Configures a bedrock knowledge base.
-
-              type -> (string)
-                 The type of a knowledge base.
-
-              vectorKnowledgeBaseConfiguration -> (structure)
-                 Configurations for a vector knowledge base.
-
-                 embeddingModelArn -> (string)
-                     Arn of a Bedrock model.
-
-          storageConfiguration -> (structure)
-              Configures  the physical storage of ingested data in a knowledge
-              base.
-
-              type -> (string)
-                 The storage type of a knowledge base.
-
-              opensearchServerlessConfiguration -> (structure)
-                 Contains the configurations to use OpenSearch  Serverless  to
-                 store knowledge base data.
-
-                 collectionArn -> (string)
-                     Arn of an OpenSearch Serverless collection.
-
-                 vectorIndexName -> (string)
-                     Arn of an OpenSearch Serverless index.
-
-                 fieldMapping -> (structure)
-                     A  mapping of Bedrock Knowledge Base fields to OpenSearch
-                     Serverless field names
-
-                     vectorField -> (string)
-                        Name of the field
-
-                     textField -> (string)
-                        Name of the field
-
-                     metadataField -> (string)
-                        Name of the field
-
-              pineconeConfiguration -> (structure)
-                 Contains the configurations to use Pinecone to  store  knowl-
-                 edge base data.
-
-                 connectionString -> (string)
-                     Pinecone connection string
-
-                 credentialsSecretArn -> (string)
-                     Arn of a SecretsManager Secret.
-
-                 namespace -> (string)
-                     Pinecone namespace
-
-                 fieldMapping -> (structure)
-                     A  mapping  of  Bedrock Knowledge Base fields to Pinecone
-                     field names
-
-                     textField -> (string)
-                        Name of the field
-
-                     metadataField -> (string)
-                        Name of the field
-
-              redisEnterpriseCloudConfiguration -> (structure)
-                 Contains the configurations to use Redis Enterprise Cloud  to
-                 store knowledge base data.
-
-                 endpoint -> (string)
-                     Redis enterprise cloud endpoint
-
-                 vectorIndexName -> (string)
-                     Name of a redis enterprise cloud index
-
-                 credentialsSecretArn -> (string)
-                     Arn of a SecretsManager Secret.
-
-                 fieldMapping -> (structure)
-                     A mapping of Bedrock Knowledge Base fields to Redis Cloud
-                     field names
-
-                     vectorField -> (string)
-                        Name of the field
-
-                     textField -> (string)
-                        Name of the field
-
-                     metadataField -> (string)
-                        Name of the field
-
-              rdsConfiguration -> (structure)
-                 Contains the configurations to use  RDS  to  store  knowledge
-                 base data.
-
-                 resourceArn -> (string)
-                     Arn of a RDS Resource.
-
-                 credentialsSecretArn -> (string)
-                     Arn of a SecretsManager Secret.
-
-                 databaseName -> (string)
-                     Name of the database within RDS
-
-                 tableName -> (string)
-                     Name of the table within RDS
-
-                 fieldMapping -> (structure)
-                     A  mapping of Bedrock Knowledge Base fields to RDS column
-                     names
-
-                     primaryKeyField -> (string)
-                        Name of the column
-
-                     vectorField -> (string)
-                        Name of the column
-
-                     textField -> (string)
-                        Name of the column
-
-                     metadataField -> (string)
-                        Name of the column
-
-          status -> (string)
-              The status of a knowledge base.
+          Contains details about the knowledge base.
 
           createdAt -> (timestamp)
-              Time Stamp.
+              The time at which the knowledge base was created.
 
-          updatedAt -> (timestamp)
-              Time Stamp.
+          description -> (string)
+              The description of the knowledge base.
 
           failureReasons -> (list)
-              Failure Reasons for Error.
+              A list of reasons that the API operation on the  knowledge  base
+              failed.
 
               (string)
-                 Failure Reason for Error.
+
+          knowledgeBaseArn -> (string)
+              The ARN of the knowledge base.
+
+          knowledgeBaseConfiguration -> (structure)
+              Contains  details  about  the  embeddings  configuration  of the
+              knowledge base.
+
+              type -> (string)
+                 The type of data that the data source is converted  into  for
+                 the knowledge base.
+
+              vectorKnowledgeBaseConfiguration -> (structure)
+                 Contains  details  about  the  embeddings model that'sused to
+                 convert the data source.
+
+                 embeddingModelArn -> (string)
+                     The ARN of the model used to create vector embeddings for
+                     the knowledge base.
+
+          knowledgeBaseId -> (string)
+              The unique identifier of the knowledge base.
+
+          name -> (string)
+              The name of the knowledge base.
+
+          roleArn -> (string)
+              The  ARN  of  the IAM role with permissions to invoke API opera-
+              tions on the knowledge  base.  The  ARN  must  begin  with  Ama-
+              zonBedrockExecutionRoleForKnowledgeBase_ .
+
+          status -> (string)
+              The  status  of  the  knowledge base. The following statuses are
+              possible:
+
+              o CREATING  The knowledge base is being created.
+
+              o ACTIVE  The knowledge base is ready to be queried.
+
+              o DELETING  The knowledge base is being deleted.
+
+              o UPDATING  The knowledge base is being updated.
+
+              o FAILED  The knowledge base API operation failed.
+
+          storageConfiguration -> (structure)
+              Contains details about the storage configuration of  the  knowl-
+              edge base.
+
+              opensearchServerlessConfiguration -> (structure)
+                 Contains  the  storage configuration of the knowledge base in
+                 Amazon OpenSearch Service.
+
+                 collectionArn -> (string)
+                     The ARN of the OpenSearch Service vector store.
+
+                 fieldMapping -> (structure)
+                     Contains the names of the fields to which to map informa-
+                     tion about the vector store.
+
+                     metadataField -> (string)
+                        The  name  of the field in which Amazon Bedrock stores
+                        metadata about the vector store.
+
+                     textField -> (string)
+                        The name of the field in which Amazon  Bedrock  stores
+                        the raw text from your data. The text is split accord-
+                        ing to the chunking strategy you choose.
+
+                     vectorField -> (string)
+                        The name of the field in which Amazon  Bedrock  stores
+                        the vector embeddings for your data sources.
+
+                 vectorIndexName -> (string)
+                     The name of the vector store.
+
+              pineconeConfiguration -> (structure)
+                 Contains  the  storage configuration of the knowledge base in
+                 Pinecone.
+
+                 connectionString -> (string)
+                     The endpoint URL for your index management page.
+
+                 credentialsSecretArn -> (string)
+                     The ARN of the secret that you created in Secrets Manager
+                     that is linked to your Pinecone API key.
+
+                 fieldMapping -> (structure)
+                     Contains the names of the fields to which to map informa-
+                     tion about the vector store.
+
+                     metadataField -> (string)
+                        The name of the field in which Amazon  Bedrock  stores
+                        metadata about the vector store.
+
+                     textField -> (string)
+                        The  name  of the field in which Amazon Bedrock stores
+                        the raw text from your data. The text is split accord-
+                        ing to the chunking strategy you choose.
+
+                 namespace -> (string)
+                     The  namespace to be used to write new data to your data-
+                     base.
+
+              rdsConfiguration -> (structure)
+                 Contains details  about  the  storage  configuration  of  the
+                 knowledge  base  in  Amazon  RDS.  For  more information, see
+                 Create a vector index in Amazon RDS .
+
+                 credentialsSecretArn -> (string)
+                     The ARN of the secret that you created in Secrets Manager
+                     that is linked to your Amazon RDS database.
+
+                 databaseName -> (string)
+                     The name of your Amazon RDS database.
+
+                 fieldMapping -> (structure)
+                     Contains the names of the fields to which to map informa-
+                     tion about the vector store.
+
+                     metadataField -> (string)
+                        The name of the field in which Amazon  Bedrock  stores
+                        metadata about the vector store.
+
+                     primaryKeyField -> (string)
+                        The  name  of the field in which Amazon Bedrock stores
+                        the ID for each entry.
+
+                     textField -> (string)
+                        The name of the field in which Amazon  Bedrock  stores
+                        the raw text from your data. The text is split accord-
+                        ing to the chunking strategy you choose.
+
+                     vectorField -> (string)
+                        The name of the field in which Amazon  Bedrock  stores
+                        the vector embeddings for your data sources.
+
+                 resourceArn -> (string)
+                     The ARN of the vector store.
+
+                 tableName -> (string)
+                     The name of the table in the database.
+
+              redisEnterpriseCloudConfiguration -> (structure)
+                 Contains  the  storage configuration of the knowledge base in
+                 Redis Enterprise Cloud.
+
+                 credentialsSecretArn -> (string)
+                     The ARN of the secret that you created in Secrets Manager
+                     that is linked to your Redis Enterprise Cloud database.
+
+                 endpoint -> (string)
+                     The endpoint URL of the Redis Enterprise Cloud database.
+
+                 fieldMapping -> (structure)
+                     Contains the names of the fields to which to map informa-
+                     tion about the vector store.
+
+                     metadataField -> (string)
+                        The name of the field in which Amazon  Bedrock  stores
+                        metadata about the vector store.
+
+                     textField -> (string)
+                        The  name  of the field in which Amazon Bedrock stores
+                        the raw text from your data. The text is split accord-
+                        ing to the chunking strategy you choose.
+
+                     vectorField -> (string)
+                        The  name  of the field in which Amazon Bedrock stores
+                        the vector embeddings for your data sources.
+
+                 vectorIndexName -> (string)
+                     The name of the vector index.
+
+              type -> (string)
+                 The vector store service  in  which  the  knowledge  base  is
+                 stored.
+
+          updatedAt -> (timestamp)
+              The time at which the knowledge base was last updated.
 
 
 

@@ -6,21 +6,33 @@ NAME
        create-agent-action-group -
 
 DESCRIPTION
-       Creates an Action Group for existing Amazon Bedrock Agent
+       Creates  an  action  group for an agent. An action group represents the
+       actions that an agent can carry out for the customer  by  defining  the
+       APIs that an agent can call and the logic for calling them.
+
+       To allow your agent to request the user for additional information when
+       trying to complete a task, add an action group with  the  parentAction-
+       GroupSignature  field  set to AMAZON.UserInput . You must leave the de-
+       scription , apiSchema , and actionGroupExecutor fields blank  for  this
+       action  group.  During  orchestration, if your agent determines that it
+       needs to invoke an API in an action group, but doesn't have enough  in-
+       formation to complete the API request, it will invoke this action group
+       instead and return an Observation reprompting the user for more  infor-
+       mation.
 
        See also: AWS API Documentation
 
 SYNOPSIS
             create-agent-action-group
+          [--action-group-executor <value>]
+          --action-group-name <value>
+          [--action-group-state <value>]
           --agent-id <value>
           --agent-version <value>
-          --action-group-name <value>
+          [--api-schema <value>]
           [--client-token <value>]
           [--description <value>]
           [--parent-action-group-signature <value>]
-          [--action-group-executor <value>]
-          [--api-schema <value>]
-          [--action-group-state <value>]
           [--cli-input-json <value>]
           [--generate-cli-skeleton <value>]
           [--debug]
@@ -39,37 +51,17 @@ SYNOPSIS
           [--cli-connect-timeout <value>]
 
 OPTIONS
-       --agent-id (string)
-          Id generated at the server side when an Agent is created
-
-       --agent-version (string)
-          Draft Version of the Agent.
-
-       --action-group-name (string)
-          Name for a resource.
-
-       --client-token (string)
-          Client specified token used for idempotency checks
-
-       --description (string)
-          Description of the Resource.
-
-       --parent-action-group-signature (string)
-          Action Group Signature for a BuiltIn Action
-
-          Possible values:
-
-          o AMAZON.UserInput
-
        --action-group-executor (tagged union structure)
-          Type of Executors for an Action Group
+          The ARN of the Lambda function containing the business logic that is
+          carried out upon invoking the action.
 
           NOTE:
-              This  is a Tagged Union structure. Only one of the following top
+              This is a Tagged Union structure. Only one of the following  top
               level keys can be set: lambda.
 
           lambda -> (string)
-              ARN of a Lambda.
+              The  ARN  of  the  Lambda function containing the business logic
+              that is carried out upon invoking the action.
 
        Shorthand Syntax:
 
@@ -81,41 +73,12 @@ OPTIONS
             "lambda": "string"
           }
 
-       --api-schema (tagged union structure)
-          Contains information about the API Schema for the Action Group
-
-          NOTE:
-              This is a Tagged Union structure. Only one of the following  top
-              level keys can be set: s3, payload.
-
-          s3 -> (structure)
-              The identifier for the S3 resource.
-
-              s3BucketName -> (string)
-                 A bucket in S3.
-
-              s3ObjectKey -> (string)
-                 A object key in S3.
-
-          payload -> (string)
-              String OpenAPI Payload
-
-       Shorthand Syntax:
-
-          s3={s3BucketName=string,s3ObjectKey=string},payload=string
-
-       JSON Syntax:
-
-          {
-            "s3": {
-              "s3BucketName": "string",
-              "s3ObjectKey": "string"
-            },
-            "payload": "string"
-          }
+       --action-group-name (string)
+          The name to give the action group.
 
        --action-group-state (string)
-          State of the action group
+          Specifies whether the action group is available for the agent to in-
+          voke or not when sending an InvokeAgent request.
 
           Possible values:
 
@@ -123,17 +86,89 @@ OPTIONS
 
           o DISABLED
 
-       --cli-input-json  (string) Performs service operation based on the JSON
-       string provided. The JSON string follows the format provided by  --gen-
-       erate-cli-skeleton.  If  other  arguments  are  provided on the command
-       line, the CLI values will override the JSON-provided values. It is  not
+       --agent-id (string)
+          The  unique  identifier  of the agent for which to create the action
+          group.
+
+       --agent-version (string)
+          The version of the agent for which to create the action group.
+
+       --api-schema (tagged union structure)
+          Contains either details about the S3 object containing  the  OpenAPI
+          schema  for  the  action group or the JSON or YAML-formatted payload
+          defining the schema. For more information, see Action group  OpenAPI
+          schemas .
+
+          NOTE:
+              This  is a Tagged Union structure. Only one of the following top
+              level keys can be set: payload, s3.
+
+          payload -> (string)
+              The JSON or YAML-formatted payload defining the  OpenAPI  schema
+              for  the  action  group.  For more information, see Action group
+              OpenAPI schemas .
+
+          s3 -> (structure)
+              Contains details about the  S3  object  containing  the  OpenAPI
+              schema  for  the  action group. For more information, see Action
+              group OpenAPI schemas .
+
+              s3BucketName -> (string)
+                 The name of the S3 bucket.
+
+              s3ObjectKey -> (string)
+                 The S3 object key containing the resource.
+
+       Shorthand Syntax:
+
+          payload=string,s3={s3BucketName=string,s3ObjectKey=string}
+
+       JSON Syntax:
+
+          {
+            "payload": "string",
+            "s3": {
+              "s3BucketName": "string",
+              "s3ObjectKey": "string"
+            }
+          }
+
+       --client-token (string)
+          A unique, case-sensitive identifier to ensure that the  API  request
+          completes  no  more  than one time. If this token matches a previous
+          request, Amazon Bedrock ignores the request, but does not return  an
+          error. For more information, see Ensuring idempotency .
+
+       --description (string)
+          A description of the action group.
+
+       --parent-action-group-signature (string)
+          To  allow  your agent to request the user for additional information
+          when trying to complete a task, set this field to AMAZON.UserInput .
+          You must leave the description , apiSchema , and actionGroupExecutor
+          fields blank for this action group.
+
+          During orchestration, if your agent determines that it needs to  in-
+          voke  an API in an action group, but doesn't have enough information
+          to complete the API request, it will invoke this  action  group  in-
+          stead and return an Observation reprompting the user for more infor-
+          mation.
+
+          Possible values:
+
+          o AMAZON.UserInput
+
+       --cli-input-json (string) Performs service operation based on the  JSON
+       string  provided. The JSON string follows the format provided by --gen-
+       erate-cli-skeleton. If other arguments  are  provided  on  the  command
+       line,  the CLI values will override the JSON-provided values. It is not
        possible to pass arbitrary binary values using a JSON-provided value as
        the string will be taken literally.
 
-       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
+       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
        output without sending an API request. If provided with no value or the
        value input, prints a sample input JSON that can be used as an argument
-       for  --cli-input-json.  If provided with the value output, it validates
+       for --cli-input-json. If provided with the value output,  it  validates
        the command inputs and returns a sample output JSON for that command.
 
 GLOBAL OPTIONS
@@ -147,7 +182,7 @@ GLOBAL OPTIONS
 
        --no-verify-ssl (boolean)
 
-       By default, the AWS CLI uses SSL when communicating with AWS  services.
+       By  default, the AWS CLI uses SSL when communicating with AWS services.
        For each SSL connection, the AWS CLI will verify SSL certificates. This
        option overrides the default behavior of verifying SSL certificates.
 
@@ -193,7 +228,7 @@ GLOBAL OPTIONS
 
        --no-sign-request (boolean)
 
-       Do not sign requests. Credentials will not be loaded if  this  argument
+       Do  not  sign requests. Credentials will not be loaded if this argument
        is provided.
 
        --ca-bundle (string)
@@ -203,78 +238,102 @@ GLOBAL OPTIONS
 
        --cli-read-timeout (int)
 
-       The maximum socket read time in seconds. If the value is set to 0,  the
-       socket  read  will be blocking and not timeout. The default value is 60
+       The  maximum socket read time in seconds. If the value is set to 0, the
+       socket read will be blocking and not timeout. The default value  is  60
        seconds.
 
        --cli-connect-timeout (int)
 
-       The maximum socket connect time in seconds. If the value is set  to  0,
-       the  socket connect will be blocking and not timeout. The default value
+       The  maximum  socket connect time in seconds. If the value is set to 0,
+       the socket connect will be blocking and not timeout. The default  value
        is 60 seconds.
 
 OUTPUT
        agentActionGroup -> (structure)
-          Contains the information of an Agent Action Group
-
-          agentId -> (string)
-              Identifier for a resource.
-
-          agentVersion -> (string)
-              Agent Version.
-
-          actionGroupId -> (string)
-              Identifier for a resource.
-
-          actionGroupName -> (string)
-              Name for a resource.
-
-          clientToken -> (string)
-              Client specified token used for idempotency checks
-
-          description -> (string)
-              Description of the Resource.
-
-          createdAt -> (timestamp)
-              Time Stamp.
-
-          updatedAt -> (timestamp)
-              Time Stamp.
-
-          parentActionSignature -> (string)
-              Action Group Signature for a BuiltIn Action
+          Contains details about the action group that was created.
 
           actionGroupExecutor -> (tagged union structure)
-              Type of Executors for an Action Group
+              The  ARN  of  the  Lambda function containing the business logic
+              that is carried out upon invoking the action.
 
               NOTE:
                  This is a Tagged Union structure. Only one of  the  following
                  top level keys can be set: lambda.
 
               lambda -> (string)
-                 ARN of a Lambda.
+                 The  ARN of the Lambda function containing the business logic
+                 that is carried out upon invoking the action.
+
+          actionGroupId -> (string)
+              The unique identifier of the action group.
+
+          actionGroupName -> (string)
+              The name of the action group.
+
+          actionGroupState -> (string)
+              Specifies whether the action group is available for the agent to
+              invoke or not when sending an InvokeAgent request.
+
+          agentId -> (string)
+              The unique identifier of the agent to which the action group be-
+              longs.
+
+          agentVersion -> (string)
+              The version of the agent to which the action group belongs.
 
           apiSchema -> (tagged union structure)
-              Contains information about the API Schema for the Action Group
+              Contains either details about the S3 object containing the  Ope-
+              nAPI  schema  for the action group or the JSON or YAML-formatted
+              payload defining the schema. For more  information,  see  Action
+              group OpenAPI schemas .
 
               NOTE:
                  This  is  a Tagged Union structure. Only one of the following
-                 top level keys can be set: s3, payload.
-
-              s3 -> (structure)
-                 The identifier for the S3 resource.
-
-                 s3BucketName -> (string)
-                     A bucket in S3.
-
-                 s3ObjectKey -> (string)
-                     A object key in S3.
+                 top level keys can be set: payload, s3.
 
               payload -> (string)
-                 String OpenAPI Payload
+                 The JSON  or  YAML-formatted  payload  defining  the  OpenAPI
+                 schema for the action group. For more information, see Action
+                 group OpenAPI schemas .
 
-          actionGroupState -> (string)
-              State of the action group
+              s3 -> (structure)
+                 Contains details about the S3 object containing  the  OpenAPI
+                 schema for the action group. For more information, see Action
+                 group OpenAPI schemas .
+
+                 s3BucketName -> (string)
+                     The name of the S3 bucket.
+
+                 s3ObjectKey -> (string)
+                     The S3 object key containing the resource.
+
+          clientToken -> (string)
+              A unique, case-sensitive identifier to ensure that the  API  re-
+              quest  completes  no more than one time. If this token matches a
+              previous request, Amazon Bedrock ignores the request,  but  does
+              not  return an error. For more information, see Ensuring idempo-
+              tency .
+
+          createdAt -> (timestamp)
+              The time at which the action group was created.
+
+          description -> (string)
+              The description of the action group.
+
+          parentActionSignature -> (string)
+              If this field is set as AMAZON.UserInput , the agent can request
+              the  user  for  additional information when trying to complete a
+              task. The description  ,  apiSchema  ,  and  actionGroupExecutor
+              fields must be blank for this action group.
+
+              During  orchestration,  if the agent determines that it needs to
+              invoke an API in an action group, but doesn't have enough infor-
+              mation  to  complete the API request, it will invoke this action
+              group instead and return an Observation reprompting the user for
+              more information.
+
+          updatedAt -> (timestamp)
+              The time at which the action group was last updated.
 
 
 
