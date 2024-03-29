@@ -216,17 +216,26 @@ OPTIONS
           o DAYS_93
 
        --utilization-preferences (list)
-          The preference to control the resources CPU utilization thresholds -
-          threshold and headroom. When this preference isn't specified, we use
-          the following default values:
+          The  preference  to control the resources CPU utilization threshold,
+          CPU utilization headroom, and memory utilization headroom. When this
+          preference isn't specified, we use the following default values.
+
+          CPU utilization:
 
           o P99_5 for threshold
 
-          o PERCENT_17 for headroom
+          o PERCENT_20 for headroom
+
+          Memory utilization:
+
+          o PERCENT_20 for headroom
 
           NOTE:
-              You can only set this preference for the Amazon EC2 instance re-
-              source type.
+
+              o You  can  only  set CPU and memory utilization preferences for
+                the Amazon EC2 instance resource type.
+
+              o The threshold setting isnt available for memory utilization.
 
           (structure)
               The preference to control the resources CPU utilization  thresh-
@@ -240,9 +249,6 @@ OPTIONS
                  The name of the resource utilization metric name  to  custom-
                  ize.
 
-                 NOTE:
-                     Compute Optimizer only supports CpuUtilization .
-
               metricParameters -> (structure)
                  The  parameters to set when customizing the resource utiliza-
                  tion thresholds.
@@ -251,9 +257,21 @@ OPTIONS
                      The threshold value used for the specified metric parame-
                      ter.
 
+                     NOTE:
+                        You  can only specify the threshold value for CPU uti-
+                        lization.
+
                  headroom -> (string)
-                     The  headroom  threshold value in percentage used for the
-                     specified metric parameter.
+                     The headroom value in percentage used for  the  specified
+                     metric parameter.
+
+                     The  following  lists the valid values for CPU and memory
+                     utilization.
+
+                     o CPU utilization: PERCENT_30 | PERCENT_20 | PERCENT_0
+
+                     o Memory utilization:  PERCENT_30  |  PERCENT_20  |  PER-
+                       CENT_10
 
        Shorthand Syntax:
 
@@ -263,20 +281,20 @@ OPTIONS
 
           [
             {
-              "metricName": "CpuUtilization",
+              "metricName": "CpuUtilization"|"MemoryUtilization",
               "metricParameters": {
                 "threshold": "P90"|"P95"|"P99_5",
-                "headroom": "PERCENT_30"|"PERCENT_20"|"PERCENT_0"
+                "headroom": "PERCENT_30"|"PERCENT_20"|"PERCENT_10"|"PERCENT_0"
               }
             }
             ...
           ]
 
        --preferred-resources (list)
-          The preference to control which resource type values are  considered
-          when  generating  rightsizing  recommendations. You can specify this
-          preference as a combination of include and exclude lists.  You  must
-          specify  either an includeList or excludeList . If the preference is
+          The  preference to control which resource type values are considered
+          when generating rightsizing recommendations. You  can  specify  this
+          preference  as  a combination of include and exclude lists. You must
+          specify either an includeList or excludeList . If the preference  is
           an empty set of resource type values, an error occurs.
 
           NOTE:
@@ -285,16 +303,16 @@ OPTIONS
 
           (structure)
               The preference to control which resource type values are consid-
-              ered when generating rightsizing recommendations. You can  spec-
-              ify  this  preference  as  a  combination of include and exclude
-              lists. You must specify either an includeList or  excludeList  .
-              If  the  preference  is an empty set of resource type values, an
-              error occurs. For more information, see Rightsizing  recommenda-
+              ered  when generating rightsizing recommendations. You can spec-
+              ify this preference as a  combination  of  include  and  exclude
+              lists.  You  must specify either an includeList or excludeList .
+              If the preference is an empty set of resource  type  values,  an
+              error  occurs. For more information, see Rightsizing recommenda-
               tion preferences in the Compute Optimizer User Guide .
 
               NOTE:
 
-                 o This  preference  is  only available for the Amazon EC2 in-
+                 o This preference is only available for the  Amazon  EC2  in-
                    stance and Auto Scaling group resource types.
 
                  o Compute Optimizer only supports the customization of Ec2In-
@@ -304,22 +322,22 @@ OPTIONS
                  The type of preferred resource to customize.
 
                  NOTE:
-                     Compute  Optimizer  only  supports  the  customization of
+                     Compute Optimizer  only  supports  the  customization  of
                      Ec2InstanceTypes .
 
               includeList -> (list)
-                 The preferred resource type values to include in  the  recom-
+                 The  preferred  resource type values to include in the recom-
                  mendation candidates. You can specify the exact resource type
-                 value, such as m5.large, or use wild card  expressions,  such
-                 as  m5.  If  this isnt specified, all supported resources are
-                 included by default. You can specify up  to  1000  values  in
+                 value,  such  as m5.large, or use wild card expressions, such
+                 as m5. If this isnt specified, all  supported  resources  are
+                 included  by  default.  You  can specify up to 1000 values in
                  this list.
 
                  (string)
 
               excludeList -> (list)
                  The preferred resource type values to exclude from the recom-
-                 mendation candidates. If this isnt specified,  all  supported
+                 mendation  candidates.  If this isnt specified, all supported
                  resources are included by default. You can specify up to 1000
                  values in this list.
 
@@ -341,13 +359,13 @@ OPTIONS
           ]
 
        --savings-estimation-mode (string)
-          The status of the savings estimation mode preference  to  create  or
+          The  status  of  the savings estimation mode preference to create or
           update.
 
-          Specify  the  AfterDiscounts  status  to activate the preference, or
+          Specify the AfterDiscounts status to  activate  the  preference,  or
           specify BeforeDiscounts to deactivate the preference.
 
-          Only the account manager or delegated administrator of your  organi-
+          Only  the account manager or delegated administrator of your organi-
           zation can activate this preference.
 
           For more information, see Savings estimation mode in the Compute Op-
@@ -359,17 +377,17 @@ OPTIONS
 
           o BeforeDiscounts
 
-       --cli-input-json (string) Performs service operation based on the  JSON
-       string  provided. The JSON string follows the format provided by --gen-
-       erate-cli-skeleton. If other arguments  are  provided  on  the  command
-       line,  the CLI values will override the JSON-provided values. It is not
+       --cli-input-json  (string) Performs service operation based on the JSON
+       string provided. The JSON string follows the format provided by  --gen-
+       erate-cli-skeleton.  If  other  arguments  are  provided on the command
+       line, the CLI values will override the JSON-provided values. It is  not
        possible to pass arbitrary binary values using a JSON-provided value as
        the string will be taken literally.
 
-       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
+       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
        output without sending an API request. If provided with no value or the
        value input, prints a sample input JSON that can be used as an argument
-       for --cli-input-json. If provided with the value output,  it  validates
+       for  --cli-input-json.  If provided with the value output, it validates
        the command inputs and returns a sample output JSON for that command.
 
 GLOBAL OPTIONS
@@ -383,7 +401,7 @@ GLOBAL OPTIONS
 
        --no-verify-ssl (boolean)
 
-       By  default, the AWS CLI uses SSL when communicating with AWS services.
+       By default, the AWS CLI uses SSL when communicating with AWS  services.
        For each SSL connection, the AWS CLI will verify SSL certificates. This
        option overrides the default behavior of verifying SSL certificates.
 
@@ -429,7 +447,7 @@ GLOBAL OPTIONS
 
        --no-sign-request (boolean)
 
-       Do  not  sign requests. Credentials will not be loaded if this argument
+       Do not sign requests. Credentials will not be loaded if  this  argument
        is provided.
 
        --ca-bundle (string)
@@ -439,14 +457,14 @@ GLOBAL OPTIONS
 
        --cli-read-timeout (int)
 
-       The  maximum socket read time in seconds. If the value is set to 0, the
-       socket read will be blocking and not timeout. The default value  is  60
+       The maximum socket read time in seconds. If the value is set to 0,  the
+       socket  read  will be blocking and not timeout. The default value is 60
        seconds.
 
        --cli-connect-timeout (int)
 
-       The  maximum  socket connect time in seconds. If the value is set to 0,
-       the socket connect will be blocking and not timeout. The default  value
+       The maximum socket connect time in seconds. If the value is set  to  0,
+       the  socket connect will be blocking and not timeout. The default value
        is 60 seconds.
 
 OUTPUT
