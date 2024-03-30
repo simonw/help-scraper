@@ -8,6 +8,18 @@ NAME
 DESCRIPTION
        Moves a local file or S3 object to another location locally or in S3.
 
+       WARNING:
+          If  you  are  using  any  type  of access point ARNs or access point
+          aliases in your S3 URIs, you must take extra care to make sure  that
+          your  source and destination S3 URIs resolve to different underlying
+          buckets. If the source and destination buckets  are  the  same,  the
+          source  file or object can be moved onto itself, which can result in
+          accidental deletion of your source file or object.
+
+          To verify that the source and destination buckets are not the  same,
+          use  the  --validate-same-s3-paths parameter, or set the environment
+          variable AWS_CLI_S3_MV_VALIDATE_SAME_S3_PATHS to true.
+
 SYNOPSIS
             mv
           <LocalPath> <S3Uri> or <S3Uri> <LocalPath> or <S3Uri> <S3Uri>
@@ -43,6 +55,7 @@ SYNOPSIS
           [--metadata <value>]
           [--metadata-directive <value>]
           [--recursive]
+          [--validate-same-s3-paths]
           [--debug]
           [--endpoint-url <value>]
           [--no-verify-ssl]
@@ -61,107 +74,107 @@ SYNOPSIS
 OPTIONS
        paths (string)
 
-       --dryrun  (boolean) Displays the operations that would be performed us-
+       --dryrun (boolean) Displays the operations that would be performed  us-
        ing the specified command without actually running them.
 
-       --quiet (boolean) Does not display the operations  performed  from  the
+       --quiet  (boolean)  Does  not display the operations performed from the
        specified command.
 
-       --include  (string)  Don't exclude files or objects in the command that
+       --include (string) Don't exclude files or objects in the  command  that
        match the specified pattern. See Use of Exclude and Include Filters for
        details.
 
-       --exclude  (string)  Exclude all files or objects from the command that
+       --exclude (string) Exclude all files or objects from the  command  that
        matches the specified pattern.
 
-       --acl (string) Sets the ACL for the object when  the  command  is  per-
-       formed.  If  you use this parameter you must have the "s3:PutObjectAcl"
-       permission included in the list of actions for your  IAM  policy.  Only
-       accepts  values  of  private, public-read, public-read-write, authenti-
+       --acl  (string)  Sets  the  ACL for the object when the command is per-
+       formed. If you use this parameter you must have  the  "s3:PutObjectAcl"
+       permission  included  in  the list of actions for your IAM policy. Only
+       accepts values of private,  public-read,  public-read-write,  authenti-
        cated-read, aws-exec-read, bucket-owner-read, bucket-owner-full-control
        and log-delivery-write. See Canned ACL for details
 
-       --follow-symlinks  |  --no-follow-symlinks (boolean) Symbolic links are
+       --follow-symlinks | --no-follow-symlinks (boolean) Symbolic  links  are
        followed only when uploading to S3 from the local filesystem. Note that
-       S3  does not support symbolic links, so the contents of the link target
+       S3 does not support symbolic links, so the contents of the link  target
        are uploaded under the name of the link. When neither --follow-symlinks
-       nor  --no-follow-symlinks  is  specified, the default is to follow sym-
+       nor --no-follow-symlinks is specified, the default is  to  follow  sym-
        links.
 
-       --no-guess-mime-type (boolean) Do not try to guess the  mime  type  for
-       uploaded  files.  By default the mime type of a file is guessed when it
+       --no-guess-mime-type  (boolean)  Do  not try to guess the mime type for
+       uploaded files. By default the mime type of a file is guessed  when  it
        is uploaded.
 
-       --sse (string) Specifies server-side encryption of the  object  in  S3.
-       Valid  values are AES256 and aws:kms. If the parameter is specified but
+       --sse  (string)  Specifies  server-side encryption of the object in S3.
+       Valid values are AES256 and aws:kms. If the parameter is specified  but
        no value is provided, AES256 is used.
 
-       --sse-c (string) Specifies server-side encryption using  customer  pro-
-       vided  keys of the the object in S3. AES256 is the only valid value. If
+       --sse-c  (string)  Specifies server-side encryption using customer pro-
+       vided keys of the the object in S3. AES256 is the only valid value.  If
        the parameter is specified but no value is provided, AES256 is used. If
        you provide this value, --sse-c-key must be specified as well.
 
-       --sse-c-key  (blob)  The  customer-provided  encryption  key  to use to
-       server-side encrypt the object  in  S3.  If  you  provide  this  value,
-       --sse-c  must  be  specified  as  well.  The key provided should not be
+       --sse-c-key (blob) The  customer-provided  encryption  key  to  use  to
+       server-side  encrypt  the  object  in  S3.  If  you provide this value,
+       --sse-c must be specified as well.  The  key  provided  should  not  be
        base64 encoded.
 
-       --sse-kms-key-id (string) The customer-managed AWS Key Management  Ser-
+       --sse-kms-key-id  (string) The customer-managed AWS Key Management Ser-
        vice (KMS) key ID that should be used to server-side encrypt the object
-       in S3. You should only provide this parameter if you are using  a  cus-
-       tomer  managed  customer  master  key (CMK) and not the AWS managed KMS
+       in  S3.  You should only provide this parameter if you are using a cus-
+       tomer managed customer master key (CMK) and not  the  AWS  managed  KMS
        CMK.
 
-       --sse-c-copy-source (string) This parameter should  only  be  specified
-       when  copying  an  S3 object that was encrypted server-side with a cus-
-       tomer-provided key. It specifies the algorithm to use  when  decrypting
-       the  source object. AES256 is the only valid value. If the parameter is
+       --sse-c-copy-source  (string)  This  parameter should only be specified
+       when copying an S3 object that was encrypted server-side  with  a  cus-
+       tomer-provided  key.  It specifies the algorithm to use when decrypting
+       the source object. AES256 is the only valid value. If the parameter  is
        specified but no value is provided, AES256 is used. If you provide this
        value, --sse-c-copy-source-key must be specified as well.
 
-       --sse-c-copy-source-key  (blob) This parameter should only be specified
-       when copying an S3 object that was encrypted server-side  with  a  cus-
-       tomer-provided  key. Specifies the customer-provided encryption key for
-       Amazon S3 to use to decrypt the source object. The encryption key  pro-
-       vided  must be one that was used when the source object was created. If
-       you provide this value, --sse-c-copy-source be specified as  well.  The
+       --sse-c-copy-source-key (blob) This parameter should only be  specified
+       when  copying  an  S3 object that was encrypted server-side with a cus-
+       tomer-provided key. Specifies the customer-provided encryption key  for
+       Amazon  S3 to use to decrypt the source object. The encryption key pro-
+       vided must be one that was used when the source object was created.  If
+       you  provide  this value, --sse-c-copy-source be specified as well. The
        key provided should not be base64 encoded.
 
-       --storage-class  (string)  The  type  of storage to use for the object.
-       Valid choices are: STANDARD | REDUCED_REDUNDANCY | STANDARD_IA  |  ONE-
-       ZONE_IA  |  INTELLIGENT_TIERING  | GLACIER | DEEP_ARCHIVE | GLACIER_IR.
+       --storage-class (string) The type of storage to  use  for  the  object.
+       Valid  choices  are: STANDARD | REDUCED_REDUNDANCY | STANDARD_IA | ONE-
+       ZONE_IA | INTELLIGENT_TIERING | GLACIER |  DEEP_ARCHIVE  |  GLACIER_IR.
        Defaults to 'STANDARD'
 
        --grants (string)
-          Grant specific permissions to individual users or  groups.  You  can
+          Grant  specific  permissions  to individual users or groups. You can
           supply a list of grants of the form
 
               --grants Permission=Grantee_Type=Grantee_ID [Permission=Grantee_Type=Grantee_ID ...]
 
-          To  specify  the same permission type for multiple grantees, specify
+          To specify the same permission type for multiple  grantees,  specify
           the permission as such as
 
               --grants Permission=Grantee_Type=Grantee_ID,Grantee_Type=Grantee_ID,...
 
           Each value contains the following elements:
 
-          o Permission - Specifies the granted permissions, and can be set  to
+          o Permission  - Specifies the granted permissions, and can be set to
             read, readacl, writeacl, or full.
 
-          o Grantee_Type  - Specifies how the grantee is to be identified, and
+          o Grantee_Type - Specifies how the grantee is to be identified,  and
             can be set to uri or id.
 
-          o Grantee_ID - Specifies the  grantee  based  on  Grantee_Type.  The
+          o Grantee_ID  -  Specifies  the  grantee  based on Grantee_Type. The
             Grantee_ID value can be one of:
 
-            o uri  -  The  group's  URI.  For  more  information, see Who Is a
+            o uri - The group's URI.  For  more  information,  see  Who  Is  a
               Grantee?
 
             o id - The account's canonical ID
 
           For more information on Amazon S3 access control, see Access Control
 
-       --website-redirect (string) If the bucket is configured as  a  website,
+       --website-redirect  (string)  If the bucket is configured as a website,
        redirects requests for this object to another object in the same bucket
        or to an external URL. Amazon S3 stores the value of this header in the
        object metadata.
@@ -169,59 +182,59 @@ OPTIONS
        --content-type (string) Specify an explicit content type for this oper-
        ation. This value overrides any guessed mime types.
 
-       --cache-control (string)  Specifies  caching  behavior  along  the  re-
+       --cache-control  (string)  Specifies  caching  behavior  along  the re-
        quest/reply chain.
 
        --content-disposition (string) Specifies presentational information for
        the object.
 
-       --content-encoding (string) Specifies what content encodings have  been
+       --content-encoding  (string) Specifies what content encodings have been
        applied to the object and thus what decoding mechanisms must be applied
        to obtain the media-type referenced by the Content-Type header field.
 
        --content-language (string) The language the content is in.
 
-       --expires (string) The date and time at which the object is  no  longer
+       --expires  (string)  The date and time at which the object is no longer
        cacheable.
 
        --source-region (string) When transferring objects from an s3 bucket to
-       an s3 bucket, this specifies the region of the source bucket. Note  the
+       an  s3 bucket, this specifies the region of the source bucket. Note the
        region specified by --region or through configuration of the CLI refers
-       to the region of the destination  bucket.  If  --source-region  is  not
-       specified  the  region  of the source will be the same as the region of
+       to  the  region  of  the  destination bucket. If --source-region is not
+       specified the region of the source will be the same as  the  region  of
        the destination bucket.
 
-       --only-show-errors (boolean) Only errors and  warnings  are  displayed.
+       --only-show-errors  (boolean)  Only  errors and warnings are displayed.
        All other output is suppressed.
 
-       --no-progress  (boolean)  File transfer progress is not displayed. This
-       flag is only applied when the quiet and only-show-errors flags are  not
+       --no-progress (boolean) File transfer progress is not  displayed.  This
+       flag  is only applied when the quiet and only-show-errors flags are not
        provided.
 
-       --page-size  (integer) The number of results to return in each response
-       to a list operation. The default value is 1000 (the  maximum  allowed).
+       --page-size (integer) The number of results to return in each  response
+       to  a  list operation. The default value is 1000 (the maximum allowed).
        Using a lower value may help if an operation times out.
 
-       --ignore-glacier-warnings  (boolean)  Turns off glacier warnings. Warn-
-       ings about an operation that cannot be performed  because  it  involves
-       copying,  downloading,  or  moving  a  glacier object will no longer be
-       printed to standard error and will no longer cause the return  code  of
+       --ignore-glacier-warnings (boolean) Turns off glacier  warnings.  Warn-
+       ings  about  an  operation that cannot be performed because it involves
+       copying, downloading, or moving a glacier  object  will  no  longer  be
+       printed  to  standard error and will no longer cause the return code of
        the command to be 2.
 
-       --force-glacier-transfer  (boolean)  Forces  a  transfer request on all
+       --force-glacier-transfer (boolean) Forces a  transfer  request  on  all
        Glacier objects in a sync or recursive copy.
 
-       --request-payer (string) Confirms that the requester  knows  that  they
-       will  be  charged  for the request. Bucket owners need not specify this
-       parameter in their requests. Documentation on downloading objects  from
-       requester       pays       buckets       can      be      found      at
+       --request-payer  (string)  Confirms  that the requester knows that they
+       will be charged for the request. Bucket owners need  not  specify  this
+       parameter  in their requests. Documentation on downloading objects from
+       requester      pays      buckets      can       be       found       at
        http://docs.aws.amazon.com/AmazonS3/latest/dev/ObjectsinRequesterPaysBuckets.html
 
-       --metadata  (map)  A  map  of metadata to store with the objects in S3.
-       This will be applied to every object which is part of this request.  In
-       a  sync,  this means that files which haven't changed won't receive the
-       new metadata. When copying between two s3 locations,  the  metadata-di-
-       rective  argument  will  default  to  'REPLACE' unless otherwise speci-
+       --metadata (map) A map of metadata to store with  the  objects  in  S3.
+       This  will be applied to every object which is part of this request. In
+       a sync, this means that files which haven't changed won't  receive  the
+       new  metadata.  When copying between two s3 locations, the metadata-di-
+       rective argument will default  to  'REPLACE'  unless  otherwise  speci-
        fied.key -> (string)
           value -> (string)
 
@@ -234,23 +247,37 @@ OPTIONS
           {"string": "string"
             ...}
 
-       --metadata-directive (string) Specifies whether the metadata is  copied
-       from  the source object or replaced with metadata provided when copying
+       --metadata-directive  (string) Specifies whether the metadata is copied
+       from the source object or replaced with metadata provided when  copying
        S3 objects. Note that if the object is copied over in parts, the source
-       object's  metadata  will  not  be  copied over, no matter the value for
-       --metadata-directive, and instead the desired metadata values  must  be
-       specified  as parameters on the command line. Valid values are COPY and
-       REPLACE. If this parameter is not specified, COPY will be used  by  de-
-       fault.  If  REPLACE is used, the copied object will only have the meta-
-       data values that were specified by the CLI command. Note  that  if  you
+       object's metadata will not be copied over,  no  matter  the  value  for
+       --metadata-directive,  and  instead the desired metadata values must be
+       specified as parameters on the command line. Valid values are COPY  and
+       REPLACE.  If  this parameter is not specified, COPY will be used by de-
+       fault. If REPLACE is used, the copied object will only have  the  meta-
+       data  values  that  were specified by the CLI command. Note that if you
        are using any of the following parameters: --content-type, content-lan-
-       guage, --content-encoding, --content-disposition,  --cache-control,  or
-       --expires,  you  will  need to specify --metadata-directive REPLACE for
-       non-multipart copies if you want the copied objects to have the  speci-
+       guage,  --content-encoding,  --content-disposition, --cache-control, or
+       --expires, you will need to specify  --metadata-directive  REPLACE  for
+       non-multipart  copies if you want the copied objects to have the speci-
        fied metadata values.
 
-       --recursive  (boolean) Command is performed on all files or objects un-
+       --recursive (boolean) Command is performed on all files or objects  un-
        der the specified directory or prefix.
+
+       --validate-same-s3-paths  (boolean) Resolves the source and destination
+       S3 URIs to their underlying buckets and verifies that the file  or  ob-
+       ject  is  not being moved onto itself. If you are using any type of ac-
+       cess point ARNs or access point aliases in your S3  URIs,  we  strongly
+       recommended  using  this parameter to help prevent accidental deletions
+       of the source file or object. This parameter  resolves  the  underlying
+       buckets  of  S3  access  point  ARNs and aliases, S3 on Outposts access
+       point ARNs, and Multi-Region Access Point ARNs. S3 on  Outposts  access
+       point  aliases  are not supported. Instead of using this parameter, you
+       can set the environment  variable  AWS_CLI_S3_MV_VALIDATE_SAME_S3_PATHS
+       to  true.  NOTE:  Path validation requires making additional API calls.
+       Future updates to this path-validation mechanism might change which API
+       calls are made.
 
 GLOBAL OPTIONS
        --debug (boolean)
@@ -263,7 +290,7 @@ GLOBAL OPTIONS
 
        --no-verify-ssl (boolean)
 
-       By default, the AWS CLI uses SSL when communicating with AWS  services.
+       By  default, the AWS CLI uses SSL when communicating with AWS services.
        For each SSL connection, the AWS CLI will verify SSL certificates. This
        option overrides the default behavior of verifying SSL certificates.
 
@@ -309,7 +336,7 @@ GLOBAL OPTIONS
 
        --no-sign-request (boolean)
 
-       Do not sign requests. Credentials will not be loaded if  this  argument
+       Do  not  sign requests. Credentials will not be loaded if this argument
        is provided.
 
        --ca-bundle (string)
@@ -319,30 +346,30 @@ GLOBAL OPTIONS
 
        --cli-read-timeout (int)
 
-       The maximum socket read time in seconds. If the value is set to 0,  the
-       socket  read  will be blocking and not timeout. The default value is 60
+       The  maximum socket read time in seconds. If the value is set to 0, the
+       socket read will be blocking and not timeout. The default value  is  60
        seconds.
 
        --cli-connect-timeout (int)
 
-       The maximum socket connect time in seconds. If the value is set  to  0,
-       the  socket connect will be blocking and not timeout. The default value
+       The  maximum  socket connect time in seconds. If the value is set to 0,
+       the socket connect will be blocking and not timeout. The default  value
        is 60 seconds.
 
 EXAMPLES
        NOTE:
-          To use the following examples, you must have the AWS  CLI  installed
-          and  configured.  See  the Getting started guide in the AWS CLI User
+          To  use  the following examples, you must have the AWS CLI installed
+          and configured. See the Getting started guide in the  AWS  CLI  User
           Guide for more information.
 
-          Unless otherwise  stated,  all  examples  have  unix-like  quotation
-          rules.  These  examples  will  need to be adapted to your terminal's
+          Unless  otherwise  stated,  all  examples  have  unix-like quotation
+          rules. These examples will need to be  adapted  to  your  terminal's
           quoting rules. See Using quotation marks with strings in the AWS CLI
           User Guide .
 
        Example 1: Move a local file to the specified bucket
 
-       The  following mv command moves a single file to a specified bucket and
+       The following mv command moves a single file to a specified bucket  and
        key.
 
           aws s3 mv test.txt s3://mybucket/test2.txt
@@ -364,7 +391,7 @@ EXAMPLES
 
        Example 3: Move an S3 object to the local directory
 
-       The  following mv command moves a single object to a specified file lo-
+       The following mv command moves a single object to a specified file  lo-
        cally.
 
           aws s3 mv s3://mybucket/test.txt test2.txt
@@ -373,10 +400,10 @@ EXAMPLES
 
           move: s3://mybucket/test.txt to test2.txt
 
-       Example 4: Move an object with it's  original  name  to  the  specified
+       Example  4:  Move  an  object  with it's original name to the specified
        bucket
 
-       The  following  mv  command moves a single object to a specified bucket
+       The following mv command moves a single object to  a  specified  bucket
        while retaining its original name:
 
           aws s3 mv s3://mybucket/test.txt s3://mybucket2/
@@ -385,12 +412,12 @@ EXAMPLES
 
           move: s3://mybucket/test.txt to s3://mybucket2/test.txt
 
-       Example 5: Move all objects and prefixes in a bucket to the  local  di-
+       Example  5:  Move all objects and prefixes in a bucket to the local di-
        rectory
 
-       When  passed  with  the parameter --recursive, the following mv command
-       recursively moves all objects under a specified prefix and bucket to  a
-       specified  directory.  In this example, the bucket mybucket has the ob-
+       When passed with the parameter --recursive, the  following  mv  command
+       recursively  moves all objects under a specified prefix and bucket to a
+       specified directory.  In this example, the bucket mybucket has the  ob-
        jects test1.txt and test2.txt.
 
           aws s3 mv s3://mybucket . \
@@ -401,13 +428,13 @@ EXAMPLES
           move: s3://mybucket/test1.txt to test1.txt
           move: s3://mybucket/test2.txt to test2.txt
 
-       Example 6: Move all objects and prefixes in a bucket to the  local  di-
+       Example  6:  Move all objects and prefixes in a bucket to the local di-
        rectory, except ``.jpg`` files
 
-       When  passed  with  the parameter --recursive, the following mv command
-       recursively moves all files under a specified directory to a  specified
-       bucket  and prefix while excluding some files by using an --exclude pa-
-       rameter. In this example, the directory myDir has the  files  test1.txt
+       When passed with the parameter --recursive, the  following  mv  command
+       recursively  moves all files under a specified directory to a specified
+       bucket and prefix while excluding some files by using an --exclude  pa-
+       rameter.  In  this example, the directory myDir has the files test1.txt
        and test2.jpg.
 
           aws s3 mv myDir s3://mybucket/ \
@@ -418,13 +445,13 @@ EXAMPLES
 
           move: myDir/test1.txt to s3://mybucket2/test1.txt
 
-       Example  7:  Move all objects and prefixes in a bucket to the local di-
+       Example 7: Move all objects and prefixes in a bucket to the  local  di-
        rectory, except specified prefix
 
-       When passed with the parameter --recursive, the  following  mv  command
-       recursively  moves  all  objects  under  a  specified bucket to another
-       bucket while excluding some objects by using  an  --exclude  parameter.
-       In  this example, the bucket mybucket has the objects test1.txt and an-
+       When  passed  with  the parameter --recursive, the following mv command
+       recursively moves all objects  under  a  specified  bucket  to  another
+       bucket  while  excluding  some objects by using an --exclude parameter.
+       In this example, the bucket mybucket has the objects test1.txt and  an-
        other/test1.txt.
 
           aws s3 mv s3://mybucket/ s3://mybucket2/ \
@@ -437,7 +464,7 @@ EXAMPLES
 
        Example 8: Move an object to the specified bucket and set the ACL
 
-       The following mv command moves a single object to  a  specified  bucket
+       The  following  mv  command moves a single object to a specified bucket
        and key while setting the ACL to public-read-write.
 
           aws s3 mv s3://mybucket/test.txt s3://mybucket/test2.txt \
@@ -447,11 +474,11 @@ EXAMPLES
 
           move: s3://mybucket/test.txt to s3://mybucket/test2.txt
 
-       Example  9: Move a local file to the specified bucket and grant permis-
+       Example 9: Move a local file to the specified bucket and grant  permis-
        sions
 
-       The following mv command illustrates the use of the --grants option  to
-       grant  read  access  to  all  users and full control to a specific user
+       The  following mv command illustrates the use of the --grants option to
+       grant read access to all users and full  control  to  a  specific  user
        identified by their email address.
 
           aws s3 mv file.txt s3://mybucket/ \
