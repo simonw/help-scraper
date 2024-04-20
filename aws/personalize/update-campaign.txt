@@ -8,19 +8,28 @@ NAME
 DESCRIPTION
        Updates  a  campaign to deploy a retrained solution version with an ex-
        isting campaign, change your campaign's minProvisionedTPS ,  or  modify
-       your campaign's configuration, such as the exploration configuration.
+       your  campaign's  configuration.  For  example, you can set enableMeta-
+       dataWithRecommendations to true for an existing campaign.
 
-       To  update  a  campaign,  the  campaign status must be ACTIVE or CREATE
+       To update a campaign to start automatically using the  latest  solution
+       version, specify the following:
+
+       o For  the  SolutionVersionArn  parameter,  specify the Amazon Resource
+         Name (ARN) of your solution in SolutionArn/$LATEST format.
+
+       o In the campaignConfig , set syncWithLatestSolutionVersion to true .
+
+       To update a campaign, the campaign status  must  be  ACTIVE  or  CREATE
        FAILED. Check the campaign status using the DescribeCampaign operation.
 
        NOTE:
           You can still get recommendations from a campaign while an update is
           in progress. The campaign will use the previous solution version and
-          campaign configuration to generate recommendations until the  latest
+          campaign  configuration to generate recommendations until the latest
           campaign update status is Active .
 
        For more information about updating a campaign, including code samples,
-       see Updating a campaign . For more  information  about  campaigns,  see
+       see  Updating  a  campaign  . For more information about campaigns, see
        Creating a campaign .
 
        See also: AWS API Documentation
@@ -53,14 +62,24 @@ OPTIONS
           The Amazon Resource Name (ARN) of the campaign.
 
        --solution-version-arn (string)
-          The ARN of a new solution version to deploy.
+          The Amazon Resource Name (ARN) of a new model to deploy. To  specify
+          the  latest  solution  version  of your solution, specify the ARN of
+          your solution in SolutionArn/$LATEST format. You must use this  for-
+          mat   if  you  set  syncWithLatestSolutionVersion  to  True  in  the
+          CampaignConfig .
+
+          To deploy a model that isn't the latest solution version of your so-
+          lution, specify the ARN of the solution version.
+
+          For  more information about automatic campaign updates, see Enabling
+          automatic campaign updates .
 
        --min-provisioned-tps (integer)
-          Specifies  the requested minimum provisioned transactions (recommen-
-          dations) per second that Amazon Personalize  will  support.  A  high
-          minProvisionedTPS  will  increase  your  bill. We recommend starting
-          with 1 for minProvisionedTPS (the default). Track your  usage  using
-          Amazon  CloudWatch  metrics,  and  increase the minProvisionedTPS as
+          Specifies the requested minimum provisioned transactions  (recommen-
+          dations)  per  second  that  Amazon Personalize will support. A high
+          minProvisionedTPS will increase your  bill.  We  recommend  starting
+          with  1  for minProvisionedTPS (the default). Track your usage using
+          Amazon CloudWatch metrics, and  increase  the  minProvisionedTPS  as
           necessary.
 
        --campaign-config (structure)
@@ -70,7 +89,7 @@ OPTIONS
               Specifies the exploration configuration hyperparameters, includ-
               ing explorationWeight and explorationItemAgeCutOff , you want to
               use to configure the amount of item exploration Amazon Personal-
-              ize  uses when recommending items. Provide itemExplorationConfig
+              ize uses when recommending items. Provide  itemExplorationConfig
               data only if your solution uses the User-Personalization recipe.
 
               key -> (string)
@@ -78,40 +97,52 @@ OPTIONS
               value -> (string)
 
           enableMetadataWithRecommendations -> (boolean)
-              Whether metadata with recommendations is enabled  for  the  cam-
-              paign.  If  enabled, you can specify the columns from your Items
-              dataset in your request for recommendations. Amazon  Personalize
-              returns  this data for each item in the recommendation response.
-              For information about enabling  metadata  for  a  campaign,  see
+              Whether  metadata  with  recommendations is enabled for the cam-
+              paign. If enabled, you can specify the columns from  your  Items
+              dataset  in your request for recommendations. Amazon Personalize
+              returns this data for each item in the recommendation  response.
+              For  information  about  enabling  metadata  for a campaign, see
               Enabling metadata in recommendations for a campaign .
 
-              If  you enable metadata in recommendations, you will incur addi-
+              If you enable metadata in recommendations, you will incur  addi-
               tional costs. For more information, see Amazon Personalize pric-
               ing .
 
+          syncWithLatestSolutionVersion -> (boolean)
+              Whether the campaign automatically updates to use the latest so-
+              lution  version  (trained  model)  of a solution. If you specify
+              True , you must specify the ARN of your solution for  the  Solu-
+              tionVersionArn parameter. It must be in SolutionArn/$LATEST for-
+              mat. The default is False and you must manually update the  cam-
+              paign to deploy the latest solution version.
+
+              For  more  information  about  automatic  campaign  updates, see
+              Enabling automatic campaign updates .
+
        Shorthand Syntax:
 
-          itemExplorationConfig={KeyName1=string,KeyName2=string},enableMetadataWithRecommendations=boolean
+          itemExplorationConfig={KeyName1=string,KeyName2=string},enableMetadataWithRecommendations=boolean,syncWithLatestSolutionVersion=boolean
 
        JSON Syntax:
 
           {
             "itemExplorationConfig": {"string": "string"
               ...},
-            "enableMetadataWithRecommendations": true|false
+            "enableMetadataWithRecommendations": true|false,
+            "syncWithLatestSolutionVersion": true|false
           }
 
-       --cli-input-json  (string) Performs service operation based on the JSON
-       string provided. The JSON string follows the format provided by  --gen-
-       erate-cli-skeleton.  If  other  arguments  are  provided on the command
-       line, the CLI values will override the JSON-provided values. It is  not
+       --cli-input-json (string) Performs service operation based on the  JSON
+       string  provided. The JSON string follows the format provided by --gen-
+       erate-cli-skeleton. If other arguments  are  provided  on  the  command
+       line,  the CLI values will override the JSON-provided values. It is not
        possible to pass arbitrary binary values using a JSON-provided value as
        the string will be taken literally.
 
-       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
+       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
        output without sending an API request. If provided with no value or the
        value input, prints a sample input JSON that can be used as an argument
-       for  --cli-input-json.  If provided with the value output, it validates
+       for --cli-input-json. If provided with the value output,  it  validates
        the command inputs and returns a sample output JSON for that command.
 
 GLOBAL OPTIONS
@@ -125,7 +156,7 @@ GLOBAL OPTIONS
 
        --no-verify-ssl (boolean)
 
-       By default, the AWS CLI uses SSL when communicating with AWS  services.
+       By  default, the AWS CLI uses SSL when communicating with AWS services.
        For each SSL connection, the AWS CLI will verify SSL certificates. This
        option overrides the default behavior of verifying SSL certificates.
 
@@ -171,7 +202,7 @@ GLOBAL OPTIONS
 
        --no-sign-request (boolean)
 
-       Do not sign requests. Credentials will not be loaded if  this  argument
+       Do  not  sign requests. Credentials will not be loaded if this argument
        is provided.
 
        --ca-bundle (string)
@@ -181,14 +212,14 @@ GLOBAL OPTIONS
 
        --cli-read-timeout (int)
 
-       The maximum socket read time in seconds. If the value is set to 0,  the
-       socket  read  will be blocking and not timeout. The default value is 60
+       The  maximum socket read time in seconds. If the value is set to 0, the
+       socket read will be blocking and not timeout. The default value  is  60
        seconds.
 
        --cli-connect-timeout (int)
 
-       The maximum socket connect time in seconds. If the value is set  to  0,
-       the  socket connect will be blocking and not timeout. The default value
+       The  maximum  socket connect time in seconds. If the value is set to 0,
+       the socket connect will be blocking and not timeout. The default  value
        is 60 seconds.
 
 OUTPUT
