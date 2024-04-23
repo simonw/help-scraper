@@ -1,40 +1,57 @@
-START-FILE-TRANSFER()                                    START-FILE-TRANSFER()
+START-DIRECTORY-LISTING()                            START-DIRECTORY-LISTING()
 
 
 
 NAME
-       start-file-transfer -
+       start-directory-listing -
 
 DESCRIPTION
-       Begins  a file transfer between local Amazon Web Services storage and a
-       remote AS2 or SFTP server.
+       Retrieves  a  list  of  the  contents of a directory from a remote SFTP
+       server. You specify the connector ID, the output path, and  the  remote
+       directory  path.  You  can  also specify the optional MaxItems value to
+       control the maximum number of items that are listed from the remote di-
+       rectory.  This  API  returns a list of all files and directories in the
+       remote directory (up to the maximum value), but does not  return  files
+       or folders in sub-directories. That is, it only returns a list of files
+       and directories one-level deep.
 
-       o For an AS2 connector, you specify the ConnectorId  and  one  or  more
-         SendFilePaths to identify the files you want to transfer.
+       After you receive the listing file, you can provide the files that  you
+       want  to  transfer to the RetrieveFilePaths parameter of the StartFile-
+       Transfer API call.
 
-       o For  an  SFTP  connector, the file transfer can be either outbound or
-         inbound. In both cases, you specify the ConnectorId  .  Depending  on
-         the direction of the transfer, you also specify the following items:
+       The naming convention for the output file  is  ``  connector-ID  -list-
+       ing-ID .json`` . The output file contains the following information:
 
-         o If you are transferring file from a partner's SFTP server to Amazon
-           Web Services storage, you specify one or more RetrieveFilePaths  to
-           identify  the  files you want to transfer, and a LocalDirectoryPath
-           to specify the destination folder.
+       o filePath : the complete path of a remote file, relative to the direc-
+         tory of the listing request for your SFTP  connector  on  the  remote
+         server.
 
-         o If you are transferring file to a partner's SFTP server from Amazon
-           Web  Services  storage,  you  specify  one or more SendFilePaths to
-           identify the files you want to transfer, and a  RemoteDirectoryPath
-           to specify the destination folder.
+       o modifiedTimestamp  : the last time the file was modified, in UTC time
+         format. This field is optional. If the remote file  attributes  don't
+         contain a timestamp, it is omitted from the file listing.
+
+       o size : the size of the file, in bytes. This field is optional. If the
+         remote file attributes don't contain a file size, it is omitted  from
+         the file listing.
+
+       o path  :  the complete path of a remote directory, relative to the di-
+         rectory of the listing request for your SFTP connector on the  remote
+         server.
+
+       o truncated : a flag indicating whether the list output contains all of
+         the items contained in the remote directory or not. If your Truncated
+         output  value is true, you can increase the value provided in the op-
+         tional max-items input attribute to be able to list more items (up to
+         the maximum allowed list size of 10,000 items).
 
        See also: AWS API Documentation
 
 SYNOPSIS
-            start-file-transfer
+            start-directory-listing
           --connector-id <value>
-          [--send-file-paths <value>]
-          [--retrieve-file-paths <value>]
-          [--local-directory-path <value>]
-          [--remote-directory-path <value>]
+          --remote-directory-path <value>
+          [--max-items <value>]
+          --output-directory-path <value>
           [--cli-input-json <value>]
           [--generate-cli-skeleton <value>]
           [--debug]
@@ -56,41 +73,17 @@ OPTIONS
        --connector-id (string)
           The unique identifier for the connector.
 
-       --send-file-paths (list)
-          One or more source paths for the Amazon S3 storage. Each string rep-
-          resents a source file path for one outbound file transfer. For exam-
-          ple, `` DOC-EXAMPLE-BUCKET /myfile.txt `` .
-
-          NOTE:
-              Replace  ``  DOC-EXAMPLE-BUCKET `` with one of your actual buck-
-              ets.
-
-          (string)
-
-       Syntax:
-
-          "string" "string" ...
-
-       --retrieve-file-paths (list)
-          One or more source paths for the partner's SFTP server. Each  string
-          represents a source file path for one inbound file transfer.
-
-          (string)
-
-       Syntax:
-
-          "string" "string" ...
-
-       --local-directory-path (string)
-          For  an inbound transfer, the LocaDirectoryPath specifies the desti-
-          nation for one or more files that are transferred from the partner's
-          SFTP server.
-
        --remote-directory-path (string)
-          For an outbound transfer, the RemoteDirectoryPath specifies the des-
-          tination for one or more files that are transferred to the partner's
-          SFTP server. If you don't specify a RemoteDirectoryPath , the desti-
-          nation for transferred files is the SFTP user's home directory.
+          Specifies the directory on the remote SFTP server for which you want
+          to list its contents.
+
+       --max-items (integer)
+          An optional parameter where you can specify the  maximum  number  of
+          file/directory names to retrieve. The default value is 1,000.
+
+       --output-directory-path (string)
+          Specifies the path (bucket and prefix) in Amazon S3 storage to store
+          the results of the directory listing.
 
        --cli-input-json (string) Performs service operation based on the  JSON
        string  provided. The JSON string follows the format provided by --gen-
@@ -183,9 +176,14 @@ GLOBAL OPTIONS
        is 60 seconds.
 
 OUTPUT
-       TransferId -> (string)
-          Returns the unique identifier for the file transfer.
+       ListingId -> (string)
+          Returns a unique identifier for the directory listing call.
+
+       OutputFileName -> (string)
+          Returns the file name where the results are stored. This is a combi-
+          nation of the connector ID and the listing ID: <connector-id>-<list-
+          ing-id>.json .
 
 
 
-                                                         START-FILE-TRANSFER()
+                                                     START-DIRECTORY-LISTING()
