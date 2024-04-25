@@ -6,17 +6,28 @@ NAME
        describe-compute -
 
 DESCRIPTION
-       Retrieves  properties  for  a  compute  resource  in an Amazon GameLift
-       fleet. Call  ListCompute to get a list of compute resources in a fleet.
-       You  can  request information for computes in either managed EC2 fleets
-       or Anywhere fleets.
+          This  operation  has  been  expanded to use with the Amazon GameLift
+          containers feature, which is currently in public preview.
 
-       To request compute properties, specify the compute name and fleet ID.
+       Retrieves properties for a  compute  resource  in  an  Amazon  GameLift
+       fleet. To get a list of all computes in a fleet, call  ListCompute .
+
+       To  request information on a specific compute, provide the fleet ID and
+       compute name.
 
        If successful, this operation returns details for the requested compute
-       resource.  For  managed  EC2 fleets, this operation returns the fleet's
-       EC2 instances. For Anywhere fleets, this operation returns the  fleet's
-       registered computes.
+       resource.  Depending  on  the fleet's compute type, the result includes
+       the following information:
+
+       o For EC2 fleets, this operation returns information about the EC2  in-
+         stance.
+
+       o For  ANYWHERE  fleets,  this  operation returns information about the
+         registered compute.
+
+       o For CONTAINER fleets, this operation returns  information  about  the
+         container  that's registered as a compute, and the instance it's run-
+         ning on. The compute name is the container name.
 
        See also: AWS API Documentation
 
@@ -43,13 +54,16 @@ SYNOPSIS
 
 OPTIONS
        --fleet-id (string)
-          A unique identifier for the fleet that the compute is registered to.
-          You can use either the fleet ID or ARN value.
+          A unique identifier for the fleet that the compute belongs  to.  You
+          can use either the fleet ID or ARN value.
 
        --compute-name (string)
           The unique identifier of the compute resource to retrieve properties
           for. For an Anywhere fleet compute, use the registered compute name.
-          For a managed EC2 fleet instance, use the instance ID.
+          For  an  EC2  fleet  instance,  use the instance ID. For a container
+          fleet,     use     the     compute      name      (for      example,
+          a123b456c789012d3e4567f8a901b23c/1a234b56-7cd8-9e0f-a1b2-c34d567ef8a9
+          ) or the compute ARN.
 
        --cli-input-json (string) Performs service operation based on the  JSON
        string  provided. The JSON string follows the format provided by --gen-
@@ -154,23 +168,24 @@ OUTPUT
 
           ComputeName -> (string)
               A descriptive label for the compute resource. For instances in a
-              managed EC2 fleet, the compute name is an instance ID.
+              managed EC2 fleet, the compute name is the same value as the In-
+              stanceId ID.
 
           ComputeArn -> (string)
-              The  ARN  that  is  assigned  to a compute resource and uniquely
-              identifies it. ARNs are unique across  locations.  Instances  in
-              managed EC2 fleets are not assigned a ComputeARN.
+              The ARN that is assigned to  a  compute  resource  and  uniquely
+              identifies  it.  ARNs  are unique across locations. Instances in
+              managed EC2 fleets are not assigned a Compute ARN.
 
           IpAddress -> (string)
               The IP address of a compute resource. Amazon GameLift requires a
               DNS name or IP address for a compute.
 
           DnsName -> (string)
-              The DNS name of a compute resource. Amazon GameLift  requires  a
+              The  DNS  name of a compute resource. Amazon GameLift requires a
               DNS name or IP address for a compute.
 
           ComputeStatus -> (string)
-              Current  status  of  the  compute. A compute must have an ACTIVE
+              Current status of the compute. A compute  must  have  an  ACTIVE
               status to host game sessions.
 
           Location -> (string)
@@ -178,8 +193,8 @@ OUTPUT
               compute resource resides in.
 
           CreationTime -> (timestamp)
-              A  time stamp indicating when this data object was created. For-
-              mat is a number expressed in Unix time as milliseconds (for  ex-
+              A time stamp indicating when this data object was created.  For-
+              mat  is a number expressed in Unix time as milliseconds (for ex-
               ample "1469498468.057" ).
 
           OperatingSystem -> (string)
@@ -187,14 +202,55 @@ OUTPUT
 
           Type -> (string)
               The Amazon EC2 instance type that the fleet uses. For registered
-              computes in an Amazon GameLift Anywhere fleet, this property  is
+              computes  in an Amazon GameLift Anywhere fleet, this property is
               empty.
 
           GameLiftServiceSdkEndpoint -> (string)
-              The  Amazon  GameLift  SDK  endpoint connection for a registered
-              compute resource in an Anywhere fleet. The game servers  on  the
+              The Amazon GameLift SDK endpoint  connection  for  a  registered
+              compute  resource  in an Anywhere fleet. The game servers on the
               compute use this endpoint to connect to the Amazon GameLift ser-
               vice.
+
+          GameLiftAgentEndpoint -> (string)
+              The endpoint of the Amazon GameLift Agent.
+
+          InstanceId -> (string)
+              The InstanceID of the Instance hosting the compute for Container
+              and Managed EC2 fleets.
+
+          ContainerAttributes -> (structure)
+              Some attributes of a container.
+
+              ContainerPortMappings -> (list)
+                 Describes how container ports map to connection ports on  the
+                 fleet  instance.  Incoming  traffic  connects to a game via a
+                 connection port. A ContainerPortMapping directs  the  traffic
+                 from  a connection port to a port on the container that hosts
+                 the game session.
+
+                 (structure)
+                        This data type is used with the Amazon  GameLift  con-
+                        tainers feature, which is currently in public preview.
+
+                     Defines  how  an internal-facing container port is mapped
+                     to an external-facing connection port on a fleet instance
+                     of  compute  type CONTAINER . Incoming traffic, such as a
+                     game client, uses a  connection  port  to  connect  to  a
+                     process  in  the container fleet. Amazon GameLift directs
+                     the inbound traffic to the container  port  that  is  as-
+                     signed to the process, such as a game session, running on
+                     a container.
+                        Part of:   ContainerAttributes
+
+                     ContainerPort -> (integer)
+                        The port opened on the container.
+
+                     ConnectionPort -> (integer)
+                        The port opened on the fleet instance.  This  is  also
+                        called the "host port".
+
+                     Protocol -> (string)
+                        The network protocol that this mapping supports.
 
 
 

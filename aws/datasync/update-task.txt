@@ -6,7 +6,8 @@ NAME
        update-task -
 
 DESCRIPTION
-       Updates the configuration of an DataSync transfer task.
+       Updates the configuration of a task , which defines where and how Data-
+       Sync transfers your data.
 
        See also: AWS API Documentation
 
@@ -40,8 +41,7 @@ SYNOPSIS
 
 OPTIONS
        --task-arn (string)
-          The  Amazon  Resource Name (ARN) of the resource name of the task to
-          update.
+          Specifies the ARN of the task that you want to update.
 
        --options (structure)
           Indicates how your transfer task is configured.  These  options  in-
@@ -51,7 +51,11 @@ OPTIONS
           tions.
 
           Each option has a default value. Unless you need to, you don't  have
-          to configure any of these options before starting your task.
+          to configure any option before calling StartTaskExecution .
+
+          You also can override your task options for each task execution. For
+          example, you might want to adjust the LogLevel for an individual ex-
+          ecution.
 
           VerifyMode -> (string)
               Specifies  how  and  when  DataSync checks the integrity of your
@@ -68,66 +72,67 @@ OPTIONS
 
               o POINT_IN_TIME_CONSISTENT  (default) - At the end of the trans-
                 fer, DataSync scans the entire source and destination to  ver-
-                ify  that both locations are fully synchronized. You can't use
-                this option when transferring to S3 Glacier Flexible Retrieval
-                or  S3 Glacier Deep Archive storage classes. For more informa-
-                tion, see Storage class considerations with  Amazon  S3  loca-
-                tions .
+                ify  that  both locations are fully synchronized. If you use a
+                manifest , DataSync only scans and verifies what's  listed  in
+                the  manifest.  You can't use this option when transferring to
+                S3 Glacier Flexible Retrieval or S3 Glacier Deep Archive stor-
+                age classes. For more information, see Storage class consider-
+                ations with Amazon S3 locations .
 
               o NONE - DataSync doesn't run additional verification at the end
-                of the transfer.  All  data  transmissions  are  still  integ-
+                of  the  transfer.  All  data  transmissions  are still integ-
                 rity-checked with checksum verification during the transfer.
 
           OverwriteMode -> (string)
               Specifies whether DataSync should modify or preserve data at the
               destination location.
 
-              o ALWAYS (default) - DataSync modifies data in  the  destination
+              o ALWAYS  (default)  - DataSync modifies data in the destination
                 location when source data (including metadata) has changed. If
-                DataSync  overwrites  objects,  you  might  incur   additional
-                charges  for  certain  Amazon S3 storage classes (for example,
-                for retrieval or early deletion). For  more  information,  see
+                DataSync   overwrites  objects,  you  might  incur  additional
+                charges for certain Amazon S3 storage  classes  (for  example,
+                for  retrieval  or  early deletion). For more information, see
                 Storage class considerations with Amazon S3 transfers .
 
               o NEVER - DataSync doesn't overwrite data in the destination lo-
-                cation even if the source data has changed. You can  use  this
+                cation  even  if the source data has changed. You can use this
                 option to protect against overwriting changes made to files or
                 objects in the destination.
 
           Atime -> (string)
-              Specifies whether to preserve metadata indicating the last  time
+              Specifies  whether to preserve metadata indicating the last time
               a file was read or written to.
 
               NOTE:
-                 The  behavior of Atime isn't fully standard across platforms,
+                 The behavior of Atime isn't fully standard across  platforms,
                  so DataSync can only do this on a best-effort basis.
 
-              o BEST_EFFORT (default) -  DataSync  attempts  to  preserve  the
-                original  Atime  attribute  on  all source files (that is, the
-                version before the PREPARING phase  of  the  task  execution).
+              o BEST_EFFORT  (default)  -  DataSync  attempts  to preserve the
+                original Atime attribute on all source  files  (that  is,  the
+                version  before  the  PREPARING  phase of the task execution).
                 This option is recommended.
 
               o NONE - Ignores Atime .
 
               NOTE:
-                 If  Atime  is  set to BEST_EFFORT , Mtime must be set to PRE-
+                 If Atime is set to BEST_EFFORT , Mtime must be  set  to  PRE-
                  SERVE .
 
                  If Atime is set to NONE , Mtime must also be NONE .
 
           Mtime -> (string)
-              Specifies whether to preserve metadata indicating the last  time
-              that  a  file  was written to before the PREPARING phase of your
+              Specifies  whether to preserve metadata indicating the last time
+              that a file was written to before the PREPARING  phase  of  your
               task execution. This option is required when you need to run the
               a task more than once.
 
-              o PRESERVE  (default) - Preserves original Mtime , which is rec-
+              o PRESERVE (default) - Preserves original Mtime , which is  rec-
                 ommended.
 
               o NONE - Ignores Mtime .
 
               NOTE:
-                 If Mtime is set to PRESERVE , Atime must be set  to  BEST_EF-
+                 If  Mtime  is set to PRESERVE , Atime must be set to BEST_EF-
                  FORT .
 
                  If Mtime is set to NONE , Atime must also be set to NONE .
@@ -135,7 +140,7 @@ OPTIONS
           Uid -> (string)
               Specifies the POSIX user ID (UID) of the file's owner.
 
-              o INT_VALUE  (default)  - Preserves the integer value of UID and
+              o INT_VALUE (default) - Preserves the integer value of  UID  and
                 group ID (GID), which is recommended.
 
               o NONE - Ignores UID and GID.
@@ -145,7 +150,7 @@ OPTIONS
           Gid -> (string)
               Specifies the POSIX group ID (GID) of the file's owners.
 
-              o INT_VALUE (default) - Preserves the integer value of  user  ID
+              o INT_VALUE  (default)  - Preserves the integer value of user ID
                 (UID) and GID, which is recommended.
 
               o NONE - Ignores UID and GID.
@@ -153,34 +158,34 @@ OPTIONS
               For more information, see Metadata copied by DataSync .
 
           PreserveDeletedFiles -> (string)
-              Specifies  whether  files in the destination location that don't
-              exist in the source should be preserved. This option can  affect
-              your  Amazon  S3 storage cost. If your task deletes objects, you
+              Specifies whether files in the destination location  that  don't
+              exist  in the source should be preserved. This option can affect
+              your Amazon S3 storage cost. If your task deletes  objects,  you
               might incur minimum storage duration charges for certain storage
               classes. For detailed information, see Considerations when work-
               ing with Amazon S3 storage classes in DataSync .
 
-              o PRESERVE (default) - Ignores such destination files, which  is
+              o PRESERVE  (default) - Ignores such destination files, which is
                 recommended.
 
-              o REMOVE  -  Deletes destination files that arent present in the
+              o REMOVE - Deletes destination files that arent present  in  the
                 source.
 
               NOTE:
                  If you set this parameter to REMOVE , you can't set Transfer-
-                 Mode  to  ALL  . When you transfer all data, DataSync doesn't
-                 scan your destination  location  and  doesn't  know  what  to
+                 Mode to ALL . When you transfer all  data,  DataSync  doesn't
+                 scan  your  destination  location  and  doesn't  know what to
                  delete.
 
           PreserveDevices -> (string)
               Specifies whether DataSync should preserve the metadata of block
-              and character devices in the source location  and  recreate  the
-              files  with  that  device  name and metadata on the destination.
+              and  character  devices  in the source location and recreate the
+              files with that device name and  metadata  on  the  destination.
               DataSync copies only the name and metadata of such devices.
 
               NOTE:
-                 DataSync can't copy the actual contents of these devices  be-
-                 cause  they're  nonterminal  and  don't return an end-of-file
+                 DataSync  can't copy the actual contents of these devices be-
+                 cause they're nonterminal and  don't  return  an  end-of-file
                  (EOF) marker.
 
               o NONE (default) - Ignores special devices (recommended).
@@ -194,58 +199,58 @@ OPTIONS
 
               For more information, see Metadata copied by DataSync .
 
-              o PRESERVE (default) - Preserves POSIX-style permissions,  which
+              o PRESERVE  (default) - Preserves POSIX-style permissions, which
                 is recommended.
 
               o NONE - Ignores POSIX-style permissions.
 
               NOTE:
-                 DataSync  can  preserve  extant permissions of a source loca-
+                 DataSync can preserve extant permissions of  a  source  loca-
                  tion.
 
           BytesPerSecond -> (long)
-              Limits the bandwidth used by a DataSync task.  For  example,  if
-              you  want  DataSync  to use a maximum of 1 MB, set this value to
+              Limits  the  bandwidth  used by a DataSync task. For example, if
+              you want DataSync to use a maximum of 1 MB, set  this  value  to
               1048576 (=1024*1024 ).
 
           TaskQueueing -> (string)
               Specifies whether your transfer tasks should be put into a queue
-              during  certain  scenarios when running multiple tasks . This is
+              during certain scenarios when running multiple tasks .  This  is
               ENABLED by default.
 
           LogLevel -> (string)
-              Specifies the type of logs that DataSync publishes to  a  Amazon
-              CloudWatch  Logs  log  group.  To  specify  the  log  group, see
+              Specifies  the  type of logs that DataSync publishes to a Amazon
+              CloudWatch Logs  log  group.  To  specify  the  log  group,  see
               CloudWatchLogGroupArn .
 
-              o BASIC - Publishes logs with only basic  information  (such  as
+              o BASIC  -  Publishes  logs with only basic information (such as
                 transfer errors).
 
-              o TRANSFER  -  Publishes logs for all files or objects that your
+              o TRANSFER - Publishes logs for all files or objects  that  your
                 DataSync task transfers and performs data-integrity checks on.
 
               o OFF - No logs are published.
 
           TransferMode -> (string)
               Determines whether DataSync transfers only the data and metadata
-              that  differ  between the source and the destination location or
-              transfers all the content from  the  source  (without  comparing
+              that differ between the source and the destination  location  or
+              transfers  all  the  content  from the source (without comparing
               what's in the destination).
 
               o CHANGED (default) - DataSync copies only data or metadata that
-                is new or different content from the source  location  to  the
+                is  new  or  different content from the source location to the
                 destination location.
 
               o ALL - DataSync copies everything in the source to the destina-
                 tion without comparing differences between the locations.
 
           SecurityDescriptorCopyFlags -> (string)
-              Specifies which components of the SMB  security  descriptor  are
+              Specifies  which  components  of the SMB security descriptor are
               copied from source to destination objects.
 
               This value is only used for transfers between SMB and Amazon FSx
               for Windows File Server locations or between two FSx for Windows
-              File  Server  locations.  For more information, see how DataSync
+              File Server locations. For more information,  see  how  DataSync
               handles metadata .
 
               o OWNER_DACL (default) - For each copied object, DataSync copies
@@ -253,36 +258,36 @@ OPTIONS
 
                 o The object owner.
 
-                o NTFS  discretionary  access control lists (DACLs), which de-
+                o NTFS discretionary access control lists (DACLs),  which  de-
                   termine whether to grant access to an object. DataSync won't
-                  copy  NTFS system access control lists (SACLs) with this op-
+                  copy NTFS system access control lists (SACLs) with this  op-
                   tion.
 
-              o OWNER_DACL_SACL - For each copied object, DataSync copies  the
+              o OWNER_DACL_SACL  - For each copied object, DataSync copies the
                 following metadata:
 
                 o The object owner.
 
-                o NTFS  discretionary  access control lists (DACLs), which de-
+                o NTFS discretionary access control lists (DACLs),  which  de-
                   termine whether to grant access to an object.
 
-                o SACLs, which are used by administrators to log  attempts  to
+                o SACLs,  which  are used by administrators to log attempts to
                   access a secured object. Copying SACLs requires granting ad-
-                  ditional permissions to the Windows user that DataSync  uses
-                  to  access your SMB location. For information about choosing
-                  a user with the right permissions, see required  permissions
-                  for  SMB  ,  FSx  for Windows File Server , or FSx for ONTAP
+                  ditional  permissions to the Windows user that DataSync uses
+                  to access your SMB location. For information about  choosing
+                  a  user with the right permissions, see required permissions
+                  for SMB , FSx for Windows File Server ,  or  FSx  for  ONTAP
                   (depending on the type of location in your transfer).
 
-              o NONE - None of the  SMB  security  descriptor  components  are
-                copied.  Destination  objects  are  owned by the user that was
-                provided for accessing the  destination  location.  DACLs  and
+              o NONE  -  None  of  the  SMB security descriptor components are
+                copied. Destination objects are owned by  the  user  that  was
+                provided  for  accessing  the  destination location. DACLs and
                 SACLs are set based on the destination servers configuration.
 
           ObjectTags -> (string)
               Specifies whether you want DataSync to PRESERVE object tags (de-
-              fault behavior) when transferring between  object  storage  sys-
-              tems.  If  you  want  your  DataSync task to ignore object tags,
+              fault  behavior)  when  transferring between object storage sys-
+              tems. If you want your DataSync  task  to  ignore  object  tags,
               specify the NONE value.
 
        Shorthand Syntax:
@@ -310,9 +315,10 @@ OPTIONS
           }
 
        --excludes (list)
-          Specifies a list of filter rules that exclude specific  data  during
-          your transfer. For more information and examples, see Filtering data
-          transferred by DataSync .
+          Specifies  exclude filters that define the files, objects, and fold-
+          ers in your source location that you don't want DataSync  to  trans-
+          fer. For more information and examples, see Specifying what DataSync
+          transfers by using filters .
 
           (structure)
               Specifies which files, folders, and objects to  include  or  ex-
@@ -342,38 +348,50 @@ OPTIONS
           ]
 
        --schedule (structure)
-          Specifies a schedule used to  periodically  transfer  files  from  a
-          source to a destination location. You can configure your task to ex-
-          ecute hourly, daily, weekly or on specific days  of  the  week.  You
-          control  when  in  the day or hour you want the task to execute. The
-          time you specify is UTC time. For more information,  see  Scheduling
-          your task .
+          Specifies a schedule for when you want your task to  run.  For  more
+          information, see Scheduling your task .
 
           ScheduleExpression -> (string)
-              A  cron  expression  that  specifies  when  DataSync initiates a
-              scheduled transfer from a source to a destination location.
+              Specifies  your  task schedule by using a cron expression in UTC
+              time. For information about cron expression syntax,  see  the  `
+              Amazon             EventBridge             User            Guide
+              https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-cron-expressions.html`__
+              .
+
+          Status -> (string)
+              Specifies  whether to enable or disable your task schedule. Your
+              schedule is enabled by default,  but  there  can  be  situations
+              where  you  need  to  disable it. For example, you might need to
+              pause a recurring transfer or fix an issue  with  your  task  or
+              perform maintenance on your storage system.
+
+              DataSync  might disable your schedule automatically if your task
+              fails repeatedly with the same error. For more information,  see
+              TaskScheduleDetails .
 
        Shorthand Syntax:
 
-          ScheduleExpression=string
+          ScheduleExpression=string,Status=string
 
        JSON Syntax:
 
           {
-            "ScheduleExpression": "string"
+            "ScheduleExpression": "string",
+            "Status": "ENABLED"|"DISABLED"
           }
 
        --name (string)
-          The name of the task to update.
+          Specifies the name of your task.
 
        --cloud-watch-log-group-arn (string)
-          The Amazon Resource Name (ARN) of the resource name  of  the  Amazon
-          CloudWatch log group.
+          Specifies the Amazon Resource Name (ARN) of an Amazon CloudWatch log
+          group for monitoring your task.
 
        --includes (list)
-          Specifies  a  list of filter rules that include specific data during
-          your transfer. For more information and examples, see Filtering data
-          transferred by DataSync .
+          Specifies include filters define the files, objects, and folders  in
+          your  source  location  that you want DataSync to transfer. For more
+          information and examples, see Specifying what DataSync transfers  by
+          using filters .
 
           (structure)
               Specifies  which  files,  folders, and objects to include or ex-

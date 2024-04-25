@@ -6,15 +6,14 @@ NAME
        create-task -
 
 DESCRIPTION
-       Configures  a transfer task, which defines where and how DataSync moves
-       your data.
+       Configures a task , which defines where and how DataSync transfers your
+       data.
 
-       A task includes a source location, destination location,  and  the  op-
-       tions  for  how  and when you want to transfer your data (such as band-
-       width limits, scheduling, among other options).
+       A task includes a source location, destination location,  and  transfer
+       options (such as bandwidth limits, scheduling, and more).
 
        WARNING:
-          If you're planning to transfer data to or from an  Amazon  S3  loca-
+          If  you're  planning  to transfer data to or from an Amazon S3 loca-
           tion, review how DataSync can affect your S3 request charges and the
           DataSync pricing page before you begin.
 
@@ -52,48 +51,43 @@ SYNOPSIS
 
 OPTIONS
        --source-location-arn (string)
-          The Amazon Resource Name (ARN) of the source location for the task.
+          Specifies the ARN of your transfer's source location.
 
        --destination-location-arn (string)
-          The Amazon Resource Name (ARN) of an Amazon Web Services storage re-
-          source's location.
+          Specifies the ARN of your transfer's destination location.
 
        --cloud-watch-log-group-arn (string)
-          The  Amazon  Resource  Name (ARN) of the Amazon CloudWatch log group
-          that is used to monitor and log events in the task.
+          Specifies the Amazon Resource Name (ARN) of an Amazon CloudWatch log
+          group for monitoring your task.
 
        --name (string)
-          The name of a task. This value is a text reference that is  used  to
-          identify the task in the console.
+          Specifies the name of your task.
 
        --options (structure)
-          Specifies the configuration options for a task. Some options include
-          preserving file or object metadata and verifying data integrity.
-
-          You can also override these options before  starting  an  individual
-          run  of  a task (also known as a task execution ). For more informa-
-          tion, see StartTaskExecution .
+          Specifies your task's settings, such as  preserving  file  metadata,
+          verifying data integrity, among other options.
 
           VerifyMode -> (string)
-              Specifies how and when DataSync checks  the  integrity  of  your
+              Specifies  how  and  when  DataSync checks the integrity of your
               data during a transfer.
 
               o ONLY_FILES_TRANSFERRED (recommended) - DataSync calculates the
                 checksum of transferred files and metadata at the source loca-
-                tion.  At the end of the transfer, DataSync then compares this
+                tion. At the end of the transfer, DataSync then compares  this
                 checksum to the checksum calculated on those files at the des-
-                tination.  We  recommend  this  option when transferring to S3
-                Glacier Flexible Retrieval or S3 Glacier Deep Archive  storage
-                classes.  For  more  information, see Storage class considera-
+                tination. We recommend this option  when  transferring  to  S3
+                Glacier  Flexible Retrieval or S3 Glacier Deep Archive storage
+                classes. For more information, see  Storage  class  considera-
                 tions with Amazon S3 locations .
 
-              o POINT_IN_TIME_CONSISTENT (default) - At the end of the  trans-
-                fer,  DataSync scans the entire source and destination to ver-
-                ify that both locations are fully synchronized. You can't  use
-                this option when transferring to S3 Glacier Flexible Retrieval
-                or S3 Glacier Deep Archive storage classes. For more  informa-
-                tion,  see  Storage  class considerations with Amazon S3 loca-
-                tions .
+              o POINT_IN_TIME_CONSISTENT  (default) - At the end of the trans-
+                fer, DataSync scans the entire source and destination to  ver-
+                ify  that  both locations are fully synchronized. If you use a
+                manifest , DataSync only scans and verifies what's  listed  in
+                the  manifest.  You can't use this option when transferring to
+                S3 Glacier Flexible Retrieval or S3 Glacier Deep Archive stor-
+                age classes. For more information, see Storage class consider-
+                ations with Amazon S3 locations .
 
               o NONE - DataSync doesn't run additional verification at the end
                 of  the  transfer.  All  data  transmissions  are still integ-
@@ -331,20 +325,21 @@ OPTIONS
           }
 
        --excludes (list)
-          Specifies  a  list of filter rules that exclude specific data during
-          your transfer. For more information and examples, see Filtering data
-          transferred by DataSync .
+          Specifies  exclude filters that define the files, objects, and fold-
+          ers in your source location that you don't want DataSync  to  trans-
+          fer. For more information and examples, see Specifying what DataSync
+          transfers by using filters .
 
           (structure)
-              Specifies  which  files,  folders, and objects to include or ex-
+              Specifies which files, folders, and objects to  include  or  ex-
               clude when transferring files from source to destination.
 
               FilterType -> (string)
-                 The type of filter rule to apply. DataSync only supports  the
+                 The  type of filter rule to apply. DataSync only supports the
                  SIMPLE_PATTERN rule type.
 
               Value -> (string)
-                 A  single  filter string that consists of the patterns to in-
+                 A single filter string that consists of the patterns  to  in-
                  clude or exclude. The patterns are delimited by "|" (that is,
                  a pipe), for example: /folder1|/folder2
 
@@ -363,27 +358,40 @@ OPTIONS
           ]
 
        --schedule (structure)
-          Specifies  a  schedule  used  to  periodically transfer files from a
-          source to a destination location. The schedule should  be  specified
-          in UTC time. For more information, see Scheduling your task .
+          Specifies a schedule for when you want your task to  run.  For  more
+          information, see Scheduling your task .
 
           ScheduleExpression -> (string)
-              A  cron  expression  that  specifies  when  DataSync initiates a
-              scheduled transfer from a source to a destination location.
+              Specifies  your  task schedule by using a cron expression in UTC
+              time. For information about cron expression syntax,  see  the  `
+              Amazon             EventBridge             User            Guide
+              https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-cron-expressions.html`__
+              .
+
+          Status -> (string)
+              Specifies  whether to enable or disable your task schedule. Your
+              schedule is enabled by default,  but  there  can  be  situations
+              where  you  need  to  disable it. For example, you might need to
+              pause a recurring transfer or fix an issue  with  your  task  or
+              perform maintenance on your storage system.
+
+              DataSync  might disable your schedule automatically if your task
+              fails repeatedly with the same error. For more information,  see
+              TaskScheduleDetails .
 
        Shorthand Syntax:
 
-          ScheduleExpression=string
+          ScheduleExpression=string,Status=string
 
        JSON Syntax:
 
           {
-            "ScheduleExpression": "string"
+            "ScheduleExpression": "string",
+            "Status": "ENABLED"|"DISABLED"
           }
 
        --tags (list)
-          Specifies the tags that you want to apply  to  the  Amazon  Resource
-          Name (ARN) representing the task.
+          Specifies the tags that you want to apply to your task.
               Tags  are  key-value  pairs  that  help  you manage, filter, and
               search for your DataSync resources.
 
@@ -412,20 +420,21 @@ OPTIONS
           ]
 
        --includes (list)
-          Specifies  a  list of filter rules that include specific data during
-          your transfer. For more information and examples, see Filtering data
-          transferred by DataSync .
+          Specifies  include filters define the files, objects, and folders in
+          your source location that you want DataSync to  transfer.  For  more
+          information  and examples, see Specifying what DataSync transfers by
+          using filters .
 
           (structure)
-              Specifies  which  files,  folders, and objects to include or ex-
+              Specifies which files, folders, and objects to  include  or  ex-
               clude when transferring files from source to destination.
 
               FilterType -> (string)
-                 The type of filter rule to apply. DataSync only supports  the
+                 The  type of filter rule to apply. DataSync only supports the
                  SIMPLE_PATTERN rule type.
 
               Value -> (string)
-                 A  single  filter string that consists of the patterns to in-
+                 A single filter string that consists of the patterns  to  in-
                  clude or exclude. The patterns are delimited by "|" (that is,
                  a pipe), for example: /folder1|/folder2
 
@@ -444,33 +453,33 @@ OPTIONS
           ]
 
        --manifest-config (structure)
-          Configures  a manifest, which is a list of files or objects that you
-          want DataSync to transfer. For more  information  and  configuration
+          Configures a manifest, which is a list of files or objects that  you
+          want  DataSync  to  transfer. For more information and configuration
           examples, see Specifying what DataSync transfers by using a manifest
           .
 
-          When using this parameter,  your  caller  identity  (the  role  that
-          you're  using  DataSync with) must have the iam:PassRole permission.
+          When  using  this  parameter,  your  caller  identity (the role that
+          you're using DataSync with) must have the  iam:PassRole  permission.
           The AWSDataSyncFullAccess policy includes this permission.
 
           Action -> (string)
               Specifies what DataSync uses the manifest for.
 
           Format -> (string)
-              Specifies the file format of your manifest.  For  more  informa-
+              Specifies  the  file  format of your manifest. For more informa-
               tion, see Creating a manifest .
 
           Source -> (structure)
-              Specifies  the  manifest that you want DataSync to use and where
+              Specifies the manifest that you want DataSync to use  and  where
               it's hosted.
 
               NOTE:
-                 You must specify this parameter if you're configuring  a  new
+                 You  must  specify this parameter if you're configuring a new
                  manifest on or after February 7, 2024.
 
-                 If  you don't, you'll get a 400 status code and ValidationEx-
-                 ception error stating that you're missing the  IAM  role  for
-                 DataSync  to  access  the S3 bucket where you're hosting your
+                 If you don't, you'll get a 400 status code and  ValidationEx-
+                 ception  error  stating  that you're missing the IAM role for
+                 DataSync to access the S3 bucket where  you're  hosting  your
                  manifest. For more information, see Providing DataSync access
                  to your manifest .
 
@@ -483,9 +492,9 @@ OPTIONS
                      ).
 
                  BucketAccessRoleArn -> (string)
-                     Specifies  the  Identity and Access Management (IAM) role
-                     that allows DataSync to access your  manifest.  For  more
-                     information,  see Providing DataSync access to your mani-
+                     Specifies the Identity and Access Management  (IAM)  role
+                     that  allows  DataSync  to access your manifest. For more
+                     information, see Providing DataSync access to your  mani-
                      fest .
 
                  S3BucketArn -> (string)
@@ -493,8 +502,8 @@ OPTIONS
                      where you're hosting your manifest.
 
                  ManifestObjectVersionId -> (string)
-                     Specifies  the object version ID of the manifest that you
-                     want DataSync to use. If you  don't  set  this,  DataSync
+                     Specifies the object version ID of the manifest that  you
+                     want  DataSync  to  use.  If you don't set this, DataSync
                      uses the latest version of the object.
 
        Shorthand Syntax:
@@ -517,20 +526,20 @@ OPTIONS
           }
 
        --task-report-config (structure)
-          Specifies  how  you  want to configure a task report, which provides
+          Specifies how you want to configure a task  report,  which  provides
           detailed information about your DataSync transfer. For more informa-
           tion, see Monitoring your DataSync transfers with task reports .
 
-          When  using  this  parameter,  your  caller  identity (the role that
-          you're using DataSync with) must have the  iam:PassRole  permission.
+          When using this parameter,  your  caller  identity  (the  role  that
+          you're  using  DataSync with) must have the iam:PassRole permission.
           The AWSDataSyncFullAccess policy includes this permission.
 
           Destination -> (structure)
-              Specifies  the Amazon S3 bucket where DataSync uploads your task
+              Specifies the Amazon S3 bucket where DataSync uploads your  task
               report. For more information, see Task reports .
 
               S3 -> (structure)
-                 Specifies the Amazon S3 bucket where  DataSync  uploads  your
+                 Specifies  the  Amazon  S3 bucket where DataSync uploads your
                  task report.
 
                  Subdirectory -> (string)
@@ -541,8 +550,8 @@ OPTIONS
                      your report.
 
                  BucketAccessRoleArn -> (string)
-                     Specifies the Amazon Resource Name (ARN) of the IAM  pol-
-                     icy  that allows DataSync to upload a task report to your
+                     Specifies  the Amazon Resource Name (ARN) of the IAM pol-
+                     icy that allows DataSync to upload a task report to  your
                      S3 bucket. For more information, see Allowing DataSync to
                      upload a task report to an Amazon S3 bucket .
 
@@ -550,58 +559,41 @@ OPTIONS
               Specifies the type of task report that you want:
 
               o SUMMARY_ONLY : Provides necessary details about your task, in-
-                cluding the number of files, objects, and  directories  trans-
+                cluding  the  number of files, objects, and directories trans-
                 ferred and transfer duration.
 
-              o STANDARD  : Provides complete details about your task, includ-
-                ing a full list of files, objects, and directories  that  were
+              o STANDARD : Provides complete details about your task,  includ-
+                ing  a  full list of files, objects, and directories that were
                 transferred, skipped, verified, and more.
 
           ReportLevel -> (string)
               Specifies whether you want your task report to include only what
-              went wrong with your transfer or a list of  what  succeeded  and
+              went  wrong  with  your transfer or a list of what succeeded and
               didn't.
 
-              o ERRORS_ONLY  :  A  report  shows  what  DataSync was unable to
+              o ERRORS_ONLY : A report  shows  what  DataSync  was  unable  to
                 transfer, skip, verify, and delete.
 
-              o SUCCESSES_AND_ERRORS : A report shows what DataSync  was  able
+              o SUCCESSES_AND_ERRORS  :  A report shows what DataSync was able
                 and unable to transfer, skip, verify, and delete.
 
           ObjectVersionIds -> (string)
-              Specifies  whether  your task report includes the new version of
-              each object transferred into an S3 bucket. This only applies  if
+              Specifies whether your task report includes the new  version  of
+              each  object transferred into an S3 bucket. This only applies if
               you enable versioning on your bucket . Keep in mind that setting
-              this to INCLUDE can increase the duration of  your  task  execu-
+              this  to  INCLUDE  can increase the duration of your task execu-
               tion.
 
           Overrides -> (structure)
-              Customizes  the reporting level for aspects of your task report.
-              For example, your report might generally  only  include  errors,
-              but  you could specify that you want a list of successes and er-
-              rors just for the files that DataSync  attempted  to  delete  in
+              Customizes the reporting level for aspects of your task  report.
+              For  example,  your  report might generally only include errors,
+              but you could specify that you want a list of successes and  er-
+              rors  just  for  the  files that DataSync attempted to delete in
               your destination location.
 
               Transferred -> (structure)
-                 Specifies  the level of reporting for the files, objects, and
+                 Specifies the level of reporting for the files, objects,  and
                  directories that DataSync attempted to transfer.
-
-                 ReportLevel -> (string)
-                     Specifies whether your task report includes  errors  only
-                     or successes and errors.
-
-                     For  example,  your report might mostly include only what
-                     didn't go well in your transfer (ERRORS_ONLY  ).  At  the
-                     same  time,  you  want to verify that your task filter is
-                     working correctly. In this situation, you can get a  list
-                     of  what files DataSync successfully skipped and if some-
-                     thing transferred  that  you  didn't  to  transfer  (SUC-
-                     CESSES_AND_ERRORS ).
-
-              Verified -> (structure)
-                 Specifies  the level of reporting for the files, objects, and
-                 directories that DataSync attempted to verify at the  end  of
-                 your transfer.
 
                  ReportLevel -> (string)
                      Specifies  whether  your task report includes errors only
@@ -615,30 +607,30 @@ OPTIONS
                      thing  transferred  that  you  didn't  to  transfer (SUC-
                      CESSES_AND_ERRORS ).
 
-              Deleted -> (structure)
+              Verified -> (structure)
                  Specifies the level of reporting for the files, objects,  and
-                 directories  that DataSync attempted to delete in your desti-
+                 directories  that  DataSync attempted to verify at the end of
+                 your transfer.
+
+                 ReportLevel -> (string)
+                     Specifies whether your task report includes  errors  only
+                     or successes and errors.
+
+                     For  example,  your report might mostly include only what
+                     didn't go well in your transfer (ERRORS_ONLY  ).  At  the
+                     same  time,  you  want to verify that your task filter is
+                     working correctly. In this situation, you can get a  list
+                     of  what files DataSync successfully skipped and if some-
+                     thing transferred  that  you  didn't  to  transfer  (SUC-
+                     CESSES_AND_ERRORS ).
+
+              Deleted -> (structure)
+                 Specifies  the level of reporting for the files, objects, and
+                 directories that DataSync attempted to delete in your  desti-
                  nation location. This only applies if you configure your task
                  to delete data in the destination that isn't in the source.
 
                  ReportLevel -> (string)
-                     Specifies  whether  your task report includes errors only
-                     or successes and errors.
-
-                     For example, your report might mostly include  only  what
-                     didn't  go  well  in your transfer (ERRORS_ONLY ). At the
-                     same time, you want to verify that your  task  filter  is
-                     working  correctly. In this situation, you can get a list
-                     of what files DataSync successfully skipped and if  some-
-                     thing  transferred  that  you  didn't  to  transfer (SUC-
-                     CESSES_AND_ERRORS ).
-
-              Skipped -> (structure)
-                 Specifies the level of reporting for the files, objects,  and
-                 directories  that  DataSync  attempted  to  skip  during your
-                 transfer.
-
-                 ReportLevel -> (string)
                      Specifies whether your task report includes  errors  only
                      or successes and errors.
 
@@ -648,6 +640,23 @@ OPTIONS
                      working correctly. In this situation, you can get a  list
                      of  what files DataSync successfully skipped and if some-
                      thing transferred  that  you  didn't  to  transfer  (SUC-
+                     CESSES_AND_ERRORS ).
+
+              Skipped -> (structure)
+                 Specifies  the level of reporting for the files, objects, and
+                 directories that  DataSync  attempted  to  skip  during  your
+                 transfer.
+
+                 ReportLevel -> (string)
+                     Specifies  whether  your task report includes errors only
+                     or successes and errors.
+
+                     For example, your report might mostly include  only  what
+                     didn't  go  well  in your transfer (ERRORS_ONLY ). At the
+                     same time, you want to verify that your  task  filter  is
+                     working  correctly. In this situation, you can get a list
+                     of what files DataSync successfully skipped and if  some-
+                     thing  transferred  that  you  didn't  to  transfer (SUC-
                      CESSES_AND_ERRORS ).
 
        Shorthand Syntax:
@@ -683,17 +692,17 @@ OPTIONS
             }
           }
 
-       --cli-input-json  (string) Performs service operation based on the JSON
-       string provided. The JSON string follows the format provided by  --gen-
-       erate-cli-skeleton.  If  other  arguments  are  provided on the command
-       line, the CLI values will override the JSON-provided values. It is  not
+       --cli-input-json (string) Performs service operation based on the  JSON
+       string  provided. The JSON string follows the format provided by --gen-
+       erate-cli-skeleton. If other arguments  are  provided  on  the  command
+       line,  the CLI values will override the JSON-provided values. It is not
        possible to pass arbitrary binary values using a JSON-provided value as
        the string will be taken literally.
 
-       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
+       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
        output without sending an API request. If provided with no value or the
        value input, prints a sample input JSON that can be used as an argument
-       for  --cli-input-json.  If provided with the value output, it validates
+       for --cli-input-json. If provided with the value output,  it  validates
        the command inputs and returns a sample output JSON for that command.
 
 GLOBAL OPTIONS
@@ -707,7 +716,7 @@ GLOBAL OPTIONS
 
        --no-verify-ssl (boolean)
 
-       By default, the AWS CLI uses SSL when communicating with AWS  services.
+       By  default, the AWS CLI uses SSL when communicating with AWS services.
        For each SSL connection, the AWS CLI will verify SSL certificates. This
        option overrides the default behavior of verifying SSL certificates.
 
@@ -753,7 +762,7 @@ GLOBAL OPTIONS
 
        --no-sign-request (boolean)
 
-       Do not sign requests. Credentials will not be loaded if  this  argument
+       Do  not  sign requests. Credentials will not be loaded if this argument
        is provided.
 
        --ca-bundle (string)
@@ -763,14 +772,14 @@ GLOBAL OPTIONS
 
        --cli-read-timeout (int)
 
-       The maximum socket read time in seconds. If the value is set to 0,  the
-       socket  read  will be blocking and not timeout. The default value is 60
+       The  maximum socket read time in seconds. If the value is set to 0, the
+       socket read will be blocking and not timeout. The default value  is  60
        seconds.
 
        --cli-connect-timeout (int)
 
-       The maximum socket connect time in seconds. If the value is set  to  0,
-       the  socket connect will be blocking and not timeout. The default value
+       The  maximum  socket connect time in seconds. If the value is set to 0,
+       the socket connect will be blocking and not timeout. The default  value
        is 60 seconds.
 
 OUTPUT

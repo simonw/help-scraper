@@ -6,21 +6,30 @@ NAME
        register-compute -
 
 DESCRIPTION
-       Registers a compute resource to an Amazon GameLift Anywhere fleet. With
-       Anywhere fleets you can incorporate your own computing hardware into an
-       Amazon GameLift game hosting solution.
+          This  operation  has  been  expanded to use with the Amazon GameLift
+          containers feature, which is currently in public preview.
 
-       To  register  a  compute  to  a fleet, give the compute a name (must be
-       unique within the fleet) and specify the compute resource's DNS name or
-       IP address. Provide the Anywhere fleet ID and a fleet location to asso-
-       ciate with the compute being registered. You can optionally include the
-       path to a TLS certificate on the compute resource.
+       Registers a compute resource in an Amazon GameLift fleet. Register com-
+       putes with an Amazon GameLift Anywhere fleet or a container fleet.
 
-       If successful, this operation returns the compute details, including an
-       Amazon GameLift SDK endpoint. Game server processes  that  run  on  the
-       compute  use this endpoint to communicate with the Amazon GameLift ser-
-       vice. Each server process includes the SDK endpoint in its call to  the
-       Amazon GameLift server SDK action InitSDK() .
+       For  an  Anywhere  fleet or a container fleet that's running the Amazon
+       GameLift Agent, the Agent handles all compute registry tasks  for  you.
+       For  an  Anywhere fleet that doesn't use the Agent, call this operation
+       to register fleet computes.
+
+       To register a compute, give the compute a name (must be  unique  within
+       the  fleet)  and specify the compute resource's DNS name or IP address.
+       Provide a fleet ID and a fleet location to associate with  the  compute
+       being registered. You can optionally include the path to a TLS certifi-
+       cate on the compute resource.
+
+       If successful, this operation returns  compute  details,  including  an
+       Amazon  GameLift  SDK endpoint or Agent endpoint. Game server processes
+       running on the compute can use this endpoint to  communicate  with  the
+       Amazon  GameLift service. Each server process includes the SDK endpoint
+       in its call to the Amazon GameLift server SDK action InitSDK() .
+
+       To view compute details, call DescribeCompute with the compute name.
           Learn more
 
        o Create an Anywhere fleet
@@ -58,18 +67,18 @@ SYNOPSIS
 
 OPTIONS
        --fleet-id (string)
-          A  unique  identifier  for the fleet to register the compute to. You
+          A unique identifier for the fleet to register the  compute  to.  You
           can use either the fleet ID or ARN value.
 
        --compute-name (string)
           A descriptive label for the compute resource.
 
        --certificate-path (string)
-          The path to a TLS  certificate  on  your  compute  resource.  Amazon
+          The  path  to  a  TLS  certificate  on your compute resource. Amazon
           GameLift doesn't validate the path and certificate.
 
        --dns-name (string)
-          The  DNS  name of the compute resource. Amazon GameLift requires ei-
+          The DNS name of the compute resource. Amazon GameLift  requires  ei-
           ther a DNS name or IP address.
 
        --ip-address (string)
@@ -80,17 +89,17 @@ OPTIONS
           The name of a custom location to associate with the compute resource
           being registered.
 
-       --cli-input-json (string) Performs service operation based on the  JSON
-       string  provided. The JSON string follows the format provided by --gen-
-       erate-cli-skeleton. If other arguments  are  provided  on  the  command
-       line,  the CLI values will override the JSON-provided values. It is not
+       --cli-input-json  (string) Performs service operation based on the JSON
+       string provided. The JSON string follows the format provided by  --gen-
+       erate-cli-skeleton.  If  other  arguments  are  provided on the command
+       line, the CLI values will override the JSON-provided values. It is  not
        possible to pass arbitrary binary values using a JSON-provided value as
        the string will be taken literally.
 
-       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
+       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
        output without sending an API request. If provided with no value or the
        value input, prints a sample input JSON that can be used as an argument
-       for --cli-input-json. If provided with the value output,  it  validates
+       for  --cli-input-json.  If provided with the value output, it validates
        the command inputs and returns a sample output JSON for that command.
 
 GLOBAL OPTIONS
@@ -104,7 +113,7 @@ GLOBAL OPTIONS
 
        --no-verify-ssl (boolean)
 
-       By  default, the AWS CLI uses SSL when communicating with AWS services.
+       By default, the AWS CLI uses SSL when communicating with AWS  services.
        For each SSL connection, the AWS CLI will verify SSL certificates. This
        option overrides the default behavior of verifying SSL certificates.
 
@@ -150,7 +159,7 @@ GLOBAL OPTIONS
 
        --no-sign-request (boolean)
 
-       Do  not  sign requests. Credentials will not be loaded if this argument
+       Do not sign requests. Credentials will not be loaded if  this  argument
        is provided.
 
        --ca-bundle (string)
@@ -160,14 +169,14 @@ GLOBAL OPTIONS
 
        --cli-read-timeout (int)
 
-       The  maximum socket read time in seconds. If the value is set to 0, the
-       socket read will be blocking and not timeout. The default value  is  60
+       The maximum socket read time in seconds. If the value is set to 0,  the
+       socket  read  will be blocking and not timeout. The default value is 60
        seconds.
 
        --cli-connect-timeout (int)
 
-       The  maximum  socket connect time in seconds. If the value is set to 0,
-       the socket connect will be blocking and not timeout. The default  value
+       The maximum socket connect time in seconds. If the value is set  to  0,
+       the  socket connect will be blocking and not timeout. The default value
        is 60 seconds.
 
 OUTPUT
@@ -183,12 +192,13 @@ OUTPUT
 
           ComputeName -> (string)
               A descriptive label for the compute resource. For instances in a
-              managed EC2 fleet, the compute name is an instance ID.
+              managed EC2 fleet, the compute name is the same value as the In-
+              stanceId ID.
 
           ComputeArn -> (string)
               The  ARN  that  is  assigned  to a compute resource and uniquely
               identifies it. ARNs are unique across  locations.  Instances  in
-              managed EC2 fleets are not assigned a ComputeARN.
+              managed EC2 fleets are not assigned a Compute ARN.
 
           IpAddress -> (string)
               The IP address of a compute resource. Amazon GameLift requires a
@@ -224,6 +234,47 @@ OUTPUT
               compute resource in an Anywhere fleet. The game servers  on  the
               compute use this endpoint to connect to the Amazon GameLift ser-
               vice.
+
+          GameLiftAgentEndpoint -> (string)
+              The endpoint of the Amazon GameLift Agent.
+
+          InstanceId -> (string)
+              The InstanceID of the Instance hosting the compute for Container
+              and Managed EC2 fleets.
+
+          ContainerAttributes -> (structure)
+              Some attributes of a container.
+
+              ContainerPortMappings -> (list)
+                 Describes  how container ports map to connection ports on the
+                 fleet instance. Incoming traffic connects to  a  game  via  a
+                 connection  port.  A ContainerPortMapping directs the traffic
+                 from a connection port to a port on the container that  hosts
+                 the game session.
+
+                 (structure)
+                        This  data  type is used with the Amazon GameLift con-
+                        tainers feature, which is currently in public preview.
+
+                     Defines how an internal-facing container port  is  mapped
+                     to an external-facing connection port on a fleet instance
+                     of compute type CONTAINER . Incoming traffic, such  as  a
+                     game  client,  uses  a  connection  port  to connect to a
+                     process in the container fleet. Amazon  GameLift  directs
+                     the  inbound  traffic  to  the container port that is as-
+                     signed to the process, such as a game session, running on
+                     a container.
+                        Part of:   ContainerAttributes
+
+                     ContainerPort -> (integer)
+                        The port opened on the container.
+
+                     ConnectionPort -> (integer)
+                        The  port  opened  on the fleet instance. This is also
+                        called the "host port".
+
+                     Protocol -> (string)
+                        The network protocol that this mapping supports.
 
 
 

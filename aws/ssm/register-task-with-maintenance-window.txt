@@ -82,50 +82,46 @@ OPTIONS
                  vices Systems Manager User Guide .
 
               Supported formats include the following.
+                 For all Systems Manager capabilities:
 
-              o Key=InstanceIds,Values=<instance-id-1>,<instance-id-2>,<in-
-                stance-id-3>
+              o Key=tag-key,Values=tag-value-1,tag-value-2
+                 For Automation and Change Manager:
 
-              o Key=tag:<my-tag-key>,Values=<my-tag-value-1>,<my-tag-value-2>
+              o Key=tag:tag-key,Values=tag-value
 
-              o Key=tag-key,Values=<my-tag-key-1>,<my-tag-key-2>
+              o Key=ResourceGroup,Values=resource-group-name
 
-              o Run Command and Maintenance  window  targets  only  :  Key=re-
-                source-groups:Name,Values=<resource-group-name>
+              o Key=ParameterValues,Values=value-1,value-2,value-3
 
-              o Maintenance  window  targets  only  :  Key=resource-groups:Re-
-                sourceTypeFilters,Values=<resource-type-1>,<resource-type-2>
+              o To target all instances in the Amazon Web Services Region:
 
-              o Automation  targets   only   :   Key=ResourceGroup;Values=<re-
-                source-group-name>
+                o Key=AWS::EC2::Instance,Values=*
 
-              For example:
+                o Key=InstanceIds,Values=*
+                 For Run Command and Maintenance Windows:
 
-              o Key=InstanceIds,Values=i-02573cafcfEXAMPLE,i-0471e04240EXAM-
-                PLE,i-07782c72faEXAMPLE
+              o Key=InstanceIds,Values=instance-id-1,instance-id-2,in-
+                stance-id-3
 
-              o Key=tag:CostCenter,Values=CostCenter1,CostCenter2,CostCenter3
+              o Key=tag:tag-key,Values=tag-value-1,tag-value-2
 
-              o Key=tag-key,Values=Name,Instance-Type,CostCenter
+              o Key=resource-groups:Name,Values=resource-group-name
 
-              o Run Command and Maintenance  window  targets  only  :  Key=re-
-                source-groups:Name,Values=ProductionResourceGroup   This exam-
-                ple demonstrates how to target all resources in  the  resource
-                group ProductionResourceGroup in your maintenance window.
+              o Additionally, Maintenance Windows support  targeting  resource
+                types:
 
-              o Maintenance  window  targets  only  :  Key=resource-groups:Re-
-                sourceTypeFilters,Values=AWS::EC2::INSTANCE,AWS::EC2::VPC
-                This  example  demonstrates  how to target only Amazon Elastic
-                Compute Cloud (Amazon EC2) instances and VPCs in your  mainte-
-                nance window.
+                o Key=resource-groups:ResourceTypeFilters,Values=re-
+                  source-type-1,resource-type-2
+                 For State Manager:
 
-              o Automation targets only : Key=ResourceGroup,Values=MyResource-
-                Group
+              o Key=InstanceIds,Values=instance-id-1,instance-id-2,in-
+                stance-id-3
 
-              o State Manager association targets only :  Key=InstanceIds,Val-
-                ues=*    This  example  demonstrates how to target all managed
-                instances in the Amazon Web Services Region where the associa-
-                tion was created.
+              o Key=tag:tag-key,Values=tag-value-1,tag-value-2
+
+              o To target all instances in the Amazon Web Services Region:
+
+                o Key=InstanceIds,Values=*
 
               For more information about how to send commands that target man-
               aged nodes using Key,Value parameters,  see  Targeting  multiple
@@ -168,13 +164,16 @@ OPTIONS
           The  Amazon  Resource  Name (ARN) of the IAM service role for Amazon
           Web Services Systems Manager to assume when  running  a  maintenance
           window  task. If you do not specify a service role ARN, Systems Man-
-          ager uses your account's service-linked role. If  no  service-linked
-          role  for Systems Manager exists in your account, it is created when
-          you run RegisterTaskWithMaintenanceWindow .
+          ager uses a service-linked role in your account. If  no  appropriate
+          service-linked  role  for Systems Manager exists in your account, it
+          is created when you run RegisterTaskWithMaintenanceWindow .
 
-          For more information, see Using  service-linked  roles  for  Systems
-          Manager in the in the Amazon Web Services Systems Manager User Guide
-          :
+          However, for an improved security  posture,  we  strongly  recommend
+          creating  a  custom  policy and custom service role for running your
+          maintenance window tasks. The policy can be crafted to provide  only
+          the permissions needed for your particular maintenance window tasks.
+          For more information, see Setting up maintenance windows in  the  in
+          the Amazon Web Services Systems Manager User Guide .
 
        --task-type (string)
           The type of task being registered.
@@ -193,10 +192,10 @@ OPTIONS
           The parameters that should be passed to the task when it is run.
 
           NOTE:
-              TaskParameters has been deprecated.  To  specify  parameters  to
-              pass  to  a task when it runs, instead use the Parameters option
+              TaskParameters  has  been  deprecated.  To specify parameters to
+              pass to a task when it runs, instead use the  Parameters  option
               in the TaskInvocationParameters structure. For information about
-              how  Systems  Manager  handles  these  options for the supported
+              how Systems Manager handles  these  options  for  the  supported
               maintenance window task types, see  MaintenanceWindowTaskInvoca-
               tionParameters .
 
@@ -206,7 +205,7 @@ OPTIONS
               Defines the values for a task parameter.
 
               Values -> (list)
-                 This  field contains an array of 0 or more strings, each 1 to
+                 This field contains an array of 0 or more strings, each 1  to
                  255 characters in length.
 
                  (string)
@@ -223,7 +222,7 @@ OPTIONS
             ...}
 
        --task-invocation-parameters (structure)
-          The parameters that the task should use during  execution.  Populate
+          The  parameters  that the task should use during execution. Populate
           only the fields that match the task type. All other fields should be
           empty.
 
@@ -234,24 +233,24 @@ OPTIONS
                  Information about the commands to run.
 
               CloudWatchOutputConfig -> (structure)
-                 Configuration options for sending command  output  to  Amazon
+                 Configuration  options  for  sending command output to Amazon
                  CloudWatch Logs.
 
                  CloudWatchLogGroupName -> (string)
-                     The  name of the CloudWatch Logs log group where you want
-                     to send command output. If  you  don't  specify  a  group
-                     name,  Amazon  Web Services Systems Manager automatically
-                     creates a log group for you. The log group uses the  fol-
+                     The name of the CloudWatch Logs log group where you  want
+                     to  send  command  output.  If  you don't specify a group
+                     name, Amazon Web Services Systems  Manager  automatically
+                     creates  a log group for you. The log group uses the fol-
                      lowing naming format:
 
                         ``
                         aws/ssm/SystemsManagerDocumentName ``
 
-                        System Message: WARNING/2 (<string>:, line 378)
+                        System Message: WARNING/2 (<string>:, line 416)
                                Inline literal start-string without end-string.
 
                  CloudWatchOutputEnabled -> (boolean)
-                     Enables  Systems Manager to send command output to Cloud-
+                     Enables Systems Manager to send command output to  Cloud-
                      Watch Logs.
 
               DocumentHash -> (string)
@@ -262,11 +261,11 @@ OPTIONS
                  SHA-256 or SHA-1. SHA-1 hashes have been deprecated.
 
               DocumentVersion -> (string)
-                 The  Amazon  Web Services Systems Manager document (SSM docu-
+                 The Amazon Web Services Systems Manager document  (SSM  docu-
                  ment) version to use in the request. You can specify $DEFAULT
                  , $LATEST , or a specific version number. If you run commands
-                 by using the Amazon Web Services CLI, then  you  must  escape
-                 the  first two options by using a backslash. If you specify a
+                 by  using  the  Amazon Web Services CLI, then you must escape
+                 the first two options by using a backslash. If you specify  a
                  version number, then you don't need to use the backslash. For
                  example:
                      --document-version "\$DEFAULT"
@@ -280,15 +279,15 @@ OPTIONS
                  changes on a per-managed node basis.
 
                  NotificationArn -> (string)
-                     An Amazon Resource Name (ARN) for an Amazon Simple  Noti-
-                     fication  Service  (Amazon SNS) topic. Run Command pushes
+                     An  Amazon Resource Name (ARN) for an Amazon Simple Noti-
+                     fication Service (Amazon SNS) topic. Run  Command  pushes
                      notifications about command status changes to this topic.
 
                  NotificationEvents -> (list)
-                     The different events for which you can receive  notifica-
-                     tions.  To  learn more about these events, see Monitoring
+                     The  different events for which you can receive notifica-
+                     tions. To learn more about these events,  see  Monitoring
                      Systems Manager status changes using Amazon SNS notifica-
-                     tions  in  the  Amazon  Web Services Systems Manager User
+                     tions in the Amazon Web  Services  Systems  Manager  User
                      Guide .
 
                      (string)
@@ -296,15 +295,15 @@ OPTIONS
                  NotificationType -> (string)
                      The type of notification.
 
-                     o Command : Receive notification when  the  status  of  a
+                     o Command  :  Receive  notification  when the status of a
                        command changes.
 
-                     o Invocation  :  For  commands  sent  to multiple managed
-                       nodes, receive notification on a  per-node  basis  when
+                     o Invocation : For  commands  sent  to  multiple  managed
+                       nodes,  receive  notification  on a per-node basis when
                        the status of a command changes.
 
               OutputS3BucketName -> (string)
-                 The  name  of  the  Amazon Simple Storage Service (Amazon S3)
+                 The name of the Amazon Simple  Storage  Service  (Amazon  S3)
                  bucket.
 
               OutputS3KeyPrefix -> (string)
@@ -319,49 +318,49 @@ OPTIONS
                      (string)
 
               ServiceRoleArn -> (string)
-                 The Amazon Resource Name (ARN) of  the  Identity  and  Access
+                 The  Amazon  Resource  Name  (ARN) of the Identity and Access
                  Management (IAM) service role to use to publish Amazon Simple
-                 Notification Service (Amazon SNS) notifications  for  mainte-
+                 Notification  Service  (Amazon SNS) notifications for mainte-
                  nance window Run Command tasks.
 
               TimeoutSeconds -> (integer)
-                 If  this  time  is  reached  and  the  command hasn't already
+                 If this time  is  reached  and  the  command  hasn't  already
                  started running, it doesn't run.
 
           Automation -> (structure)
               The parameters for an AUTOMATION task type.
 
               DocumentVersion -> (string)
-                 The version of an Automation runbook to use during task  exe-
+                 The  version of an Automation runbook to use during task exe-
                  cution.
 
               Parameters -> (map)
                  The parameters for the AUTOMATION task.
 
-                 For  information  about  specifying and updating task parame-
+                 For information about specifying and  updating  task  parame-
                  ters, see  RegisterTaskWithMaintenanceWindow and  UpdateMain-
                  tenanceWindowTask .
 
                  NOTE:
-                        LoggingInfo  has been deprecated. To specify an Amazon
-                        Simple Storage Service (Amazon S3) bucket  to  contain
-                        logs,  instead  use  the  OutputS3BucketName  and Out-
+                        LoggingInfo has been deprecated. To specify an  Amazon
+                        Simple  Storage  Service (Amazon S3) bucket to contain
+                        logs, instead  use  the  OutputS3BucketName  and  Out-
                         putS3KeyPrefix options in the TaskInvocationParameters
-                        structure.  For  information about how Amazon Web Ser-
-                        vices Systems Manager handles these  options  for  the
-                        supported  maintenance window task types, see  Mainte-
+                        structure. For information about how Amazon  Web  Ser-
+                        vices  Systems  Manager  handles these options for the
+                        supported maintenance window task types, see   Mainte-
                         nanceWindowTaskInvocationParameters .
 
                         TaskParameters has been deprecated. To specify parame-
-                        ters  to  pass to a task when it runs, instead use the
-                        Parameters  option  in  the   TaskInvocationParameters
-                        structure.  For  information about how Systems Manager
-                        handles these options for  the  supported  maintenance
-                        window  task  types, see  MaintenanceWindowTaskInvoca-
+                        ters to pass to a task when it runs, instead  use  the
+                        Parameters   option  in  the  TaskInvocationParameters
+                        structure. For information about how  Systems  Manager
+                        handles  these  options  for the supported maintenance
+                        window task types,  see   MaintenanceWindowTaskInvoca-
                         tionParameters .
 
-                     For AUTOMATION task types, Amazon  Web  Services  Systems
-                     Manager  ignores  any  values specified for these parame-
+                     For  AUTOMATION  task  types, Amazon Web Services Systems
+                     Manager ignores any values specified  for  these  parame-
                      ters.
 
                  key -> (string)
@@ -382,17 +381,17 @@ OPTIONS
               The parameters for a LAMBDA task type.
 
               ClientContext -> (string)
-                 Pass client-specific information to the Lambda function  that
+                 Pass  client-specific information to the Lambda function that
                  you are invoking. You can then process the client information
-                 in your Lambda function as you  choose  through  the  context
+                 in  your  Lambda  function  as you choose through the context
                  variable.
 
               Qualifier -> (string)
-                 (Optional)  Specify an Lambda function version or alias name.
-                 If you specify a function version,  the  operation  uses  the
-                 qualified  function  Amazon  Resource  Name (ARN) to invoke a
-                 specific Lambda function. If you specify an alias  name,  the
-                 operation  uses  the  alias ARN to invoke the Lambda function
+                 (Optional) Specify an Lambda function version or alias  name.
+                 If  you  specify  a  function version, the operation uses the
+                 qualified function Amazon Resource Name  (ARN)  to  invoke  a
+                 specific  Lambda  function. If you specify an alias name, the
+                 operation uses the alias ARN to invoke  the  Lambda  function
                  version to which the alias points.
 
               Payload -> (blob)
@@ -439,48 +438,48 @@ OPTIONS
           }
 
        --priority (integer)
-          The priority of the task in the maintenance window,  the  lower  the
-          number  the  higher  the priority. Tasks in a maintenance window are
-          scheduled in priority order with tasks that have the  same  priority
+          The  priority  of  the task in the maintenance window, the lower the
+          number the higher the priority. Tasks in a  maintenance  window  are
+          scheduled  in  priority order with tasks that have the same priority
           scheduled in parallel.
 
        --max-concurrency (string)
           The maximum number of targets this task can be run for, in parallel.
 
           NOTE:
-              Although  this  element is listed as "Required: No", a value can
-              be  omitted  only  when  you  are  registering  or  updating   a
+              Although this element is listed as "Required: No", a  value  can
+              be   omitted  only  when  you  are  registering  or  updating  a
               targetless task You must provide a value in all other cases.
 
-              For  maintenance  window  tasks  without a target specified, you
-              can't supply a value for this option. Instead,  the  system  in-
-              serts  a  placeholder value of 1 . This value doesn't affect the
+              For maintenance window tasks without  a  target  specified,  you
+              can't  supply  a  value for this option. Instead, the system in-
+              serts a placeholder value of 1 . This value doesn't  affect  the
               running of your task.
 
        --max-errors (string)
-          The maximum number of errors allowed before this  task  stops  being
+          The  maximum  number  of errors allowed before this task stops being
           scheduled.
 
           NOTE:
-              Although  this  element is listed as "Required: No", a value can
-              be  omitted  only  when  you  are  registering  or  updating   a
+              Although this element is listed as "Required: No", a  value  can
+              be   omitted  only  when  you  are  registering  or  updating  a
               targetless task You must provide a value in all other cases.
 
-              For  maintenance  window  tasks  without a target specified, you
-              can't supply a value for this option. Instead,  the  system  in-
-              serts  a  placeholder value of 1 . This value doesn't affect the
+              For maintenance window tasks without  a  target  specified,  you
+              can't  supply  a  value for this option. Instead, the system in-
+              serts a placeholder value of 1 . This value doesn't  affect  the
               running of your task.
 
        --logging-info (structure)
-          A structure containing information about an  Amazon  Simple  Storage
+          A  structure  containing  information about an Amazon Simple Storage
           Service (Amazon S3) bucket to write managed node-level logs to.
 
           NOTE:
-              LoggingInfo  has  been  deprecated.  To specify an Amazon Simple
-              Storage Service (Amazon S3) bucket to contain logs, instead  use
-              the  OutputS3BucketName  and  OutputS3KeyPrefix  options  in the
-              TaskInvocationParameters structure. For  information  about  how
-              Amazon  Web  Services  Systems Manager handles these options for
+              LoggingInfo has been deprecated. To  specify  an  Amazon  Simple
+              Storage  Service (Amazon S3) bucket to contain logs, instead use
+              the OutputS3BucketName  and  OutputS3KeyPrefix  options  in  the
+              TaskInvocationParameters  structure.  For  information about how
+              Amazon Web Services Systems Manager handles  these  options  for
               the  supported  maintenance  window  task  types,  see   Mainte-
               nanceWindowTaskInvocationParameters .
 
@@ -518,19 +517,19 @@ OPTIONS
           Indicates whether tasks should continue to run after the cutoff time
           specified in the maintenance windows is reached.
 
-          o CONTINUE_TASK : When the cutoff time is reached,  any  tasks  that
+          o CONTINUE_TASK  :  When  the cutoff time is reached, any tasks that
             are running continue. The default value.
 
           o CANCEL_TASK :
 
-            o For  Automation,  Lambda,  Step Functions tasks: When the cutoff
-              time is reached, any task invocations that are  already  running
+            o For Automation, Lambda, Step Functions tasks:  When  the  cutoff
+              time  is  reached, any task invocations that are already running
               continue, but no new task invocations are started.
 
             o For Run Command tasks: When the cutoff time is reached, the sys-
               tem sends a  CancelCommand operation that attempts to cancel the
               command associated with the task. However, there is no guarantee
-              that the command will be terminated and the  underlying  process
+              that  the  command will be terminated and the underlying process
               stopped.
 
           The status for tasks that are not completed is TIMED_OUT .
@@ -542,15 +541,15 @@ OPTIONS
           o CANCEL_TASK
 
        --alarm-configuration (structure)
-          The  CloudWatch  alarm  you want to apply to your maintenance window
+          The CloudWatch alarm you want to apply to  your  maintenance  window
           task.
 
           IgnorePollAlarmFailure -> (boolean)
-              When this value is true , your automation or  command  continues
-              to  run in cases where we cant retrieve alarm status information
-              from CloudWatch. In cases  where  we  successfully  retrieve  an
-              alarm  status of OK or INSUFFICIENT_DATA, the automation or com-
-              mand continues to run, regardless  of  this  value.  Default  is
+              When  this  value is true , your automation or command continues
+              to run in cases where we cant retrieve alarm status  information
+              from  CloudWatch.  In  cases  where  we successfully retrieve an
+              alarm status of OK or INSUFFICIENT_DATA, the automation or  com-
+              mand  continues  to  run,  regardless  of this value. Default is
               false .
 
           Alarms -> (list)
@@ -578,17 +577,17 @@ OPTIONS
             ]
           }
 
-       --cli-input-json  (string) Performs service operation based on the JSON
-       string provided. The JSON string follows the format provided by  --gen-
-       erate-cli-skeleton.  If  other  arguments  are  provided on the command
-       line, the CLI values will override the JSON-provided values. It is  not
+       --cli-input-json (string) Performs service operation based on the  JSON
+       string  provided. The JSON string follows the format provided by --gen-
+       erate-cli-skeleton. If other arguments  are  provided  on  the  command
+       line,  the CLI values will override the JSON-provided values. It is not
        possible to pass arbitrary binary values using a JSON-provided value as
        the string will be taken literally.
 
-       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
+       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
        output without sending an API request. If provided with no value or the
        value input, prints a sample input JSON that can be used as an argument
-       for  --cli-input-json.  If provided with the value output, it validates
+       for --cli-input-json. If provided with the value output,  it  validates
        the command inputs and returns a sample output JSON for that command.
 
 GLOBAL OPTIONS
@@ -602,7 +601,7 @@ GLOBAL OPTIONS
 
        --no-verify-ssl (boolean)
 
-       By default, the AWS CLI uses SSL when communicating with AWS  services.
+       By  default, the AWS CLI uses SSL when communicating with AWS services.
        For each SSL connection, the AWS CLI will verify SSL certificates. This
        option overrides the default behavior of verifying SSL certificates.
 
@@ -648,7 +647,7 @@ GLOBAL OPTIONS
 
        --no-sign-request (boolean)
 
-       Do not sign requests. Credentials will not be loaded if  this  argument
+       Do  not  sign requests. Credentials will not be loaded if this argument
        is provided.
 
        --ca-bundle (string)
@@ -658,30 +657,30 @@ GLOBAL OPTIONS
 
        --cli-read-timeout (int)
 
-       The maximum socket read time in seconds. If the value is set to 0,  the
-       socket  read  will be blocking and not timeout. The default value is 60
+       The  maximum socket read time in seconds. If the value is set to 0, the
+       socket read will be blocking and not timeout. The default value  is  60
        seconds.
 
        --cli-connect-timeout (int)
 
-       The maximum socket connect time in seconds. If the value is set  to  0,
-       the  socket connect will be blocking and not timeout. The default value
+       The  maximum  socket connect time in seconds. If the value is set to 0,
+       the socket connect will be blocking and not timeout. The default  value
        is 60 seconds.
 
 EXAMPLES
        NOTE:
-          To use the following examples, you must have the AWS  CLI  installed
-          and  configured.  See  the Getting started guide in the AWS CLI User
+          To  use  the following examples, you must have the AWS CLI installed
+          and configured. See the Getting started guide in the  AWS  CLI  User
           Guide for more information.
 
-          Unless otherwise  stated,  all  examples  have  unix-like  quotation
-          rules.  These  examples  will  need to be adapted to your terminal's
+          Unless  otherwise  stated,  all  examples  have  unix-like quotation
+          rules. These examples will need to be  adapted  to  your  terminal's
           quoting rules. See Using quotation marks with strings in the AWS CLI
           User Guide .
 
        Example 1: To register an Automation task with a maintenance window
 
-       The  following  register-task-with-maintenance-window example registers
+       The following register-task-with-maintenance-window  example  registers
        an Automation task with a maintenance window that is targeted at an in-
        stance.
 
@@ -703,7 +702,7 @@ EXAMPLES
               "WindowTaskId":"11144444-5555-6666-7777-88888888"
           }
 
-       For  more  information, see Register a Task with the Maintenance Window
+       For more information, see Register a Task with the  Maintenance  Window
        (AWS CLI) in the AWS Systems Manager User Guide.
 
        Example 2: To register a Lambda task with a Maintenance Window
@@ -730,13 +729,13 @@ EXAMPLES
               "WindowTaskId":"22244444-5555-6666-7777-88888888"
           }
 
-       For  more  information, see Register a Task with the Maintenance Window
+       For more information, see Register a Task with the  Maintenance  Window
        (AWS CLI) in the AWS Systems Manager User Guide.
 
        Example 3: To register a Run Command task with a maintenance window
 
        The following register-task-with-maintenance-window example registers a
-       Run  Command  task with a maintenance window that is targeted at an in-
+       Run Command task with a maintenance window that is targeted at  an  in-
        stance.
 
           aws ssm register-task-with-maintenance-window \
@@ -757,13 +756,13 @@ EXAMPLES
               "WindowTaskId":"33344444-5555-6666-7777-88888888"
           }
 
-       For more information, see Register a Task with the  Maintenance  Window
+       For  more  information, see Register a Task with the Maintenance Window
        (AWS CLI) in the AWS Systems Manager User Guide.
 
        Example 4: To register a Step Functions task with a maintenance window
 
        The following register-task-with-maintenance-window example registers a
-       Step Functions task with a maintenance window that is  targeted  at  an
+       Step  Functions  task  with a maintenance window that is targeted at an
        instance.
 
           aws ssm register-task-with-maintenance-window \
@@ -785,15 +784,15 @@ EXAMPLES
               "WindowTaskId":"44444444-5555-6666-7777-88888888"
           }
 
-       For  more  information, see Register a Task with the Maintenance Window
+       For more information, see Register a Task with the  Maintenance  Window
        (AWS CLI) in the AWS Systems Manager User Guide.
 
        Example 5: To register a task using a maintenance windows target ID
 
        The following register-task-with-maintenance-window example registers a
-       task  using a maintenance window target ID. The maintenance window tar-
-       get ID was in the output of the  aws  ssm  register-target-with-mainte-
-       nance-window  command.  You can also retrieve it from the output of the
+       task using a maintenance window target ID. The maintenance window  tar-
+       get  ID  was  in the output of the aws ssm register-target-with-mainte-
+       nance-window command. You can also retrieve it from the output  of  the
        aws ssm describe-maintenance-window-targets command.
 
           aws ssm register-task-with-maintenance-window \
@@ -813,7 +812,7 @@ EXAMPLES
               "WindowTaskId":"33344444-5555-6666-7777-88888888"
           }
 
-       For more information, see Register a Task with the  Maintenance  Window
+       For  more  information, see Register a Task with the Maintenance Window
        (AWS CLI) in the AWS Systems Manager User Guide.
 
 OUTPUT
