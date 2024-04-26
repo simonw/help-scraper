@@ -1,18 +1,40 @@
-BATCH-GET-STREAM-KEY()                                  BATCH-GET-STREAM-KEY()
+VALIDATE-STATE-MACHINE-DEFINITION()        VALIDATE-STATE-MACHINE-DEFINITION()
 
 
 
 NAME
-       batch-get-stream-key -
+       validate-state-machine-definition -
 
 DESCRIPTION
-       Performs  GetStreamKey on multiple ARNs simultaneously.
+       Validates the syntax of a state machine definition.
+
+       You  can  validate  that  a state machine definition is correct without
+       creating a state machine resource. Step Functions will implicitly  per-
+       form  the  same syntax check when you invoke CreateStateMachine and Up-
+       dateStateMachine . State machine  definitions  are  specified  using  a
+       JSON-based,  structured language. For more information on Amazon States
+       Language see Amazon States Language (ASL).
+
+       Suggested uses for ValidateStateMachineDefinition :
+
+       o Integrate automated checks into your code review or Continuous  Inte-
+         gration  (CI)  process  to  validate state machine definitions before
+         starting deployments.
+
+       o Run the validation from a Git pre-commit hook to check your state ma-
+         chine definitions before committing them to your source repository.
+
+       NOTE:
+          Errors found in the state machine definition will be returned in the
+          response as a list of diagnostic elements , rather than raise an ex-
+          ception.
 
        See also: AWS API Documentation
 
 SYNOPSIS
-            batch-get-stream-key
-          --arns <value>
+            validate-state-machine-definition
+          --definition <value>
+          [--type <value>]
           [--cli-input-json <value>]
           [--generate-cli-skeleton <value>]
           [--debug]
@@ -31,14 +53,19 @@ SYNOPSIS
           [--cli-connect-timeout <value>]
 
 OPTIONS
-       --arns (list)
-          Array of ARNs, one per stream key.
+       --definition (string)
+          The Amazon States Language definition of the state machine. For more
+          information, see Amazon States Language (ASL).
 
-          (string)
+       --type (string)
+          The target type of state machine for this definition. The default is
+          STANDARD .
 
-       Syntax:
+          Possible values:
 
-          "string" "string" ...
+          o STANDARD
+
+          o EXPRESS
 
        --cli-input-json  (string) Performs service operation based on the JSON
        string provided. The JSON string follows the format provided by  --gen-
@@ -130,87 +157,38 @@ GLOBAL OPTIONS
        the  socket connect will be blocking and not timeout. The default value
        is 60 seconds.
 
-EXAMPLES
-       NOTE:
-          To use the following examples, you must have the AWS  CLI  installed
-          and  configured.  See  the Getting started guide in the AWS CLI User
-          Guide for more information.
-
-          Unless otherwise  stated,  all  examples  have  unix-like  quotation
-          rules.  These  examples  will  need to be adapted to your terminal's
-          quoting rules. See Using quotation marks with strings in the AWS CLI
-          User Guide .
-
-       To get information about multiple stream keys
-
-       The  following  batch-get-stream-key example gets information about the
-       specified stream keys.
-
-          aws ivs batch-get-stream-key \
-              --arns arn:aws:ivs:us-west-2:123456789012:stream-key/skSKABCDefgh \
-                 arn:aws:ivs:us-west-2:123456789012:stream-key/skSKIJKLmnop
-
-       Output:
-
-          {
-              "streamKeys": [
-                  {
-                      "arn": "arn:aws:ivs:us-west-2:123456789012:stream-key/skSKABCDefgh",
-                      "value": "sk_us-west-2_abcdABCDefgh_567890abcdef",
-                      "channelArn": "arn:aws:ivs:us-west-2:123456789012:channel/abcdABCDefgh",
-                      "tags": {}
-                  },
-                  {
-                      "arn": "arn:aws:ivs:us-west-2:123456789012:stream-key/skSKIJKLmnop",
-                      "value": "sk_us-west-2_abcdABCDefgh_567890ghijkl",
-                      "channelArn": "arn:aws:ivs:us-west-2:123456789012:channel/abcdABCDefgh",
-                      "tags": {}
-                  }
-               ]
-          }
-
-       For more information, see Create a Channel in the IVS Low-Latency  User
-       Guide.
-
 OUTPUT
-       errors -> (list)
-          (structure)
-              Error related to a specific channel, specified by its ARN.
+       result -> (string)
+          The result value will be OK when no syntax errors are found, or FAIL
+          if the workflow definition does not pass verification.
 
-              arn -> (string)
-                 ARN of an IVS resource; e.g., channel.
+       diagnostics -> (list)
+          If  the  result is OK , this field will be empty. When there are er-
+          rors, this field will contain an array of Diagnostic objects to help
+          you troubleshoot.
+
+          (structure)
+              Describes  an  error  found during validation. Validation errors
+              found in the definition return in the response as diagnostic el-
+              ements , rather than raise an exception.
+
+              severity -> (string)
+                 A  value  of  ERROR  means that you cannot create or update a
+                 state machine with this definition.
 
               code -> (string)
-                 Error code.
+                 Identifying code for the diagnostic.
 
               message -> (string)
-                 Error message, determined by the application.
+                 Message describing the diagnostic condition.
 
-       streamKeys -> (list)
-          (structure)
-              Object specifying a stream key.
+              location -> (string)
+                 Location of the issue in the state machine, if available.
 
-              arn -> (string)
-                 Stream-key ARN.
-
-              channelArn -> (string)
-                 Channel ARN for the stream.
-
-              tags -> (map)
-                 Tags  attached  to  the resource. Array of 1-50 maps, each of
-                 the form string:string (key:value) . See Tagging  Amazon  Web
-                 Services  Resources  for more information, including restric-
-                 tions that apply to tags and "Tag naming limits and  require-
-                 ments"; Amazon IVS has no service-specific constraints beyond
-                 what is documented there.
-
-                 key -> (string)
-
-                 value -> (string)
-
-              value -> (string)
-                 Stream-key value.
+                 For errors specific to a field, the location could be in  the
+                 format:   /States/<StateName>/<FieldName>   ,   for  example:
+                 /States/FailState/ErrorPath .
 
 
 
-                                                        BATCH-GET-STREAM-KEY()
+                                           VALIDATE-STATE-MACHINE-DEFINITION()
