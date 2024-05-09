@@ -61,6 +61,7 @@ SYNOPSIS
             receive-message
           --queue-url <value>
           [--attribute-names <value>]
+          [--message-system-attribute-names <value>]
           [--message-attribute-names <value>]
           [--max-number-of-messages <value>]
           [--visibility-timeout <value>]
@@ -90,6 +91,12 @@ OPTIONS
           Queue URLs and names are case-sensitive.
 
        --attribute-names (list)
+
+          WARNING:
+              This  parameter  has  been  deprecated but will be supported for
+              backward compatibility. To provide attribute names, you are  en-
+              couraged to use MessageSystemAttributeNames .
+
           A  list  of attributes that need to be returned along with each mes-
           sage. These attributes include:
 
@@ -157,26 +164,82 @@ OPTIONS
             RedriveAllowPolicy
             SqsManagedSseEnabled
 
+       --message-system-attribute-names (list)
+          A list of attributes that need to be returned along with  each  mes-
+          sage. These attributes include:
+
+          o All  Returns all values.
+
+          o ApproximateFirstReceiveTimestamp  Returns the time the message was
+            first received from the queue (epoch time in milliseconds).
+
+          o ApproximateReceiveCount  Returns the number of times a message has
+            been received across all queues but not deleted.
+
+          o AWSTraceHeader  Returns the X-Ray trace header string.
+
+          o SenderId
+
+            o For   a   user,   returns   the  user  ID,  for  example  ABCDE-
+              FGHI1JKLMNOPQ23R .
+
+            o For  an  IAM  role,  returns  the  IAM  role  ID,  for   example
+              ABCDE1F2GH3I4JK5LMNOP:i-a123b456 .
+
+          o SentTimestamp   Returns the time the message was sent to the queue
+            (epoch time in milliseconds).
+
+          o SqsManagedSseEnabled  Enables server-side queue  encryption  using
+            SQS  owned encryption keys. Only one server-side encryption option
+            is supported per queue (for example, SSE-KMS or SSE-SQS ).
+
+          o MessageDeduplicationId  Returns the value provided by the producer
+            that calls the ``  SendMessage `` action.
+
+          o MessageGroupId   Returns  the  value provided by the producer that
+            calls the ``  SendMessage `` action. Messages with the  same  Mes-
+            sageGroupId are returned in sequence.
+
+          o SequenceNumber  Returns the value provided by Amazon SQS.
+
+          (string)
+
+       Syntax:
+
+          "string" "string" ...
+
+          Where valid values are:
+            All
+            SenderId
+            SentTimestamp
+            ApproximateReceiveCount
+            ApproximateFirstReceiveTimestamp
+            SequenceNumber
+            MessageDeduplicationId
+            MessageGroupId
+            AWSTraceHeader
+            DeadLetterQueueSourceArn
+
        --message-attribute-names (list)
           The name of the message attribute, where N is the index.
 
           o The name can contain alphanumeric characters and the underscore (_
             ), hyphen (- ), and period (. ).
 
-          o The  name is case-sensitive and must be unique among all attribute
+          o The name is case-sensitive and must be unique among all  attribute
             names for the message.
 
           o The name must not start with AWS-reserved prefixes such as AWS. or
             Amazon. (or any casing variants).
 
-          o The  name  must not start or end with a period (. ), and it should
+          o The name must not start or end with a period (. ), and  it  should
             not have periods in succession (.. ).
 
           o The name can be up to 256 characters long.
 
-          When using ReceiveMessage , you can send a list of  attribute  names
-          to  receive,  or  you can return all of the attributes by specifying
-          All or .* in your request. You can also use all  message  attributes
+          When  using  ReceiveMessage , you can send a list of attribute names
+          to receive, or you can return all of the  attributes  by  specifying
+          All  or  .* in your request. You can also use all message attributes
           starting with a prefix, for example bar.* .
 
           (string)
@@ -186,25 +249,25 @@ OPTIONS
           "string" "string" ...
 
        --max-number-of-messages (integer)
-          The  maximum  number of messages to return. Amazon SQS never returns
-          more messages than this value (however, fewer messages might be  re-
+          The maximum number of messages to return. Amazon SQS  never  returns
+          more  messages than this value (however, fewer messages might be re-
           turned). Valid values: 1 to 10. Default: 1.
 
        --visibility-timeout (integer)
           The duration (in seconds) that the received messages are hidden from
-          subsequent retrieve requests after being retrieved by a  ReceiveMes-
+          subsequent  retrieve requests after being retrieved by a ReceiveMes-
           sage request.
 
        --wait-time-seconds (integer)
-          The  duration (in seconds) for which the call waits for a message to
+          The duration (in seconds) for which the call waits for a message  to
           arrive in the queue before returning. If a message is available, the
           call returns sooner than WaitTimeSeconds . If no messages are avail-
-          able and the wait time expires, the call returns  successfully  with
-          an empty list of messages.
+          able  and  the wait time expires, the call does not return a message
+          list.
 
           WARNING:
-              To  avoid HTTP errors, ensure that the HTTP response timeout for
-              ReceiveMessage requests is longer than the  WaitTimeSeconds  pa-
+              To avoid HTTP errors, ensure that the HTTP response timeout  for
+              ReceiveMessage  requests  is longer than the WaitTimeSeconds pa-
               rameter. For example, with the Java SDK, you can set HTTP trans-
               port settings using the NettyNioAsyncHttpClient for asynchronous
               clients, or the ApacheHttpClient for synchronous clients.
@@ -212,11 +275,11 @@ OPTIONS
        --receive-request-attempt-id (string)
           This parameter applies only to FIFO (first-in-first-out) queues.
 
-          The  token used for deduplication of ReceiveMessage calls. If a net-
+          The token used for deduplication of ReceiveMessage calls. If a  net-
           working issue occurs after a ReceiveMessage action, and instead of a
-          response  you  receive  a generic error, it is possible to retry the
-          same action with an identical  ReceiveRequestAttemptId  to  retrieve
-          the  same  set of messages, even if their visibility timeout has not
+          response you receive a generic error, it is possible  to  retry  the
+          same  action  with  an identical ReceiveRequestAttemptId to retrieve
+          the same set of messages, even if their visibility timeout  has  not
           yet expired.
 
           o You can use ReceiveRequestAttemptId only for 5 minutes after a Re-
@@ -225,60 +288,56 @@ OPTIONS
           o When you set FifoQueue , a caller of the ReceiveMessage action can
             provide a ReceiveRequestAttemptId explicitly.
 
-          o If a caller of the ReceiveMessage action  doesn't  provide  a  Re-
-            ceiveRequestAttemptId  ,  Amazon SQS generates a ReceiveRequestAt-
-            temptId .
-
-          o It is possible to retry the ReceiveMessage action  with  the  same
+          o It  is  possible  to retry the ReceiveMessage action with the same
             ReceiveRequestAttemptId if none of the messages have been modified
             (deleted or had their visibility changes).
 
-          o During a visibility timeout, subsequent calls with  the  same  Re-
-            ceiveRequestAttemptId  return  the  same messages and receipt han-
-            dles. If a retry occurs within the deduplication interval, it  re-
-            sets  the visibility timeout. For more information, see Visibility
+          o During  a  visibility  timeout, subsequent calls with the same Re-
+            ceiveRequestAttemptId return the same messages  and  receipt  han-
+            dles.  If a retry occurs within the deduplication interval, it re-
+            sets the visibility timeout. For more information, see  Visibility
             Timeout in the Amazon SQS Developer Guide .
 
           WARNING:
-              If a caller of the ReceiveMessage action  still  processes  mes-
-              sages  when  the  visibility timeout expires and messages become
-              visible, another worker consuming from the same  queue  can  re-
-              ceive  the same messages and therefore process duplicates. Also,
-              if a consumer whose message processing time is longer  than  the
-              visibility  timeout  tries to delete the processed messages, the
+              If  a  caller  of the ReceiveMessage action still processes mes-
+              sages when the visibility timeout expires  and  messages  become
+              visible,  another  worker  consuming from the same queue can re-
+              ceive the same messages and therefore process duplicates.  Also,
+              if  a  consumer whose message processing time is longer than the
+              visibility timeout tries to delete the processed  messages,  the
               action fails with an error. To mitigate this effect, ensure that
               your application observes a safe threshold before the visibility
               timeout expires and extend the visibility timeout as necessary.
 
-          o While messages with a particular MessageGroupId are invisible,  no
-            more  messages  belonging  to the same MessageGroupId are returned
-            until the visibility timeout expires. You can still  receive  mes-
+          o While  messages with a particular MessageGroupId are invisible, no
+            more messages belonging to the same  MessageGroupId  are  returned
+            until  the  visibility timeout expires. You can still receive mes-
             sages with another MessageGroupId as long as it is also visible.
 
-          o If  a  caller  of ReceiveMessage can't track the ReceiveRequestAt-
-            temptId , no retries work until the  original  visibility  timeout
-            expires.  As  a result, delays might occur but the messages in the
+          o If a caller of ReceiveMessage can't  track  the  ReceiveRequestAt-
+            temptId  ,  no  retries work until the original visibility timeout
+            expires. As a result, delays might occur but the messages  in  the
             queue remain in a strict order.
 
           The maximum length of ReceiveRequestAttemptId is 128 characters. Re-
           ceiveRequestAttemptId can contain alphanumeric characters (a-z , A-Z
           , 0-9 ) and punctuation (!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~ ).
 
-          For best practices of using ReceiveRequestAttemptId , see Using  the
-          ReceiveRequestAttemptId  Request  Parameter in the Amazon SQS Devel-
+          For  best practices of using ReceiveRequestAttemptId , see Using the
+          ReceiveRequestAttemptId Request Parameter in the Amazon  SQS  Devel-
           oper Guide .
 
-       --cli-input-json (string) Performs service operation based on the  JSON
-       string  provided. The JSON string follows the format provided by --gen-
-       erate-cli-skeleton. If other arguments  are  provided  on  the  command
-       line,  the CLI values will override the JSON-provided values. It is not
+       --cli-input-json  (string) Performs service operation based on the JSON
+       string provided. The JSON string follows the format provided by  --gen-
+       erate-cli-skeleton.  If  other  arguments  are  provided on the command
+       line, the CLI values will override the JSON-provided values. It is  not
        possible to pass arbitrary binary values using a JSON-provided value as
        the string will be taken literally.
 
-       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
+       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
        output without sending an API request. If provided with no value or the
        value input, prints a sample input JSON that can be used as an argument
-       for --cli-input-json. If provided with the value output,  it  validates
+       for  --cli-input-json.  If provided with the value output, it validates
        the command inputs and returns a sample output JSON for that command.
 
 GLOBAL OPTIONS
@@ -292,7 +351,7 @@ GLOBAL OPTIONS
 
        --no-verify-ssl (boolean)
 
-       By  default, the AWS CLI uses SSL when communicating with AWS services.
+       By default, the AWS CLI uses SSL when communicating with AWS  services.
        For each SSL connection, the AWS CLI will verify SSL certificates. This
        option overrides the default behavior of verifying SSL certificates.
 
@@ -338,7 +397,7 @@ GLOBAL OPTIONS
 
        --no-sign-request (boolean)
 
-       Do  not  sign requests. Credentials will not be loaded if this argument
+       Do not sign requests. Credentials will not be loaded if  this  argument
        is provided.
 
        --ca-bundle (string)
@@ -348,24 +407,24 @@ GLOBAL OPTIONS
 
        --cli-read-timeout (int)
 
-       The  maximum socket read time in seconds. If the value is set to 0, the
-       socket read will be blocking and not timeout. The default value  is  60
+       The maximum socket read time in seconds. If the value is set to 0,  the
+       socket  read  will be blocking and not timeout. The default value is 60
        seconds.
 
        --cli-connect-timeout (int)
 
-       The  maximum  socket connect time in seconds. If the value is set to 0,
-       the socket connect will be blocking and not timeout. The default  value
+       The maximum socket connect time in seconds. If the value is set  to  0,
+       the  socket connect will be blocking and not timeout. The default value
        is 60 seconds.
 
 EXAMPLES
        NOTE:
-          To  use  the following examples, you must have the AWS CLI installed
-          and configured. See the Getting started guide in the  AWS  CLI  User
+          To use the following examples, you must have the AWS  CLI  installed
+          and  configured.  See  the Getting started guide in the AWS CLI User
           Guide for more information.
 
-          Unless  otherwise  stated,  all  examples  have  unix-like quotation
-          rules. These examples will need to be  adapted  to  your  terminal's
+          Unless otherwise  stated,  all  examples  have  unix-like  quotation
+          rules.  These  examples  will  need to be adapted to your terminal's
           quoting rules. See Using quotation marks with strings in the AWS CLI
           User Guide .
 
@@ -408,7 +467,7 @@ EXAMPLES
             ]
           }
 
-       This  example  receives  the next available message, returning only the
+       This example receives the next available message,  returning  only  the
        SenderId and SentTimestamp attributes as well as the PostalCode message
        attribute.
 
@@ -448,14 +507,14 @@ OUTPUT
               An Amazon SQS message.
 
               MessageId -> (string)
-                 A  unique  identifier for the message. A MessageId is consid-
-                 ered unique across all Amazon Web Services  accounts  for  an
+                 A unique identifier for the message. A MessageId  is  consid-
+                 ered  unique  across  all Amazon Web Services accounts for an
                  extended period of time.
 
               ReceiptHandle -> (string)
-                 An  identifier  associated with the act of receiving the mes-
+                 An identifier associated with the act of receiving  the  mes-
                  sage. A new receipt handle is returned every time you receive
-                 a  message. When deleting a message, you provide the last re-
+                 a message. When deleting a message, you provide the last  re-
                  ceived receipt handle to delete the message.
 
               MD5OfBody -> (string)
@@ -482,7 +541,7 @@ OUTPUT
 
                  o SequenceNumber
                      ApproximateFirstReceiveTimestamp  and  SentTimestamp  are
-                     each returned as an integer representing the  epoch  time
+                     each  returned  as an integer representing the epoch time
                      in milliseconds.
 
                  key -> (string)
@@ -491,30 +550,30 @@ OUTPUT
 
               MD5OfMessageAttributes -> (string)
                  An  MD5  digest  of  the  non-URL-encoded  message  attribute
-                 string. You can use this attribute to verify that Amazon  SQS
-                 received  the  message  correctly. Amazon SQS URL-decodes the
+                 string.  You can use this attribute to verify that Amazon SQS
+                 received the message correctly. Amazon  SQS  URL-decodes  the
                  message before creating the MD5 digest. For information about
                  MD5, see RFC1321 .
 
               MessageAttributes -> (map)
-                 Each  message attribute consists of a Name , Type , and Value
-                 . For more information, see Amazon SQS message attributes  in
+                 Each message attribute consists of a Name , Type , and  Value
+                 .  For more information, see Amazon SQS message attributes in
                  the Amazon SQS Developer Guide .
 
                  key -> (string)
 
                  value -> (structure)
-                     The  user-specified  message  attribute value. For string
+                     The user-specified message attribute  value.  For  string
                      data types, the Value attribute has the same restrictions
                      on the content as the message body. For more information,
                      see ``  SendMessage .``
-                        Name , type , value and the message body must  not  be
+                        Name  ,  type , value and the message body must not be
                         empty or null. All parts of the message attribute, in-
                         cluding Name , Type , and Value , are part of the mes-
                         sage size restriction (256 KiB or 262,144 bytes).
 
                      StringValue -> (string)
-                        Strings  are Unicode with UTF-8 binary encoding. For a
+                        Strings are Unicode with UTF-8 binary encoding. For  a
                         list of code values, see ASCII Printable Characters .
 
                      BinaryValue -> (blob)
@@ -532,12 +591,12 @@ OUTPUT
                         (blob)
 
                      DataType -> (string)
-                        Amazon  SQS supports the following logical data types:
-                        String , Number , and Binary .  For  the  Number  data
+                        Amazon SQS supports the following logical data  types:
+                        String  ,  Number  ,  and Binary . For the Number data
                         type, you must use StringValue .
 
-                        You  can  also append custom labels. For more informa-
-                        tion, see Amazon SQS Message Attributes in the  Amazon
+                        You can also append custom labels. For  more  informa-
+                        tion,  see Amazon SQS Message Attributes in the Amazon
                         SQS Developer Guide .
 
 
