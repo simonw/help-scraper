@@ -515,9 +515,25 @@ OUTPUT
                                       overrides  the  timeout value set in the
                                       parent job.
 
-                                      Streaming jobs do not  have  a  timeout.
-                                      The  default  for  non-streaming jobs is
-                                      2,880 minutes (48 hours).
+                                      The maximum value for timeout for  batch
+                                      jobs is 7 days or 10080 minutes. The de-
+                                      fault is 2880  minutes  (48  hours)  for
+                                      batch jobs.
+
+                                      Any  existing  Glue  jobs  that  have  a
+                                      greater timeout value are defaulted to 7
+                                      days.  For instance you have specified a
+                                      timeout of 20 days for a batch  job,  it
+                                      will be stopped on the 7th day.
+
+                                      Streaming  jobs must have timeout values
+                                      less than 7 days or 10080 minutes.  When
+                                      the value is left blank, the job will be
+                                      restarted after 7 days based if you have
+                                      not  setup  a maintenance window. If you
+                                      have setup maintenance window,  it  will
+                                      be restarted during the maintenance win-
+                                      dow after 7 days.
 
                                    MaxCapacity -> (double)
                                       For Glue version 1.0  or  earlier  jobs,
@@ -686,41 +702,57 @@ OUTPUT
                                       a Glue version default to Glue 0.9.
 
                                    DPUSeconds -> (double)
-                                      This field populates only for Auto Scal-
-                                      ing  job  runs, and represents the total
-                                      time each executor ran during the  life-
-                                      cycle  of  a  job run in seconds, multi-
-                                      plied by a DPU factor (1 for  G.1X  ,  2
-                                      for  G.2X , or 0.25 for G.025X workers).
-                                      This value may be different than the ex-
-                                      ecutionEngineRuntime * MaxCapacity as in
-                                      the case of Auto Scaling  jobs,  as  the
-                                      number  of  executors running at a given
-                                      time may be less than the MaxCapacity  .
-                                      Therefore, it is possible that the value
-                                      of DPUSeconds  is  less  than  executio-
-                                      nEngineRuntime * MaxCapacity .
+                                      This field can be  set  for  either  job
+                                      runs  with  execution class FLEX or when
+                                      Auto Scaling is enabled, and  represents
+                                      the  total time each executor ran during
+                                      the lifecycle of a job run  in  seconds,
+                                      multiplied by a DPU factor (1 for G.1X ,
+                                      2 for G.2X , or 0.25  for  G.025X  work-
+                                      ers).  This  value may be different than
+                                      the executionEngineRuntime * MaxCapacity
+                                      as  in the case of Auto Scaling jobs, as
+                                      the number of  executors  running  at  a
+                                      given  time  may be less than the MaxCa-
+                                      pacity . Therefore, it is possible  that
+                                      the value of DPUSeconds is less than ex-
+                                      ecutionEngineRuntime * MaxCapacity .
 
                                    ExecutionClass -> (string)
-                                      Indicates  whether the job is run with a
-                                      standard or  flexible  execution  class.
-                                      The  standard  execution-class  is ideal
-                                      for time-sensitive  workloads  that  re-
+                                      Indicates whether the job is run with  a
+                                      standard  or  flexible  execution class.
+                                      The standard  execution-class  is  ideal
+                                      for  time-sensitive  workloads  that re-
                                       quire fast job startup and dedicated re-
                                       sources.
 
-                                      The flexible execution class  is  appro-
-                                      priate  for  time-insensitive jobs whose
+                                      The  flexible  execution class is appro-
+                                      priate for time-insensitive  jobs  whose
                                       start and completion times may vary.
 
-                                      Only jobs  with  Glue  version  3.0  and
-                                      above  and  command type glueetl will be
-                                      allowed to set ExecutionClass to FLEX  .
-                                      The  flexible  execution class is avail-
+                                      Only  jobs  with  Glue  version  3.0 and
+                                      above and command type glueetl  will  be
+                                      allowed  to set ExecutionClass to FLEX .
+                                      The flexible execution class  is  avail-
                                       able for Spark jobs.
 
+                                   MaintenanceWindow -> (string)
+                                      This  field  specifies a day of the week
+                                      and hour for a  maintenance  window  for
+                                      streaming  jobs.  Glue periodically per-
+                                      forms  maintenance  activities.   During
+                                      these  maintenance  windows,  Glue  will
+                                      need to restart your streaming jobs.
+
+                                      Glue will restart the job within 3 hours
+                                      of the specified maintenance window. For
+                                      instance, if you set up the  maintenance
+                                      window  for  Monday at 10:00AM GMT, your
+                                      jobs will be restarted  between  10:00AM
+                                      GMT to 1:00PM GMT.
+
                         CrawlerDetails -> (structure)
-                            Details of the crawler when the node represents  a
+                            Details  of the crawler when the node represents a
                             crawler.
 
                             Crawls -> (list)
@@ -733,39 +765,39 @@ OUTPUT
                                       The state of the crawler.
 
                                    StartedOn -> (timestamp)
-                                      The  date  and  time  on which the crawl
+                                      The date and time  on  which  the  crawl
                                       started.
 
                                    CompletedOn -> (timestamp)
-                                      The date and time  on  which  the  crawl
+                                      The  date  and  time  on which the crawl
                                       completed.
 
                                    ErrorMessage -> (string)
-                                      The  error  message  associated with the
+                                      The error message  associated  with  the
                                       crawl.
 
                                    LogGroup -> (string)
                                       The log group associated with the crawl.
 
                                    LogStream -> (string)
-                                      The  log  stream  associated  with   the
+                                      The   log  stream  associated  with  the
                                       crawl.
 
                  Edges -> (list)
-                     A  list of all the directed connections between the nodes
+                     A list of all the directed connections between the  nodes
                      belonging to the workflow.
 
                      (structure)
-                        An edge represents a directed connection  between  two
+                        An  edge  represents a directed connection between two
                         Glue components that are part of the workflow the edge
                         belongs to.
 
                         SourceId -> (string)
-                            The unique of the node within the  workflow  where
+                            The  unique  of the node within the workflow where
                             the edge starts.
 
                         DestinationId -> (string)
-                            The  unique  of the node within the workflow where
+                            The unique of the node within the  workflow  where
                             the edge ends.
 
               StartingEventBatchCondition -> (structure)
@@ -778,7 +810,7 @@ OUTPUT
                      Duration of the batch window in seconds.
 
        NextToken -> (string)
-          A continuation token, if not all requested workflow runs  have  been
+          A  continuation  token, if not all requested workflow runs have been
           returned.
 
 
