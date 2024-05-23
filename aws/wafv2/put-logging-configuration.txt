@@ -103,6 +103,11 @@ OPTIONS
                  You can specify only the following fields for redaction: Uri-
                  Path , QueryString , SingleHeader , and Method .
 
+              NOTE:
+                 This  setting has no impact on request sampling. With request
+                 sampling, the only way to exclude fields is by disabling sam-
+                 pling in the web ACL visibility configuration.
+
               (structure)
                  Specifies  a web request component to be used in a rule match
                  statement or in a logging configuration.
@@ -131,6 +136,12 @@ OPTIONS
                      fields talk about specifying the web request component to
                      inspect, but for field redaction, you are specifying  the
                      component type to redact from the logs.
+
+                   o If you have request sampling enabled, the redacted fields
+                     configuration for logging has no impact on sampling.  The
+                     only  way  to  exclude fields from request sampling is by
+                     disabling sampling in the web ACL  visibility  configura-
+                     tion.
 
                  SingleHeader -> (structure)
                      Inspect  a  single header. Provide the name of the header
@@ -555,38 +566,39 @@ OPTIONS
                           rule statement.
 
                  JA3Fingerprint -> (structure)
-                     Match against the request's JA3 fingerprint. The JA3 fin-
-                     gerprint  is  a  32-character  hash  derived from the TLS
-                     Client Hello of an  incoming  request.  This  fingerprint
-                     serves  as  a unique identifier for the client's TLS con-
-                     figuration. WAF calculates and logs this fingerprint  for
-                     each request that has enough TLS Client Hello information
-                     for the calculation. Almost all web requests include this
-                     information.
+                     Available for use with  Amazon  CloudFront  distributions
+                     and  Application  Load  Balancers.  Match against the re-
+                     quest's  JA3  fingerprint.  The  JA3  fingerprint  is   a
+                     32-character hash derived from the TLS Client Hello of an
+                     incoming request. This fingerprint  serves  as  a  unique
+                     identifier for the client's TLS configuration. WAF calcu-
+                     lates and logs this fingerprint for each request that has
+                     enough  TLS Client Hello information for the calculation.
+                     Almost all web requests include this information.
 
                      NOTE:
-                        You  can  use  this  choice  only  with a string match
-                        ByteMatchStatement with the  PositionalConstraint  set
+                        You can use this  choice  only  with  a  string  match
+                        ByteMatchStatement  with  the PositionalConstraint set
                         to EXACTLY .
 
-                     You  can  obtain  the JA3 fingerprint for client requests
-                     from the web ACL logs. If WAF is able  to  calculate  the
-                     fingerprint,  it includes it in the logs. For information
-                     about the logging fields, see Log fields in the  WAF  De-
+                     You can obtain the JA3 fingerprint  for  client  requests
+                     from  the  web  ACL logs. If WAF is able to calculate the
+                     fingerprint, it includes it in the logs. For  information
+                     about  the  logging fields, see Log fields in the WAF De-
                      veloper Guide .
 
-                     Provide  the JA3 fingerprint string from the logs in your
-                     string match statement specification, to match  with  any
+                     Provide the JA3 fingerprint string from the logs in  your
+                     string  match  statement specification, to match with any
                      future requests that have the same TLS configuration.
 
                      FallbackBehavior -> (string)
-                        The  match  status to assign to the web request if the
+                        The match status to assign to the web request  if  the
                         request doesn't have a JA3 fingerprint.
 
                         You can specify the following fallback behaviors:
 
-                        o MATCH - Treat the web request as matching  the  rule
-                          statement.  WAF  applies  the rule action to the re-
+                        o MATCH  -  Treat the web request as matching the rule
+                          statement. WAF applies the rule action  to  the  re-
                           quest.
 
                         o NO_MATCH - Treat the web request as not matching the
@@ -594,13 +606,13 @@ OPTIONS
 
           ManagedByFirewallManager -> (boolean)
               Indicates whether the logging configuration was created by Fire-
-              wall Manager, as part of an WAF policy configuration.  If  true,
+              wall  Manager,  as part of an WAF policy configuration. If true,
               only Firewall Manager can modify or delete the configuration.
 
           LoggingFilter -> (structure)
               Filtering that specifies which web requests are kept in the logs
-              and which are dropped. You can filter on the rule action and  on
-              the  web request labels that were applied by matching rules dur-
+              and  which are dropped. You can filter on the rule action and on
+              the web request labels that were applied by matching rules  dur-
               ing web ACL evaluation.
 
               Filters -> (list)
@@ -610,13 +622,13 @@ OPTIONS
                      A single logging filter, used in  LoggingFilter .
 
                      Behavior -> (string)
-                        How to handle logs that satisfy  the  filter's  condi-
+                        How  to  handle  logs that satisfy the filter's condi-
                         tions and requirement.
 
                      Requirement -> (string)
-                        Logic  to  apply  to the filtering conditions. You can
-                        specify that, in order to satisfy the  filter,  a  log
-                        must  match  all conditions or must match at least one
+                        Logic to apply to the filtering  conditions.  You  can
+                        specify  that,  in  order to satisfy the filter, a log
+                        must match all conditions or must match at  least  one
                         condition.
 
                      Conditions -> (list)
@@ -626,45 +638,64 @@ OPTIONS
                             A single match condition for a  Filter .
 
                             ActionCondition -> (structure)
-                               A single action condition. This is  the  action
+                               A  single  action condition. This is the action
                                setting that a log record must contain in order
                                to meet the condition.
 
                                Action -> (string)
-                                   The action setting that a log  record  must
-                                   contain  in  order  to  meet the condition.
-                                   This is the action that WAF applied to  the
+                                   The  action  setting that a log record must
+                                   contain in order  to  meet  the  condition.
+                                   This  is the action that WAF applied to the
                                    web request.
 
                                    For rule groups, this is either the config-
-                                   ured rule action setting, or if you've  ap-
-                                   plied  a  rule action override to the rule,
-                                   it's the override  action.  The  value  EX-
-                                   CLUDED_AS_COUNT  matches  on excluded rules
-                                   and also on rules that have a  rule  action
+                                   ured  rule action setting, or if you've ap-
+                                   plied a rule action override to  the  rule,
+                                   it's  the  override  action.  The value EX-
+                                   CLUDED_AS_COUNT matches on  excluded  rules
+                                   and  also  on rules that have a rule action
                                    override of Count.
 
                             LabelNameCondition -> (structure)
-                               A  single  label  name  condition.  This is the
-                               fully qualified label name that  a  log  record
-                               must  contain  in  order to meet the condition.
-                               Fully qualified labels have a prefix,  optional
-                               namespaces,  and label name. The prefix identi-
-                               fies the rule group or web ACL context  of  the
+                               A single label  name  condition.  This  is  the
+                               fully  qualified  label  name that a log record
+                               must contain in order to  meet  the  condition.
+                               Fully  qualified labels have a prefix, optional
+                               namespaces, and label name. The prefix  identi-
+                               fies  the  rule group or web ACL context of the
                                rule that added the label.
 
                                LabelName -> (string)
-                                   The  label name that a log record must con-
-                                   tain in order to meet the  condition.  This
+                                   The label name that a log record must  con-
+                                   tain  in  order to meet the condition. This
                                    must be a fully qualified label name. Fully
-                                   qualified labels have  a  prefix,  optional
+                                   qualified  labels  have  a prefix, optional
                                    namespaces,  and  label  name.  The  prefix
-                                   identifies the rule group or web  ACL  con-
+                                   identifies  the  rule group or web ACL con-
                                    text of the rule that added the label.
 
               DefaultBehavior -> (string)
-                 Default  handling for logs that don't match any of the speci-
+                 Default handling for logs that don't match any of the  speci-
                  fied filtering conditions.
+
+          LogType -> (string)
+              Used  to distinguish between various logging options. Currently,
+              there is one option.
+
+              Default: WAF_LOGS
+
+          LogScope -> (string)
+              The owner of the logging configuration, which  must  be  set  to
+              CUSTOMER for the configurations that you manage.
+
+              The  log  scope  SECURITY_LAKE indicates a configuration that is
+              managed through Amazon Security Lake. You can use Security  Lake
+              to  collect  log and event data from various sources for normal-
+              ization,  analysis,  and  management.   For   information,   see
+              Collecting  data from Amazon Web Services services in the Amazon
+              Security Lake user guide .
+
+              Default: CUSTOMER
 
        JSON Syntax:
 
@@ -757,7 +788,9 @@ OPTIONS
                 ...
               ],
               "DefaultBehavior": "KEEP"|"DROP"
-            }
+            },
+            "LogType": "WAF_LOGS",
+            "LogScope": "CUSTOMER"|"SECURITY_LAKE"
           }
 
        --cli-input-json (string) Performs service operation based on the  JSON
@@ -915,6 +948,11 @@ OUTPUT
                  You can specify only the following fields for redaction: Uri-
                  Path , QueryString , SingleHeader , and Method .
 
+              NOTE:
+                 This setting has no impact on request sampling. With  request
+                 sampling, the only way to exclude fields is by disabling sam-
+                 pling in the web ACL visibility configuration.
+
               (structure)
                  Specifies a web request component to be used in a rule  match
                  statement or in a logging configuration.
@@ -943,6 +981,12 @@ OUTPUT
                      fields talk about specifying the web request component to
                      inspect,  but for field redaction, you are specifying the
                      component type to redact from the logs.
+
+                   o If you have request sampling enabled, the redacted fields
+                     configuration  for logging has no impact on sampling. The
+                     only way to exclude fields from request  sampling  is  by
+                     disabling  sampling  in the web ACL visibility configura-
+                     tion.
 
                  SingleHeader -> (structure)
                      Inspect a single header. Provide the name of  the  header
@@ -1367,38 +1411,39 @@ OUTPUT
                           rule statement.
 
                  JA3Fingerprint -> (structure)
-                     Match against the request's JA3 fingerprint. The JA3 fin-
-                     gerprint is a 32-character  hash  derived  from  the  TLS
-                     Client  Hello  of  an  incoming request. This fingerprint
-                     serves as a unique identifier for the client's  TLS  con-
-                     figuration.  WAF calculates and logs this fingerprint for
-                     each request that has enough TLS Client Hello information
-                     for the calculation. Almost all web requests include this
-                     information.
+                     Available  for  use  with Amazon CloudFront distributions
+                     and Application Load Balancers.  Match  against  the  re-
+                     quest's   JA3  fingerprint.  The  JA3  fingerprint  is  a
+                     32-character hash derived from the TLS Client Hello of an
+                     incoming  request.  This  fingerprint  serves as a unique
+                     identifier for the client's TLS configuration. WAF calcu-
+                     lates and logs this fingerprint for each request that has
+                     enough TLS Client Hello information for the  calculation.
+                     Almost all web requests include this information.
 
                      NOTE:
-                        You can use this  choice  only  with  a  string  match
-                        ByteMatchStatement  with  the PositionalConstraint set
+                        You  can  use  this  choice  only  with a string match
+                        ByteMatchStatement with the  PositionalConstraint  set
                         to EXACTLY .
 
-                     You can obtain the JA3 fingerprint  for  client  requests
-                     from  the  web  ACL logs. If WAF is able to calculate the
-                     fingerprint, it includes it in the logs. For  information
-                     about  the  logging fields, see Log fields in the WAF De-
+                     You  can  obtain  the JA3 fingerprint for client requests
+                     from the web ACL logs. If WAF is able  to  calculate  the
+                     fingerprint,  it includes it in the logs. For information
+                     about the logging fields, see Log fields in the  WAF  De-
                      veloper Guide .
 
-                     Provide the JA3 fingerprint string from the logs in  your
-                     string  match  statement specification, to match with any
+                     Provide  the JA3 fingerprint string from the logs in your
+                     string match statement specification, to match  with  any
                      future requests that have the same TLS configuration.
 
                      FallbackBehavior -> (string)
-                        The match status to assign to the web request  if  the
+                        The  match  status to assign to the web request if the
                         request doesn't have a JA3 fingerprint.
 
                         You can specify the following fallback behaviors:
 
-                        o MATCH  -  Treat the web request as matching the rule
-                          statement. WAF applies the rule action  to  the  re-
+                        o MATCH - Treat the web request as matching  the  rule
+                          statement.  WAF  applies  the rule action to the re-
                           quest.
 
                         o NO_MATCH - Treat the web request as not matching the
@@ -1406,13 +1451,13 @@ OUTPUT
 
           ManagedByFirewallManager -> (boolean)
               Indicates whether the logging configuration was created by Fire-
-              wall  Manager,  as part of an WAF policy configuration. If true,
+              wall Manager, as part of an WAF policy configuration.  If  true,
               only Firewall Manager can modify or delete the configuration.
 
           LoggingFilter -> (structure)
               Filtering that specifies which web requests are kept in the logs
-              and  which are dropped. You can filter on the rule action and on
-              the web request labels that were applied by matching rules  dur-
+              and which are dropped. You can filter on the rule action and  on
+              the  web request labels that were applied by matching rules dur-
               ing web ACL evaluation.
 
               Filters -> (list)
@@ -1422,13 +1467,13 @@ OUTPUT
                      A single logging filter, used in  LoggingFilter .
 
                      Behavior -> (string)
-                        How  to  handle  logs that satisfy the filter's condi-
+                        How to handle logs that satisfy  the  filter's  condi-
                         tions and requirement.
 
                      Requirement -> (string)
-                        Logic to apply to the filtering  conditions.  You  can
-                        specify  that,  in  order to satisfy the filter, a log
-                        must match all conditions or must match at  least  one
+                        Logic  to  apply  to the filtering conditions. You can
+                        specify that, in order to satisfy the  filter,  a  log
+                        must  match  all conditions or must match at least one
                         condition.
 
                      Conditions -> (list)
@@ -1438,45 +1483,64 @@ OUTPUT
                             A single match condition for a  Filter .
 
                             ActionCondition -> (structure)
-                               A  single  action condition. This is the action
+                               A single action condition. This is  the  action
                                setting that a log record must contain in order
                                to meet the condition.
 
                                Action -> (string)
-                                   The  action  setting that a log record must
-                                   contain in order  to  meet  the  condition.
-                                   This  is the action that WAF applied to the
+                                   The action setting that a log  record  must
+                                   contain  in  order  to  meet the condition.
+                                   This is the action that WAF applied to  the
                                    web request.
 
                                    For rule groups, this is either the config-
-                                   ured  rule action setting, or if you've ap-
-                                   plied a rule action override to  the  rule,
-                                   it's  the  override  action.  The value EX-
-                                   CLUDED_AS_COUNT matches on  excluded  rules
-                                   and  also  on rules that have a rule action
+                                   ured rule action setting, or if you've  ap-
+                                   plied  a  rule action override to the rule,
+                                   it's the override  action.  The  value  EX-
+                                   CLUDED_AS_COUNT  matches  on excluded rules
+                                   and also on rules that have a  rule  action
                                    override of Count.
 
                             LabelNameCondition -> (structure)
-                               A single label  name  condition.  This  is  the
-                               fully  qualified  label  name that a log record
-                               must contain in order to  meet  the  condition.
-                               Fully  qualified labels have a prefix, optional
-                               namespaces, and label name. The prefix  identi-
-                               fies  the  rule group or web ACL context of the
+                               A  single  label  name  condition.  This is the
+                               fully qualified label name that  a  log  record
+                               must  contain  in  order to meet the condition.
+                               Fully qualified labels have a prefix,  optional
+                               namespaces,  and label name. The prefix identi-
+                               fies the rule group or web ACL context  of  the
                                rule that added the label.
 
                                LabelName -> (string)
-                                   The label name that a log record must  con-
-                                   tain  in  order to meet the condition. This
+                                   The  label name that a log record must con-
+                                   tain in order to meet the  condition.  This
                                    must be a fully qualified label name. Fully
-                                   qualified  labels  have  a prefix, optional
+                                   qualified labels have  a  prefix,  optional
                                    namespaces,  and  label  name.  The  prefix
-                                   identifies  the  rule group or web ACL con-
+                                   identifies the rule group or web  ACL  con-
                                    text of the rule that added the label.
 
               DefaultBehavior -> (string)
-                 Default handling for logs that don't match any of the  speci-
+                 Default  handling for logs that don't match any of the speci-
                  fied filtering conditions.
+
+          LogType -> (string)
+              Used to distinguish between various logging options.  Currently,
+              there is one option.
+
+              Default: WAF_LOGS
+
+          LogScope -> (string)
+              The  owner  of  the  logging configuration, which must be set to
+              CUSTOMER for the configurations that you manage.
+
+              The log scope SECURITY_LAKE indicates a  configuration  that  is
+              managed  through Amazon Security Lake. You can use Security Lake
+              to collect log and event data from various sources  for  normal-
+              ization,   analysis,   and   management.  For  information,  see
+              Collecting data from Amazon Web Services services in the  Amazon
+              Security Lake user guide .
+
+              Default: CUSTOMER
 
 
 
