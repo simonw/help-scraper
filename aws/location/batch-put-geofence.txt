@@ -47,40 +47,16 @@ OPTIONS
                  The  identifier  for the geofence to be stored in a given ge-
                  ofence collection.
 
-              GeofenceProperties -> (map)
-                 Associates one of more properties with the geofence. A  prop-
-                 erty  is  a key-value pair stored with the geofence and added
-                 to any geofence event triggered with that geofence.
-
-                 Format: "key" : "value"
-
-                 key -> (string)
-
-                 value -> (string)
-
               Geometry -> (structure)
-                 Contains the details of the position of the geofence. Can  be
-                 either  a  polygon  or a circle. Including both will return a
-                 validation error.
+                 Contains the details to specify the position of the geofence.
+                 Can  be  a  polygon,  a circle or a polygon encoded in Geobuf
+                 format. Including multiple selections will return  a  valida-
+                 tion error.
 
                  NOTE:
-                     Each geofence polygon can have a maximum  of  1,000  ver-
-                     tices.
-
-                 Circle -> (structure)
-                     A circle on the earth, as defined by a center point and a
-                     radius.
-
-                     Center -> (list)
-                        A single point geometry, specifying the center of  the
-                        circle,  using WGS 84 coordinates, in the form [longi-
-                        tude, latitude] .
-
-                        (double)
-
-                     Radius -> (double)
-                        The radius of the circle in meters.  Must  be  greater
-                        than zero and no larger than 100,000 (100 kilometers).
+                     The  geofence  polygon format supports a maximum of 1,000
+                     vertices. The Geofence geobuf format supports  a  maximum
+                     of 100,000 vertices.
 
                  Polygon -> (list)
                      A  polygon  is a list of linear rings which are each made
@@ -110,41 +86,76 @@ OPTIONS
                         (list)
                             (double)
 
+                 Circle -> (structure)
+                     A circle on the earth, as defined by a center point and a
+                     radius.
+
+                     Center -> (list)
+                        A  single point geometry, specifying the center of the
+                        circle, using WGS 84 coordinates, in the form  [longi-
+                        tude, latitude] .
+
+                        (double)
+
+                     Radius -> (double)
+                        The  radius  of  the circle in meters. Must be greater
+                        than zero and no larger than 100,000 (100 kilometers).
+
+                 Geobuf -> (blob)
+                     Geobuf is a compact binary encoding for  geographic  data
+                     that  provides  lossless compression of GeoJSON polygons.
+                     The Geobuf must be Base64-encoded.
+
+                     A polygon in Geobuf format can have up  to  100,000  ver-
+                     tices.
+
+              GeofenceProperties -> (map)
+                 Associates  one of more properties with the geofence. A prop-
+                 erty is a key-value pair stored with the geofence  and  added
+                 to any geofence event triggered with that geofence.
+
+                 Format: "key" : "value"
+
+                 key -> (string)
+
+                 value -> (string)
+
        JSON Syntax:
 
           [
             {
               "GeofenceId": "string",
-              "GeofenceProperties": {"string": "string"
-                ...},
               "Geometry": {
-                "Circle": {
-                  "Center": [double, ...],
-                  "Radius": double
-                },
                 "Polygon": [
                   [
                     [double, ...]
                     ...
                   ]
                   ...
-                ]
-              }
+                ],
+                "Circle": {
+                  "Center": [double, ...],
+                  "Radius": double
+                },
+                "Geobuf": blob
+              },
+              "GeofenceProperties": {"string": "string"
+                ...}
             }
             ...
           ]
 
-       --cli-input-json (string) Performs service operation based on the  JSON
-       string  provided. The JSON string follows the format provided by --gen-
-       erate-cli-skeleton. If other arguments  are  provided  on  the  command
-       line,  the CLI values will override the JSON-provided values. It is not
+       --cli-input-json  (string) Performs service operation based on the JSON
+       string provided. The JSON string follows the format provided by  --gen-
+       erate-cli-skeleton.  If  other  arguments  are  provided on the command
+       line, the CLI values will override the JSON-provided values. It is  not
        possible to pass arbitrary binary values using a JSON-provided value as
        the string will be taken literally.
 
-       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
+       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
        output without sending an API request. If provided with no value or the
        value input, prints a sample input JSON that can be used as an argument
-       for --cli-input-json. If provided with the value output,  it  validates
+       for  --cli-input-json.  If provided with the value output, it validates
        the command inputs and returns a sample output JSON for that command.
 
 GLOBAL OPTIONS
@@ -158,7 +169,7 @@ GLOBAL OPTIONS
 
        --no-verify-ssl (boolean)
 
-       By  default, the AWS CLI uses SSL when communicating with AWS services.
+       By default, the AWS CLI uses SSL when communicating with AWS  services.
        For each SSL connection, the AWS CLI will verify SSL certificates. This
        option overrides the default behavior of verifying SSL certificates.
 
@@ -204,7 +215,7 @@ GLOBAL OPTIONS
 
        --no-sign-request (boolean)
 
-       Do  not  sign requests. Credentials will not be loaded if this argument
+       Do not sign requests. Credentials will not be loaded if  this  argument
        is provided.
 
        --ca-bundle (string)
@@ -214,24 +225,46 @@ GLOBAL OPTIONS
 
        --cli-read-timeout (int)
 
-       The  maximum socket read time in seconds. If the value is set to 0, the
-       socket read will be blocking and not timeout. The default value  is  60
+       The maximum socket read time in seconds. If the value is set to 0,  the
+       socket  read  will be blocking and not timeout. The default value is 60
        seconds.
 
        --cli-connect-timeout (int)
 
-       The  maximum  socket connect time in seconds. If the value is set to 0,
-       the socket connect will be blocking and not timeout. The default  value
+       The maximum socket connect time in seconds. If the value is set  to  0,
+       the  socket connect will be blocking and not timeout. The default value
        is 60 seconds.
 
 OUTPUT
+       Successes -> (list)
+          Contains each geofence that was successfully stored  in  a  geofence
+          collection.
+
+          (structure)
+              Contains a summary of each geofence that was successfully stored
+              in a given geofence collection.
+
+              GeofenceId -> (string)
+                 The geofence successfully stored in a geofence collection.
+
+              CreateTime -> (timestamp)
+                 The timestamp for when the geofence was stored in a  geofence
+                 collection in ISO 8601 format: YYYY-MM-DDThh:mm:ss.sssZ
+
+              UpdateTime -> (timestamp)
+                 The  timestamp  for when the geofence was last updated in ISO
+                 8601 format: YYYY-MM-DDThh:mm:ss.sssZ
+
        Errors -> (list)
-          Contains  additional  error details for each geofence that failed to
+          Contains additional error details for each geofence that  failed  to
           be stored in a geofence collection.
 
           (structure)
-              Contains error details for  each  geofence  that  failed  to  be
+              Contains  error  details  for  each  geofence  that failed to be
               stored in a given geofence collection.
+
+              GeofenceId -> (string)
+                 The geofence associated with the error message.
 
               Error -> (structure)
                  Contains details associated to the batch error.
@@ -241,28 +274,6 @@ OUTPUT
 
                  Message -> (string)
                      A message with the reason for the batch request error.
-
-              GeofenceId -> (string)
-                 The geofence associated with the error message.
-
-       Successes -> (list)
-          Contains  each  geofence  that was successfully stored in a geofence
-          collection.
-
-          (structure)
-              Contains a summary of each geofence that was successfully stored
-              in a given geofence collection.
-
-              CreateTime -> (timestamp)
-                 The  timestamp for when the geofence was stored in a geofence
-                 collection in ISO 8601 format: YYYY-MM-DDThh:mm:ss.sssZ
-
-              GeofenceId -> (string)
-                 The geofence successfully stored in a geofence collection.
-
-              UpdateTime -> (timestamp)
-                 The timestamp for when the geofence was last updated  in  ISO
-                 8601 format: YYYY-MM-DDThh:mm:ss.sssZ
 
 
 

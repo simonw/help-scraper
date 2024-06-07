@@ -1131,6 +1131,33 @@ OPTIONS
                  The CloudWatch log stream name for logging. This value is re-
                  quired if CloudWatch logging is enabled.
 
+          SecretsManagerConfiguration -> (structure)
+              The configuration that defines how you access secrets for Amazon
+              Redshift.
+
+              SecretARN -> (string)
+                 The ARN of the secret that stores your credentials.  It  must
+                 be  in  the  same region as the Firehose stream and the role.
+                 The secret ARN can reside in a different account than the de-
+                 livery stream and role as Firehose supports cross-account se-
+                 cret access. This parameter is required when Enabled  is  set
+                 to True .
+
+              RoleARN -> (string)
+                 Specifies the role that Firehose assumes when calling the Se-
+                 crets Manager API operation. When you provide  the  role,  it
+                 overrides any destination specific role defined in the desti-
+                 nation configuration. If you do not provide the then  we  use
+                 the destination specific role. This parameter is required for
+                 Splunk.
+
+              Enabled -> (boolean)
+                 Specifies whether you want to use  the  the  secrets  manager
+                 feature.  When  set as True the secrets manager configuration
+                 overwrites the existing secrets in the destination configura-
+                 tion.  When it's set to False Firehose falls back to the cre-
+                 dentials in the destination configuration.
+
        JSON Syntax:
 
           {
@@ -1211,6 +1238,11 @@ OPTIONS
               "Enabled": true|false,
               "LogGroupName": "string",
               "LogStreamName": "string"
+            },
+            "SecretsManagerConfiguration": {
+              "SecretARN": "string",
+              "RoleARN": "string",
+              "Enabled": true|false
             }
           }
 
@@ -1218,17 +1250,17 @@ OPTIONS
           Describes an update for a destination in Amazon ES.
 
           RoleARN -> (string)
-              The  Amazon Resource Name (ARN) of the IAM role to be assumed by
+              The Amazon Resource Name (ARN) of the IAM role to be assumed  by
               Firehose for calling the Amazon ES Configuration API and for in-
-              dexing  documents.  For more information, see Grant Firehose Ac-
-              cess to an Amazon  S3  Destination  and  Amazon  Resource  Names
+              dexing documents. For more information, see Grant  Firehose  Ac-
+              cess  to  an  Amazon  S3  Destination  and Amazon Resource Names
               (ARNs) and Amazon Web Services Service Namespaces .
 
           DomainARN -> (string)
-              The  ARN of the Amazon ES domain. The IAM role must have permis-
+              The ARN of the Amazon ES domain. The IAM role must have  permis-
               sions for DescribeDomain , DescribeDomains , and DescribeDomain-
-              Config  after  assuming  the IAM role specified in RoleARN . For
-              more information, see Amazon Resource Names  (ARNs)  and  Amazon
+              Config after assuming the IAM role specified in  RoleARN  .  For
+              more  information,  see  Amazon Resource Names (ARNs) and Amazon
               Web Services Service Namespaces .
 
               Specify either ClusterEndpoint or DomainARN .
@@ -1243,53 +1275,634 @@ OPTIONS
           TypeName -> (string)
               The Elasticsearch type name. For Elasticsearch 6.x, there can be
               only one type per index. If you try to specify a new type for an
-              existing index that already has another type,  Firehose  returns
+              existing  index  that already has another type, Firehose returns
               an error during runtime.
+
+              If you upgrade Elasticsearch from 6.x to  7.x  and  dont  update
+              your  delivery  stream, Firehose still delivers data to Elastic-
+              search with the old index name and type name. If you want to up-
+              date  your  delivery  stream  with  a new index name, provide an
+              empty string for TypeName .
+
+          IndexRotationPeriod -> (string)
+              The Elasticsearch index rotation period. Index rotation  appends
+              a  timestamp  to  IndexName  to facilitate the expiration of old
+              data. For more information, see Index Rotation for the Amazon ES
+              Destination . Default value is OneDay .
+
+          BufferingHints -> (structure)
+              The  buffering options. If no value is specified, Elasticsearch-
+              BufferingHints object default values are used.
+
+              IntervalInSeconds -> (integer)
+                 Buffer incoming data for the specified  period  of  time,  in
+                 seconds, before delivering it to the destination. The default
+                 value is 300 (5 minutes).
+
+              SizeInMBs -> (integer)
+                 Buffer incoming data to the specified size,  in  MBs,  before
+                 delivering it to the destination. The default value is 5.
+
+                 We  recommend  setting this parameter to a value greater than
+                 the amount of data you typically  ingest  into  the  delivery
+                 stream  in  10  seconds. For example, if you typically ingest
+                 data at 1 MB/sec, the value should be 10 MB or higher.
+
+          RetryOptions -> (structure)
+              The retry behavior in case Firehose is unable to  deliver  docu-
+              ments to Amazon ES. The default value is 300 (5 minutes).
+
+              DurationInSeconds -> (integer)
+                 After  an  initial failure to deliver to Amazon ES, the total
+                 amount of time during which Firehose  retries  delivery  (in-
+                 cluding  the first attempt). After this time has elapsed, the
+                 failed documents are written to Amazon S3. Default  value  is
+                 300  seconds  (5  minutes). A value of 0 (zero) results in no
+                 retries.
+
+          S3Update -> (structure)
+              The Amazon S3 destination.
+
+              RoleARN -> (string)
+                 The Amazon Resource Name (ARN) of  the  Amazon  Web  Services
+                 credentials.  For more information, see Amazon Resource Names
+                 (ARNs) and Amazon Web Services Service Namespaces .
+
+              BucketARN -> (string)
+                 The ARN of the S3 bucket. For more  information,  see  Amazon
+                 Resource  Names  (ARNs) and Amazon Web Services Service Name-
+                 spaces .
+
+              Prefix -> (string)
+                 The "YYYY/MM/DD/HH" time format prefix is automatically  used
+                 for  delivered Amazon S3 files. You can also specify a custom
+                 prefix, as described in Custom Prefixes for Amazon S3 Objects
+                 .
+
+              ErrorOutputPrefix -> (string)
+                 A  prefix  that Firehose evaluates and adds to failed records
+                 before writing them to S3. This  prefix  appears  immediately
+                 following the bucket name. For information about how to spec-
+                 ify this prefix, see Custom Prefixes for Amazon S3 Objects .
+
+              BufferingHints -> (structure)
+                 The buffering option. If no value is  specified,  BufferingH-
+                 ints object default values are used.
+
+                 SizeInMBs -> (integer)
+                     Buffer  incoming data to the specified size, in MiBs, be-
+                     fore delivering it to the destination. The default  value
+                     is  5.  This  parameter  is optional but if you specify a
+                     value for it, you must also specify a  value  for  Inter-
+                     valInSeconds , and vice versa.
+
+                     We  recommend  setting  this parameter to a value greater
+                     than the amount of data you typically ingest into the de-
+                     livery  stream  in  10 seconds. For example, if you typi-
+                     cally ingest data at 1 MiB/sec, the value  should  be  10
+                     MiB or higher.
+
+                 IntervalInSeconds -> (integer)
+                     Buffer incoming data for the specified period of time, in
+                     seconds, before delivering it to the destination. The de-
+                     fault value is 300. This parameter is optional but if you
+                     specify a value for it, you must also specify a value for
+                     SizeInMBs , and vice versa.
+
+              CompressionFormat -> (string)
+                 The compression format. If no value is specified, the default
+                 is UNCOMPRESSED .
+
+                 The compression formats SNAPPY or ZIP cannot be specified for
+                 Amazon  Redshift  destinations because they are not supported
+                 by the Amazon Redshift COPY operation that reads from the  S3
+                 bucket.
+
+              EncryptionConfiguration -> (structure)
+                 The  encryption  configuration. If no value is specified, the
+                 default is no encryption.
+
+                 NoEncryptionConfig -> (string)
+                     Specifically override existing encryption information  to
+                     ensure that no encryption is used.
+
+                 KMSEncryptionConfig -> (structure)
+                     The encryption key.
+
+                     AWSKMSKeyARN -> (string)
+                        The  Amazon Resource Name (ARN) of the encryption key.
+                        Must belong to the same Amazon Web Services Region  as
+                        the  destination  Amazon  S3 bucket. For more informa-
+                        tion, see Amazon Resource Names (ARNs) and Amazon  Web
+                        Services Service Namespaces .
+
+              CloudWatchLoggingOptions -> (structure)
+                 The CloudWatch logging options for your delivery stream.
+
+                 Enabled -> (boolean)
+                     Enables or disables CloudWatch logging.
+
+                 LogGroupName -> (string)
+                     The  CloudWatch group name for logging. This value is re-
+                     quired if CloudWatch logging is enabled.
+
+                 LogStreamName -> (string)
+                     The CloudWatch log stream name for logging. This value is
+                     required if CloudWatch logging is enabled.
+
+          ProcessingConfiguration -> (structure)
+              The data processing configuration.
+
+              Enabled -> (boolean)
+                 Enables or disables data processing.
+
+              Processors -> (list)
+                 The data processors.
+
+                 (structure)
+                     Describes a data processor.
+
+                     NOTE:
+                        If  you  want  to  add  a  new  line delimiter between
+                        records in objects that are delivered  to  Amazon  S3,
+                        choose  AppendDelimiterToRecord  as  a processor type.
+                        You dont have to put a processor  parameter  when  you
+                        select AppendDelimiterToRecord .
+
+                     Type -> (string)
+                        The type of processor.
+
+                     Parameters -> (list)
+                        The processor parameters.
+
+                        (structure)
+                            Describes the processor parameter.
+
+                            ParameterName -> (string)
+                               The  name  of the parameter. Currently the fol-
+                               lowing default values are supported: 3 for Num-
+                               berOfRetries  and  60 for the BufferIntervalIn-
+                               Seconds . The  BufferSizeInMBs  ranges  between
+                               0.2  MB  and  up  to 3MB. The default buffering
+                               hint  is  1MB  for  all  destinations,   except
+                               Splunk.  For Splunk, the default buffering hint
+                               is 256 KB.
+
+                            ParameterValue -> (string)
+                               The parameter value.
+
+          CloudWatchLoggingOptions -> (structure)
+              The CloudWatch logging options for your delivery stream.
+
+              Enabled -> (boolean)
+                 Enables or disables CloudWatch logging.
+
+              LogGroupName -> (string)
+                 The CloudWatch group name for logging. This value is required
+                 if CloudWatch logging is enabled.
+
+              LogStreamName -> (string)
+                 The CloudWatch log stream name for logging. This value is re-
+                 quired if CloudWatch logging is enabled.
+
+          DocumentIdOptions -> (structure)
+              Indicates the method for setting up document ID.  The  supported
+              methods  are  Firehose generated document ID and OpenSearch Ser-
+              vice generated document ID.
+
+              DefaultDocumentIdFormat -> (string)
+                 When the FIREHOSE_DEFAULT option is chosen,  Firehose  gener-
+                 ates  a  unique document ID for each record based on a unique
+                 internal identifier. The  generated  document  ID  is  stable
+                 across  multiple  delivery  attempts, which helps prevent the
+                 same record from being indexed multiple times with  different
+                 document IDs.
+
+                 When  the  NO_DOCUMENT_ID option is chosen, Firehose does not
+                 include any document IDs in the requests it sends to the Ama-
+                 zon  OpenSearch  Service.  This  causes the Amazon OpenSearch
+                 Service domain to generate document IDs. In case of  multiple
+                 delivery  attempts,  this may cause the same record to be in-
+                 dexed more than once with different document IDs. This option
+                 enables write-heavy operations, such as the ingestion of logs
+                 and observability data, to consume less resources in the Ama-
+                 zon  OpenSearch Service domain, resulting in improved perfor-
+                 mance.
+
+       JSON Syntax:
+
+          {
+            "RoleARN": "string",
+            "DomainARN": "string",
+            "ClusterEndpoint": "string",
+            "IndexName": "string",
+            "TypeName": "string",
+            "IndexRotationPeriod": "NoRotation"|"OneHour"|"OneDay"|"OneWeek"|"OneMonth",
+            "BufferingHints": {
+              "IntervalInSeconds": integer,
+              "SizeInMBs": integer
+            },
+            "RetryOptions": {
+              "DurationInSeconds": integer
+            },
+            "S3Update": {
+              "RoleARN": "string",
+              "BucketARN": "string",
+              "Prefix": "string",
+              "ErrorOutputPrefix": "string",
+              "BufferingHints": {
+                "SizeInMBs": integer,
+                "IntervalInSeconds": integer
+              },
+              "CompressionFormat": "UNCOMPRESSED"|"GZIP"|"ZIP"|"Snappy"|"HADOOP_SNAPPY",
+              "EncryptionConfiguration": {
+                "NoEncryptionConfig": "NoEncryption",
+                "KMSEncryptionConfig": {
+                  "AWSKMSKeyARN": "string"
+                }
+              },
+              "CloudWatchLoggingOptions": {
+                "Enabled": true|false,
+                "LogGroupName": "string",
+                "LogStreamName": "string"
+              }
+            },
+            "ProcessingConfiguration": {
+              "Enabled": true|false,
+              "Processors": [
+                {
+                  "Type": "RecordDeAggregation"|"Decompression"|"CloudWatchLogProcessing"|"Lambda"|"MetadataExtraction"|"AppendDelimiterToRecord",
+                  "Parameters": [
+                    {
+                      "ParameterName": "LambdaArn"|"NumberOfRetries"|"MetadataExtractionQuery"|"JsonParsingEngine"|"RoleArn"|"BufferSizeInMBs"|"BufferIntervalInSeconds"|"SubRecordType"|"Delimiter"|"CompressionFormat"|"DataMessageExtraction",
+                      "ParameterValue": "string"
+                    }
+                    ...
+                  ]
+                }
+                ...
+              ]
+            },
+            "CloudWatchLoggingOptions": {
+              "Enabled": true|false,
+              "LogGroupName": "string",
+              "LogStreamName": "string"
+            },
+            "DocumentIdOptions": {
+              "DefaultDocumentIdFormat": "FIREHOSE_DEFAULT"|"NO_DOCUMENT_ID"
+            }
+          }
+
+       --amazonopensearchservice-destination-update (structure)
+          Describes an update for a destination in Amazon OpenSearch Service.
+
+          RoleARN -> (string)
+              The Amazon Resource Name (ARN) of the IAM role to be assumed  by
+              Firehose for calling the Amazon OpenSearch Service Configuration
+              API and for indexing documents.
+
+          DomainARN -> (string)
+              The ARN of the Amazon OpenSearch Service domain.  The  IAM  role
+              must  have  permissions for DescribeDomain, DescribeDomains, and
+              DescribeDomainConfig after assuming the IAM  role  specified  in
+              RoleARN.
+
+          ClusterEndpoint -> (string)
+              The endpoint to use when communicating with the cluster. Specify
+              either this ClusterEndpoint or the DomainARN field.
+
+          IndexName -> (string)
+              The Amazon OpenSearch Service index name.
+
+          TypeName -> (string)
+              The Amazon OpenSearch Service type name. For Elasticsearch  6.x,
+              there  can  be  only one type per index. If you try to specify a
+              new type for an existing index that already  has  another  type,
+              Firehose returns an error during runtime.
 
               If  you  upgrade  Elasticsearch  from 6.x to 7.x and dont update
               your delivery stream, Firehose still delivers data  to  Elastic-
               search with the old index name and type name. If you want to up-
               date your delivery stream with a  new  index  name,  provide  an
-              empty string for TypeName .
+              empty string for TypeName.
 
           IndexRotationPeriod -> (string)
-              The  Elasticsearch index rotation period. Index rotation appends
-              a timestamp to IndexName to facilitate  the  expiration  of  old
-              data. For more information, see Index Rotation for the Amazon ES
-              Destination . Default value is OneDay .
+              The Amazon OpenSearch Service index rotation period. Index rota-
+              tion appends a timestamp to IndexName to facilitate the  expira-
+              tion of old data.
 
           BufferingHints -> (structure)
-              The buffering options. If no value is specified,  Elasticsearch-
-              BufferingHints object default values are used.
+              The   buffering   options.   If  no  value  is  specified,  Ama-
+              zonopensearchBufferingHints object default values are used.
 
               IntervalInSeconds -> (integer)
-                 Buffer  incoming  data  for  the specified period of time, in
+                 Buffer incoming data for the specified  period  of  time,  in
                  seconds, before delivering it to the destination. The default
                  value is 300 (5 minutes).
 
               SizeInMBs -> (integer)
-                 Buffer  incoming  data  to the specified size, in MBs, before
+                 Buffer incoming data to the specified size,  in  MBs,  before
                  delivering it to the destination. The default value is 5.
 
-                 We recommend setting this parameter to a value  greater  than
-                 the  amount  of  data  you typically ingest into the delivery
-                 stream in 10 seconds. For example, if  you  typically  ingest
+                 We  recommend  setting this parameter to a value greater than
+                 the amount of data you typically  ingest  into  the  delivery
+                 stream  in  10  seconds. For example, if you typically ingest
                  data at 1 MB/sec, the value should be 10 MB or higher.
 
           RetryOptions -> (structure)
-              The  retry  behavior in case Firehose is unable to deliver docu-
-              ments to Amazon ES. The default value is 300 (5 minutes).
+              The retry behavior in case Firehose is unable to  deliver  docu-
+              ments  to Amazon OpenSearch Service. The default value is 300 (5
+              minutes).
 
               DurationInSeconds -> (integer)
-                 After an initial failure to deliver to Amazon ES,  the  total
-                 amount  of  time  during which Firehose retries delivery (in-
-                 cluding the first attempt). After this time has elapsed,  the
-                 failed  documents  are written to Amazon S3. Default value is
-                 300 seconds (5 minutes). A value of 0 (zero)  results  in  no
-                 retries.
+                 After an initial failure to deliver to Amazon OpenSearch Ser-
+                 vice,  the total amount of time during which Firehose retries
+                 delivery (including the first attempt). After this  time  has
+                 elapsed,  the  failed documents are written to Amazon S3. De-
+                 fault value is 300 seconds (5 minutes). A value of  0  (zero)
+                 results in no retries.
 
           S3Update -> (structure)
-              The Amazon S3 destination.
+              Describes an update for a destination in Amazon S3.
+
+              RoleARN -> (string)
+                 The  Amazon  Resource  Name  (ARN) of the Amazon Web Services
+                 credentials. For more information, see Amazon Resource  Names
+                 (ARNs) and Amazon Web Services Service Namespaces .
+
+              BucketARN -> (string)
+                 The  ARN  of  the S3 bucket. For more information, see Amazon
+                 Resource Names (ARNs) and Amazon Web Services  Service  Name-
+                 spaces .
+
+              Prefix -> (string)
+                 The  "YYYY/MM/DD/HH" time format prefix is automatically used
+                 for delivered Amazon S3 files. You can also specify a  custom
+                 prefix, as described in Custom Prefixes for Amazon S3 Objects
+                 .
+
+              ErrorOutputPrefix -> (string)
+                 A prefix that Firehose evaluates and adds to  failed  records
+                 before  writing  them  to S3. This prefix appears immediately
+                 following the bucket name. For information about how to spec-
+                 ify this prefix, see Custom Prefixes for Amazon S3 Objects .
+
+              BufferingHints -> (structure)
+                 The  buffering  option. If no value is specified, BufferingH-
+                 ints object default values are used.
+
+                 SizeInMBs -> (integer)
+                     Buffer incoming data to the specified size, in MiBs,  be-
+                     fore  delivering it to the destination. The default value
+                     is 5. This parameter is optional but  if  you  specify  a
+                     value  for  it,  you must also specify a value for Inter-
+                     valInSeconds , and vice versa.
+
+                     We recommend setting this parameter to  a  value  greater
+                     than the amount of data you typically ingest into the de-
+                     livery stream in 10 seconds. For example,  if  you  typi-
+                     cally  ingest  data  at 1 MiB/sec, the value should be 10
+                     MiB or higher.
+
+                 IntervalInSeconds -> (integer)
+                     Buffer incoming data for the specified period of time, in
+                     seconds, before delivering it to the destination. The de-
+                     fault value is 300. This parameter is optional but if you
+                     specify a value for it, you must also specify a value for
+                     SizeInMBs , and vice versa.
+
+              CompressionFormat -> (string)
+                 The compression format. If no value is specified, the default
+                 is UNCOMPRESSED .
+
+                 The compression formats SNAPPY or ZIP cannot be specified for
+                 Amazon Redshift destinations because they are  not  supported
+                 by  the Amazon Redshift COPY operation that reads from the S3
+                 bucket.
+
+              EncryptionConfiguration -> (structure)
+                 The encryption configuration. If no value is  specified,  the
+                 default is no encryption.
+
+                 NoEncryptionConfig -> (string)
+                     Specifically  override existing encryption information to
+                     ensure that no encryption is used.
+
+                 KMSEncryptionConfig -> (structure)
+                     The encryption key.
+
+                     AWSKMSKeyARN -> (string)
+                        The Amazon Resource Name (ARN) of the encryption  key.
+                        Must  belong to the same Amazon Web Services Region as
+                        the destination Amazon S3 bucket.  For  more  informa-
+                        tion,  see Amazon Resource Names (ARNs) and Amazon Web
+                        Services Service Namespaces .
+
+              CloudWatchLoggingOptions -> (structure)
+                 The CloudWatch logging options for your delivery stream.
+
+                 Enabled -> (boolean)
+                     Enables or disables CloudWatch logging.
+
+                 LogGroupName -> (string)
+                     The CloudWatch group name for logging. This value is  re-
+                     quired if CloudWatch logging is enabled.
+
+                 LogStreamName -> (string)
+                     The CloudWatch log stream name for logging. This value is
+                     required if CloudWatch logging is enabled.
+
+          ProcessingConfiguration -> (structure)
+              Describes a data processing configuration.
+
+              Enabled -> (boolean)
+                 Enables or disables data processing.
+
+              Processors -> (list)
+                 The data processors.
+
+                 (structure)
+                     Describes a data processor.
+
+                     NOTE:
+                        If you want  to  add  a  new  line  delimiter  between
+                        records  in  objects  that are delivered to Amazon S3,
+                        choose AppendDelimiterToRecord as  a  processor  type.
+                        You  dont  have  to put a processor parameter when you
+                        select AppendDelimiterToRecord .
+
+                     Type -> (string)
+                        The type of processor.
+
+                     Parameters -> (list)
+                        The processor parameters.
+
+                        (structure)
+                            Describes the processor parameter.
+
+                            ParameterName -> (string)
+                               The name of the parameter. Currently  the  fol-
+                               lowing default values are supported: 3 for Num-
+                               berOfRetries and 60 for  the  BufferIntervalIn-
+                               Seconds  .  The  BufferSizeInMBs ranges between
+                               0.2 MB and up to  3MB.  The  default  buffering
+                               hint   is  1MB  for  all  destinations,  except
+                               Splunk. For Splunk, the default buffering  hint
+                               is 256 KB.
+
+                            ParameterValue -> (string)
+                               The parameter value.
+
+          CloudWatchLoggingOptions -> (structure)
+              Describes  the Amazon CloudWatch logging options for your deliv-
+              ery stream.
+
+              Enabled -> (boolean)
+                 Enables or disables CloudWatch logging.
+
+              LogGroupName -> (string)
+                 The CloudWatch group name for logging. This value is required
+                 if CloudWatch logging is enabled.
+
+              LogStreamName -> (string)
+                 The CloudWatch log stream name for logging. This value is re-
+                 quired if CloudWatch logging is enabled.
+
+          DocumentIdOptions -> (structure)
+              Indicates the method for setting up document ID.  The  supported
+              methods  are  Firehose generated document ID and OpenSearch Ser-
+              vice generated document ID.
+
+              DefaultDocumentIdFormat -> (string)
+                 When the FIREHOSE_DEFAULT option is chosen,  Firehose  gener-
+                 ates  a  unique document ID for each record based on a unique
+                 internal identifier. The  generated  document  ID  is  stable
+                 across  multiple  delivery  attempts, which helps prevent the
+                 same record from being indexed multiple times with  different
+                 document IDs.
+
+                 When  the  NO_DOCUMENT_ID option is chosen, Firehose does not
+                 include any document IDs in the requests it sends to the Ama-
+                 zon  OpenSearch  Service.  This  causes the Amazon OpenSearch
+                 Service domain to generate document IDs. In case of  multiple
+                 delivery  attempts,  this may cause the same record to be in-
+                 dexed more than once with different document IDs. This option
+                 enables write-heavy operations, such as the ingestion of logs
+                 and observability data, to consume less resources in the Ama-
+                 zon  OpenSearch Service domain, resulting in improved perfor-
+                 mance.
+
+       JSON Syntax:
+
+          {
+            "RoleARN": "string",
+            "DomainARN": "string",
+            "ClusterEndpoint": "string",
+            "IndexName": "string",
+            "TypeName": "string",
+            "IndexRotationPeriod": "NoRotation"|"OneHour"|"OneDay"|"OneWeek"|"OneMonth",
+            "BufferingHints": {
+              "IntervalInSeconds": integer,
+              "SizeInMBs": integer
+            },
+            "RetryOptions": {
+              "DurationInSeconds": integer
+            },
+            "S3Update": {
+              "RoleARN": "string",
+              "BucketARN": "string",
+              "Prefix": "string",
+              "ErrorOutputPrefix": "string",
+              "BufferingHints": {
+                "SizeInMBs": integer,
+                "IntervalInSeconds": integer
+              },
+              "CompressionFormat": "UNCOMPRESSED"|"GZIP"|"ZIP"|"Snappy"|"HADOOP_SNAPPY",
+              "EncryptionConfiguration": {
+                "NoEncryptionConfig": "NoEncryption",
+                "KMSEncryptionConfig": {
+                  "AWSKMSKeyARN": "string"
+                }
+              },
+              "CloudWatchLoggingOptions": {
+                "Enabled": true|false,
+                "LogGroupName": "string",
+                "LogStreamName": "string"
+              }
+            },
+            "ProcessingConfiguration": {
+              "Enabled": true|false,
+              "Processors": [
+                {
+                  "Type": "RecordDeAggregation"|"Decompression"|"CloudWatchLogProcessing"|"Lambda"|"MetadataExtraction"|"AppendDelimiterToRecord",
+                  "Parameters": [
+                    {
+                      "ParameterName": "LambdaArn"|"NumberOfRetries"|"MetadataExtractionQuery"|"JsonParsingEngine"|"RoleArn"|"BufferSizeInMBs"|"BufferIntervalInSeconds"|"SubRecordType"|"Delimiter"|"CompressionFormat"|"DataMessageExtraction",
+                      "ParameterValue": "string"
+                    }
+                    ...
+                  ]
+                }
+                ...
+              ]
+            },
+            "CloudWatchLoggingOptions": {
+              "Enabled": true|false,
+              "LogGroupName": "string",
+              "LogStreamName": "string"
+            },
+            "DocumentIdOptions": {
+              "DefaultDocumentIdFormat": "FIREHOSE_DEFAULT"|"NO_DOCUMENT_ID"
+            }
+          }
+
+       --splunk-destination-update (structure)
+          Describes an update for a destination in Splunk.
+
+          HECEndpoint -> (string)
+              The HTTP Event Collector (HEC) endpoint to which Firehose  sends
+              your data.
+
+          HECEndpointType -> (string)
+              This type can be either "Raw" or "Event."
+
+          HECToken -> (string)
+              A  GUID that you obtain from your Splunk cluster when you create
+              a new HEC endpoint.
+
+          HECAcknowledgmentTimeoutInSeconds -> (integer)
+              The amount of time that Firehose waits to receive an acknowledg-
+              ment  from Splunk after it sends data. At the end of the timeout
+              period, Firehose either tries to send the data again or  consid-
+              ers it an error, based on your retry settings.
+
+          RetryOptions -> (structure)
+              The retry behavior in case Firehose is unable to deliver data to
+              Splunk or if it doesn't receive  an  acknowledgment  of  receipt
+              from Splunk.
+
+              DurationInSeconds -> (integer)
+                 The  total  amount  of  time that Firehose spends on retries.
+                 This duration starts after the initial attempt to  send  data
+                 to  Splunk fails. It doesn't include the periods during which
+                 Firehose waits for acknowledgment from Splunk after each  at-
+                 tempt.
+
+          S3BackupMode -> (string)
+              Specifies  how  you want Firehose to back up documents to Amazon
+              S3. When set to FailedDocumentsOnly , Firehose writes  any  data
+              that  could  not be indexed to the configured Amazon S3 destina-
+              tion. When set to AllEvents ,  Firehose  delivers  all  incoming
+              records to Amazon S3, and also writes failed documents to Amazon
+              S3. The default value is FailedEventsOnly .
+
+              You can update this backup mode  from  FailedEventsOnly  to  Al-
+              lEvents . You can't update it from AllEvents to FailedEventsOnly
+              .
+
+          S3Update -> (structure)
+              Your update to the configuration of the backup Amazon  S3  loca-
+              tion.
 
               RoleARN -> (string)
                  The  Amazon  Resource  Name  (ARN) of the Amazon Web Services
@@ -1420,587 +2033,6 @@ OPTIONS
                                The parameter value.
 
           CloudWatchLoggingOptions -> (structure)
-              The CloudWatch logging options for your delivery stream.
-
-              Enabled -> (boolean)
-                 Enables or disables CloudWatch logging.
-
-              LogGroupName -> (string)
-                 The CloudWatch group name for logging. This value is required
-                 if CloudWatch logging is enabled.
-
-              LogStreamName -> (string)
-                 The CloudWatch log stream name for logging. This value is re-
-                 quired if CloudWatch logging is enabled.
-
-          DocumentIdOptions -> (structure)
-              Indicates  the  method for setting up document ID. The supported
-              methods are Firehose generated document ID and  OpenSearch  Ser-
-              vice generated document ID.
-
-              DefaultDocumentIdFormat -> (string)
-                 When  the  FIREHOSE_DEFAULT option is chosen, Firehose gener-
-                 ates a unique document ID for each record based on  a  unique
-                 internal  identifier.  The  generated  document  ID is stable
-                 across multiple delivery attempts, which  helps  prevent  the
-                 same  record from being indexed multiple times with different
-                 document IDs.
-
-                 When the NO_DOCUMENT_ID option is chosen, Firehose  does  not
-                 include any document IDs in the requests it sends to the Ama-
-                 zon OpenSearch Service. This  causes  the  Amazon  OpenSearch
-                 Service  domain to generate document IDs. In case of multiple
-                 delivery attempts, this may cause the same record to  be  in-
-                 dexed more than once with different document IDs. This option
-                 enables write-heavy operations, such as the ingestion of logs
-                 and observability data, to consume less resources in the Ama-
-                 zon OpenSearch Service domain, resulting in improved  perfor-
-                 mance.
-
-       JSON Syntax:
-
-          {
-            "RoleARN": "string",
-            "DomainARN": "string",
-            "ClusterEndpoint": "string",
-            "IndexName": "string",
-            "TypeName": "string",
-            "IndexRotationPeriod": "NoRotation"|"OneHour"|"OneDay"|"OneWeek"|"OneMonth",
-            "BufferingHints": {
-              "IntervalInSeconds": integer,
-              "SizeInMBs": integer
-            },
-            "RetryOptions": {
-              "DurationInSeconds": integer
-            },
-            "S3Update": {
-              "RoleARN": "string",
-              "BucketARN": "string",
-              "Prefix": "string",
-              "ErrorOutputPrefix": "string",
-              "BufferingHints": {
-                "SizeInMBs": integer,
-                "IntervalInSeconds": integer
-              },
-              "CompressionFormat": "UNCOMPRESSED"|"GZIP"|"ZIP"|"Snappy"|"HADOOP_SNAPPY",
-              "EncryptionConfiguration": {
-                "NoEncryptionConfig": "NoEncryption",
-                "KMSEncryptionConfig": {
-                  "AWSKMSKeyARN": "string"
-                }
-              },
-              "CloudWatchLoggingOptions": {
-                "Enabled": true|false,
-                "LogGroupName": "string",
-                "LogStreamName": "string"
-              }
-            },
-            "ProcessingConfiguration": {
-              "Enabled": true|false,
-              "Processors": [
-                {
-                  "Type": "RecordDeAggregation"|"Decompression"|"CloudWatchLogProcessing"|"Lambda"|"MetadataExtraction"|"AppendDelimiterToRecord",
-                  "Parameters": [
-                    {
-                      "ParameterName": "LambdaArn"|"NumberOfRetries"|"MetadataExtractionQuery"|"JsonParsingEngine"|"RoleArn"|"BufferSizeInMBs"|"BufferIntervalInSeconds"|"SubRecordType"|"Delimiter"|"CompressionFormat"|"DataMessageExtraction",
-                      "ParameterValue": "string"
-                    }
-                    ...
-                  ]
-                }
-                ...
-              ]
-            },
-            "CloudWatchLoggingOptions": {
-              "Enabled": true|false,
-              "LogGroupName": "string",
-              "LogStreamName": "string"
-            },
-            "DocumentIdOptions": {
-              "DefaultDocumentIdFormat": "FIREHOSE_DEFAULT"|"NO_DOCUMENT_ID"
-            }
-          }
-
-       --amazonopensearchservice-destination-update (structure)
-          Describes an update for a destination in Amazon OpenSearch Service.
-
-          RoleARN -> (string)
-              The  Amazon Resource Name (ARN) of the IAM role to be assumed by
-              Firehose for calling the Amazon OpenSearch Service Configuration
-              API and for indexing documents.
-
-          DomainARN -> (string)
-              The  ARN  of  the Amazon OpenSearch Service domain. The IAM role
-              must have permissions for DescribeDomain,  DescribeDomains,  and
-              DescribeDomainConfig  after  assuming  the IAM role specified in
-              RoleARN.
-
-          ClusterEndpoint -> (string)
-              The endpoint to use when communicating with the cluster. Specify
-              either this ClusterEndpoint or the DomainARN field.
-
-          IndexName -> (string)
-              The Amazon OpenSearch Service index name.
-
-          TypeName -> (string)
-              The  Amazon OpenSearch Service type name. For Elasticsearch 6.x,
-              there can be only one type per index. If you try  to  specify  a
-              new  type  for  an existing index that already has another type,
-              Firehose returns an error during runtime.
-
-              If you upgrade Elasticsearch from 6.x to  7.x  and  dont  update
-              your  delivery  stream, Firehose still delivers data to Elastic-
-              search with the old index name and type name. If you want to up-
-              date  your  delivery  stream  with  a new index name, provide an
-              empty string for TypeName.
-
-          IndexRotationPeriod -> (string)
-              The Amazon OpenSearch Service index rotation period. Index rota-
-              tion  appends a timestamp to IndexName to facilitate the expira-
-              tion of old data.
-
-          BufferingHints -> (structure)
-              The  buffering  options.  If  no  value   is   specified,   Ama-
-              zonopensearchBufferingHints object default values are used.
-
-              IntervalInSeconds -> (integer)
-                 Buffer  incoming  data  for  the specified period of time, in
-                 seconds, before delivering it to the destination. The default
-                 value is 300 (5 minutes).
-
-              SizeInMBs -> (integer)
-                 Buffer  incoming  data  to the specified size, in MBs, before
-                 delivering it to the destination. The default value is 5.
-
-                 We recommend setting this parameter to a value  greater  than
-                 the  amount  of  data  you typically ingest into the delivery
-                 stream in 10 seconds. For example, if  you  typically  ingest
-                 data at 1 MB/sec, the value should be 10 MB or higher.
-
-          RetryOptions -> (structure)
-              The  retry  behavior in case Firehose is unable to deliver docu-
-              ments to Amazon OpenSearch Service. The default value is 300  (5
-              minutes).
-
-              DurationInSeconds -> (integer)
-                 After an initial failure to deliver to Amazon OpenSearch Ser-
-                 vice, the total amount of time during which Firehose  retries
-                 delivery  (including  the first attempt). After this time has
-                 elapsed, the failed documents are written to Amazon  S3.  De-
-                 fault  value  is 300 seconds (5 minutes). A value of 0 (zero)
-                 results in no retries.
-
-          S3Update -> (structure)
-              Describes an update for a destination in Amazon S3.
-
-              RoleARN -> (string)
-                 The Amazon Resource Name (ARN) of  the  Amazon  Web  Services
-                 credentials.  For more information, see Amazon Resource Names
-                 (ARNs) and Amazon Web Services Service Namespaces .
-
-              BucketARN -> (string)
-                 The ARN of the S3 bucket. For more  information,  see  Amazon
-                 Resource  Names  (ARNs) and Amazon Web Services Service Name-
-                 spaces .
-
-              Prefix -> (string)
-                 The "YYYY/MM/DD/HH" time format prefix is automatically  used
-                 for  delivered Amazon S3 files. You can also specify a custom
-                 prefix, as described in Custom Prefixes for Amazon S3 Objects
-                 .
-
-              ErrorOutputPrefix -> (string)
-                 A  prefix  that Firehose evaluates and adds to failed records
-                 before writing them to S3. This  prefix  appears  immediately
-                 following the bucket name. For information about how to spec-
-                 ify this prefix, see Custom Prefixes for Amazon S3 Objects .
-
-              BufferingHints -> (structure)
-                 The buffering option. If no value is  specified,  BufferingH-
-                 ints object default values are used.
-
-                 SizeInMBs -> (integer)
-                     Buffer  incoming data to the specified size, in MiBs, be-
-                     fore delivering it to the destination. The default  value
-                     is  5.  This  parameter  is optional but if you specify a
-                     value for it, you must also specify a  value  for  Inter-
-                     valInSeconds , and vice versa.
-
-                     We  recommend  setting  this parameter to a value greater
-                     than the amount of data you typically ingest into the de-
-                     livery  stream  in  10 seconds. For example, if you typi-
-                     cally ingest data at 1 MiB/sec, the value  should  be  10
-                     MiB or higher.
-
-                 IntervalInSeconds -> (integer)
-                     Buffer incoming data for the specified period of time, in
-                     seconds, before delivering it to the destination. The de-
-                     fault value is 300. This parameter is optional but if you
-                     specify a value for it, you must also specify a value for
-                     SizeInMBs , and vice versa.
-
-              CompressionFormat -> (string)
-                 The compression format. If no value is specified, the default
-                 is UNCOMPRESSED .
-
-                 The compression formats SNAPPY or ZIP cannot be specified for
-                 Amazon  Redshift  destinations because they are not supported
-                 by the Amazon Redshift COPY operation that reads from the  S3
-                 bucket.
-
-              EncryptionConfiguration -> (structure)
-                 The  encryption  configuration. If no value is specified, the
-                 default is no encryption.
-
-                 NoEncryptionConfig -> (string)
-                     Specifically override existing encryption information  to
-                     ensure that no encryption is used.
-
-                 KMSEncryptionConfig -> (structure)
-                     The encryption key.
-
-                     AWSKMSKeyARN -> (string)
-                        The  Amazon Resource Name (ARN) of the encryption key.
-                        Must belong to the same Amazon Web Services Region  as
-                        the  destination  Amazon  S3 bucket. For more informa-
-                        tion, see Amazon Resource Names (ARNs) and Amazon  Web
-                        Services Service Namespaces .
-
-              CloudWatchLoggingOptions -> (structure)
-                 The CloudWatch logging options for your delivery stream.
-
-                 Enabled -> (boolean)
-                     Enables or disables CloudWatch logging.
-
-                 LogGroupName -> (string)
-                     The  CloudWatch group name for logging. This value is re-
-                     quired if CloudWatch logging is enabled.
-
-                 LogStreamName -> (string)
-                     The CloudWatch log stream name for logging. This value is
-                     required if CloudWatch logging is enabled.
-
-          ProcessingConfiguration -> (structure)
-              Describes a data processing configuration.
-
-              Enabled -> (boolean)
-                 Enables or disables data processing.
-
-              Processors -> (list)
-                 The data processors.
-
-                 (structure)
-                     Describes a data processor.
-
-                     NOTE:
-                        If  you  want  to  add  a  new  line delimiter between
-                        records in objects that are delivered  to  Amazon  S3,
-                        choose  AppendDelimiterToRecord  as  a processor type.
-                        You dont have to put a processor  parameter  when  you
-                        select AppendDelimiterToRecord .
-
-                     Type -> (string)
-                        The type of processor.
-
-                     Parameters -> (list)
-                        The processor parameters.
-
-                        (structure)
-                            Describes the processor parameter.
-
-                            ParameterName -> (string)
-                               The  name  of the parameter. Currently the fol-
-                               lowing default values are supported: 3 for Num-
-                               berOfRetries  and  60 for the BufferIntervalIn-
-                               Seconds . The  BufferSizeInMBs  ranges  between
-                               0.2  MB  and  up  to 3MB. The default buffering
-                               hint  is  1MB  for  all  destinations,   except
-                               Splunk.  For Splunk, the default buffering hint
-                               is 256 KB.
-
-                            ParameterValue -> (string)
-                               The parameter value.
-
-          CloudWatchLoggingOptions -> (structure)
-              Describes the Amazon CloudWatch logging options for your  deliv-
-              ery stream.
-
-              Enabled -> (boolean)
-                 Enables or disables CloudWatch logging.
-
-              LogGroupName -> (string)
-                 The CloudWatch group name for logging. This value is required
-                 if CloudWatch logging is enabled.
-
-              LogStreamName -> (string)
-                 The CloudWatch log stream name for logging. This value is re-
-                 quired if CloudWatch logging is enabled.
-
-          DocumentIdOptions -> (structure)
-              Indicates  the  method for setting up document ID. The supported
-              methods are Firehose generated document ID and  OpenSearch  Ser-
-              vice generated document ID.
-
-              DefaultDocumentIdFormat -> (string)
-                 When  the  FIREHOSE_DEFAULT option is chosen, Firehose gener-
-                 ates a unique document ID for each record based on  a  unique
-                 internal  identifier.  The  generated  document  ID is stable
-                 across multiple delivery attempts, which  helps  prevent  the
-                 same  record from being indexed multiple times with different
-                 document IDs.
-
-                 When the NO_DOCUMENT_ID option is chosen, Firehose  does  not
-                 include any document IDs in the requests it sends to the Ama-
-                 zon OpenSearch Service. This  causes  the  Amazon  OpenSearch
-                 Service  domain to generate document IDs. In case of multiple
-                 delivery attempts, this may cause the same record to  be  in-
-                 dexed more than once with different document IDs. This option
-                 enables write-heavy operations, such as the ingestion of logs
-                 and observability data, to consume less resources in the Ama-
-                 zon OpenSearch Service domain, resulting in improved  perfor-
-                 mance.
-
-       JSON Syntax:
-
-          {
-            "RoleARN": "string",
-            "DomainARN": "string",
-            "ClusterEndpoint": "string",
-            "IndexName": "string",
-            "TypeName": "string",
-            "IndexRotationPeriod": "NoRotation"|"OneHour"|"OneDay"|"OneWeek"|"OneMonth",
-            "BufferingHints": {
-              "IntervalInSeconds": integer,
-              "SizeInMBs": integer
-            },
-            "RetryOptions": {
-              "DurationInSeconds": integer
-            },
-            "S3Update": {
-              "RoleARN": "string",
-              "BucketARN": "string",
-              "Prefix": "string",
-              "ErrorOutputPrefix": "string",
-              "BufferingHints": {
-                "SizeInMBs": integer,
-                "IntervalInSeconds": integer
-              },
-              "CompressionFormat": "UNCOMPRESSED"|"GZIP"|"ZIP"|"Snappy"|"HADOOP_SNAPPY",
-              "EncryptionConfiguration": {
-                "NoEncryptionConfig": "NoEncryption",
-                "KMSEncryptionConfig": {
-                  "AWSKMSKeyARN": "string"
-                }
-              },
-              "CloudWatchLoggingOptions": {
-                "Enabled": true|false,
-                "LogGroupName": "string",
-                "LogStreamName": "string"
-              }
-            },
-            "ProcessingConfiguration": {
-              "Enabled": true|false,
-              "Processors": [
-                {
-                  "Type": "RecordDeAggregation"|"Decompression"|"CloudWatchLogProcessing"|"Lambda"|"MetadataExtraction"|"AppendDelimiterToRecord",
-                  "Parameters": [
-                    {
-                      "ParameterName": "LambdaArn"|"NumberOfRetries"|"MetadataExtractionQuery"|"JsonParsingEngine"|"RoleArn"|"BufferSizeInMBs"|"BufferIntervalInSeconds"|"SubRecordType"|"Delimiter"|"CompressionFormat"|"DataMessageExtraction",
-                      "ParameterValue": "string"
-                    }
-                    ...
-                  ]
-                }
-                ...
-              ]
-            },
-            "CloudWatchLoggingOptions": {
-              "Enabled": true|false,
-              "LogGroupName": "string",
-              "LogStreamName": "string"
-            },
-            "DocumentIdOptions": {
-              "DefaultDocumentIdFormat": "FIREHOSE_DEFAULT"|"NO_DOCUMENT_ID"
-            }
-          }
-
-       --splunk-destination-update (structure)
-          Describes an update for a destination in Splunk.
-
-          HECEndpoint -> (string)
-              The  HTTP Event Collector (HEC) endpoint to which Firehose sends
-              your data.
-
-          HECEndpointType -> (string)
-              This type can be either "Raw" or "Event."
-
-          HECToken -> (string)
-              A GUID that you obtain from your Splunk cluster when you  create
-              a new HEC endpoint.
-
-          HECAcknowledgmentTimeoutInSeconds -> (integer)
-              The amount of time that Firehose waits to receive an acknowledg-
-              ment from Splunk after it sends data. At the end of the  timeout
-              period,  Firehose either tries to send the data again or consid-
-              ers it an error, based on your retry settings.
-
-          RetryOptions -> (structure)
-              The retry behavior in case Firehose is unable to deliver data to
-              Splunk  or  if  it  doesn't receive an acknowledgment of receipt
-              from Splunk.
-
-              DurationInSeconds -> (integer)
-                 The total amount of time that  Firehose  spends  on  retries.
-                 This  duration  starts after the initial attempt to send data
-                 to Splunk fails. It doesn't include the periods during  which
-                 Firehose  waits for acknowledgment from Splunk after each at-
-                 tempt.
-
-          S3BackupMode -> (string)
-              Specifies how you want Firehose to back up documents  to  Amazon
-              S3.  When  set to FailedDocumentsOnly , Firehose writes any data
-              that could not be indexed to the configured Amazon  S3  destina-
-              tion.  When  set  to  AllEvents , Firehose delivers all incoming
-              records to Amazon S3, and also writes failed documents to Amazon
-              S3. The default value is FailedEventsOnly .
-
-              You  can  update  this  backup mode from FailedEventsOnly to Al-
-              lEvents . You can't update it from AllEvents to FailedEventsOnly
-              .
-
-          S3Update -> (structure)
-              Your  update  to the configuration of the backup Amazon S3 loca-
-              tion.
-
-              RoleARN -> (string)
-                 The Amazon Resource Name (ARN) of  the  Amazon  Web  Services
-                 credentials.  For more information, see Amazon Resource Names
-                 (ARNs) and Amazon Web Services Service Namespaces .
-
-              BucketARN -> (string)
-                 The ARN of the S3 bucket. For more  information,  see  Amazon
-                 Resource  Names  (ARNs) and Amazon Web Services Service Name-
-                 spaces .
-
-              Prefix -> (string)
-                 The "YYYY/MM/DD/HH" time format prefix is automatically  used
-                 for  delivered Amazon S3 files. You can also specify a custom
-                 prefix, as described in Custom Prefixes for Amazon S3 Objects
-                 .
-
-              ErrorOutputPrefix -> (string)
-                 A  prefix  that Firehose evaluates and adds to failed records
-                 before writing them to S3. This  prefix  appears  immediately
-                 following the bucket name. For information about how to spec-
-                 ify this prefix, see Custom Prefixes for Amazon S3 Objects .
-
-              BufferingHints -> (structure)
-                 The buffering option. If no value is  specified,  BufferingH-
-                 ints object default values are used.
-
-                 SizeInMBs -> (integer)
-                     Buffer  incoming data to the specified size, in MiBs, be-
-                     fore delivering it to the destination. The default  value
-                     is  5.  This  parameter  is optional but if you specify a
-                     value for it, you must also specify a  value  for  Inter-
-                     valInSeconds , and vice versa.
-
-                     We  recommend  setting  this parameter to a value greater
-                     than the amount of data you typically ingest into the de-
-                     livery  stream  in  10 seconds. For example, if you typi-
-                     cally ingest data at 1 MiB/sec, the value  should  be  10
-                     MiB or higher.
-
-                 IntervalInSeconds -> (integer)
-                     Buffer incoming data for the specified period of time, in
-                     seconds, before delivering it to the destination. The de-
-                     fault value is 300. This parameter is optional but if you
-                     specify a value for it, you must also specify a value for
-                     SizeInMBs , and vice versa.
-
-              CompressionFormat -> (string)
-                 The compression format. If no value is specified, the default
-                 is UNCOMPRESSED .
-
-                 The compression formats SNAPPY or ZIP cannot be specified for
-                 Amazon  Redshift  destinations because they are not supported
-                 by the Amazon Redshift COPY operation that reads from the  S3
-                 bucket.
-
-              EncryptionConfiguration -> (structure)
-                 The  encryption  configuration. If no value is specified, the
-                 default is no encryption.
-
-                 NoEncryptionConfig -> (string)
-                     Specifically override existing encryption information  to
-                     ensure that no encryption is used.
-
-                 KMSEncryptionConfig -> (structure)
-                     The encryption key.
-
-                     AWSKMSKeyARN -> (string)
-                        The  Amazon Resource Name (ARN) of the encryption key.
-                        Must belong to the same Amazon Web Services Region  as
-                        the  destination  Amazon  S3 bucket. For more informa-
-                        tion, see Amazon Resource Names (ARNs) and Amazon  Web
-                        Services Service Namespaces .
-
-              CloudWatchLoggingOptions -> (structure)
-                 The CloudWatch logging options for your delivery stream.
-
-                 Enabled -> (boolean)
-                     Enables or disables CloudWatch logging.
-
-                 LogGroupName -> (string)
-                     The  CloudWatch group name for logging. This value is re-
-                     quired if CloudWatch logging is enabled.
-
-                 LogStreamName -> (string)
-                     The CloudWatch log stream name for logging. This value is
-                     required if CloudWatch logging is enabled.
-
-          ProcessingConfiguration -> (structure)
-              The data processing configuration.
-
-              Enabled -> (boolean)
-                 Enables or disables data processing.
-
-              Processors -> (list)
-                 The data processors.
-
-                 (structure)
-                     Describes a data processor.
-
-                     NOTE:
-                        If  you  want  to  add  a  new  line delimiter between
-                        records in objects that are delivered  to  Amazon  S3,
-                        choose  AppendDelimiterToRecord  as  a processor type.
-                        You dont have to put a processor  parameter  when  you
-                        select AppendDelimiterToRecord .
-
-                     Type -> (string)
-                        The type of processor.
-
-                     Parameters -> (list)
-                        The processor parameters.
-
-                        (structure)
-                            Describes the processor parameter.
-
-                            ParameterName -> (string)
-                               The  name  of the parameter. Currently the fol-
-                               lowing default values are supported: 3 for Num-
-                               berOfRetries  and  60 for the BufferIntervalIn-
-                               Seconds . The  BufferSizeInMBs  ranges  between
-                               0.2  MB  and  up  to 3MB. The default buffering
-                               hint  is  1MB  for  all  destinations,   except
-                               Splunk.  For Splunk, the default buffering hint
-                               is 256 KB.
-
-                            ParameterValue -> (string)
-                               The parameter value.
-
-          CloudWatchLoggingOptions -> (structure)
               The Amazon CloudWatch logging options for your delivery stream.
 
               Enabled -> (boolean)
@@ -2015,17 +2047,44 @@ OPTIONS
                  quired if CloudWatch logging is enabled.
 
           BufferingHints -> (structure)
-              The buffering options. If no value  is  specified,  the  default
+              The  buffering  options.  If  no value is specified, the default
               values for Splunk are used.
 
               IntervalInSeconds -> (integer)
-                 Buffer  incoming  data  for  the specified period of time, in
+                 Buffer incoming data for the specified  period  of  time,  in
                  seconds, before delivering it to the destination. The default
                  value is 60 (1 minute).
 
               SizeInMBs -> (integer)
-                 Buffer  incoming  data  to the specified size, in MBs, before
+                 Buffer incoming data to the specified size,  in  MBs,  before
                  delivering it to the destination. The default value is 5.
+
+          SecretsManagerConfiguration -> (structure)
+              The  configuration  that  defines  how  you  access  secrets for
+              Splunk.
+
+              SecretARN -> (string)
+                 The ARN of the secret that stores your credentials.  It  must
+                 be  in  the  same region as the Firehose stream and the role.
+                 The secret ARN can reside in a different account than the de-
+                 livery stream and role as Firehose supports cross-account se-
+                 cret access. This parameter is required when Enabled  is  set
+                 to True .
+
+              RoleARN -> (string)
+                 Specifies the role that Firehose assumes when calling the Se-
+                 crets Manager API operation. When you provide  the  role,  it
+                 overrides any destination specific role defined in the desti-
+                 nation configuration. If you do not provide the then  we  use
+                 the destination specific role. This parameter is required for
+                 Splunk.
+
+              Enabled -> (boolean)
+                 Specifies whether you want to use  the  the  secrets  manager
+                 feature.  When  set as True the secrets manager configuration
+                 overwrites the existing secrets in the destination configura-
+                 tion.  When it's set to False Firehose falls back to the cre-
+                 dentials in the destination configuration.
 
        JSON Syntax:
 
@@ -2084,6 +2143,11 @@ OPTIONS
             "BufferingHints": {
               "IntervalInSeconds": integer,
               "SizeInMBs": integer
+            },
+            "SecretsManagerConfiguration": {
+              "SecretARN": "string",
+              "RoleARN": "string",
+              "Enabled": true|false
             }
           }
 
@@ -2324,6 +2388,33 @@ OPTIONS
                      The CloudWatch log stream name for logging. This value is
                      required if CloudWatch logging is enabled.
 
+          SecretsManagerConfiguration -> (structure)
+              The  configuration  that defines how you access secrets for HTTP
+              Endpoint destination.
+
+              SecretARN -> (string)
+                 The ARN of the secret that stores your credentials.  It  must
+                 be  in  the  same region as the Firehose stream and the role.
+                 The secret ARN can reside in a different account than the de-
+                 livery stream and role as Firehose supports cross-account se-
+                 cret access. This parameter is required when Enabled  is  set
+                 to True .
+
+              RoleARN -> (string)
+                 Specifies the role that Firehose assumes when calling the Se-
+                 crets Manager API operation. When you provide  the  role,  it
+                 overrides any destination specific role defined in the desti-
+                 nation configuration. If you do not provide the then  we  use
+                 the destination specific role. This parameter is required for
+                 Splunk.
+
+              Enabled -> (boolean)
+                 Specifies whether you want to use  the  the  secrets  manager
+                 feature.  When  set as True the secrets manager configuration
+                 overwrites the existing secrets in the destination configura-
+                 tion.  When it's set to False Firehose falls back to the cre-
+                 dentials in the destination configuration.
+
        JSON Syntax:
 
           {
@@ -2393,6 +2484,11 @@ OPTIONS
                 "LogGroupName": "string",
                 "LogStreamName": "string"
               }
+            },
+            "SecretsManagerConfiguration": {
+              "SecretARN": "string",
+              "RoleARN": "string",
+              "Enabled": true|false
             }
           }
 
@@ -2401,89 +2497,89 @@ OPTIONS
           Amazon OpenSearch Service.
 
           RoleARN -> (string)
-              The Amazon Resource Name (ARN) of the IAM role to be assumed  by
-              Firehose   for   calling  the  Serverless  offering  for  Amazon
+              The  Amazon Resource Name (ARN) of the IAM role to be assumed by
+              Firehose  for  calling  the  Serverless  offering   for   Amazon
               OpenSearch Service Configuration API and for indexing documents.
 
           CollectionEndpoint -> (string)
-              The endpoint to use when communicating with  the  collection  in
+              The  endpoint  to  use when communicating with the collection in
               the Serverless offering for Amazon OpenSearch Service.
 
           IndexName -> (string)
-              The  Serverless  offering  for  Amazon  OpenSearch Service index
+              The Serverless offering  for  Amazon  OpenSearch  Service  index
               name.
 
           BufferingHints -> (structure)
-              The  buffering  options.  If  no  value   is   specified,   Ama-
+              The   buffering   options.   If  no  value  is  specified,  Ama-
               zonopensearchBufferingHints object default values are used.
 
               IntervalInSeconds -> (integer)
-                 Buffer  incoming  data  for  the specified period of time, in
+                 Buffer incoming data for the specified  period  of  time,  in
                  seconds, before delivering it to the destination. The default
                  value is 300 (5 minutes).
 
               SizeInMBs -> (integer)
-                 Buffer  incoming  data  to the specified size, in MBs, before
+                 Buffer incoming data to the specified size,  in  MBs,  before
                  delivering it to the destination. The default value is 5.
 
-                 We recommend setting this parameter to a value  greater  than
-                 the  amount  of  data  you typically ingest into the delivery
-                 stream in 10 seconds. For example, if  you  typically  ingest
+                 We  recommend  setting this parameter to a value greater than
+                 the amount of data you typically  ingest  into  the  delivery
+                 stream  in  10  seconds. For example, if you typically ingest
                  data at 1 MB/sec, the value should be 10 MB or higher.
 
           RetryOptions -> (structure)
-              The  retry  behavior in case Firehose is unable to deliver docu-
-              ments to the Serverless offering for Amazon OpenSearch  Service.
+              The retry behavior in case Firehose is unable to  deliver  docu-
+              ments  to the Serverless offering for Amazon OpenSearch Service.
               The default value is 300 (5 minutes).
 
               DurationInSeconds -> (integer)
-                 After  an initial failure to deliver to the Serverless offer-
-                 ing for Amazon OpenSearch Service, the total amount  of  time
-                 during  which  Firehose retries delivery (including the first
-                 attempt). After this time has elapsed, the  failed  documents
-                 are  written  to  Amazon  S3. Default value is 300 seconds (5
+                 After an initial failure to deliver to the Serverless  offer-
+                 ing  for  Amazon OpenSearch Service, the total amount of time
+                 during which Firehose retries delivery (including  the  first
+                 attempt).  After  this time has elapsed, the failed documents
+                 are written to Amazon S3. Default value  is  300  seconds  (5
                  minutes). A value of 0 (zero) results in no retries.
 
           S3Update -> (structure)
               Describes an update for a destination in Amazon S3.
 
               RoleARN -> (string)
-                 The Amazon Resource Name (ARN) of  the  Amazon  Web  Services
-                 credentials.  For more information, see Amazon Resource Names
+                 The  Amazon  Resource  Name  (ARN) of the Amazon Web Services
+                 credentials. For more information, see Amazon Resource  Names
                  (ARNs) and Amazon Web Services Service Namespaces .
 
               BucketARN -> (string)
-                 The ARN of the S3 bucket. For more  information,  see  Amazon
-                 Resource  Names  (ARNs) and Amazon Web Services Service Name-
+                 The  ARN  of  the S3 bucket. For more information, see Amazon
+                 Resource Names (ARNs) and Amazon Web Services  Service  Name-
                  spaces .
 
               Prefix -> (string)
-                 The "YYYY/MM/DD/HH" time format prefix is automatically  used
-                 for  delivered Amazon S3 files. You can also specify a custom
+                 The  "YYYY/MM/DD/HH" time format prefix is automatically used
+                 for delivered Amazon S3 files. You can also specify a  custom
                  prefix, as described in Custom Prefixes for Amazon S3 Objects
                  .
 
               ErrorOutputPrefix -> (string)
-                 A  prefix  that Firehose evaluates and adds to failed records
-                 before writing them to S3. This  prefix  appears  immediately
+                 A prefix that Firehose evaluates and adds to  failed  records
+                 before  writing  them  to S3. This prefix appears immediately
                  following the bucket name. For information about how to spec-
                  ify this prefix, see Custom Prefixes for Amazon S3 Objects .
 
               BufferingHints -> (structure)
-                 The buffering option. If no value is  specified,  BufferingH-
+                 The  buffering  option. If no value is specified, BufferingH-
                  ints object default values are used.
 
                  SizeInMBs -> (integer)
-                     Buffer  incoming data to the specified size, in MiBs, be-
-                     fore delivering it to the destination. The default  value
-                     is  5.  This  parameter  is optional but if you specify a
-                     value for it, you must also specify a  value  for  Inter-
+                     Buffer incoming data to the specified size, in MiBs,  be-
+                     fore  delivering it to the destination. The default value
+                     is 5. This parameter is optional but  if  you  specify  a
+                     value  for  it,  you must also specify a value for Inter-
                      valInSeconds , and vice versa.
 
-                     We  recommend  setting  this parameter to a value greater
+                     We recommend setting this parameter to  a  value  greater
                      than the amount of data you typically ingest into the de-
-                     livery  stream  in  10 seconds. For example, if you typi-
-                     cally ingest data at 1 MiB/sec, the value  should  be  10
+                     livery stream in 10 seconds. For example,  if  you  typi-
+                     cally  ingest  data  at 1 MiB/sec, the value should be 10
                      MiB or higher.
 
                  IntervalInSeconds -> (integer)
@@ -2498,26 +2594,26 @@ OPTIONS
                  is UNCOMPRESSED .
 
                  The compression formats SNAPPY or ZIP cannot be specified for
-                 Amazon  Redshift  destinations because they are not supported
-                 by the Amazon Redshift COPY operation that reads from the  S3
+                 Amazon Redshift destinations because they are  not  supported
+                 by  the Amazon Redshift COPY operation that reads from the S3
                  bucket.
 
               EncryptionConfiguration -> (structure)
-                 The  encryption  configuration. If no value is specified, the
+                 The encryption configuration. If no value is  specified,  the
                  default is no encryption.
 
                  NoEncryptionConfig -> (string)
-                     Specifically override existing encryption information  to
+                     Specifically  override existing encryption information to
                      ensure that no encryption is used.
 
                  KMSEncryptionConfig -> (structure)
                      The encryption key.
 
                      AWSKMSKeyARN -> (string)
-                        The  Amazon Resource Name (ARN) of the encryption key.
-                        Must belong to the same Amazon Web Services Region  as
-                        the  destination  Amazon  S3 bucket. For more informa-
-                        tion, see Amazon Resource Names (ARNs) and Amazon  Web
+                        The Amazon Resource Name (ARN) of the encryption  key.
+                        Must  belong to the same Amazon Web Services Region as
+                        the destination Amazon S3 bucket.  For  more  informa-
+                        tion,  see Amazon Resource Names (ARNs) and Amazon Web
                         Services Service Namespaces .
 
               CloudWatchLoggingOptions -> (structure)
@@ -2527,7 +2623,7 @@ OPTIONS
                      Enables or disables CloudWatch logging.
 
                  LogGroupName -> (string)
-                     The  CloudWatch group name for logging. This value is re-
+                     The CloudWatch group name for logging. This value is  re-
                      quired if CloudWatch logging is enabled.
 
                  LogStreamName -> (string)
@@ -2547,10 +2643,10 @@ OPTIONS
                      Describes a data processor.
 
                      NOTE:
-                        If  you  want  to  add  a  new  line delimiter between
-                        records in objects that are delivered  to  Amazon  S3,
-                        choose  AppendDelimiterToRecord  as  a processor type.
-                        You dont have to put a processor  parameter  when  you
+                        If you want  to  add  a  new  line  delimiter  between
+                        records  in  objects  that are delivered to Amazon S3,
+                        choose AppendDelimiterToRecord as  a  processor  type.
+                        You  dont  have  to put a processor parameter when you
                         select AppendDelimiterToRecord .
 
                      Type -> (string)
@@ -2563,20 +2659,20 @@ OPTIONS
                             Describes the processor parameter.
 
                             ParameterName -> (string)
-                               The  name  of the parameter. Currently the fol-
+                               The name of the parameter. Currently  the  fol-
                                lowing default values are supported: 3 for Num-
-                               berOfRetries  and  60 for the BufferIntervalIn-
-                               Seconds . The  BufferSizeInMBs  ranges  between
-                               0.2  MB  and  up  to 3MB. The default buffering
-                               hint  is  1MB  for  all  destinations,   except
-                               Splunk.  For Splunk, the default buffering hint
+                               berOfRetries and 60 for  the  BufferIntervalIn-
+                               Seconds  .  The  BufferSizeInMBs ranges between
+                               0.2 MB and up to  3MB.  The  default  buffering
+                               hint   is  1MB  for  all  destinations,  except
+                               Splunk. For Splunk, the default buffering  hint
                                is 256 KB.
 
                             ParameterValue -> (string)
                                The parameter value.
 
           CloudWatchLoggingOptions -> (structure)
-              Describes the Amazon CloudWatch logging options for your  deliv-
+              Describes  the Amazon CloudWatch logging options for your deliv-
               ery stream.
 
               Enabled -> (boolean)
@@ -2649,20 +2745,20 @@ OPTIONS
           }
 
        --snowflake-destination-update (structure)
-          Update to the Snowflake destination condiguration settings
+          Update to the Snowflake destination configuration settings.
 
           AccountUrl -> (string)
-              URL  for accessing your Snowflake account. This URL must include
-              your account identifier . Note that the protocol (https://)  and
+              URL for accessing your Snowflake account. This URL must  include
+              your  account identifier . Note that the protocol (https://) and
               port number are optional.
 
           PrivateKey -> (string)
-              The  private  key used to encrypt your Snowflake client. For in-
+              The private key used to encrypt your Snowflake client.  For  in-
               formation, see Using Key Pair Authentication & Key Rotation .
 
           KeyPassphrase -> (string)
               Passphrase to decrypt the private key when the key is encrypted.
-              For  information,  see Using Key Pair Authentication & Key Rota-
+              For information, see Using Key Pair Authentication &  Key  Rota-
               tion .
 
           User -> (string)
@@ -2676,11 +2772,11 @@ OPTIONS
               groupings of database objects, such as tables and views
 
           Table -> (string)
-              All  data  in  Snowflake is stored in database tables, logically
+              All data in Snowflake is stored in  database  tables,  logically
               structured as collections of columns and rows.
 
           SnowflakeRoleConfiguration -> (structure)
-              Optionally configure a Snowflake  role.  Otherwise  the  default
+              Optionally  configure  a  Snowflake  role. Otherwise the default
               user role will be used.
 
               Enabled -> (boolean)
@@ -2690,8 +2786,8 @@ OPTIONS
                  The Snowflake role you wish to configure
 
           DataLoadingOption -> (string)
-              JSON  keys  mapped  to table column names or choose to split the
-              JSON payload where content is mapped to a record content  column
+              JSON keys mapped to table column names or choose  to  split  the
+              JSON  payload where content is mapped to a record content column
               and source metadata is mapped to a record metadata column.
 
           MetaDataColumnName -> (string)
@@ -2701,7 +2797,7 @@ OPTIONS
               The name of the content metadata column
 
           CloudWatchLoggingOptions -> (structure)
-              Describes  the Amazon CloudWatch logging options for your deliv-
+              Describes the Amazon CloudWatch logging options for your  deliv-
               ery stream.
 
               Enabled -> (boolean)
@@ -2728,10 +2824,10 @@ OPTIONS
                      Describes a data processor.
 
                      NOTE:
-                        If you want  to  add  a  new  line  delimiter  between
-                        records  in  objects  that are delivered to Amazon S3,
-                        choose AppendDelimiterToRecord as  a  processor  type.
-                        You  dont  have  to put a processor parameter when you
+                        If  you  want  to  add  a  new  line delimiter between
+                        records in objects that are delivered  to  Amazon  S3,
+                        choose  AppendDelimiterToRecord  as  a processor type.
+                        You dont have to put a processor  parameter  when  you
                         select AppendDelimiterToRecord .
 
                      Type -> (string)
@@ -2744,13 +2840,13 @@ OPTIONS
                             Describes the processor parameter.
 
                             ParameterName -> (string)
-                               The name of the parameter. Currently  the  fol-
+                               The  name  of the parameter. Currently the fol-
                                lowing default values are supported: 3 for Num-
-                               berOfRetries and 60 for  the  BufferIntervalIn-
-                               Seconds  .  The  BufferSizeInMBs ranges between
-                               0.2 MB and up to  3MB.  The  default  buffering
-                               hint   is  1MB  for  all  destinations,  except
-                               Splunk. For Splunk, the default buffering  hint
+                               berOfRetries  and  60 for the BufferIntervalIn-
+                               Seconds . The  BufferSizeInMBs  ranges  between
+                               0.2  MB  and  up  to 3MB. The default buffering
+                               hint  is  1MB  for  all  destinations,   except
+                               Splunk.  For Splunk, the default buffering hint
                                is 256 KB.
 
                             ParameterValue -> (string)
@@ -2760,23 +2856,23 @@ OPTIONS
               The Amazon Resource Name (ARN) of the Snowflake role
 
           RetryOptions -> (structure)
-              Specify  how long Firehose retries sending data to the New Relic
-              HTTP endpoint. After sending data, Firehose first waits  for  an
+              Specify how long Firehose retries sending data to the New  Relic
+              HTTP  endpoint.  After sending data, Firehose first waits for an
               acknowledgment from the HTTP endpoint. If an error occurs or the
-              acknowledgment doesnt arrive within the  acknowledgment  timeout
-              period,  Firehose  starts  the  retry duration counter. It keeps
-              retrying until the retry duration expires. After that,  Firehose
-              considers  it  a  data delivery failure and backs up the data to
-              your Amazon S3 bucket. Every time that Firehose  sends  data  to
-              the  HTTP  endpoint  (either the initial attempt or a retry), it
-              restarts the acknowledgement timeout counter and  waits  for  an
-              acknowledgement  from the HTTP endpoint. Even if the retry dura-
-              tion expires, Firehose still waits for the acknowledgment  until
+              acknowledgment  doesnt  arrive within the acknowledgment timeout
+              period, Firehose starts the retry  duration  counter.  It  keeps
+              retrying  until the retry duration expires. After that, Firehose
+              considers it a data delivery failure and backs up  the  data  to
+              your  Amazon  S3  bucket. Every time that Firehose sends data to
+              the HTTP endpoint (either the initial attempt or  a  retry),  it
+              restarts  the  acknowledgement  timeout counter and waits for an
+              acknowledgement from the HTTP endpoint. Even if the retry  dura-
+              tion  expires, Firehose still waits for the acknowledgment until
               it receives it or the acknowledgement timeout period is reached.
-              If the acknowledgment times  out,  Firehose  determines  whether
-              there's  time  left in the retry counter. If there is time left,
-              it retries again and repeats the logic until it receives an  ac-
-              knowledgment  or  determines that the retry time has expired. If
+              If  the  acknowledgment  times  out, Firehose determines whether
+              there's time left in the retry counter. If there is  time  left,
+              it  retries again and repeats the logic until it receives an ac-
+              knowledgment or determines that the retry time has  expired.  If
               you don't want Firehose to retry sending data, set this value to
               0.
 
@@ -2791,42 +2887,42 @@ OPTIONS
               Describes an update for a destination in Amazon S3.
 
               RoleARN -> (string)
-                 The Amazon Resource Name (ARN) of  the  Amazon  Web  Services
-                 credentials.  For more information, see Amazon Resource Names
+                 The  Amazon  Resource  Name  (ARN) of the Amazon Web Services
+                 credentials. For more information, see Amazon Resource  Names
                  (ARNs) and Amazon Web Services Service Namespaces .
 
               BucketARN -> (string)
-                 The ARN of the S3 bucket. For more  information,  see  Amazon
-                 Resource  Names  (ARNs) and Amazon Web Services Service Name-
+                 The  ARN  of  the S3 bucket. For more information, see Amazon
+                 Resource Names (ARNs) and Amazon Web Services  Service  Name-
                  spaces .
 
               Prefix -> (string)
-                 The "YYYY/MM/DD/HH" time format prefix is automatically  used
-                 for  delivered Amazon S3 files. You can also specify a custom
+                 The  "YYYY/MM/DD/HH" time format prefix is automatically used
+                 for delivered Amazon S3 files. You can also specify a  custom
                  prefix, as described in Custom Prefixes for Amazon S3 Objects
                  .
 
               ErrorOutputPrefix -> (string)
-                 A  prefix  that Firehose evaluates and adds to failed records
-                 before writing them to S3. This  prefix  appears  immediately
+                 A prefix that Firehose evaluates and adds to  failed  records
+                 before  writing  them  to S3. This prefix appears immediately
                  following the bucket name. For information about how to spec-
                  ify this prefix, see Custom Prefixes for Amazon S3 Objects .
 
               BufferingHints -> (structure)
-                 The buffering option. If no value is  specified,  BufferingH-
+                 The  buffering  option. If no value is specified, BufferingH-
                  ints object default values are used.
 
                  SizeInMBs -> (integer)
-                     Buffer  incoming data to the specified size, in MiBs, be-
-                     fore delivering it to the destination. The default  value
-                     is  5.  This  parameter  is optional but if you specify a
-                     value for it, you must also specify a  value  for  Inter-
+                     Buffer incoming data to the specified size, in MiBs,  be-
+                     fore  delivering it to the destination. The default value
+                     is 5. This parameter is optional but  if  you  specify  a
+                     value  for  it,  you must also specify a value for Inter-
                      valInSeconds , and vice versa.
 
-                     We  recommend  setting  this parameter to a value greater
+                     We recommend setting this parameter to  a  value  greater
                      than the amount of data you typically ingest into the de-
-                     livery  stream  in  10 seconds. For example, if you typi-
-                     cally ingest data at 1 MiB/sec, the value  should  be  10
+                     livery stream in 10 seconds. For example,  if  you  typi-
+                     cally  ingest  data  at 1 MiB/sec, the value should be 10
                      MiB or higher.
 
                  IntervalInSeconds -> (integer)
@@ -2841,26 +2937,26 @@ OPTIONS
                  is UNCOMPRESSED .
 
                  The compression formats SNAPPY or ZIP cannot be specified for
-                 Amazon  Redshift  destinations because they are not supported
-                 by the Amazon Redshift COPY operation that reads from the  S3
+                 Amazon Redshift destinations because they are  not  supported
+                 by  the Amazon Redshift COPY operation that reads from the S3
                  bucket.
 
               EncryptionConfiguration -> (structure)
-                 The  encryption  configuration. If no value is specified, the
+                 The encryption configuration. If no value is  specified,  the
                  default is no encryption.
 
                  NoEncryptionConfig -> (string)
-                     Specifically override existing encryption information  to
+                     Specifically  override existing encryption information to
                      ensure that no encryption is used.
 
                  KMSEncryptionConfig -> (structure)
                      The encryption key.
 
                      AWSKMSKeyARN -> (string)
-                        The  Amazon Resource Name (ARN) of the encryption key.
-                        Must belong to the same Amazon Web Services Region  as
-                        the  destination  Amazon  S3 bucket. For more informa-
-                        tion, see Amazon Resource Names (ARNs) and Amazon  Web
+                        The Amazon Resource Name (ARN) of the encryption  key.
+                        Must  belong to the same Amazon Web Services Region as
+                        the destination Amazon S3 bucket.  For  more  informa-
+                        tion,  see Amazon Resource Names (ARNs) and Amazon Web
                         Services Service Namespaces .
 
               CloudWatchLoggingOptions -> (structure)
@@ -2870,12 +2966,38 @@ OPTIONS
                      Enables or disables CloudWatch logging.
 
                  LogGroupName -> (string)
-                     The  CloudWatch group name for logging. This value is re-
+                     The CloudWatch group name for logging. This value is  re-
                      quired if CloudWatch logging is enabled.
 
                  LogStreamName -> (string)
                      The CloudWatch log stream name for logging. This value is
                      required if CloudWatch logging is enabled.
+
+          SecretsManagerConfiguration -> (structure)
+              Describes the Secrets Manager configuration in Snowflake.
+
+              SecretARN -> (string)
+                 The ARN of the secret that stores your credentials.  It  must
+                 be  in  the  same region as the Firehose stream and the role.
+                 The secret ARN can reside in a different account than the de-
+                 livery stream and role as Firehose supports cross-account se-
+                 cret access. This parameter is required when Enabled  is  set
+                 to True .
+
+              RoleARN -> (string)
+                 Specifies the role that Firehose assumes when calling the Se-
+                 crets Manager API operation. When you provide  the  role,  it
+                 overrides any destination specific role defined in the desti-
+                 nation configuration. If you do not provide the then  we  use
+                 the destination specific role. This parameter is required for
+                 Splunk.
+
+              Enabled -> (boolean)
+                 Specifies whether you want to use  the  the  secrets  manager
+                 feature.  When  set as True the secrets manager configuration
+                 overwrites the existing secrets in the destination configura-
+                 tion.  When it's set to False Firehose falls back to the cre-
+                 dentials in the destination configuration.
 
        JSON Syntax:
 
@@ -2941,20 +3063,25 @@ OPTIONS
                 "LogGroupName": "string",
                 "LogStreamName": "string"
               }
+            },
+            "SecretsManagerConfiguration": {
+              "SecretARN": "string",
+              "RoleARN": "string",
+              "Enabled": true|false
             }
           }
 
-       --cli-input-json  (string) Performs service operation based on the JSON
-       string provided. The JSON string follows the format provided by  --gen-
-       erate-cli-skeleton.  If  other  arguments  are  provided on the command
-       line, the CLI values will override the JSON-provided values. It is  not
+       --cli-input-json (string) Performs service operation based on the  JSON
+       string  provided. The JSON string follows the format provided by --gen-
+       erate-cli-skeleton. If other arguments  are  provided  on  the  command
+       line,  the CLI values will override the JSON-provided values. It is not
        possible to pass arbitrary binary values using a JSON-provided value as
        the string will be taken literally.
 
-       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
+       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
        output without sending an API request. If provided with no value or the
        value input, prints a sample input JSON that can be used as an argument
-       for  --cli-input-json.  If provided with the value output, it validates
+       for --cli-input-json. If provided with the value output,  it  validates
        the command inputs and returns a sample output JSON for that command.
 
 GLOBAL OPTIONS
@@ -2968,7 +3095,7 @@ GLOBAL OPTIONS
 
        --no-verify-ssl (boolean)
 
-       By default, the AWS CLI uses SSL when communicating with AWS  services.
+       By  default, the AWS CLI uses SSL when communicating with AWS services.
        For each SSL connection, the AWS CLI will verify SSL certificates. This
        option overrides the default behavior of verifying SSL certificates.
 
@@ -3014,7 +3141,7 @@ GLOBAL OPTIONS
 
        --no-sign-request (boolean)
 
-       Do not sign requests. Credentials will not be loaded if  this  argument
+       Do  not  sign requests. Credentials will not be loaded if this argument
        is provided.
 
        --ca-bundle (string)
@@ -3024,14 +3151,14 @@ GLOBAL OPTIONS
 
        --cli-read-timeout (int)
 
-       The maximum socket read time in seconds. If the value is set to 0,  the
-       socket  read  will be blocking and not timeout. The default value is 60
+       The  maximum socket read time in seconds. If the value is set to 0, the
+       socket read will be blocking and not timeout. The default value  is  60
        seconds.
 
        --cli-connect-timeout (int)
 
-       The maximum socket connect time in seconds. If the value is set  to  0,
-       the  socket connect will be blocking and not timeout. The default value
+       The  maximum  socket connect time in seconds. If the value is set to 0,
+       the socket connect will be blocking and not timeout. The default  value
        is 60 seconds.
 
 OUTPUT
