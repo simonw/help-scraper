@@ -6,41 +6,41 @@ NAME
        create-identity-source -
 
 DESCRIPTION
-       Creates a reference to an Amazon Cognito user pool as an external iden-
-       tity provider (IdP).
+       Adds an identity source to a policy storean Amazon Cognito user pool or
+       OpenID Connect (OIDC) identity provider (IdP).
 
        After you create an identity source, you can use  the  identities  pro-
        vided  by the IdP as proxies for the principal in authorization queries
-       that use the IsAuthorizedWithToken operation. These identities take the
-       form  of  tokens  that  contain claims about the user, such as IDs, at-
-       tributes and group memberships. Amazon Cognito provides  both  identity
-       tokens  and  access  tokens, and Verified Permissions can use either or
-       both. Any combination of identity and access tokens results in the same
-       Cedar  principal. Verified Permissions automatically translates the in-
-       formation about the identities into the standard Cedar attributes  that
-       can  be evaluated by your policies. Because the Amazon Cognito identity
-       and access tokens can contain different  information,  the  tokens  you
-       choose to use determine which principal attributes are available to ac-
-       cess when evaluating Cedar policies.
+       that use the IsAuthorizedWithToken  or  BatchIsAuthorizedWithToken  API
+       operations.  These  identities  take  the  form  of tokens that contain
+       claims about the user, such as IDs, attributes and  group  memberships.
+       Identity  sources provide identity (ID) tokens and access tokens. Veri-
+       fied Permissions derives information about your user and  session  from
+       token  claims.  Access  tokens provide action context to your policies,
+       and ID tokens provide principal Attributes .
 
        WARNING:
-          If you delete a Amazon Cognito user pool or user, tokens  from  that
-          deleted  pool  or that deleted user continue to be usable until they
-          expire.
+          Tokens from an identity source user continue to be usable until they
+          expire. Token revocation and resource deletion have no effect on the
+          validity of a token in your policy store
 
        NOTE:
           To reference a user from this identity source in  your  Cedar  poli-
-          cies, use the following syntax.
-              IdentityType::"<CognitoUserPoolIdentifier>|<CognitoClientId>
+          cies, refer to the following syntax examples.
 
-          Where  IdentityType  is  the  string that you provide to the Princi-
-          palEntityType parameter for this  operation.  The  CognitoUserPoolId
-          and CognitoClientId are defined by the Amazon Cognito user pool.
+          o Amazon  Cognito  user  pool:  Namespace::[Entity type]::[User pool
+            ID]|[user    principal    attribute]    ,    for    example    My-
+            Corp::User::us-east-1_EXAMPLE|a1b2c3d4-5678-90ab-cdef-EXAMPLE11111
+            .
+
+          o OpenID Connect (OIDC) provider: Namespace::[Entity type]::[princi-
+            palIdClaim]|[user   principal   attribute]   ,   for  example  My-
+            Corp::User::MyOIDCProvider|a1b2c3d4-5678-90ab-cdef-EXAMPLE22222 .
 
        NOTE:
-          Verified  Permissions  is  * eventually consistent * . It can take a
-          few seconds for a new or changed element to  propagate  through  the
-          service  and be visible in the results of other Verified Permissions
+          Verified Permissions is * eventually consistent * . It  can  take  a
+          few  seconds  for  a new or changed element to propagate through the
+          service and be visible in the results of other Verified  Permissions
           operations.
 
        See also: AWS API Documentation
@@ -71,47 +71,42 @@ SYNOPSIS
 OPTIONS
        --client-token (string)
           Specifies a unique, case-sensitive ID that you provide to ensure the
-          idempotency  of  the request. This lets you safely retry the request
-          without accidentally performing the same operation  a  second  time.
+          idempotency of the request. This lets you safely retry  the  request
+          without  accidentally  performing  the same operation a second time.
           Passing the same value to a later call to an operation requires that
-          you also pass the same value for all other parameters. We  recommend
+          you  also pass the same value for all other parameters. We recommend
           that you use a UUID type of value. .
 
-          If  you don't provide this value, then Amazon Web Services generates
+          If you don't provide this value, then Amazon Web Services  generates
           a random one for you.
 
           If you retry the operation with the same ClientToken , but with dif-
           ferent parameters, the retry fails with an ConflictException error.
 
           Verified Permissions recognizes a ClientToken for eight hours. After
-          eight hours, the next request with the same parameters performs  the
+          eight  hours, the next request with the same parameters performs the
           operation again regardless of the value of ClientToken .
 
        --policy-store-id (string)
           Specifies the ID of the policy store in which you want to store this
-          identity source. Only policies and requests made using  this  policy
+          identity  source.  Only policies and requests made using this policy
           store can reference identities from the identity provider configured
           in the new identity source.
 
        --configuration (tagged union structure)
-          Specifies the details required  to  communicate  with  the  identity
+          Specifies  the  details  required  to  communicate with the identity
           provider (IdP) associated with this identity source.
 
           NOTE:
-              At  this time, the only valid member of this structure is a Ama-
-              zon Cognito user pool configuration.
-
-              You must specify a UserPoolArn , and optionally, a ClientId .
-
-          NOTE:
               This is a Tagged Union structure. Only one of the following  top
-              level keys can be set: cognitoUserPoolConfiguration.
+              level  keys can be set: cognitoUserPoolConfiguration, openIdCon-
+              nectConfiguration.
 
           cognitoUserPoolConfiguration -> (structure)
-              Contains  configuration  details  of  a Amazon Cognito user pool
-              that Verified Permissions can use as a source  of  authenticated
-              identities  as  entities.  It specifies the Amazon Resource Name
-              (ARN) of a Amazon Cognito user pool and one or more  application
+              Contains configuration details of a  Amazon  Cognito  user  pool
+              that  Verified  Permissions can use as a source of authenticated
+              identities as entities. It specifies the  Amazon  Resource  Name
+              (ARN)  of a Amazon Cognito user pool and one or more application
               client IDs.
 
               Example: "configuration":{"cognitoUserPoolConfiguration":{"user-
@@ -121,14 +116,14 @@ OPTIONS
               tityType": "MyCorp::Group"}}}
 
               userPoolArn -> (string)
-                 The  Amazon  Resource  Name  (ARN) of the Amazon Cognito user
+                 The Amazon Resource Name (ARN) of  the  Amazon  Cognito  user
                  pool that contains the identities to be authorized.
 
                  Example:             "UserPoolArn":             "arn:aws:cog-
                  nito-idp:us-east-1:123456789012:userpool/us-east-1_1a2b3c4d5"
 
               clientIds -> (list)
-                 The  unique  application  client IDs that are associated with
+                 The unique application client IDs that  are  associated  with
                  the specified Amazon Cognito user pool.
 
                  Example: "ClientIds": ["&ExampleCogClientId;"]
@@ -140,12 +135,97 @@ OPTIONS
                  Amazon Cognito user pool identity source.
 
                  groupEntityType -> (string)
-                     The  name  of the schema entity type that's mapped to the
+                     The name of the schema entity type that's mapped  to  the
                      user pool group. Defaults to AWS::CognitoGroup .
 
-       Shorthand Syntax:
+          openIdConnectConfiguration -> (structure)
+              Contains configuration details of an OpenID Connect (OIDC) iden-
+              tity provider, or identity source, that Verified Permissions can
+              use to generate entities from authenticated identities. It spec-
+              ifies the issuer URL, token type that you want to use, and  pol-
+              icy store entity details.
 
-          cognitoUserPoolConfiguration={userPoolArn=string,clientIds=[string,string],groupConfiguration={groupEntityType=string}}
+              Example:"configuration":{"openIdConnectConfiguration":{"is-
+              suer":"https://auth.example.com","tokenSelection":{"accessTo-
+              kenOnly":{"audiences":["https://myapp.exam-
+              ple.com","https://myapp2.example.com"],"principalId-
+              Claim":"sub"}},"entityIdPrefix":"MyOIDCProvider","groupConfigu-
+              ration":{"groupClaim":"groups","groupEntityType":"MyCorp::User-
+              Group"}}}
+
+              issuer -> (string)
+                 The  issuer  URL  of an OIDC identity provider. This URL must
+                 have   an   OIDC   discovery    endpoint    at    the    path
+                 .well-known/openid-configuration .
+
+              entityIdPrefix -> (string)
+                 A descriptive string that you want to prefix to user entities
+                 from your OIDC identity provider. For example, if you set  an
+                 entityIdPrefix  of MyOIDCProvider , you can reference princi-
+                 pals in your  policies  in  the  format  MyCorp::User::MyOID-
+                 CProvider|Carlos .
+
+              groupConfiguration -> (structure)
+                 The  claim  in OIDC identity provider tokens that indicates a
+                 user's group membership, and the entity type that you want to
+                 map it to. For example, this object can map the contents of a
+                 groups claim to MyCorp::UserGroup .
+
+                 groupClaim -> (string)
+                     The token claim that you want Verified Permissions to in-
+                     terpret as group membership. For example, groups .
+
+                 groupEntityType -> (string)
+                     The  policy  store  entity type that you want to map your
+                     users' group claim to. For example, MyCorp::UserGroup . A
+                     group  entity  type is an entity that can have a user en-
+                     tity type as a member.
+
+              tokenSelection -> (tagged union structure)
+                 The token type that you want to process from your OIDC  iden-
+                 tity  provider. Your policy store can process either identity
+                 (ID) or access tokens from a given OIDC identity source.
+
+                 NOTE:
+                     This is a Tagged Union structure. Only one of the follow-
+                     ing top level keys can be set: accessTokenOnly, identity-
+                     TokenOnly.
+
+                 accessTokenOnly -> (structure)
+                     The OIDC configuration for processing access tokens. Con-
+                     tains    allowed    audience    claims,    for    example
+                     https://auth.example.com , and the claim that you want to
+                     map to the principal, for example sub .
+
+                     principalIdClaim -> (string)
+                        The claim that determines the principal in OIDC access
+                        tokens. For example, sub .
+
+                     audiences -> (list)
+                        The access token aud claim values that you want to ac-
+                        cept    in    your    policy   store.   For   example,
+                        https://myapp.example.com,  https://myapp2.example.com
+                        .
+
+                        (string)
+
+                 identityTokenOnly -> (structure)
+                     The  OIDC  configuration for processing identity (ID) to-
+                     kens. Contains allowed client ID claims, for example 1ex-
+                     ample23456789 , and the claim that you want to map to the
+                     principal, for example sub .
+
+                     principalIdClaim -> (string)
+                        The claim that determines the principal in OIDC access
+                        tokens. For example, sub .
+
+                     clientIds -> (list)
+                        The ID token audience, or client ID, claim values that
+                        you want to accept in your policy store from  an  OIDC
+                        identity provider. For example, 1example23456789, 2ex-
+                        ample10111213 .
+
+                        (string)
 
        JSON Syntax:
 
@@ -155,6 +235,24 @@ OPTIONS
               "clientIds": ["string", ...],
               "groupConfiguration": {
                 "groupEntityType": "string"
+              }
+            },
+            "openIdConnectConfiguration": {
+              "issuer": "string",
+              "entityIdPrefix": "string",
+              "groupConfiguration": {
+                "groupClaim": "string",
+                "groupEntityType": "string"
+              },
+              "tokenSelection": {
+                "accessTokenOnly": {
+                  "principalIdClaim": "string",
+                  "audiences": ["string", ...]
+                },
+                "identityTokenOnly": {
+                  "principalIdClaim": "string",
+                  "clientIds": ["string", ...]
+                }
               }
             }
           }
