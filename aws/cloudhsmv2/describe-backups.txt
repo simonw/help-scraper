@@ -6,7 +6,9 @@ NAME
        describe-backups -
 
 DESCRIPTION
-       Gets information about backups of AWS CloudHSM clusters.
+       Gets  information  about backups of CloudHSM clusters. Lists either the
+       backups you own or the backups shared with you when the Shared  parame-
+       ter is true.
 
        This  is  a  paginated  operation, which means that each response might
        contain only a subset of all the backups. When  the  response  contains
@@ -14,19 +16,22 @@ DESCRIPTION
        in a subsequent DescribeBackups request to get more backups.  When  you
        receive  a response with no NextToken (or an empty or null value), that
        means there are no more backups to get.
+          Cross-account use: Yes. Customers can describe backups in other Ama-
+          zon Web Services accounts that are shared with them.
 
        See also: AWS API Documentation
 
-       describe-backups is a paginated operation. Multiple API  calls  may  be
-       issued  in  order  to  retrieve the entire data set of results. You can
+       describe-backups  is  a  paginated operation. Multiple API calls may be
+       issued in order to retrieve the entire data set  of  results.  You  can
        disable pagination by providing the --no-paginate argument.  When using
-       --output  text  and  the  --query argument on a paginated response, the
-       --query argument must extract data from the results  of  the  following
+       --output text and the --query argument on  a  paginated  response,  the
+       --query  argument  must  extract data from the results of the following
        query expressions: Backups
 
 SYNOPSIS
             describe-backups
           [--filters <value>]
+          [--shared | --no-shared]
           [--sort-ascending | --no-sort-ascending]
           [--cli-input-json <value>]
           [--starting-token <value>]
@@ -55,18 +60,18 @@ OPTIONS
           Use the backupIds filter to return only the specified backups. Spec-
           ify backups by their backup identifier (ID).
 
-          Use the sourceBackupIds filter to return only  the  backups  created
-          from  a  source backup. The sourceBackupID of a source backup is re-
+          Use  the  sourceBackupIds  filter to return only the backups created
+          from a source backup. The sourceBackupID of a source backup  is  re-
           turned by the  CopyBackupToRegion operation.
 
-          Use the clusterIds filter to return only the backups for the  speci-
+          Use  the clusterIds filter to return only the backups for the speci-
           fied clusters. Specify clusters by their cluster identifier (ID).
 
-          Use  the  states filter to return only backups that match the speci-
+          Use the states filter to return only backups that match  the  speci-
           fied state.
 
-          Use the neverExpires filter to return backups filtered by the  value
-          in  the neverExpires parameter. True returns all backups exempt from
+          Use  the neverExpires filter to return backups filtered by the value
+          in the neverExpires parameter. True returns all backups exempt  from
           the backup retention policy. False returns all backups with a backup
           retention policy defined at the cluster.
 
@@ -83,6 +88,19 @@ OPTIONS
 
           {"string": ["string", ...]
             ...}
+
+       --shared | --no-shared (boolean)
+          Describe backups that are shared with you.
+
+          NOTE:
+              By default when using this option, the command  returns  backups
+              that  have  been shared using a standard Resource Access Manager
+              resource share. In order for a backup that was shared using  the
+              PutResourcePolicy command to be returned, the share must be pro-
+              moted   to   a   standard   resource   share   using   the   RAM
+              PromoteResourceShareCreatedFromPolicy  API  operation.  For more
+              information about sharing backups, see Working with shared back-
+              ups in the CloudHSM User Guide.
 
        --sort-ascending | --no-sort-ascending (boolean)
           Designates  whether  or  not to sort the return backups by ascending
@@ -211,16 +229,19 @@ OUTPUT
           A list of backups.
 
           (structure)
-              Contains information about a backup of an AWS CloudHSM  cluster.
-              All  backup  objects  contain the BackupId , BackupState , Clus-
-              terId , and CreateTimestamp parameters. Backups that were copied
-              into a destination region additionally contain the CopyTimestamp
-              , SourceBackup , SourceCluster , and SourceRegion parameters.  A
+              Contains information about a backup of an CloudHSM cluster.  All
+              backup  objects contain the BackupId , BackupState , ClusterId ,
+              and CreateTimestamp parameters. Backups that were copied into  a
+              destination  region  additionally  contain  the  CopyTimestamp ,
+              SourceBackup , SourceCluster , and  SourceRegion  parameters.  A
               backup that is pending deletion will include the DeleteTimestamp
               parameter.
 
               BackupId -> (string)
                  The identifier (ID) of the backup.
+
+              BackupArn -> (string)
+                 The Amazon Resource Name (ARN) of the backup.
 
               BackupState -> (string)
                  The state of the backup.
@@ -270,7 +291,7 @@ OUTPUT
                         The value of the tag.
 
               HsmType -> (string)
-                 The HSM type of the cluster that was backed up.
+                 The HSM type used to create the backup.
 
               Mode -> (string)
                  The mode of the cluster that was backed up.
