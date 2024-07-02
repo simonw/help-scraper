@@ -33,14 +33,14 @@ DESCRIPTION
 
 SYNOPSIS
             verify-pin-data
-          [--dukpt-attributes <value>]
-          --encrypted-pin-block <value>
+          --verification-key-identifier <value>
           --encryption-key-identifier <value>
+          --verification-attributes <value>
+          --encrypted-pin-block <value>
+          --primary-account-number <value>
           --pin-block-format <value>
           [--pin-data-length <value>]
-          --primary-account-number <value>
-          --verification-attributes <value>
-          --verification-key-identifier <value>
+          [--dukpt-attributes <value>]
           [--cli-input-json <value>]
           [--generate-cli-skeleton <value>]
           [--debug]
@@ -59,47 +59,83 @@ SYNOPSIS
           [--cli-connect-timeout <value>]
 
 OPTIONS
-       --dukpt-attributes (structure)
-          The attributes and values for the DUKPT encrypted PIN block data.
+       --verification-key-identifier (string)
+          The keyARN of the PIN verification key.
 
-          DukptDerivationType -> (string)
-              The  key  type  derived  using  DUKPT from a Base Derivation Key
-              (BDK) and Key Serial Number (KSN). This must  be  less  than  or
-              equal  to  the  strength  of the BDK. For example, you can't use
-              AES_128 as a derivation type for a BDK of AES_128 or TDES_2KEY .
+       --encryption-key-identifier (string)
+          The  keyARN  of the encryption key under which the PIN block data is
+          encrypted. This key type can be PEK or BDK.
 
-          KeySerialNumber -> (string)
-              The unique identifier known as  Key  Serial  Number  (KSN)  that
-              comes  from  an encrypting device using DUKPT encryption method.
-              The KSN is derived from the encrypting device unique  identifier
-              and an internal transaction counter.
+       --verification-attributes (tagged union structure)
+          The attributes and values for PIN data verification.
+
+          NOTE:
+              This is a Tagged Union structure. Only one of the following  top
+              level keys can be set: VisaPin, Ibm3624Pin.
+
+          VisaPin -> (structure)
+              Parameters that are required to generate or verify Visa PIN.
+
+              PinVerificationKeyIndex -> (integer)
+                 The  value for PIN verification index. It is used in the Visa
+                 PIN algorithm to calculate the PVV (PIN Verification Value).
+
+              VerificationValue -> (string)
+                 Parameters that are required to generate or verify  Visa  PVV
+                 (PIN Verification Value).
+
+          Ibm3624Pin -> (structure)
+              Parameters that are required to generate or verify Ibm3624 PIN.
+
+              DecimalizationTable -> (string)
+                 The  decimalization  table to use for IBM 3624 PIN algorithm.
+                 The table is used to convert the algorithm  intermediate  re-
+                 sult from hexadecimal characters to decimal.
+
+              PinValidationDataPadCharacter -> (string)
+                 The padding character for validation data.
+
+              PinValidationData -> (string)
+                 The unique data for cardholder identification.
+
+              PinOffset -> (string)
+                 The PIN offset value.
 
        Shorthand Syntax:
 
-          DukptDerivationType=string,KeySerialNumber=string
+          VisaPin={PinVerificationKeyIndex=integer,VerificationValue=string},Ibm3624Pin={DecimalizationTable=string,PinValidationDataPadCharacter=string,PinValidationData=string,PinOffset=string}
 
        JSON Syntax:
 
           {
-            "DukptDerivationType": "TDES_2KEY"|"TDES_3KEY"|"AES_128"|"AES_192"|"AES_256",
-            "KeySerialNumber": "string"
+            "VisaPin": {
+              "PinVerificationKeyIndex": integer,
+              "VerificationValue": "string"
+            },
+            "Ibm3624Pin": {
+              "DecimalizationTable": "string",
+              "PinValidationDataPadCharacter": "string",
+              "PinValidationData": "string",
+              "PinOffset": "string"
+            }
           }
 
        --encrypted-pin-block (string)
           The  encrypted PIN block data that Amazon Web Services Payment Cryp-
           tography verifies.
 
-       --encryption-key-identifier (string)
-          The keyARN of the encryption key under which the PIN block  data  is
-          encrypted. This key type can be PEK or BDK.
+       --primary-account-number (string)
+          The Primary Account Number (PAN), a unique identifier for a  payment
+          credit  or  debit  card that associates the card with a specific ac-
+          count holder.
 
        --pin-block-format (string)
-          The  PIN encoding format for pin data generation as specified in ISO
+          The PIN encoding format for pin data generation as specified in  ISO
           9564. Amazon Web Services Payment Cryptography supports ISO_Format_0
           and ISO_Format_3 .
 
-          The  ISO_Format_0  PIN  block format is equivalent to the ANSI X9.8,
-          VISA-1, and ECI-1 PIN block formats. It is similar to a  VISA-4  PIN
+          The ISO_Format_0 PIN block format is equivalent to  the  ANSI  X9.8,
+          VISA-1,  and  ECI-1 PIN block formats. It is similar to a VISA-4 PIN
           block format. It supports a PIN from 4 to 12 digits in length.
 
           The ISO_Format_3 PIN block format is the same as ISO_Format_0 except
@@ -114,67 +150,31 @@ OPTIONS
        --pin-data-length (integer)
           The length of PIN being verified.
 
-       --primary-account-number (string)
-          The Primary Account Number (PAN), a unique identifier for a  payment
-          credit  or  debit  card that associates the card with a specific ac-
-          count holder.
+       --dukpt-attributes (structure)
+          The attributes and values for the DUKPT encrypted PIN block data.
 
-       --verification-attributes (tagged union structure)
-          The attributes and values for PIN data verification.
+          KeySerialNumber -> (string)
+              The  unique  identifier  known  as  Key Serial Number (KSN) that
+              comes from an encrypting device using DUKPT  encryption  method.
+              The  KSN is derived from the encrypting device unique identifier
+              and an internal transaction counter.
 
-          NOTE:
-              This is a Tagged Union structure. Only one of the following  top
-              level keys can be set: Ibm3624Pin, VisaPin.
-
-          Ibm3624Pin -> (structure)
-              Parameters that are required to generate or verify Ibm3624 PIN.
-
-              DecimalizationTable -> (string)
-                 The  decimalization  table to use for IBM 3624 PIN algorithm.
-                 The table is used to convert the algorithm  intermediate  re-
-                 sult from hexadecimal characters to decimal.
-
-              PinOffset -> (string)
-                 The PIN offset value.
-
-              PinValidationData -> (string)
-                 The unique data for cardholder identification.
-
-              PinValidationDataPadCharacter -> (string)
-                 The padding character for validation data.
-
-          VisaPin -> (structure)
-              Parameters that are required to generate or verify Visa PIN.
-
-              PinVerificationKeyIndex -> (integer)
-                 The  value for PIN verification index. It is used in the Visa
-                 PIN algorithm to calculate the PVV (PIN Verification Value).
-
-              VerificationValue -> (string)
-                 Parameters that are required to generate or verify  Visa  PVV
-                 (PIN Verification Value).
+          DukptDerivationType -> (string)
+              The key type derived using DUKPT  from  a  Base  Derivation  Key
+              (BDK)  and  Key  Serial  Number (KSN). This must be less than or
+              equal to the strength of the BDK. For  example,  you  can't  use
+              AES_128 as a derivation type for a BDK of AES_128 or TDES_2KEY .
 
        Shorthand Syntax:
 
-          Ibm3624Pin={DecimalizationTable=string,PinOffset=string,PinValidationData=string,PinValidationDataPadCharacter=string},VisaPin={PinVerificationKeyIndex=integer,VerificationValue=string}
+          KeySerialNumber=string,DukptDerivationType=string
 
        JSON Syntax:
 
           {
-            "Ibm3624Pin": {
-              "DecimalizationTable": "string",
-              "PinOffset": "string",
-              "PinValidationData": "string",
-              "PinValidationDataPadCharacter": "string"
-            },
-            "VisaPin": {
-              "PinVerificationKeyIndex": integer,
-              "VerificationValue": "string"
-            }
+            "KeySerialNumber": "string",
+            "DukptDerivationType": "TDES_2KEY"|"TDES_3KEY"|"AES_128"|"AES_192"|"AES_256"
           }
-
-       --verification-key-identifier (string)
-          The keyARN of the PIN verification key.
 
        --cli-input-json  (string) Performs service operation based on the JSON
        string provided. The JSON string follows the format provided by  --gen-
@@ -302,11 +302,11 @@ EXAMPLES
        phy User Guide.
 
 OUTPUT
-       EncryptionKeyArn -> (string)
-          The keyARN of the PEK that Amazon Web Services Payment  Cryptography
-          uses for encrypted pin block generation.
+       VerificationKeyArn -> (string)
+          The keyARN of the PIN encryption key that Amazon Web  Services  Pay-
+          ment Cryptography uses for PIN or PIN Offset verification.
 
-       EncryptionKeyCheckValue -> (string)
+       VerificationKeyCheckValue -> (string)
           The  key check value (KCV) of the encryption key. The KCV is used to
           check if all parties holding a given key have the same key or to de-
           tect that a key has changed.
@@ -314,11 +314,11 @@ OUTPUT
           Amazon  Web Services Payment Cryptography computes the KCV according
           to the CMAC specification.
 
-       VerificationKeyArn -> (string)
-          The keyARN of the PIN encryption key that Amazon Web  Services  Pay-
-          ment Cryptography uses for PIN or PIN Offset verification.
+       EncryptionKeyArn -> (string)
+          The keyARN of the PEK that Amazon Web Services Payment  Cryptography
+          uses for encrypted pin block generation.
 
-       VerificationKeyCheckValue -> (string)
+       EncryptionKeyCheckValue -> (string)
           The  key check value (KCV) of the encryption key. The KCV is used to
           check if all parties holding a given key have the same key or to de-
           tect that a key has changed.

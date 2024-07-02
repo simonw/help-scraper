@@ -48,13 +48,15 @@ DESCRIPTION
 
 SYNOPSIS
             translate-pin-data
+          --incoming-key-identifier <value>
+          --outgoing-key-identifier <value>
+          --incoming-translation-attributes <value>
+          --outgoing-translation-attributes <value>
           --encrypted-pin-block <value>
           [--incoming-dukpt-attributes <value>]
-          --incoming-key-identifier <value>
-          --incoming-translation-attributes <value>
           [--outgoing-dukpt-attributes <value>]
-          --outgoing-key-identifier <value>
-          --outgoing-translation-attributes <value>
+          [--incoming-wrapped-key <value>]
+          [--outgoing-wrapped-key <value>]
           [--cli-input-json <value>]
           [--generate-cli-skeleton <value>]
           [--debug]
@@ -73,45 +75,17 @@ SYNOPSIS
           [--cli-connect-timeout <value>]
 
 OPTIONS
-       --encrypted-pin-block (string)
-          The encrypted PIN block data that Amazon Web Services Payment  Cryp-
-          tography translates.
-
-       --incoming-dukpt-attributes (structure)
-          The  attributes  and values to use for incoming DUKPT encryption key
-          for PIN block translation.
-
-          DukptKeyDerivationType -> (string)
-              The key type derived using DUKPT  from  a  Base  Derivation  Key
-              (BDK)  and  Key  Serial  Number (KSN). This must be less than or
-              equal to the strength of the BDK. For  example,  you  can't  use
-              AES_128 as a derivation type for a BDK of AES_128 or TDES_2KEY
-
-          DukptKeyVariant -> (string)
-              The type of use of DUKPT, which can be for incoming data decryp-
-              tion, outgoing data encryption, or both.
-
-          KeySerialNumber -> (string)
-              The unique identifier known as  Key  Serial  Number  (KSN)  that
-              comes  from  an encrypting device using DUKPT encryption method.
-              The KSN is derived from the encrypting device unique  identifier
-              and an internal transaction counter.
-
-       Shorthand Syntax:
-
-          DukptKeyDerivationType=string,DukptKeyVariant=string,KeySerialNumber=string
-
-       JSON Syntax:
-
-          {
-            "DukptKeyDerivationType": "TDES_2KEY"|"TDES_3KEY"|"AES_128"|"AES_192"|"AES_256",
-            "DukptKeyVariant": "BIDIRECTIONAL"|"REQUEST"|"RESPONSE",
-            "KeySerialNumber": "string"
-          }
-
        --incoming-key-identifier (string)
           The keyARN of the encryption key under which incoming PIN block data
           is encrypted. This key type can be PEK or BDK.
+
+          When  a  WrappedKeyBlock is provided, this value will be the identi-
+          fier to the key wrapping key for PIN block. Otherwise, it is the key
+          identifier used to perform the operation.
+
+       --outgoing-key-identifier (string)
+          The  keyARN  of the encryption key for encrypting outgoing PIN block
+          data. This key type can be PEK or BDK.
 
        --incoming-translation-attributes (tagged union structure)
           The format of the incoming PIN block  data  for  translation  within
@@ -174,80 +148,44 @@ OPTIONS
             }
           }
 
-       --outgoing-dukpt-attributes (structure)
-          The  attributes  and values to use for outgoing DUKPT encryption key
-          after PIN block translation.
-
-          DukptKeyDerivationType -> (string)
-              The key type derived using DUKPT  from  a  Base  Derivation  Key
-              (BDK)  and  Key  Serial  Number (KSN). This must be less than or
-              equal to the strength of the BDK. For  example,  you  can't  use
-              AES_128 as a derivation type for a BDK of AES_128 or TDES_2KEY
-
-          DukptKeyVariant -> (string)
-              The type of use of DUKPT, which can be for incoming data decryp-
-              tion, outgoing data encryption, or both.
-
-          KeySerialNumber -> (string)
-              The unique identifier known as  Key  Serial  Number  (KSN)  that
-              comes  from  an encrypting device using DUKPT encryption method.
-              The KSN is derived from the encrypting device unique  identifier
-              and an internal transaction counter.
-
-       Shorthand Syntax:
-
-          DukptKeyDerivationType=string,DukptKeyVariant=string,KeySerialNumber=string
-
-       JSON Syntax:
-
-          {
-            "DukptKeyDerivationType": "TDES_2KEY"|"TDES_3KEY"|"AES_128"|"AES_192"|"AES_256",
-            "DukptKeyVariant": "BIDIRECTIONAL"|"REQUEST"|"RESPONSE",
-            "KeySerialNumber": "string"
-          }
-
-       --outgoing-key-identifier (string)
-          The  keyARN  of the encryption key for encrypting outgoing PIN block
-          data. This key type can be PEK or BDK.
-
        --outgoing-translation-attributes (tagged union structure)
-          The format of the outgoing PIN block data after translation by  Ama-
+          The  format of the outgoing PIN block data after translation by Ama-
           zon Web Services Payment Cryptography.
 
           NOTE:
-              This  is a Tagged Union structure. Only one of the following top
-              level keys can be set: IsoFormat0, IsoFormat1, IsoFormat3,  Iso-
+              This is a Tagged Union structure. Only one of the following  top
+              level  keys can be set: IsoFormat0, IsoFormat1, IsoFormat3, Iso-
               Format4.
 
           IsoFormat0 -> (structure)
-              Parameters  that  are  required for ISO9564 PIN format 0 tranla-
-              tion.
-
-              PrimaryAccountNumber -> (string)
-                 The Primary Account Number (PAN) of the cardholder. A PAN  is
-                 a  unique  identifier  for a payment credit or debit card and
-                 associates the card to a specific account holder.
-
-          IsoFormat1 -> (structure)
-              Parameters that are required for ISO9564 PIN  format  1  tranla-
-              tion.
-
-          IsoFormat3 -> (structure)
-              Parameters  that  are  required for ISO9564 PIN format 3 tranla-
-              tion.
-
-              PrimaryAccountNumber -> (string)
-                 The Primary Account Number (PAN) of the cardholder. A PAN  is
-                 a  unique  identifier  for a payment credit or debit card and
-                 associates the card to a specific account holder.
-
-          IsoFormat4 -> (structure)
-              Parameters that are required for ISO9564 PIN  format  4  tranla-
+              Parameters that are required for ISO9564 PIN  format  0  tranla-
               tion.
 
               PrimaryAccountNumber -> (string)
                  The  Primary Account Number (PAN) of the cardholder. A PAN is
                  a unique identifier for a payment credit or  debit  card  and
+                 associates the card to a specific account holder.
+
+          IsoFormat1 -> (structure)
+              Parameters  that  are  required for ISO9564 PIN format 1 tranla-
+              tion.
+
+          IsoFormat3 -> (structure)
+              Parameters that are required for ISO9564 PIN  format  3  tranla-
+              tion.
+
+              PrimaryAccountNumber -> (string)
+                 The  Primary Account Number (PAN) of the cardholder. A PAN is
+                 a unique identifier for a payment credit or  debit  card  and
+                 associates the card to a specific account holder.
+
+          IsoFormat4 -> (structure)
+              Parameters  that  are  required for ISO9564 PIN format 4 tranla-
+              tion.
+
+              PrimaryAccountNumber -> (string)
+                 The Primary Account Number (PAN) of the cardholder. A PAN  is
+                 a  unique  identifier  for a payment credit or debit card and
                  associates the card to a specific account holder.
 
        Shorthand Syntax:
@@ -269,6 +207,154 @@ OPTIONS
             "IsoFormat4": {
               "PrimaryAccountNumber": "string"
             }
+          }
+
+       --encrypted-pin-block (string)
+          The encrypted PIN block data that Amazon Web Services Payment  Cryp-
+          tography translates.
+
+       --incoming-dukpt-attributes (structure)
+          The  attributes  and values to use for incoming DUKPT encryption key
+          for PIN block translation.
+
+          KeySerialNumber -> (string)
+              The unique identifier known as  Key  Serial  Number  (KSN)  that
+              comes  from  an encrypting device using DUKPT encryption method.
+              The KSN is derived from the encrypting device unique  identifier
+              and an internal transaction counter.
+
+          DukptKeyDerivationType -> (string)
+              The  key  type  derived  using  DUKPT from a Base Derivation Key
+              (BDK) and Key Serial Number (KSN). This must  be  less  than  or
+              equal  to  the  strength  of the BDK. For example, you can't use
+              AES_128 as a derivation type for a BDK of AES_128 or TDES_2KEY
+
+          DukptKeyVariant -> (string)
+              The type of use of DUKPT, which can be for incoming data decryp-
+              tion, outgoing data encryption, or both.
+
+       Shorthand Syntax:
+
+          KeySerialNumber=string,DukptKeyDerivationType=string,DukptKeyVariant=string
+
+       JSON Syntax:
+
+          {
+            "KeySerialNumber": "string",
+            "DukptKeyDerivationType": "TDES_2KEY"|"TDES_3KEY"|"AES_128"|"AES_192"|"AES_256",
+            "DukptKeyVariant": "BIDIRECTIONAL"|"REQUEST"|"RESPONSE"
+          }
+
+       --outgoing-dukpt-attributes (structure)
+          The  attributes  and values to use for outgoing DUKPT encryption key
+          after PIN block translation.
+
+          KeySerialNumber -> (string)
+              The unique identifier known as  Key  Serial  Number  (KSN)  that
+              comes  from  an encrypting device using DUKPT encryption method.
+              The KSN is derived from the encrypting device unique  identifier
+              and an internal transaction counter.
+
+          DukptKeyDerivationType -> (string)
+              The  key  type  derived  using  DUKPT from a Base Derivation Key
+              (BDK) and Key Serial Number (KSN). This must  be  less  than  or
+              equal  to  the  strength  of the BDK. For example, you can't use
+              AES_128 as a derivation type for a BDK of AES_128 or TDES_2KEY
+
+          DukptKeyVariant -> (string)
+              The type of use of DUKPT, which can be for incoming data decryp-
+              tion, outgoing data encryption, or both.
+
+       Shorthand Syntax:
+
+          KeySerialNumber=string,DukptKeyDerivationType=string,DukptKeyVariant=string
+
+       JSON Syntax:
+
+          {
+            "KeySerialNumber": "string",
+            "DukptKeyDerivationType": "TDES_2KEY"|"TDES_3KEY"|"AES_128"|"AES_192"|"AES_256",
+            "DukptKeyVariant": "BIDIRECTIONAL"|"REQUEST"|"RESPONSE"
+          }
+
+       --incoming-wrapped-key (structure)
+          The WrappedKeyBlock containing the encryption key under which incom-
+          ing PIN block data is encrypted.
+
+          WrappedKeyMaterial -> (tagged union structure)
+              Parameter information of a WrappedKeyBlock  for  encryption  key
+              exchange.
+
+              NOTE:
+                 This  is  a Tagged Union structure. Only one of the following
+                 top level keys can be set: Tr31KeyBlock.
+
+              Tr31KeyBlock -> (string)
+                 The TR-31 wrapped key block.
+
+          KeyCheckValueAlgorithm -> (string)
+              The algorithm that Amazon Web Services Payment Cryptography uses
+              to  calculate  the key check value (KCV). It is used to validate
+              the key integrity.
+
+              For TDES keys, the KCV is computed by encrypting 8  bytes,  each
+              with value of zero, with the key to be checked and retaining the
+              3 highest order bytes of the encrypted result. For AES keys, the
+              KCV  is  computed using a CMAC algorithm where the input data is
+              16 bytes of zero and retaining the 3 highest order bytes of  the
+              encrypted result.
+
+       Shorthand Syntax:
+
+          WrappedKeyMaterial={Tr31KeyBlock=string},KeyCheckValueAlgorithm=string
+
+       JSON Syntax:
+
+          {
+            "WrappedKeyMaterial": {
+              "Tr31KeyBlock": "string"
+            },
+            "KeyCheckValueAlgorithm": "CMAC"|"ANSI_X9_24"
+          }
+
+       --outgoing-wrapped-key (structure)
+          The  WrappedKeyBlock  containing  the  encryption key for encrypting
+          outgoing PIN block data.
+
+          WrappedKeyMaterial -> (tagged union structure)
+              Parameter information of a WrappedKeyBlock  for  encryption  key
+              exchange.
+
+              NOTE:
+                 This  is  a Tagged Union structure. Only one of the following
+                 top level keys can be set: Tr31KeyBlock.
+
+              Tr31KeyBlock -> (string)
+                 The TR-31 wrapped key block.
+
+          KeyCheckValueAlgorithm -> (string)
+              The algorithm that Amazon Web Services Payment Cryptography uses
+              to  calculate  the key check value (KCV). It is used to validate
+              the key integrity.
+
+              For TDES keys, the KCV is computed by encrypting 8  bytes,  each
+              with value of zero, with the key to be checked and retaining the
+              3 highest order bytes of the encrypted result. For AES keys, the
+              KCV  is  computed using a CMAC algorithm where the input data is
+              16 bytes of zero and retaining the 3 highest order bytes of  the
+              encrypted result.
+
+       Shorthand Syntax:
+
+          WrappedKeyMaterial={Tr31KeyBlock=string},KeyCheckValueAlgorithm=string
+
+       JSON Syntax:
+
+          {
+            "WrappedKeyMaterial": {
+              "Tr31KeyBlock": "string"
+            },
+            "KeyCheckValueAlgorithm": "CMAC"|"ANSI_X9_24"
           }
 
        --cli-input-json  (string) Performs service operation based on the JSON
@@ -398,6 +484,9 @@ EXAMPLES
        tography User Guide.
 
 OUTPUT
+       PinBlock -> (string)
+          The outgoing encrypted PIN block data after translation.
+
        KeyArn -> (string)
           The keyARN of the encryption key that Amazon  Web  Services  Payment
           Cryptography  uses to encrypt outgoing PIN block data after transla-
@@ -410,9 +499,6 @@ OUTPUT
 
           Amazon Web Services Payment Cryptography computes the KCV  according
           to the CMAC specification.
-
-       PinBlock -> (string)
-          The outgoing encrypted PIN block data after translation.
 
 
 
