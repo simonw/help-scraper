@@ -25,7 +25,7 @@ SYNOPSIS
           --id-mapping-techniques <value>
           --input-source-config <value>
           [--output-source-config <value>]
-          --role-arn <value>
+          [--role-arn <value>]
           [--tags <value>]
           --workflow-name <value>
           [--cli-input-json <value>]
@@ -50,8 +50,8 @@ OPTIONS
           A description of the workflow.
 
        --id-mapping-techniques (structure)
-          An object which defines the idMappingType and the providerProperties
-          .
+          An object which defines the ID mapping technique and any  additional
+          configurations.
 
           idMappingType -> (string)
               The type of ID mapping.
@@ -76,20 +76,82 @@ OPTIONS
               providerServiceArn -> (string)
                  The ARN of the provider service.
 
-       Shorthand Syntax:
+          ruleBasedProperties -> (structure)
+              An object which defines any additional  configurations  required
+              by rule-based matching.
 
-          idMappingType=string,providerProperties={intermediateSourceConfiguration={intermediateS3Path=string},providerServiceArn=string}
+              attributeMatchingModel -> (string)
+                 The  comparison  type.  You  can  either choose ONE_TO_ONE or
+                 MANY_TO_MANY as the attributeMatchingModel .
+
+                 If you choose MANY_TO_MANY , the system can match  attributes
+                 across  the  sub-types  of an attribute type. For example, if
+                 the value of the Email field of Profile A matches  the  value
+                 of the BusinessEmail field of Profile B, the two profiles are
+                 matched on the Email attribute type.
+
+                 If you choose ONE_TO_ONE , the  system  can  only  match  at-
+                 tributes  if  the  sub-types are an exact match. For example,
+                 for the Email attribute type, the system will  only  consider
+                 it  a  match  if  the  value  of the Email field of Profile A
+                 matches the value of the Email field of Profile B.
+
+              recordMatchingModel -> (string)
+                 The type of matching record that is allowed to be used in  an
+                 ID mapping workflow.
+
+                 If  the  value  is set to ONE_SOURCE_TO_ONE_TARGET , only one
+                 record in the source can be matched to the same record in the
+                 target.
+
+                 If  the  value is set to MANY_SOURCE_TO_ONE_TARGET , multiple
+                 records in the source can be matched to  one  record  in  the
+                 target.
+
+              ruleDefinitionType -> (string)
+                 The  set  of rules you can use in an ID mapping workflow. The
+                 limitations specified for the source or target to define  the
+                 match rules must be compatible.
+
+              rules -> (list)
+                 The rules that can be used for ID mapping.
+
+                 (structure)
+                     An object containing RuleName , and MatchingKeys .
+
+                     matchingKeys -> (list)
+                        A  list  of  MatchingKeys . The MatchingKeys must have
+                        been defined in the SchemaMapping .  Two  records  are
+                        considered  to  match according to this rule if all of
+                        the MatchingKeys match.
+
+                        (string)
+
+                     ruleName -> (string)
+                        A name for the matching rule.
 
        JSON Syntax:
 
           {
-            "idMappingType": "PROVIDER",
+            "idMappingType": "PROVIDER"|"RULE_BASED",
             "providerProperties": {
               "intermediateSourceConfiguration": {
                 "intermediateS3Path": "string"
               },
               "providerConfiguration": {...},
               "providerServiceArn": "string"
+            },
+            "ruleBasedProperties": {
+              "attributeMatchingModel": "ONE_TO_ONE"|"MANY_TO_MANY",
+              "recordMatchingModel": "ONE_SOURCE_TO_ONE_TARGET"|"MANY_SOURCE_TO_ONE_TARGET",
+              "ruleDefinitionType": "SOURCE"|"TARGET",
+              "rules": [
+                {
+                  "matchingKeys": ["string", ...],
+                  "ruleName": "string"
+                }
+                ...
+              ]
             }
           }
 
@@ -101,19 +163,20 @@ OPTIONS
               An object containing InputSourceARN , SchemaName , and Type .
 
               inputSourceARN -> (string)
-                 An Glue table ARN for the input source table.
+                 An  Glue table Amazon Resource Name (ARN) or a matching work-
+                 flow ARN for the input source table.
 
               schemaName -> (string)
                  The name of the schema to be retrieved.
 
               type -> (string)
-                 The  type  of  ID  namespace. There are two types: SOURCE and
+                 The type of ID namespace. There are  two  types:  SOURCE  and
                  TARGET .
 
-                 The SOURCE contains configurations  for  sourceId  data  that
+                 The  SOURCE  contains  configurations  for sourceId data that
                  will be processed in an ID mapping workflow.
 
-                 The  TARGET contains a configuration of targetId to which all
+                 The TARGET contains a configuration  of  targetId  which  all
                  sourceIds will resolve to.
 
        Shorthand Syntax:
@@ -132,18 +195,18 @@ OPTIONS
           ]
 
        --output-source-config (list)
-          A list of IdMappingWorkflowOutputSource objects, each of which  con-
+          A  list of IdMappingWorkflowOutputSource objects, each of which con-
           tains fields OutputS3Path and Output .
 
           (structure)
               The output source for the ID mapping workflow.
 
               KMSArn -> (string)
-                 Customer  KMS  ARN  for  encryption at rest. If not provided,
+                 Customer KMS ARN for encryption at  rest.  If  not  provided,
                  system will use an Entity Resolution managed KMS key.
 
               outputS3Path -> (string)
-                 The S3 path to which Entity Resolution will write the  output
+                 The  S3 path to which Entity Resolution will write the output
                  table.
 
        Shorthand Syntax:
@@ -161,12 +224,12 @@ OPTIONS
           ]
 
        --role-arn (string)
-          The  Amazon  Resource  Name (ARN) of the IAM role. Entity Resolution
-          assumes this role to create resources on  your  behalf  as  part  of
+          The Amazon Resource Name (ARN) of the IAM  role.  Entity  Resolution
+          assumes  this  role  to  create  resources on your behalf as part of
           workflow execution.
 
        --tags (map)
-          The  tags  used  to  organize, track, or control access for this re-
+          The tags used to organize, track, or control  access  for  this  re-
           source.
 
           key -> (string)
@@ -186,17 +249,17 @@ OPTIONS
           The name of the workflow. There can't be multiple IdMappingWorkflows
           with the same name.
 
-       --cli-input-json  (string) Performs service operation based on the JSON
-       string provided. The JSON string follows the format provided by  --gen-
-       erate-cli-skeleton.  If  other  arguments  are  provided on the command
-       line, the CLI values will override the JSON-provided values. It is  not
+       --cli-input-json (string) Performs service operation based on the  JSON
+       string  provided. The JSON string follows the format provided by --gen-
+       erate-cli-skeleton. If other arguments  are  provided  on  the  command
+       line,  the CLI values will override the JSON-provided values. It is not
        possible to pass arbitrary binary values using a JSON-provided value as
        the string will be taken literally.
 
-       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
+       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
        output without sending an API request. If provided with no value or the
        value input, prints a sample input JSON that can be used as an argument
-       for  --cli-input-json.  If provided with the value output, it validates
+       for --cli-input-json. If provided with the value output,  it  validates
        the command inputs and returns a sample output JSON for that command.
 
 GLOBAL OPTIONS
@@ -210,7 +273,7 @@ GLOBAL OPTIONS
 
        --no-verify-ssl (boolean)
 
-       By default, the AWS CLI uses SSL when communicating with AWS  services.
+       By  default, the AWS CLI uses SSL when communicating with AWS services.
        For each SSL connection, the AWS CLI will verify SSL certificates. This
        option overrides the default behavior of verifying SSL certificates.
 
@@ -256,7 +319,7 @@ GLOBAL OPTIONS
 
        --no-sign-request (boolean)
 
-       Do not sign requests. Credentials will not be loaded if  this  argument
+       Do  not  sign requests. Credentials will not be loaded if this argument
        is provided.
 
        --ca-bundle (string)
@@ -266,14 +329,14 @@ GLOBAL OPTIONS
 
        --cli-read-timeout (int)
 
-       The maximum socket read time in seconds. If the value is set to 0,  the
-       socket  read  will be blocking and not timeout. The default value is 60
+       The  maximum socket read time in seconds. If the value is set to 0, the
+       socket read will be blocking and not timeout. The default value  is  60
        seconds.
 
        --cli-connect-timeout (int)
 
-       The maximum socket connect time in seconds. If the value is set  to  0,
-       the  socket connect will be blocking and not timeout. The default value
+       The  maximum  socket connect time in seconds. If the value is set to 0,
+       the socket connect will be blocking and not timeout. The default  value
        is 60 seconds.
 
 OUTPUT
@@ -281,41 +344,96 @@ OUTPUT
           A description of the workflow.
 
        idMappingTechniques -> (structure)
-          An object which defines the idMappingType and the providerProperties
-          .
+          An  object which defines the ID mapping technique and any additional
+          configurations.
 
           idMappingType -> (string)
               The type of ID mapping.
 
           providerProperties -> (structure)
-              An  object  which defines any additional configurations required
+              An object which defines any additional  configurations  required
               by the provider service.
 
               intermediateSourceConfiguration -> (structure)
-                 The Amazon S3 location  that  temporarily  stores  your  data
-                 while  it  processes.  Your information won't be saved perma-
+                 The  Amazon  S3  location  that  temporarily stores your data
+                 while it processes. Your information won't  be  saved  perma-
                  nently.
 
                  intermediateS3Path -> (string)
-                     The Amazon S3 location (bucket and prefix). For  example:
+                     The  Amazon S3 location (bucket and prefix). For example:
                      s3://provider_bucket/DOC-EXAMPLE-BUCKET
 
               providerConfiguration -> (document)
-                 The  required  configuration  fields to use with the provider
+                 The required configuration fields to use  with  the  provider
                  service.
 
               providerServiceArn -> (string)
                  The ARN of the provider service.
 
+          ruleBasedProperties -> (structure)
+              An  object  which defines any additional configurations required
+              by rule-based matching.
+
+              attributeMatchingModel -> (string)
+                 The comparison type. You  can  either  choose  ONE_TO_ONE  or
+                 MANY_TO_MANY as the attributeMatchingModel .
+
+                 If  you choose MANY_TO_MANY , the system can match attributes
+                 across the sub-types of an attribute type.  For  example,  if
+                 the  value  of the Email field of Profile A matches the value
+                 of the BusinessEmail field of Profile B, the two profiles are
+                 matched on the Email attribute type.
+
+                 If  you  choose  ONE_TO_ONE  ,  the system can only match at-
+                 tributes if the sub-types are an exact  match.  For  example,
+                 for  the  Email attribute type, the system will only consider
+                 it a match if the value of  the  Email  field  of  Profile  A
+                 matches the value of the Email field of Profile B.
+
+              recordMatchingModel -> (string)
+                 The  type of matching record that is allowed to be used in an
+                 ID mapping workflow.
+
+                 If the value is set to ONE_SOURCE_TO_ONE_TARGET  ,  only  one
+                 record in the source can be matched to the same record in the
+                 target.
+
+                 If the value is set to MANY_SOURCE_TO_ONE_TARGET  ,  multiple
+                 records  in  the  source  can be matched to one record in the
+                 target.
+
+              ruleDefinitionType -> (string)
+                 The set of rules you can use in an ID mapping  workflow.  The
+                 limitations  specified for the source or target to define the
+                 match rules must be compatible.
+
+              rules -> (list)
+                 The rules that can be used for ID mapping.
+
+                 (structure)
+                     An object containing RuleName , and MatchingKeys .
+
+                     matchingKeys -> (list)
+                        A list of MatchingKeys . The  MatchingKeys  must  have
+                        been  defined  in  the SchemaMapping . Two records are
+                        considered to match according to this rule if  all  of
+                        the MatchingKeys match.
+
+                        (string)
+
+                     ruleName -> (string)
+                        A name for the matching rule.
+
        inputSourceConfig -> (list)
-          A list of InputSource objects, which have the fields  InputSourceARN
+          A  list of InputSource objects, which have the fields InputSourceARN
           and SchemaName .
 
           (structure)
               An object containing InputSourceARN , SchemaName , and Type .
 
               inputSourceARN -> (string)
-                 An Glue table ARN for the input source table.
+                 An Glue table Amazon Resource Name (ARN) or a matching  work-
+                 flow ARN for the input source table.
 
               schemaName -> (string)
                  The name of the schema to be retrieved.
@@ -327,7 +445,7 @@ OUTPUT
                  The SOURCE contains configurations  for  sourceId  data  that
                  will be processed in an ID mapping workflow.
 
-                 The  TARGET contains a configuration of targetId to which all
+                 The  TARGET  contains  a  configuration of targetId which all
                  sourceIds will resolve to.
 
        outputSourceConfig -> (list)
