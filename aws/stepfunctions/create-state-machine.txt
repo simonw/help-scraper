@@ -16,6 +16,12 @@ DESCRIPTION
        If you set the publish parameter of this API action to true ,  it  pub-
        lishes version 1 as the first revision of the state machine.
 
+       For additional control over security, you can encrypt your data using a
+       customer-managed key for Step Functions state machines. You can config-
+       ure  a symmetric KMS key and data key reuse period when creating or up-
+       dating a State Machine . The execution history and state machine  defi-
+       nition will be encrypted with the key applied to the State Machine.
+
        NOTE:
           This operation is eventually consistent. The results are best effort
           and may not reflect very recent updates and changes.
@@ -24,12 +30,13 @@ DESCRIPTION
           CreateStateMachine is an idempotent API.  Subsequent  requests  wont
           create  a  duplicate  resource  if  it was already created. CreateS-
           tateMachine 's idempotency check is based on the state machine  name
-          ,  definition  , type , LoggingConfiguration , and TracingConfigura-
-          tion . The check is also based on the publish and versionDescription
-          parameters. If a following request has a different roleArn or tags ,
-          Step Functions will ignore these differences  and  treat  it  as  an
-          idempotent  request  of the previous. In this case, roleArn and tags
-          will not be updated, even if they are different.
+          ,  definition , type , LoggingConfiguration , TracingConfiguration ,
+          and EncryptionConfiguration The check is also based on  the  publish
+          and versionDescription parameters. If a following request has a dif-
+          ferent roleArn or tags , Step Functions will  ignore  these  differ-
+          ences and treat it as an idempotent request of the previous. In this
+          case, roleArn and tags will not be updated, even if they are differ-
+          ent.
 
        See also: AWS API Documentation
 
@@ -44,6 +51,7 @@ SYNOPSIS
           [--tracing-configuration <value>]
           [--publish | --no-publish]
           [--version-description <value>]
+          [--encryption-configuration <value>]
           [--cli-input-json <value>]
           [--generate-cli-skeleton <value>]
           [--debug]
@@ -81,7 +89,7 @@ OPTIONS
           0-9, A-Z, a-z, - and _.
 
        --definition (string)
-          The  Amazon  States  Language  definition  of the state machine. See
+          The Amazon States Language definition  of  the  state  machine.  See
           Amazon States Language .
 
        --role-arn (string)
@@ -89,8 +97,8 @@ OPTIONS
           machine.
 
        --type (string)
-          Determines  whether  a Standard or Express state machine is created.
-          The default is STANDARD . You cannot update the type of a state  ma-
+          Determines whether a Standard or Express state machine  is  created.
+          The  default is STANDARD . You cannot update the type of a state ma-
           chine once it has been created.
 
           Possible values:
@@ -100,33 +108,33 @@ OPTIONS
           o EXPRESS
 
        --logging-configuration (structure)
-          Defines  what execution history events are logged and where they are
+          Defines what execution history events are logged and where they  are
           logged.
 
           NOTE:
-              By default, the level is set to OFF . For more  information  see
+              By  default,  the level is set to OFF . For more information see
               Log Levels in the Step Functions User Guide.
 
           level -> (string)
               Defines which category of execution history events are logged.
 
           includeExecutionData -> (boolean)
-              Determines  whether execution data is included in your log. When
+              Determines whether execution data is included in your log.  When
               set to false , data is excluded.
 
           destinations -> (list)
-              An array of objects that describes where your execution  history
-              events  will be logged. Limited to size 1. Required, if your log
+              An  array of objects that describes where your execution history
+              events will be logged. Limited to size 1. Required, if your  log
               level is not set to OFF .
 
               (structure)
                  cloudWatchLogsLogGroup -> (structure)
                      An object describing a CloudWatch log group. For more in-
-                     formation,  see AWS::Logs::LogGroup in the CloudFormation
+                     formation, see AWS::Logs::LogGroup in the  CloudFormation
                      User Guide.
 
                      logGroupArn -> (string)
-                        The ARN of the the CloudWatch log group to  which  you
+                        The  ARN  of the the CloudWatch log group to which you
                         want your logs emitted to. The ARN must end with :*
 
        JSON Syntax:
@@ -147,22 +155,22 @@ OPTIONS
        --tags (list)
           Tags to be added when creating a state machine.
 
-          An  array  of  key-value pairs. For more information, see Using Cost
-          Allocation Tags in the Amazon Web Services Billing and Cost  Manage-
+          An array of key-value pairs. For more information,  see  Using  Cost
+          Allocation  Tags in the Amazon Web Services Billing and Cost Manage-
           ment User Guide , and Controlling Access Using IAM Tags .
 
           Tags may only contain Unicode letters, digits, white space, or these
           symbols: _ . : / = + - @ .
 
           (structure)
-              Tags are key-value pairs that can be associated with Step  Func-
+              Tags  are key-value pairs that can be associated with Step Func-
               tions state machines and activities.
 
-              An  array  of  key-value  pairs. For more information, see Using
+              An array of key-value pairs. For  more  information,  see  Using
               Cost Allocation Tags in the Amazon Web Services Billing and Cost
               Management User Guide , and Controlling Access Using IAM Tags .
 
-              Tags  may  only contain Unicode letters, digits, white space, or
+              Tags may only contain Unicode letters, digits, white  space,  or
               these symbols: _ . : / = + - @ .
 
               key -> (string)
@@ -206,10 +214,39 @@ OPTIONS
           creation. The default is false .
 
        --version-description (string)
-          Sets  description  about the state machine version. You can only set
+          Sets description about the state machine version. You can  only  set
           the description if the publish parameter is set to true . Otherwise,
-          if  you set versionDescription , but publish to false , this API ac-
+          if you set versionDescription , but publish to false , this API  ac-
           tion throws ValidationException .
+
+       --encryption-configuration (structure)
+          Settings to configure server-side encryption.
+
+          kmsKeyId -> (string)
+              An  alias,  alias ARN, key ID, or key ARN of a symmetric encryp-
+              tion KMS key to encrypt data. To specify a KMS key in a  differ-
+              ent  Amazon  Web  Services  account, you must use the key ARN or
+              alias ARN.
+
+          kmsDataKeyReusePeriodSeconds -> (integer)
+              Maximum duration that Step Functions will reuse data keys.  When
+              the  period  expires, Step Functions will call GenerateDataKey .
+              Only applies to customer managed keys.
+
+          type -> (string)
+              Encryption type
+
+       Shorthand Syntax:
+
+          kmsKeyId=string,kmsDataKeyReusePeriodSeconds=integer,type=string
+
+       JSON Syntax:
+
+          {
+            "kmsKeyId": "string",
+            "kmsDataKeyReusePeriodSeconds": integer,
+            "type": "AWS_OWNED_KEY"|"CUSTOMER_MANAGED_KMS_KEY"
+          }
 
        --cli-input-json (string) Performs service operation based on the  JSON
        string  provided. The JSON string follows the format provided by --gen-

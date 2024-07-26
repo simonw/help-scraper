@@ -9,16 +9,19 @@ DESCRIPTION
        Sends messages to the specified Amazon Bedrock model. Converse provides
        a consistent interface that works with all  models  that  support  mes-
        sages.  This  allows  you  to write code once and use it with different
-       models. Should a model have unique inference parameters, you  can  also
-       pass those unique parameters to the model.
+       models. If a model has unique inference parameters, you can  also  pass
+       those unique parameters to the model.
+
+       Amazon  Bedrock  doesn't  store any text, images, or documents that you
+       provide as content. The data is only used to generate the response.
 
        For information about the Converse API, see Use the Converse API in the
-       Amazon Bedrock User Guide . To use a guardrail,  see  Use  a  guardrail
-       with  the Converse API in the Amazon Bedrock User Guide . To use a tool
-       with a model, see Tool use (Function calling)  in  the  Amazon  Bedrock
+       Amazon  Bedrock  User  Guide  . To use a guardrail, see Use a guardrail
+       with the Converse API in the Amazon Bedrock User Guide . To use a  tool
+       with  a  model,  see  Tool use (Function calling) in the Amazon Bedrock
        User Guide
 
-       For  example code, see Converse API examples in the Amazon Bedrock User
+       For example code, see Converse API examples in the Amazon Bedrock  User
        Guide .
 
        This operation requires permission for the bedrock:InvokeModel action.
@@ -27,7 +30,7 @@ DESCRIPTION
 
        converse uses document type values. Document types follow the JSON data
        model where valid values are: strings, numbers, booleans, null, arrays,
-       and objects. For command input, options and nested parameters that  are
+       and  objects. For command input, options and nested parameters that are
        labeled with the type document must be provided as JSON. Shorthand syn-
        tax does not support document types.
 
@@ -64,666 +67,25 @@ OPTIONS
 
           The modelId to provide depends on the type of model that you use:
 
-          o If you use a base model, specify the model ID or its  ARN.  For  a
-            list  of  model IDs for base models, see Amazon Bedrock base model
+          o If  you  use  a base model, specify the model ID or its ARN. For a
+            list of model IDs for base models, see Amazon Bedrock  base  model
             IDs (on-demand throughput) in the Amazon Bedrock User Guide.
 
           o If you use a provisioned model, specify the ARN of the Provisioned
             Throughput. For more information, see Run inference using a Provi-
             sioned Throughput in the Amazon Bedrock User Guide.
 
-          o If you use a custom model, first purchase  Provisioned  Throughput
-            for  it.  Then specify the ARN of the resulting provisioned model.
-            For more information, see Use a custom model in Amazon Bedrock  in
+          o If  you  use a custom model, first purchase Provisioned Throughput
+            for it. Then specify the ARN of the resulting  provisioned  model.
+            For  more information, see Use a custom model in Amazon Bedrock in
             the Amazon Bedrock User Guide.
 
        --messages (list)
           The messages that you want to send to the model.
 
           (structure)
-              A  message  input,  or  returned  from,  a  call  to Converse or
+              A message input,  or  returned  from,  a  call  to  Converse  or
               ConverseStream .
-
-              role -> (string)
-                 The role that the message plays in the message.
-
-              content -> (list)
-                 The message content. Note the following restrictions:
-
-                 o You can include up to 20 images. Each image's size, height,
-                   and  width  must be no more than 3.75 MB, 8000 px, and 8000
-                   px, respectively.
-
-                 o You can include up to five documents. Each document's  size
-                   must be no more than 4.5 MB.
-
-                 o If  you include a ContentBlock with a document field in the
-                   array, you must also include a  ContentBlock  with  a  text
-                   field.
-
-                 o You  can  only  include images and documents if the role is
-                   user .
-
-                 (tagged union structure)
-                     A block of content for a message that you pass to, or re-
-                     ceive  from,  a model with the Converse or ConverseStream
-                     API operations.
-
-                     NOTE:
-                        This is a Tagged Union structure. Only one of the fol-
-                        lowing  top  level keys can be set: text, image, docu-
-                        ment, toolUse, toolResult, guardContent.
-
-                     text -> (string)
-                        Text to include in the message.
-
-                     image -> (structure)
-                        Image to include in the message.
-
-                        NOTE:
-                            This field is only supported by Anthropic Claude 3
-                            models.
-
-                        format -> (string)
-                            The format of the image.
-
-                        source -> (tagged union structure)
-                            The source for the image.
-
-                            NOTE:
-                               This  is  a Tagged Union structure. Only one of
-                               the following top level keys can be set: bytes.
-
-                            bytes -> (blob)
-                               The raw image bytes for the image. If  you  use
-                               an  AWS SDK, you don't need to encode the image
-                               bytes in base64.
-
-                     document -> (structure)
-                        A document to include in the message.
-
-                        format -> (string)
-                            The format of a document, or its extension.
-
-                        name -> (string)
-                            A name for the document. The name can only contain
-                            the following characters:
-
-                            o Alphanumeric characters
-
-                            o Whitespace  characters  (no  more  than one in a
-                              row)
-
-                            o Hyphens
-
-                            o Parentheses
-
-                            o Square brackets
-
-                            NOTE:
-                               This field is vulnerable to prompt  injections,
-                               because the model might inadvertently interpret
-                               it as  instructions.  Therefore,  we  recommend
-                               that you specify a neutral name.
-
-                        source -> (tagged union structure)
-                            Contains the content of the document.
-
-                            NOTE:
-                               This  is  a Tagged Union structure. Only one of
-                               the following top level keys can be set: bytes.
-
-                            bytes -> (blob)
-                               The raw bytes for the document. If you  use  an
-                               Amazon  Web Services SDK, you don't need to en-
-                               code the bytes in base64.
-
-                     toolUse -> (structure)
-                        Information about a tool use request from a model.
-
-                        toolUseId -> (string)
-                            The ID for the tool request.
-
-                        name -> (string)
-                            The name of the tool that the model wants to use.
-
-                        input -> (document)
-                            The input to pass to the tool.
-
-                     toolResult -> (structure)
-                        The result for a tool request that a model makes.
-
-                        toolUseId -> (string)
-                            The ID of the tool request that this is the result
-                            for.
-
-                        content -> (list)
-                            The content for tool result content block.
-
-                            (tagged union structure)
-                               The tool result content block.
-
-                               NOTE:
-                                   This  is a Tagged Union structure. Only one
-                                   of the following top level keys can be set:
-                                   json, text, image, document.
-
-                               json -> (document)
-                                   A tool result that is JSON format data.
-
-                               text -> (string)
-                                   A tool result that is text.
-
-                               image -> (structure)
-                                   A tool result that is an image.
-
-                                   NOTE:
-                                      This  field  is  only  supported  by An-
-                                      thropic Claude 3 models.
-
-                                   format -> (string)
-                                      The format of the image.
-
-                                   source -> (tagged union structure)
-                                      The source for the image.
-
-                                      NOTE:
-                                          This is a  Tagged  Union  structure.
-                                          Only  one of the following top level
-                                          keys can be set: bytes.
-
-                                      bytes -> (blob)
-                                          The raw image bytes for  the  image.
-                                          If  you  use  an  AWS SDK, you don't
-                                          need to encode the  image  bytes  in
-                                          base64.
-
-                               document -> (structure)
-                                   A tool result that is a document.
-
-                                   format -> (string)
-                                      The  format of a document, or its exten-
-                                      sion.
-
-                                   name -> (string)
-                                      A name for the document.  The  name  can
-                                      only contain the following characters:
-
-                                      o Alphanumeric characters
-
-                                      o Whitespace  characters  (no  more than
-                                        one in a row)
-
-                                      o Hyphens
-
-                                      o Parentheses
-
-                                      o Square brackets
-
-                                      NOTE:
-                                          This field is vulnerable  to  prompt
-                                          injections,  because the model might
-                                          inadvertently interpret  it  as  in-
-                                          structions.  Therefore, we recommend
-                                          that you specify a neutral name.
-
-                                   source -> (tagged union structure)
-                                      Contains the content of the document.
-
-                                      NOTE:
-                                          This is a  Tagged  Union  structure.
-                                          Only  one of the following top level
-                                          keys can be set: bytes.
-
-                                      bytes -> (blob)
-                                          The raw bytes for the  document.  If
-                                          you  use an Amazon Web Services SDK,
-                                          you don't need to encode  the  bytes
-                                          in base64.
-
-                        status -> (string)
-                            The status for the tool result content block.
-
-                            NOTE:
-                               This field is only supported Anthropic Claude 3
-                               models.
-
-                     guardContent -> (tagged union structure)
-                        Contains the content to assess with the guardrail.  If
-                        you  don't  specify guardContent in a call to the Con-
-                        verse API, the guardrail (if passed  in  the  Converse
-                        API) assesses the entire message.
-
-                        For  more  information,  see  Use a guardrail with the
-                        Converse API in the Amazon Bedrock User Guide . </p>
-
-                        NOTE:
-                            This is a Tagged Union structure. Only one of  the
-                            following top level keys can be set: text.
-
-                        text -> (structure)
-                            The text to guard.
-
-                            text -> (string)
-                               The text that you want to guard.
-
-                            qualifiers -> (list)
-                               The  qualifier  details for the guardrails con-
-                               textual grounding filter.
-
-                               (string)
-
-       JSON Syntax:
-
-          [
-            {
-              "role": "user"|"assistant",
-              "content": [
-                {
-                  "text": "string",
-                  "image": {
-                    "format": "png"|"jpeg"|"gif"|"webp",
-                    "source": {
-                      "bytes": blob
-                    }
-                  },
-                  "document": {
-                    "format": "pdf"|"csv"|"doc"|"docx"|"xls"|"xlsx"|"html"|"txt"|"md",
-                    "name": "string",
-                    "source": {
-                      "bytes": blob
-                    }
-                  },
-                  "toolUse": {
-                    "toolUseId": "string",
-                    "name": "string",
-                    "input": {...}
-                  },
-                  "toolResult": {
-                    "toolUseId": "string",
-                    "content": [
-                      {
-                        "json": {...},
-                        "text": "string",
-                        "image": {
-                          "format": "png"|"jpeg"|"gif"|"webp",
-                          "source": {
-                            "bytes": blob
-                          }
-                        },
-                        "document": {
-                          "format": "pdf"|"csv"|"doc"|"docx"|"xls"|"xlsx"|"html"|"txt"|"md",
-                          "name": "string",
-                          "source": {
-                            "bytes": blob
-                          }
-                        }
-                      }
-                      ...
-                    ],
-                    "status": "success"|"error"
-                  },
-                  "guardContent": {
-                    "text": {
-                      "text": "string",
-                      "qualifiers": ["grounding_source"|"query"|"guard_content", ...]
-                    }
-                  }
-                }
-                ...
-              ]
-            }
-            ...
-          ]
-
-       --system (list)
-          A system prompt to pass to the model.
-
-          (tagged union structure)
-              A system content block.
-
-              NOTE:
-                 This is a Tagged Union structure. Only one of  the  following
-                 top level keys can be set: text, guardContent.
-
-              text -> (string)
-                 A system prompt for the model.
-
-              guardContent -> (tagged union structure)
-                 A  content  block  to assess with the guardrail. Use with the
-                 Converse or ConverseStream API operations.
-
-                 For more information, see Use a guardrail with  the  Converse
-                 API in the Amazon Bedrock User Guide .
-
-                 NOTE:
-                     This is a Tagged Union structure. Only one of the follow-
-                     ing top level keys can be set: text.
-
-                 text -> (structure)
-                     The text to guard.
-
-                     text -> (string)
-                        The text that you want to guard.
-
-                     qualifiers -> (list)
-                        The qualifier details for  the  guardrails  contextual
-                        grounding filter.
-
-                        (string)
-
-       JSON Syntax:
-
-          [
-            {
-              "text": "string",
-              "guardContent": {
-                "text": {
-                  "text": "string",
-                  "qualifiers": ["grounding_source"|"query"|"guard_content", ...]
-                }
-              }
-            }
-            ...
-          ]
-
-       --inference-config (structure)
-          Inference  parameters to pass to the model. Converse supports a base
-          set of inference parameters. If you need to pass additional  parame-
-          ters  that  the model supports, use the additionalModelRequestFields
-          request field.
-
-          maxTokens -> (integer)
-              The maximum number of tokens to allow in the generated response.
-              The  default  value  is  the maximum allowed value for the model
-              that you are using. For more information, see Inference  parame-
-              ters for foundation models .
-
-          temperature -> (float)
-              The likelihood of the model selecting higher-probability options
-              while generating a response. A lower value makes the model  more
-              likely  to  choose  higher-probability  options,  while a higher
-              value makes the model more likely  to  choose  lower-probability
-              options.
-
-              The  default  value  is the default value for the model that you
-              are using. For more information, see  Inference  parameters  for
-              foundation models .
-
-          topP -> (float)
-              The  percentage of most-likely candidates that the model consid-
-              ers for the next token. For example, if you choose  a  value  of
-              0.8  for topP , the model selects from the top 80% of the proba-
-              bility distribution of tokens that could  be  next  in  the  se-
-              quence.
-
-              The  default  value  is the default value for the model that you
-              are using. For more information, see  Inference  parameters  for
-              foundation models .
-
-          stopSequences -> (list)
-              A list of stop sequences. A stop sequence is a sequence of char-
-              acters that causes the model to stop generating the response.
-
-              (string)
-
-       Shorthand Syntax:
-
-          maxTokens=integer,temperature=float,topP=float,stopSequences=string,string
-
-       JSON Syntax:
-
-          {
-            "maxTokens": integer,
-            "temperature": float,
-            "topP": float,
-            "stopSequences": ["string", ...]
-          }
-
-       --tool-config (structure)
-          Configuration information for the tools that the model can use  when
-          generating a response.
-
-          NOTE:
-              This  field is only supported by Anthropic Claude 3, Cohere Com-
-              mand R, Cohere Command R+, and Mistral Large models.
-
-          tools -> (list)
-              An array of tools that you want to pass to a model.
-
-              (tagged union structure)
-                 Information about a tool that you can use with  the  Converse
-                 API. For more information, see Tool use (function calling) in
-                 the Amazon Bedrock User Guide.
-
-                 NOTE:
-                     This is a Tagged Union structure. Only one of the follow-
-                     ing top level keys can be set: toolSpec.
-
-                 toolSpec -> (structure)
-                     The specfication for the tool.
-
-                     name -> (string)
-                        The name for the tool.
-
-                     description -> (string)
-                        The description for the tool.
-
-                     inputSchema -> (tagged union structure)
-                        The input schema for the tool in JSON format.
-
-                        NOTE:
-                            This  is a Tagged Union structure. Only one of the
-                            following top level keys can be set: json.
-
-                        json -> (document)
-                            The JSON schema for the tool.  For  more  informa-
-                            tion, see JSON Schema Reference .
-
-          toolChoice -> (tagged union structure)
-              If supported by model, forces the model to request a tool.
-
-              NOTE:
-                 This  is  a Tagged Union structure. Only one of the following
-                 top level keys can be set: auto, any, tool.
-
-              auto -> (structure)
-                 (Default). The Model automatically decides if a  tool  should
-                 be called or whether to generate text instead.
-
-              any -> (structure)
-                 The  model  must request at least one tool (no text is gener-
-                 ated).
-
-              tool -> (structure)
-                 The Model must request the specified tool. Only supported  by
-                 Anthropic Claude 3 models.
-
-                 name -> (string)
-                     The name of the tool that the model must request.
-
-       JSON Syntax:
-
-          {
-            "tools": [
-              {
-                "toolSpec": {
-                  "name": "string",
-                  "description": "string",
-                  "inputSchema": {
-                    "json": {...}
-                  }
-                }
-              }
-              ...
-            ],
-            "toolChoice": {
-              "auto": {
-
-              },
-              "any": {
-
-              },
-              "tool": {
-                "name": "string"
-              }
-            }
-          }
-
-       --guardrail-config (structure)
-          Configuration  information  for  a guardrail that you want to use in
-          the request.
-
-          guardrailIdentifier -> (string)
-              The identifier for the guardrail.
-
-          guardrailVersion -> (string)
-              The version of the guardrail.
-
-          trace -> (string)
-              The trace behavior for the guardrail.
-
-       Shorthand Syntax:
-
-          guardrailIdentifier=string,guardrailVersion=string,trace=string
-
-       JSON Syntax:
-
-          {
-            "guardrailIdentifier": "string",
-            "guardrailVersion": "string",
-            "trace": "enabled"|"disabled"
-          }
-
-       --additional-model-request-fields (document)
-          Additional inference parameters that the model supports, beyond  the
-          base  set  of inference parameters that Converse supports in the in-
-          ferenceConfig field. For more information, see Model parameters .
-
-       JSON Syntax:
-
-          {...}
-
-       --additional-model-response-field-paths (list)
-          Additional model parameters field paths to return in  the  response.
-          Converse  returns  the  requested fields as a JSON Pointer object in
-          the additionalModelResponseFields field. The  following  is  example
-          JSON for additionalModelResponseFieldPaths .
-              [ "/stop_sequence" ]
-
-          For  information about the JSON Pointer syntax, see the Internet En-
-          gineering Task Force (IETF) documentation.
-              Converse rejects an empty JSON Pointer or incorrectly structured
-              JSON  Pointer  with  a  400  error  code. if the JSON Pointer is
-              valid, but the requested field is not in the model response,  it
-              is ignored by Converse .
-
-          (string)
-
-       Syntax:
-
-          "string" "string" ...
-
-       --cli-input-json  (string) Performs service operation based on the JSON
-       string provided. The JSON string follows the format provided by  --gen-
-       erate-cli-skeleton.  If  other  arguments  are  provided on the command
-       line, the CLI values will override the JSON-provided values. It is  not
-       possible to pass arbitrary binary values using a JSON-provided value as
-       the string will be taken literally.
-
-       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
-       output without sending an API request. If provided with no value or the
-       value input, prints a sample input JSON that can be used as an argument
-       for  --cli-input-json.  If provided with the value output, it validates
-       the command inputs and returns a sample output JSON for that command.
-
-GLOBAL OPTIONS
-       --debug (boolean)
-
-       Turn on debug logging.
-
-       --endpoint-url (string)
-
-       Override command's default URL with the given URL.
-
-       --no-verify-ssl (boolean)
-
-       By default, the AWS CLI uses SSL when communicating with AWS  services.
-       For each SSL connection, the AWS CLI will verify SSL certificates. This
-       option overrides the default behavior of verifying SSL certificates.
-
-       --no-paginate (boolean)
-
-       Disable automatic pagination.
-
-       --output (string)
-
-       The formatting style for command output.
-
-       o json
-
-       o text
-
-       o table
-
-       --query (string)
-
-       A JMESPath query to use in filtering the response data.
-
-       --profile (string)
-
-       Use a specific profile from your credential file.
-
-       --region (string)
-
-       The region to use. Overrides config/env settings.
-
-       --version (string)
-
-       Display the version of this tool.
-
-       --color (string)
-
-       Turn on/off color output.
-
-       o on
-
-       o off
-
-       o auto
-
-       --no-sign-request (boolean)
-
-       Do not sign requests. Credentials will not be loaded if  this  argument
-       is provided.
-
-       --ca-bundle (string)
-
-       The CA certificate bundle to use when verifying SSL certificates. Over-
-       rides config/env settings.
-
-       --cli-read-timeout (int)
-
-       The maximum socket read time in seconds. If the value is set to 0,  the
-       socket  read  will be blocking and not timeout. The default value is 60
-       seconds.
-
-       --cli-connect-timeout (int)
-
-       The maximum socket connect time in seconds. If the value is set  to  0,
-       the  socket connect will be blocking and not timeout. The default value
-       is 60 seconds.
-
-OUTPUT
-       output -> (tagged union structure)
-          The result from the call to Converse .
-
-          NOTE:
-              This is a Tagged Union structure. Only one of the following  top
-              level keys can be set: message.
-
-          message -> (structure)
-              The message that the model generates.
 
               role -> (string)
                  The role that the message plays in the message.
@@ -954,12 +316,653 @@ OUTPUT
 
                                (string)
 
+       JSON Syntax:
+
+          [
+            {
+              "role": "user"|"assistant",
+              "content": [
+                {
+                  "text": "string",
+                  "image": {
+                    "format": "png"|"jpeg"|"gif"|"webp",
+                    "source": {
+                      "bytes": blob
+                    }
+                  },
+                  "document": {
+                    "format": "pdf"|"csv"|"doc"|"docx"|"xls"|"xlsx"|"html"|"txt"|"md",
+                    "name": "string",
+                    "source": {
+                      "bytes": blob
+                    }
+                  },
+                  "toolUse": {
+                    "toolUseId": "string",
+                    "name": "string",
+                    "input": {...}
+                  },
+                  "toolResult": {
+                    "toolUseId": "string",
+                    "content": [
+                      {
+                        "json": {...},
+                        "text": "string",
+                        "image": {
+                          "format": "png"|"jpeg"|"gif"|"webp",
+                          "source": {
+                            "bytes": blob
+                          }
+                        },
+                        "document": {
+                          "format": "pdf"|"csv"|"doc"|"docx"|"xls"|"xlsx"|"html"|"txt"|"md",
+                          "name": "string",
+                          "source": {
+                            "bytes": blob
+                          }
+                        }
+                      }
+                      ...
+                    ],
+                    "status": "success"|"error"
+                  },
+                  "guardContent": {
+                    "text": {
+                      "text": "string",
+                      "qualifiers": ["grounding_source"|"query"|"guard_content", ...]
+                    }
+                  }
+                }
+                ...
+              ]
+            }
+            ...
+          ]
+
+       --system (list)
+          A system prompt to pass to the model.
+
+          (tagged union structure)
+              A system content block.
+
+              NOTE:
+                 This  is  a Tagged Union structure. Only one of the following
+                 top level keys can be set: text, guardContent.
+
+              text -> (string)
+                 A system prompt for the model.
+
+              guardContent -> (tagged union structure)
+                 A content block to assess with the guardrail.  Use  with  the
+                 Converse or ConverseStream API operations.
+
+                 For  more  information, see Use a guardrail with the Converse
+                 API in the Amazon Bedrock User Guide .
+
+                 NOTE:
+                     This is a Tagged Union structure. Only one of the follow-
+                     ing top level keys can be set: text.
+
+                 text -> (structure)
+                     The text to guard.
+
+                     text -> (string)
+                        The text that you want to guard.
+
+                     qualifiers -> (list)
+                        The  qualifier  details  for the guardrails contextual
+                        grounding filter.
+
+                        (string)
+
+       JSON Syntax:
+
+          [
+            {
+              "text": "string",
+              "guardContent": {
+                "text": {
+                  "text": "string",
+                  "qualifiers": ["grounding_source"|"query"|"guard_content", ...]
+                }
+              }
+            }
+            ...
+          ]
+
+       --inference-config (structure)
+          Inference parameters to pass to the model. Converse supports a  base
+          set  of inference parameters. If you need to pass additional parame-
+          ters that the model supports, use  the  additionalModelRequestFields
+          request field.
+
+          maxTokens -> (integer)
+              The maximum number of tokens to allow in the generated response.
+              The default value is the maximum allowed  value  for  the  model
+              that  you are using. For more information, see Inference parame-
+              ters for foundation models .
+
+          temperature -> (float)
+              The likelihood of the model selecting higher-probability options
+              while  generating a response. A lower value makes the model more
+              likely to choose  higher-probability  options,  while  a  higher
+              value  makes  the  model more likely to choose lower-probability
+              options.
+
+              The default value is the default value for the  model  that  you
+              are  using.  For  more information, see Inference parameters for
+              foundation models .
+
+          topP -> (float)
+              The percentage of most-likely candidates that the model  consid-
+              ers  for  the  next token. For example, if you choose a value of
+              0.8 for topP , the model selects from the top 80% of the  proba-
+              bility  distribution  of  tokens  that  could be next in the se-
+              quence.
+
+              The default value is the default value for the  model  that  you
+              are  using.  For  more information, see Inference parameters for
+              foundation models .
+
+          stopSequences -> (list)
+              A list of stop sequences. A stop sequence is a sequence of char-
+              acters that causes the model to stop generating the response.
+
+              (string)
+
+       Shorthand Syntax:
+
+          maxTokens=integer,temperature=float,topP=float,stopSequences=string,string
+
+       JSON Syntax:
+
+          {
+            "maxTokens": integer,
+            "temperature": float,
+            "topP": float,
+            "stopSequences": ["string", ...]
+          }
+
+       --tool-config (structure)
+          Configuration  information for the tools that the model can use when
+          generating a response.
+
+          NOTE:
+              This field is only supported by Anthropic Claude 3, Cohere  Com-
+              mand R, Cohere Command R+, and Mistral Large models.
+
+          tools -> (list)
+              An array of tools that you want to pass to a model.
+
+              (tagged union structure)
+                 Information  about  a tool that you can use with the Converse
+                 API. For more information, see Tool use (function calling) in
+                 the Amazon Bedrock User Guide.
+
+                 NOTE:
+                     This is a Tagged Union structure. Only one of the follow-
+                     ing top level keys can be set: toolSpec.
+
+                 toolSpec -> (structure)
+                     The specfication for the tool.
+
+                     name -> (string)
+                        The name for the tool.
+
+                     description -> (string)
+                        The description for the tool.
+
+                     inputSchema -> (tagged union structure)
+                        The input schema for the tool in JSON format.
+
+                        NOTE:
+                            This is a Tagged Union structure. Only one of  the
+                            following top level keys can be set: json.
+
+                        json -> (document)
+                            The  JSON  schema  for the tool. For more informa-
+                            tion, see JSON Schema Reference .
+
+          toolChoice -> (tagged union structure)
+              If supported by model, forces the model to request a tool.
+
+              NOTE:
+                 This is a Tagged Union structure. Only one of  the  following
+                 top level keys can be set: auto, any, tool.
+
+              auto -> (structure)
+                 (Default).  The  Model automatically decides if a tool should
+                 be called or whether to generate text instead.
+
+              any -> (structure)
+                 The model must request at least one tool (no text  is  gener-
+                 ated).
+
+              tool -> (structure)
+                 The  Model must request the specified tool. Only supported by
+                 Anthropic Claude 3 models.
+
+                 name -> (string)
+                     The name of the tool that the model must request.
+
+       JSON Syntax:
+
+          {
+            "tools": [
+              {
+                "toolSpec": {
+                  "name": "string",
+                  "description": "string",
+                  "inputSchema": {
+                    "json": {...}
+                  }
+                }
+              }
+              ...
+            ],
+            "toolChoice": {
+              "auto": {
+
+              },
+              "any": {
+
+              },
+              "tool": {
+                "name": "string"
+              }
+            }
+          }
+
+       --guardrail-config (structure)
+          Configuration information for a guardrail that you want  to  use  in
+          the request.
+
+          guardrailIdentifier -> (string)
+              The identifier for the guardrail.
+
+          guardrailVersion -> (string)
+              The version of the guardrail.
+
+          trace -> (string)
+              The trace behavior for the guardrail.
+
+       Shorthand Syntax:
+
+          guardrailIdentifier=string,guardrailVersion=string,trace=string
+
+       JSON Syntax:
+
+          {
+            "guardrailIdentifier": "string",
+            "guardrailVersion": "string",
+            "trace": "enabled"|"disabled"
+          }
+
+       --additional-model-request-fields (document)
+          Additional  inference parameters that the model supports, beyond the
+          base set of inference parameters that Converse supports in  the  in-
+          ferenceConfig field. For more information, see Model parameters .
+
+       JSON Syntax:
+
+          {...}
+
+       --additional-model-response-field-paths (list)
+          Additional  model  parameters field paths to return in the response.
+          Converse returns the requested fields as a JSON  Pointer  object  in
+          the  additionalModelResponseFields  field.  The following is example
+          JSON for additionalModelResponseFieldPaths .
+              [ "/stop_sequence" ]
+
+          For information about the JSON Pointer syntax, see the Internet  En-
+          gineering Task Force (IETF) documentation.
+              Converse rejects an empty JSON Pointer or incorrectly structured
+              JSON Pointer with a 400 error  code.  if  the  JSON  Pointer  is
+              valid,  but the requested field is not in the model response, it
+              is ignored by Converse .
+
+          (string)
+
+       Syntax:
+
+          "string" "string" ...
+
+       --cli-input-json (string) Performs service operation based on the  JSON
+       string  provided. The JSON string follows the format provided by --gen-
+       erate-cli-skeleton. If other arguments  are  provided  on  the  command
+       line,  the CLI values will override the JSON-provided values. It is not
+       possible to pass arbitrary binary values using a JSON-provided value as
+       the string will be taken literally.
+
+       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
+       output without sending an API request. If provided with no value or the
+       value input, prints a sample input JSON that can be used as an argument
+       for --cli-input-json. If provided with the value output,  it  validates
+       the command inputs and returns a sample output JSON for that command.
+
+GLOBAL OPTIONS
+       --debug (boolean)
+
+       Turn on debug logging.
+
+       --endpoint-url (string)
+
+       Override command's default URL with the given URL.
+
+       --no-verify-ssl (boolean)
+
+       By  default, the AWS CLI uses SSL when communicating with AWS services.
+       For each SSL connection, the AWS CLI will verify SSL certificates. This
+       option overrides the default behavior of verifying SSL certificates.
+
+       --no-paginate (boolean)
+
+       Disable automatic pagination.
+
+       --output (string)
+
+       The formatting style for command output.
+
+       o json
+
+       o text
+
+       o table
+
+       --query (string)
+
+       A JMESPath query to use in filtering the response data.
+
+       --profile (string)
+
+       Use a specific profile from your credential file.
+
+       --region (string)
+
+       The region to use. Overrides config/env settings.
+
+       --version (string)
+
+       Display the version of this tool.
+
+       --color (string)
+
+       Turn on/off color output.
+
+       o on
+
+       o off
+
+       o auto
+
+       --no-sign-request (boolean)
+
+       Do  not  sign requests. Credentials will not be loaded if this argument
+       is provided.
+
+       --ca-bundle (string)
+
+       The CA certificate bundle to use when verifying SSL certificates. Over-
+       rides config/env settings.
+
+       --cli-read-timeout (int)
+
+       The  maximum socket read time in seconds. If the value is set to 0, the
+       socket read will be blocking and not timeout. The default value  is  60
+       seconds.
+
+       --cli-connect-timeout (int)
+
+       The  maximum  socket connect time in seconds. If the value is set to 0,
+       the socket connect will be blocking and not timeout. The default  value
+       is 60 seconds.
+
+OUTPUT
+       output -> (tagged union structure)
+          The result from the call to Converse .
+
+          NOTE:
+              This  is a Tagged Union structure. Only one of the following top
+              level keys can be set: message.
+
+          message -> (structure)
+              The message that the model generates.
+
+              role -> (string)
+                 The role that the message plays in the message.
+
+              content -> (list)
+                 The message content. Note the following restrictions:
+
+                 o You can include up to 20 images. Each image's size, height,
+                   and  width  must be no more than 3.75 MB, 8000 px, and 8000
+                   px, respectively.
+
+                 o You can include up to five documents. Each document's  size
+                   must be no more than 4.5 MB.
+
+                 o If  you include a ContentBlock with a document field in the
+                   array, you must also include a  ContentBlock  with  a  text
+                   field.
+
+                 o You  can  only  include images and documents if the role is
+                   user .
+
+                 (tagged union structure)
+                     A block of content for a message that you pass to, or re-
+                     ceive  from,  a model with the Converse or ConverseStream
+                     API operations.
+
+                     NOTE:
+                        This is a Tagged Union structure. Only one of the fol-
+                        lowing  top  level keys can be set: text, image, docu-
+                        ment, toolUse, toolResult, guardContent.
+
+                     text -> (string)
+                        Text to include in the message.
+
+                     image -> (structure)
+                        Image to include in the message.
+
+                        NOTE:
+                            This field is only supported by Anthropic Claude 3
+                            models.
+
+                        format -> (string)
+                            The format of the image.
+
+                        source -> (tagged union structure)
+                            The source for the image.
+
+                            NOTE:
+                               This  is  a Tagged Union structure. Only one of
+                               the following top level keys can be set: bytes.
+
+                            bytes -> (blob)
+                               The raw image bytes for the image. If  you  use
+                               an  AWS SDK, you don't need to encode the image
+                               bytes in base64.
+
+                     document -> (structure)
+                        A document to include in the message.
+
+                        format -> (string)
+                            The format of a document, or its extension.
+
+                        name -> (string)
+                            A name for the document. The name can only contain
+                            the following characters:
+
+                            o Alphanumeric characters
+
+                            o Whitespace  characters  (no  more  than one in a
+                              row)
+
+                            o Hyphens
+
+                            o Parentheses
+
+                            o Square brackets
+
+                            NOTE:
+                               This field is vulnerable to prompt  injections,
+                               because the model might inadvertently interpret
+                               it as  instructions.  Therefore,  we  recommend
+                               that you specify a neutral name.
+
+                        source -> (tagged union structure)
+                            Contains the content of the document.
+
+                            NOTE:
+                               This  is  a Tagged Union structure. Only one of
+                               the following top level keys can be set: bytes.
+
+                            bytes -> (blob)
+                               The raw bytes for the document. If you  use  an
+                               Amazon  Web Services SDK, you don't need to en-
+                               code the bytes in base64.
+
+                     toolUse -> (structure)
+                        Information about a tool use request from a model.
+
+                        toolUseId -> (string)
+                            The ID for the tool request.
+
+                        name -> (string)
+                            The name of the tool that the model wants to use.
+
+                        input -> (document)
+                            The input to pass to the tool.
+
+                     toolResult -> (structure)
+                        The result for a tool request that a model makes.
+
+                        toolUseId -> (string)
+                            The ID of the tool request that this is the result
+                            for.
+
+                        content -> (list)
+                            The content for tool result content block.
+
+                            (tagged union structure)
+                               The tool result content block.
+
+                               NOTE:
+                                   This  is a Tagged Union structure. Only one
+                                   of the following top level keys can be set:
+                                   json, text, image, document.
+
+                               json -> (document)
+                                   A tool result that is JSON format data.
+
+                               text -> (string)
+                                   A tool result that is text.
+
+                               image -> (structure)
+                                   A tool result that is an image.
+
+                                   NOTE:
+                                      This  field  is  only  supported  by An-
+                                      thropic Claude 3 models.
+
+                                   format -> (string)
+                                      The format of the image.
+
+                                   source -> (tagged union structure)
+                                      The source for the image.
+
+                                      NOTE:
+                                          This is a  Tagged  Union  structure.
+                                          Only  one of the following top level
+                                          keys can be set: bytes.
+
+                                      bytes -> (blob)
+                                          The raw image bytes for  the  image.
+                                          If  you  use  an  AWS SDK, you don't
+                                          need to encode the  image  bytes  in
+                                          base64.
+
+                               document -> (structure)
+                                   A tool result that is a document.
+
+                                   format -> (string)
+                                      The  format of a document, or its exten-
+                                      sion.
+
+                                   name -> (string)
+                                      A name for the document.  The  name  can
+                                      only contain the following characters:
+
+                                      o Alphanumeric characters
+
+                                      o Whitespace  characters  (no  more than
+                                        one in a row)
+
+                                      o Hyphens
+
+                                      o Parentheses
+
+                                      o Square brackets
+
+                                      NOTE:
+                                          This field is vulnerable  to  prompt
+                                          injections,  because the model might
+                                          inadvertently interpret  it  as  in-
+                                          structions.  Therefore, we recommend
+                                          that you specify a neutral name.
+
+                                   source -> (tagged union structure)
+                                      Contains the content of the document.
+
+                                      NOTE:
+                                          This is a  Tagged  Union  structure.
+                                          Only  one of the following top level
+                                          keys can be set: bytes.
+
+                                      bytes -> (blob)
+                                          The raw bytes for the  document.  If
+                                          you  use an Amazon Web Services SDK,
+                                          you don't need to encode  the  bytes
+                                          in base64.
+
+                        status -> (string)
+                            The status for the tool result content block.
+
+                            NOTE:
+                               This field is only supported Anthropic Claude 3
+                               models.
+
+                     guardContent -> (tagged union structure)
+                        Contains the content to assess with the guardrail.  If
+                        you  don't  specify guardContent in a call to the Con-
+                        verse API, the guardrail (if passed  in  the  Converse
+                        API) assesses the entire message.
+
+                        For  more  information,  see  Use a guardrail with the
+                        Converse API in the Amazon Bedrock User Guide . </p>
+
+                        NOTE:
+                            This is a Tagged Union structure. Only one of  the
+                            following top level keys can be set: text.
+
+                        text -> (structure)
+                            The text to guard.
+
+                            text -> (string)
+                               The text that you want to guard.
+
+                            qualifiers -> (list)
+                               The  qualifier  details for the guardrails con-
+                               textual grounding filter.
+
+                               (string)
+
        stopReason -> (string)
           The reason why the model stopped generating output.
 
        usage -> (structure)
-          The  total number of tokens used in the call to Converse . The total
-          includes the tokens input to the model and the tokens  generated  by
+          The total number of tokens used in the call to Converse . The  total
+          includes  the  tokens input to the model and the tokens generated by
           the model.
 
           inputTokens -> (integer)
@@ -981,7 +984,7 @@ OUTPUT
           Additional fields in the response that are unique to the model.
 
        trace -> (structure)
-          A  trace object that contains information about the Guardrail behav-
+          A trace object that contains information about the Guardrail  behav-
           ior.
 
           guardrail -> (structure)
@@ -1018,7 +1021,7 @@ OUTPUT
                                    perform when the model detects the topic.
 
                                action -> (string)
-                                   The action the guardrail should  take  when
+                                   The  action  the guardrail should take when
                                    it intervenes on a topic.
 
                      contentPolicy -> (structure)
@@ -1111,19 +1114,19 @@ OUTPUT
                         assessment.
 
                         filters -> (list)
-                            The  filter  details for the guardrails contextual
+                            The filter details for the  guardrails  contextual
                             grounding filter.
 
                             (structure)
-                               The  details  for  the  guardrails   contextual
+                               The   details  for  the  guardrails  contextual
                                grounding filter.
 
                                type -> (string)
                                    The contextual grounding filter type.
 
                                threshold -> (double)
-                                   The  threshold used by contextual grounding
-                                   filter to determine whether the content  is
+                                   The threshold used by contextual  grounding
+                                   filter  to determine whether the content is
                                    grounded or not.
 
                                score -> (double)
@@ -1141,7 +1144,7 @@ OUTPUT
 
                  value -> (list)
                      (structure)
-                        A  behavior  assessment of the guardrail policies used
+                        A behavior assessment of the guardrail  policies  used
                         in a call to the Converse API.
 
                         topicPolicy -> (structure)
@@ -1157,12 +1160,12 @@ OUTPUT
                                       The name for the guardrail.
 
                                    type -> (string)
-                                      The type  behavior  that  the  guardrail
-                                      should  perform  when  the model detects
+                                      The  type  behavior  that  the guardrail
+                                      should perform when  the  model  detects
                                       the topic.
 
                                    action -> (string)
-                                      The action  the  guardrail  should  take
+                                      The  action  the  guardrail  should take
                                       when it intervenes on a topic.
 
                         contentPolicy -> (structure)
@@ -1255,11 +1258,11 @@ OUTPUT
                             guardrail assessment.
 
                             filters -> (list)
-                               The  filter  details for the guardrails contex-
+                               The filter details for the  guardrails  contex-
                                tual grounding filter.
 
                                (structure)
-                                   The details for the  guardrails  contextual
+                                   The  details  for the guardrails contextual
                                    grounding filter.
 
                                    type -> (string)
@@ -1271,11 +1274,11 @@ OUTPUT
                                       tent is grounded or not.
 
                                    score -> (double)
-                                      The   score   generated   by  contextual
+                                      The  score   generated   by   contextual
                                       grounding filter.
 
                                    action -> (string)
-                                      The action performed by  the  guardrails
+                                      The  action  performed by the guardrails
                                       contextual grounding filter.
 
 
