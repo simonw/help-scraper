@@ -8,21 +8,24 @@ NAME
 DESCRIPTION
        Starts  an asynchronous request for getting aggregated statistics about
        queues and farms. Get the statistics using the GetSessionsStatisticsAg-
-       gregation operation. Statistics are available for 1 hour after you call
-       the StartSessionsStatisticsAggregation operation.
+       gregation operation. You can only have one running aggregation for your
+       Deadline Cloud farm. Call the  GetSessionsStatisticsAggregation  opera-
+       tion  and  check  the status field to see if an aggregation is running.
+       Statistics are available for 1 hour after you  call  the  StartSession-
+       sStatisticsAggregation operation.
 
        See also: AWS API Documentation
 
 SYNOPSIS
             start-sessions-statistics-aggregation
-          --end-time <value>
           --farm-id <value>
-          --group-by <value>
-          [--period <value>]
           --resource-ids <value>
           --start-time <value>
-          --statistics <value>
+          --end-time <value>
           [--timezone <value>]
+          [--period <value>]
+          --group-by <value>
+          --statistics <value>
           [--cli-input-json <value>]
           [--generate-cli-skeleton <value>]
           [--debug]
@@ -41,12 +44,64 @@ SYNOPSIS
           [--cli-connect-timeout <value>]
 
 OPTIONS
+       --farm-id (string)
+          The  identifier of the farm that contains queues or fleets to return
+          statistics for.
+
+       --resource-ids (tagged union structure)
+          A list of fleet IDs or queue IDs to gather statistics for.
+
+          NOTE:
+              This is a Tagged Union structure. Only one of the following  top
+              level keys can be set: queueIds, fleetIds.
+
+          queueIds -> (list)
+              One to 10 queue IDs that specify the queues to return statistics
+              for. If you specify the queueIds field, you  can't  specify  the
+              fleetIds field.
+
+              (string)
+
+          fleetIds -> (list)
+              One to 10 fleet IDs that specify the fleets to return statistics
+              for. If you specify the fleetIds field, you  can't  specify  the
+              queueIds field.
+
+              (string)
+
+       Shorthand Syntax:
+
+          queueIds=string,string,fleetIds=string,string
+
+       JSON Syntax:
+
+          {
+            "queueIds": ["string", ...],
+            "fleetIds": ["string", ...]
+          }
+
+       --start-time (timestamp)
+          The Linux timestamp of the date and time that the statistics start.
+
        --end-time (timestamp)
           The Linux timestamp of the date and time that the statistics end.
 
-       --farm-id (string)
-          The identifier of the farm that contains queues or fleets to  return
-          statistics for.
+       --timezone (string)
+          The  timezone  to  use  for the statistics. Use UTC notation such as
+          "UTC+8."
+
+       --period (string)
+          The period to aggregate the statistics.
+
+          Possible values:
+
+          o HOURLY
+
+          o DAILY
+
+          o WEEKLY
+
+          o MONTHLY
 
        --group-by (list)
           The field to use to group the statistics.
@@ -66,54 +121,6 @@ OPTIONS
             INSTANCE_TYPE
             LICENSE_PRODUCT
 
-       --period (string)
-          The period to aggregate the statistics.
-
-          Possible values:
-
-          o HOURLY
-
-          o DAILY
-
-          o WEEKLY
-
-          o MONTHLY
-
-       --resource-ids (tagged union structure)
-          A list of fleet IDs or queue IDs to gather statistics for.
-
-          NOTE:
-              This  is a Tagged Union structure. Only one of the following top
-              level keys can be set: fleetIds, queueIds.
-
-          fleetIds -> (list)
-              One to 10 fleet IDs that specify the fleets to return statistics
-              for.  If  you  specify the fleetIds field, you can't specify the
-              queueIds field.
-
-              (string)
-
-          queueIds -> (list)
-              One to 10 queue IDs that specify the queues to return statistics
-              for.  If  you  specify the queueIds field, you can't specify the
-              fleetIds field.
-
-              (string)
-
-       Shorthand Syntax:
-
-          fleetIds=string,string,queueIds=string,string
-
-       JSON Syntax:
-
-          {
-            "fleetIds": ["string", ...],
-            "queueIds": ["string", ...]
-          }
-
-       --start-time (timestamp)
-          The Linux timestamp of the date and time that the statistics start.
-
        --statistics (list)
           One to four statistics to return.
 
@@ -129,21 +136,17 @@ OPTIONS
             MAX
             AVG
 
-       --timezone (string)
-          The timezone to use for the statistics. Use  UTC  notation  such  as
-          "UTC+8."
-
-       --cli-input-json  (string) Performs service operation based on the JSON
-       string provided. The JSON string follows the format provided by  --gen-
-       erate-cli-skeleton.  If  other  arguments  are  provided on the command
-       line, the CLI values will override the JSON-provided values. It is  not
+       --cli-input-json (string) Performs service operation based on the  JSON
+       string  provided. The JSON string follows the format provided by --gen-
+       erate-cli-skeleton. If other arguments  are  provided  on  the  command
+       line,  the CLI values will override the JSON-provided values. It is not
        possible to pass arbitrary binary values using a JSON-provided value as
        the string will be taken literally.
 
-       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
+       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
        output without sending an API request. If provided with no value or the
        value input, prints a sample input JSON that can be used as an argument
-       for  --cli-input-json.  If provided with the value output, it validates
+       for --cli-input-json. If provided with the value output,  it  validates
        the command inputs and returns a sample output JSON for that command.
 
 GLOBAL OPTIONS
@@ -157,7 +160,7 @@ GLOBAL OPTIONS
 
        --no-verify-ssl (boolean)
 
-       By default, the AWS CLI uses SSL when communicating with AWS  services.
+       By  default, the AWS CLI uses SSL when communicating with AWS services.
        For each SSL connection, the AWS CLI will verify SSL certificates. This
        option overrides the default behavior of verifying SSL certificates.
 
@@ -203,7 +206,7 @@ GLOBAL OPTIONS
 
        --no-sign-request (boolean)
 
-       Do not sign requests. Credentials will not be loaded if  this  argument
+       Do  not  sign requests. Credentials will not be loaded if this argument
        is provided.
 
        --ca-bundle (string)
@@ -213,19 +216,19 @@ GLOBAL OPTIONS
 
        --cli-read-timeout (int)
 
-       The maximum socket read time in seconds. If the value is set to 0,  the
-       socket  read  will be blocking and not timeout. The default value is 60
+       The  maximum socket read time in seconds. If the value is set to 0, the
+       socket read will be blocking and not timeout. The default value  is  60
        seconds.
 
        --cli-connect-timeout (int)
 
-       The maximum socket connect time in seconds. If the value is set  to  0,
-       the  socket connect will be blocking and not timeout. The default value
+       The  maximum  socket connect time in seconds. If the value is set to 0,
+       the socket connect will be blocking and not timeout. The default  value
        is 60 seconds.
 
 OUTPUT
        aggregationId -> (string)
-          A unique identifier for the aggregated statistics. Use this  identi-
+          A  unique identifier for the aggregated statistics. Use this identi-
           fier with the GetAggregatedStatisticsForSessions operation to return
           the statistics.
 

@@ -14,8 +14,8 @@ SYNOPSIS
             update-worker-schedule
           --farm-id <value>
           --fleet-id <value>
-          [--updated-session-actions <value>]
           --worker-id <value>
+          [--updated-session-actions <value>]
           [--cli-input-json <value>]
           [--generate-cli-skeleton <value>]
           [--debug]
@@ -40,6 +40,9 @@ OPTIONS
        --fleet-id (string)
           The fleet ID to update.
 
+       --worker-id (string)
+          The worker ID to update.
+
        --updated-session-actions (map)
           The session actions associated with the worker schedule to update.
 
@@ -52,9 +55,6 @@ OPTIONS
               completedStatus -> (string)
                  The status of the session upon completion.
 
-              endedAt -> (timestamp)
-                 The date and time the resource ended running.
-
               processExitCode -> (integer)
                  The process exit code.
 
@@ -62,34 +62,34 @@ OPTIONS
                  A message to indicate the progress of the updated session ac-
                  tion.
 
-              progressPercent -> (float)
-                 The percentage completed.
-
               startedAt -> (timestamp)
                  The date and time the resource started running.
+
+              endedAt -> (timestamp)
+                 The date and time the resource ended running.
 
               updatedAt -> (timestamp)
                  The updated time.
 
+              progressPercent -> (float)
+                 The percentage completed.
+
        Shorthand Syntax:
 
-          KeyName1=completedStatus=string,endedAt=timestamp,processExitCode=integer,progressMessage=string,progressPercent=float,startedAt=timestamp,updatedAt=timestamp,KeyName2=completedStatus=string,endedAt=timestamp,processExitCode=integer,progressMessage=string,progressPercent=float,startedAt=timestamp,updatedAt=timestamp
+          KeyName1=completedStatus=string,processExitCode=integer,progressMessage=string,startedAt=timestamp,endedAt=timestamp,updatedAt=timestamp,progressPercent=float,KeyName2=completedStatus=string,processExitCode=integer,progressMessage=string,startedAt=timestamp,endedAt=timestamp,updatedAt=timestamp,progressPercent=float
 
        JSON Syntax:
 
           {"string": {
                 "completedStatus": "SUCCEEDED"|"FAILED"|"INTERRUPTED"|"CANCELED"|"NEVER_ATTEMPTED",
-                "endedAt": timestamp,
                 "processExitCode": integer,
                 "progressMessage": "string",
-                "progressPercent": float,
                 "startedAt": timestamp,
-                "updatedAt": timestamp
+                "endedAt": timestamp,
+                "updatedAt": timestamp,
+                "progressPercent": float
               }
             ...}
-
-       --worker-id (string)
-          The worker ID to update.
 
        --cli-input-json  (string) Performs service operation based on the JSON
        string provided. The JSON string follows the format provided by  --gen-
@@ -190,14 +190,90 @@ OUTPUT
           value -> (structure)
               The assigned session for the worker.
 
+              queueId -> (string)
+                 The queue ID of the assigned session.
+
               jobId -> (string)
                  The job ID for the assigned session.
 
+              sessionActions -> (list)
+                 The session actions to apply to the assigned session.
+
+                 (structure)
+                     The action for a session defined by  the  session  action
+                     ID.
+
+                     sessionActionId -> (string)
+                        The session action ID for the assigned session.
+
+                     definition -> (tagged union structure)
+                        The definition of the assigned session action.
+
+                        NOTE:
+                            This  is a Tagged Union structure. Only one of the
+                            following top level keys can be set: envEnter, en-
+                            vExit, taskRun, syncInputJobAttachments.
+
+                        envEnter -> (structure)
+                            The environment a session starts on.
+
+                            environmentId -> (string)
+                               The  environment ID of the assigned environment
+                               at the start of a session.
+
+                        envExit -> (structure)
+                            The environment a session exits from.
+
+                            environmentId -> (string)
+                               The environment ID of the assigned  environment
+                               when exiting a session.
+
+                        taskRun -> (structure)
+                            The task run.
+
+                            taskId -> (string)
+                               The task ID.
+
+                            stepId -> (string)
+                               The step ID.
+
+                            parameters -> (map)
+                               The parameters to include.
+
+                               key -> (string)
+
+                               value -> (tagged union structure)
+                                   The data types for the task parameters.
+
+                                   NOTE:
+                                      This  is  a Tagged Union structure. Only
+                                      one of the following top level keys  can
+                                      be set: int, float, string, path.
+
+                                   int -> (string)
+                                      A   signed   integer  represented  as  a
+                                      string.
+
+                                   float -> (string)
+                                      A  double  precision  IEEE-754  floating
+                                      point number represented as a string.
+
+                                   string -> (string)
+                                      A UTF-8 string.
+
+                                   path -> (string)
+                                      A  file  system  path  represented  as a
+                                      string.
+
+                        syncInputJobAttachments -> (structure)
+                            The job attachment to sync with an  assigned  ses-
+                            sion action.
+
+                            stepId -> (string)
+                               The step ID.
+
               logConfiguration -> (structure)
                  The log configuration for the worker's assigned session.
-
-                 error -> (string)
-                     The log configuration error details.
 
                  logDriver -> (string)
                      The log drivers for worker related logs.
@@ -216,84 +292,8 @@ OUTPUT
 
                      value -> (string)
 
-              queueId -> (string)
-                 The queue ID of the assigned session.
-
-              sessionActions -> (list)
-                 The session actions to apply to the assigned session.
-
-                 (structure)
-                     The action for a session defined by  the  session  action
-                     ID.
-
-                     definition -> (tagged union structure)
-                        The definition of the assigned session action.
-
-                        NOTE:
-                            This  is a Tagged Union structure. Only one of the
-                            following top level keys can be set: envEnter, en-
-                            vExit, syncInputJobAttachments, taskRun.
-
-                        envEnter -> (structure)
-                            The environment a session starts on.
-
-                            environmentId -> (string)
-                               The  environment ID of the assigned environment
-                               at the start of a session.
-
-                        envExit -> (structure)
-                            The environment a session exits from.
-
-                            environmentId -> (string)
-                               The environment ID of the assigned  environment
-                               when exiting a session.
-
-                        syncInputJobAttachments -> (structure)
-                            The  job  attachment to sync with an assigned ses-
-                            sion action.
-
-                            stepId -> (string)
-                               The step ID.
-
-                        taskRun -> (structure)
-                            The task run.
-
-                            parameters -> (map)
-                               The parameters to include.
-
-                               key -> (string)
-
-                               value -> (tagged union structure)
-                                   The data types for the task parameters.
-
-                                   NOTE:
-                                      This is a Tagged Union  structure.  Only
-                                      one  of the following top level keys can
-                                      be set: float, int, path, string.
-
-                                   float -> (string)
-                                      A  double  precision  IEEE-754  floating
-                                      point number represented as a string.
-
-                                   int -> (string)
-                                      A   signed   integer  represented  as  a
-                                      string.
-
-                                   path -> (string)
-                                      A file  system  path  represented  as  a
-                                      string.
-
-                                   string -> (string)
-                                      A UTF-8 string.
-
-                            stepId -> (string)
-                               The step ID.
-
-                            taskId -> (string)
-                               The task ID.
-
-                     sessionActionId -> (string)
-                        The session action ID for the assigned session.
+                 error -> (string)
+                     The log configuration error details.
 
        cancelSessionActions -> (map)
           The session actions associated with the worker schedule to cancel.
