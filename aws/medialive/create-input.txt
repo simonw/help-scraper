@@ -24,6 +24,8 @@ SYNOPSIS
           [--type <value>]
           [--vpc <value>]
           [--srt-settings <value>]
+          [--input-network-location <value>]
+          [--multicast-settings <value>]
           [--cli-input-json <value>]
           [--generate-cli-skeleton <value>]
           [--debug]
@@ -50,15 +52,47 @@ OPTIONS
               A unique name for the location the RTMP stream is  being  pushed
               to.
 
+          Network -> (string)
+              If the push input has an input location of ON-PREM, ID the ID of
+              the attached network.
+
+          NetworkRoutes -> (list)
+              If the push input has an input location of ON-PREM  it's  a  re-
+              quirement  to specify what the route of the input is going to be
+              on the customer local network.
+
+              (structure)
+                 A network route configuration.
+
+                 Cidr -> (string)
+                     The CIDR of the route.
+
+                 Gateway -> (string)
+                     An optional gateway for the route.
+
+          StaticIpAddress -> (string)
+              If the push input has an input location of ON-PREM it's optional
+              to  specify  what  the ip address of the input is going to be on
+              the customer local network.
+
        Shorthand Syntax:
 
-          StreamName=string ...
+          StreamName=string,Network=string,NetworkRoutes=[{Cidr=string,Gateway=string},{Cidr=string,Gateway=string}],StaticIpAddress=string ...
 
        JSON Syntax:
 
           [
             {
-              "StreamName": "string"
+              "StreamName": "string",
+              "Network": "string",
+              "NetworkRoutes": [
+                {
+                  "Cidr": "string",
+                  "Gateway": "string"
+                }
+                ...
+              ],
+              "StaticIpAddress": "string"
             }
             ...
           ]
@@ -82,7 +116,7 @@ OPTIONS
             ...
           ]
 
-       --input-security-groups  (list) A list of security groups referenced by
+       --input-security-groups (list) A list of security groups referenced  by
        IDs to attach to the input.(string)
           Placeholder documentation for __string
 
@@ -90,15 +124,15 @@ OPTIONS
 
           "string" "string" ...
 
-       --media-connect-flows (list) A list of the MediaConnect Flows that  you
+       --media-connect-flows  (list) A list of the MediaConnect Flows that you
        want to use in this input. You can specify as few as one Flow and pres-
-       ently, as many as two. The only requirement is when you have more  than
-       one  is  that  each Flow is in a separate Availability Zone as this en-
+       ently,  as many as two. The only requirement is when you have more than
+       one is that each Flow is in a separate Availability Zone  as  this  en-
        sures your EML input is redundant to AZ issues.(structure)
           The settings for a MediaConnect Flow.
 
           FlowArn -> (string)
-              The ARN of the MediaConnect Flow that  you  want  to  use  as  a
+              The  ARN  of  the  MediaConnect  Flow  that you want to use as a
               source.
 
        Shorthand Syntax:
@@ -116,14 +150,14 @@ OPTIONS
 
        --name (string) Name of the input.
 
-       --request-id  (string)  Unique  identifier of the request to ensure the
+       --request-id (string) Unique identifier of the request  to  ensure  the
        request is handled exactly once in case of retries.
 
        --role-arn (string) The Amazon Resource Name (ARN) of the role this in-
        put assumes during and after creation.
 
        --sources (list) The source URLs for a PULL-type input. Every PULL type
-       input needs exactly  two  source  URLs  for  redundancy.  Only  specify
+       input  needs  exactly  two  source  URLs  for  redundancy. Only specify
        sources for PULL type Inputs. Leave Destinations empty.(structure)
           Settings for for a PULL type input.
 
@@ -167,7 +201,7 @@ OPTIONS
           {"string": "string"
             ...}
 
-       --type (string) The different types of inputs that AWS Elemental  Medi-
+       --type  (string) The different types of inputs that AWS Elemental Medi-
        aLive supports.
           Possible values:
 
@@ -193,13 +227,15 @@ OPTIONS
 
           o SRT_CALLER
 
-       --vpc  (structure) Settings for a private VPC Input. When this property
-       is specified, the input destination addresses will be created in a  VPC
+          o MULTICAST
+
+       --vpc (structure) Settings for a private VPC Input. When this  property
+       is  specified, the input destination addresses will be created in a VPC
        rather than with public Internet addresses. This property requires set-
-       ting the roleArn property on Input creation. Not  compatible  with  the
+       ting  the  roleArn  property on Input creation. Not compatible with the
        inputSecurityGroups property.SecurityGroupIds -> (list)
-              A  list  of  up to 5 EC2 VPC security group IDs to attach to the
-              Input VPC network interfaces. Requires subnetIds.  If  none  are
+              A list of up to 5 EC2 VPC security group IDs to  attach  to  the
+              Input  VPC  network  interfaces. Requires subnetIds. If none are
               specified then the VPC default security group will be used.
 
               (string)
@@ -223,7 +259,7 @@ OPTIONS
             "SubnetIds": ["string", ...]
           }
 
-       --srt-settings (structure) The settings  associated  with  an  SRT  in-
+       --srt-settings  (structure)  The  settings  associated  with an SRT in-
        put.SrtCallerSources -> (list)
           Placeholder documentation for __listOfSrtCallerSourceRequest
 
@@ -231,8 +267,8 @@ OPTIONS
               Configures the connection for a source that uses SRT as the con-
               nection protocol. In terms of establishing the connection, Medi-
               aLive is always the caller and the upstream system is always the
-              listener. In terms of transmission of the source content,  Medi-
-              aLive  is  always the receiver and the upstream system is always
+              listener.  In terms of transmission of the source content, Medi-
+              aLive is always the receiver and the upstream system  is  always
               the sender.
 
               Decryption -> (structure)
@@ -242,13 +278,13 @@ OPTIONS
                      The algorithm used to encrypt content.
 
                  PassphraseSecretArn -> (string)
-                     The ARN for the secret in  Secrets  Manager.  Someone  in
-                     your  organization  must  create a secret and provide you
+                     The  ARN  for  the  secret in Secrets Manager. Someone in
+                     your organization must create a secret  and  provide  you
                      with its ARN. This secret holds the passphrase that Medi-
                      aLive will use to decrypt the source content.
 
               MinimumLatency -> (integer)
-                 The  preferred  latency  (in  milliseconds)  for implementing
+                 The preferred  latency  (in  milliseconds)  for  implementing
                  packet loss and recovery. Packet recovery is a key feature of
                  SRT. Obtain this value from the operator at the upstream sys-
                  tem.
@@ -263,8 +299,8 @@ OPTIONS
 
               StreamId -> (string)
                  This value is required if the upstream system uses this iden-
-                 tifier  because  without  it, the SRT handshake between Medi-
-                 aLive (the caller) and the  upstream  system  (the  listener)
+                 tifier because without it, the SRT  handshake  between  Medi-
+                 aLive  (the  caller)  and  the upstream system (the listener)
                  might fail.
 
        JSON Syntax:
@@ -285,17 +321,60 @@ OPTIONS
             ]
           }
 
-       --cli-input-json  (string) Performs service operation based on the JSON
-       string provided. The JSON string follows the format provided by  --gen-
-       erate-cli-skeleton.  If  other  arguments  are  provided on the command
-       line, the CLI values will override the JSON-provided values. It is  not
+       --input-network-location (string) The location of this input. AWS,  for
+       an  input existing in the AWS Cloud, On-Prem for an input in a customer
+       network.
+          Possible values:
+
+          o AWS
+
+          o ON_PREMISE
+
+          o ON_PREMISES
+
+       --multicast-settings (structure) Multicast  Input  settings.Sources  ->
+       (list)
+          Placeholder documentation for __listOfMulticastSourceCreateRequest
+
+          (structure)
+              Pair of multicast url and source ip address (optional) that make
+              up a multicast source.
+
+              SourceIp -> (string)
+                 This represents the ip address of the device sending the mul-
+                 ticast stream.
+
+              Url -> (string)
+                 This  represents  the  customer's  source URL where multicast
+                 stream is pulled from.
+
+       Shorthand Syntax:
+
+          Sources=[{SourceIp=string,Url=string},{SourceIp=string,Url=string}]
+
+       JSON Syntax:
+
+          {
+            "Sources": [
+              {
+                "SourceIp": "string",
+                "Url": "string"
+              }
+              ...
+            ]
+          }
+
+       --cli-input-json (string) Performs service operation based on the  JSON
+       string  provided. The JSON string follows the format provided by --gen-
+       erate-cli-skeleton. If other arguments  are  provided  on  the  command
+       line,  the CLI values will override the JSON-provided values. It is not
        possible to pass arbitrary binary values using a JSON-provided value as
        the string will be taken literally.
 
-       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
+       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
        output without sending an API request. If provided with no value or the
        value input, prints a sample input JSON that can be used as an argument
-       for  --cli-input-json.  If provided with the value output, it validates
+       for --cli-input-json. If provided with the value output,  it  validates
        the command inputs and returns a sample output JSON for that command.
 
 GLOBAL OPTIONS
@@ -309,7 +388,7 @@ GLOBAL OPTIONS
 
        --no-verify-ssl (boolean)
 
-       By default, the AWS CLI uses SSL when communicating with AWS  services.
+       By  default, the AWS CLI uses SSL when communicating with AWS services.
        For each SSL connection, the AWS CLI will verify SSL certificates. This
        option overrides the default behavior of verifying SSL certificates.
 
@@ -355,7 +434,7 @@ GLOBAL OPTIONS
 
        --no-sign-request (boolean)
 
-       Do not sign requests. Credentials will not be loaded if  this  argument
+       Do  not  sign requests. Credentials will not be loaded if this argument
        is provided.
 
        --ca-bundle (string)
@@ -365,33 +444,33 @@ GLOBAL OPTIONS
 
        --cli-read-timeout (int)
 
-       The maximum socket read time in seconds. If the value is set to 0,  the
-       socket  read  will be blocking and not timeout. The default value is 60
+       The  maximum socket read time in seconds. If the value is set to 0, the
+       socket read will be blocking and not timeout. The default value  is  60
        seconds.
 
        --cli-connect-timeout (int)
 
-       The maximum socket connect time in seconds. If the value is set  to  0,
-       the  socket connect will be blocking and not timeout. The default value
+       The  maximum  socket connect time in seconds. If the value is set to 0,
+       the socket connect will be blocking and not timeout. The default  value
        is 60 seconds.
 
 EXAMPLES
        NOTE:
-          To use the following examples, you must have the AWS  CLI  installed
-          and  configured.  See  the Getting started guide in the AWS CLI User
+          To  use  the following examples, you must have the AWS CLI installed
+          and configured. See the Getting started guide in the  AWS  CLI  User
           Guide for more information.
 
-          Unless otherwise  stated,  all  examples  have  unix-like  quotation
-          rules.  These  examples  will  need to be adapted to your terminal's
+          Unless  otherwise  stated,  all  examples  have  unix-like quotation
+          rules. These examples will need to be  adapted  to  your  terminal's
           quoting rules. See Using quotation marks with strings in the AWS CLI
           User Guide .
 
        To create an input
 
        The following create-input example creates an HLS PULL input by passing
-       in a JSON file that contains the parameters that apply to this type  of
-       input.  The  JSON  for  this  example  input specifies two sources (ad-
-       dresses) to the input, in order to support redundancy  in  the  ingest.
+       in  a JSON file that contains the parameters that apply to this type of
+       input. The JSON for this  example  input  specifies  two  sources  (ad-
+       dresses)  to  the  input, in order to support redundancy in the ingest.
        These addresses require passwords.
 
           aws medialive create-input \
@@ -426,22 +505,22 @@ EXAMPLES
 
        o Attached Channels, which is always empty for a newly created input.
 
-       o Destinations, which is empty in this example because it is used  only
+       o Destinations,  which is empty in this example because it is used only
          with a PUSH input.
 
        o Id for the input, the same as the ID in the ARN.
 
-       o MediaConnectFlows,  which is empty in this example because it is used
+       o MediaConnectFlows, which is empty in this example because it is  used
          only with an input of type MediaConnect.
 
-       o SecurityGroups, which is empty in this example  because  it  is  used
+       o SecurityGroups,  which  is  empty  in this example because it is used
          only with a PUSH input.
 
        o State of this input.
 
        o Tags, which is empty (the default for this parameter).
 
-       For  more information, see Creating an Input in the AWS Elemental Medi-
+       For more information, see Creating an Input in the AWS Elemental  Medi-
        aLive User Guide.
 
 OUTPUT
@@ -452,7 +531,7 @@ OUTPUT
               The Unique ARN of the input (generated, immutable).
 
           AttachedChannels -> (list)
-              A list of channel IDs that that input is attached to  (currently
+              A  list of channel IDs that that input is attached to (currently
               an input can only be attached to one channel).
 
               (string)
@@ -465,14 +544,14 @@ OUTPUT
                  The settings for a PUSH type input.
 
                  Ip -> (string)
-                     The  system-generated  static  IP address of endpoint. It
+                     The system-generated static IP address  of  endpoint.  It
                      remains fixed for the lifetime of the input.
 
                  Port -> (string)
                      The port number for the input.
 
                  Url -> (string)
-                     This represents the endpoint  that  the  customer  stream
+                     This  represents  the  endpoint  that the customer stream
                      will be pushed to.
 
                  Vpc -> (structure)
@@ -482,11 +561,28 @@ OUTPUT
                         The availability zone of the Input destination.
 
                      NetworkInterfaceId -> (string)
-                        The  network  interface ID of the Input destination in
+                        The network interface ID of the Input  destination  in
                         the VPC.
 
+                 Network -> (string)
+                     The ID of the attached network.
+
+                 NetworkRoutes -> (list)
+                     If the push input has an input location of ON-PREM it's a
+                     requirement to specify what the route of the input is go-
+                     ing to be on the customer local network.
+
+                     (structure)
+                        A network route configuration.
+
+                        Cidr -> (string)
+                            The CIDR of the route.
+
+                        Gateway -> (string)
+                            An optional gateway for the route.
+
           Id -> (string)
-              The generated ID of the input  (unique  for  user  account,  im-
+              The  generated  ID  of  the  input (unique for user account, im-
               mutable).
 
           InputClass -> (string)
@@ -494,10 +590,10 @@ OUTPUT
               input. If the channel is also STANDARD, both sources will be in-
               gested. If the channel is SINGLE_PIPELINE, only the first source
               will be ingested; the second source will always be ignored, even
-              if  the  first  source  fails. SINGLE_PIPELINE - You can connect
-              only one source to this input. If the ChannelClass is also  SIN-
-              GLE_PIPELINE,  this value is valid. If the ChannelClass is STAN-
-              DARD, this value is not valid because the channel  requires  two
+              if the first source fails. SINGLE_PIPELINE  -  You  can  connect
+              only  one source to this input. If the ChannelClass is also SIN-
+              GLE_PIPELINE, this value is valid. If the ChannelClass is  STAN-
+              DARD,  this  value is not valid because the channel requires two
               sources in the input.
 
           InputDevices -> (list)
@@ -517,8 +613,8 @@ OUTPUT
 
           InputSourceType -> (string)
               Certain pull input sources can be dynamic, meaning that they can
-              have their URL's dynamically changes  during  input  switch  ac-
-              tions.  Presently,  this  functionality only works with MP4_FILE
+              have  their  URL's  dynamically  changes during input switch ac-
+              tions. Presently, this functionality only  works  with  MP4_FILE
               and TS_FILE inputs.
 
           MediaConnectFlows -> (list)
@@ -528,18 +624,18 @@ OUTPUT
                  The settings for a MediaConnect Flow.
 
                  FlowArn -> (string)
-                     The unique ARN of the MediaConnect Flow being used  as  a
+                     The  unique  ARN of the MediaConnect Flow being used as a
                      source.
 
           Name -> (string)
               The user-assigned name (This is a mutable value).
 
           RoleArn -> (string)
-              The  Amazon  Resource  Name (ARN) of the role this input assumes
+              The Amazon Resource Name (ARN) of the role  this  input  assumes
               during and after creation.
 
           SecurityGroups -> (list)
-              A list of IDs for all the Input Security Groups attached to  the
+              A  list of IDs for all the Input Security Groups attached to the
               input.
 
               (string)
@@ -552,7 +648,7 @@ OUTPUT
                  The settings for a PULL type input.
 
                  PasswordParam -> (string)
-                     The  key  used to extract the password from EC2 Parameter
+                     The key used to extract the password from  EC2  Parameter
                      store.
 
                  Url -> (string)
@@ -575,7 +671,7 @@ OUTPUT
                  Placeholder documentation for __string
 
           Type -> (string)
-              The  different types of inputs that AWS Elemental MediaLive sup-
+              The different types of inputs that AWS Elemental MediaLive  sup-
               ports.
 
           SrtSettings -> (structure)
@@ -585,15 +681,15 @@ OUTPUT
                  Placeholder documentation for __listOfSrtCallerSource
 
                  (structure)
-                     The configuration for a source that uses SRT as the  con-
-                     nection  protocol.  In  terms of establishing the connec-
-                     tion, MediaLive is always caller and the upstream  system
-                     is  always  the listener. In terms of transmission of the
-                     source content, MediaLive is always the receiver and  the
+                     The  configuration for a source that uses SRT as the con-
+                     nection protocol. In terms of  establishing  the  connec-
+                     tion,  MediaLive is always caller and the upstream system
+                     is always the listener. In terms of transmission  of  the
+                     source  content, MediaLive is always the receiver and the
                      upstream system is always the sender.
 
                      Decryption -> (structure)
-                        The  decryption  settings  for  the SRT caller source.
+                        The decryption settings for  the  SRT  caller  source.
                         Present only if the source has decryption enabled.
 
                         Algorithm -> (string)
@@ -602,8 +698,8 @@ OUTPUT
                         PassphraseSecretArn -> (string)
                             The ARN for the secret in Secrets Manager. Someone
                             in your organization must create a secret and pro-
-                            vide you  with  its  ARN.  The  secret  holds  the
-                            passphrase  that  MediaLive  uses  to  decrypt the
+                            vide  you  with  its  ARN.  The  secret  holds the
+                            passphrase that  MediaLive  uses  to  decrypt  the
                             source content.
 
                      MinimumLatency -> (integer)
@@ -612,16 +708,38 @@ OUTPUT
                         feature of SRT.
 
                      SrtListenerAddress -> (string)
-                        The IP address at the upstream system  (the  listener)
+                        The  IP  address at the upstream system (the listener)
                         that MediaLive (the caller) connects to.
 
                      SrtListenerPort -> (string)
-                        The  port  at  the upstream system (the listener) that
+                        The port at the upstream system  (the  listener)  that
                         MediaLive (the caller) connects to.
 
                      StreamId -> (string)
-                        The stream ID, if the upstream system uses this  iden-
+                        The  stream ID, if the upstream system uses this iden-
                         tifier.
+
+          InputNetworkLocation -> (string)
+              The location of this input. AWS, for an input  existing  in  the
+              AWS Cloud, On-Prem for an input in a customer network.
+
+          MulticastSettings -> (structure)
+              Multicast Input settings.
+
+              Sources -> (list)
+                 Placeholder documentation for __listOfMulticastSource
+
+                 (structure)
+                     Pair  of  multicast  url and source ip address (optional)
+                     that make up a multicast source.
+
+                     SourceIp -> (string)
+                        This represents the ip address of the  device  sending
+                        the multicast stream.
+
+                     Url -> (string)
+                        This represents the customer's source URL where multi-
+                        cast stream is pulled from.
 
 
 
