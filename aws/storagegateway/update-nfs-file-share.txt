@@ -30,6 +30,7 @@ DESCRIPTION
 SYNOPSIS
             update-nfs-file-share
           --file-share-arn <value>
+          [--encryption-type <value>]
           [--kms-encrypted | --no-kms-encrypted]
           [--kms-key <value>]
           [--nfs-file-share-defaults <value>]
@@ -65,37 +66,73 @@ OPTIONS
        --file-share-arn (string)
           The Amazon Resource Name (ARN) of the file share to be updated.
 
+       --encryption-type (string)
+          A  value  that specifies the type of server-side encryption that the
+          file share will use for the data that it stores in Amazon S3.
+
+          NOTE:
+              We recommend using EncryptionType instead of KMSEncrypted to set
+              the  file  share  encryption  method. You do not need to provide
+              values for both parameters.
+
+              If values for both parameters exist in the  same  request,  then
+              the specified encryption methods must not conflict. For example,
+              if EncryptionType is SseS3 , then KMSEncrypted must be  false  .
+              If  EncryptionType is SseKms or DsseKms , then KMSEncrypted must
+              be true .
+
+          Possible values:
+
+          o SseS3
+
+          o SseKms
+
+          o DsseKms
+
        --kms-encrypted | --no-kms-encrypted (boolean)
-          Set  to  true  to use Amazon S3 server-side encryption with your own
-          KMS key, or false to use a key managed by Amazon S3. Optional.
+          Optional. Set to true to use Amazon S3 server-side  encryption  with
+          your  own KMS key (SSE-KMS), or false to use a key managed by Amazon
+          S3 (SSE-S3). To use dual-layer encryption (DSSE-KMS),  set  the  En-
+          cryptionType parameter instead.
+
+          NOTE:
+              We recommend using EncryptionType instead of KMSEncrypted to set
+              the file share encryption method. You do  not  need  to  provide
+              values for both parameters.
+
+              If  values  for  both parameters exist in the same request, then
+              the specified encryption methods must not conflict. For example,
+              if  EncryptionType  is SseS3 , then KMSEncrypted must be false .
+              If EncryptionType is SseKms or DsseKms , then KMSEncrypted  must
+              be true .
 
           Valid Values: true | false
 
        --kms-key (string)
-          The Amazon Resource Name (ARN) of a symmetric  customer  master  key
-          (CMK)  used  for  Amazon  S3 server-side encryption. Storage Gateway
-          does not support asymmetric CMKs. This value can only  be  set  when
-          KMSEncrypted is true . Optional.
+          Optional.  The  Amazon  Resource  Name (ARN) of a symmetric customer
+          master key (CMK) used for Amazon S3 server-side encryption.  Storage
+          Gateway  does not support asymmetric CMKs. This value must be set if
+          KMSEncrypted is true , or if EncryptionType is SseKms or DsseKms .
 
        --nfs-file-share-defaults (structure)
           The default values for the file share. Optional.
 
           FileMode -> (string)
-              The  Unix file mode in the form "nnnn". For example, 0666 repre-
-              sents the default file mode inside the file share.  The  default
+              The Unix file mode in the form "nnnn". For example, 0666  repre-
+              sents  the  default file mode inside the file share. The default
               value is 0666 .
 
           DirectoryMode -> (string)
-              The  Unix  directory  mode in the form "nnnn". For example, 0666
-              represents the default access mode for  all  directories  inside
+              The Unix directory mode in the form "nnnn".  For  example,  0666
+              represents  the  default  access mode for all directories inside
               the file share. The default value is 0777 .
 
           GroupId -> (long)
-              The  default  group ID for the file share (unless the files have
+              The default group ID for the file share (unless the  files  have
               another group ID specified). The default value is nfsnobody .
 
           OwnerId -> (long)
-              The default owner ID for files in the  file  share  (unless  the
+              The  default  owner  ID  for files in the file share (unless the
               files have another owner ID specified). The default value is nf-
               snobody .
 
@@ -113,14 +150,14 @@ OPTIONS
           }
 
        --default-storage-class (string)
-          The default storage class for objects put into an Amazon  S3  bucket
+          The  default  storage class for objects put into an Amazon S3 bucket
           by the S3 File Gateway. The default value is S3_STANDARD . Optional.
 
-          Valid  Values: S3_STANDARD | S3_INTELLIGENT_TIERING | S3_STANDARD_IA
+          Valid Values: S3_STANDARD | S3_INTELLIGENT_TIERING |  S3_STANDARD_IA
           | S3_ONEZONE_IA
 
        --object-acl (string)
-          A value that sets the access control list (ACL) permission  for  ob-
+          A  value  that sets the access control list (ACL) permission for ob-
           jects in the S3 bucket that a S3 File Gateway puts objects into. The
           default value is private .
 
@@ -141,8 +178,8 @@ OPTIONS
           o aws-exec-read
 
        --client-list (list)
-          The list of clients that are allowed to access the S3 File  Gateway.
-          The  list  must  contain  either  valid  IP  addresses or valid CIDR
+          The  list of clients that are allowed to access the S3 File Gateway.
+          The list must contain  either  valid  IP  addresses  or  valid  CIDR
           blocks.
 
           (string)
@@ -163,29 +200,29 @@ OPTIONS
           o AllSquash : Everyone is mapped to anonymous user.
 
        --read-only | --no-read-only (boolean)
-          A value that sets the write status of a file share. Set  this  value
+          A  value  that sets the write status of a file share. Set this value
           to true to set the write status to read-only, otherwise set to false
           .
 
           Valid Values: true | false
 
        --guess-mime-type-enabled | --no-guess-mime-type-enabled (boolean)
-          A value that enables guessing of the MIME type for uploaded  objects
+          A  value that enables guessing of the MIME type for uploaded objects
           based on file extensions. Set this value to true to enable MIME type
           guessing, otherwise set to false . The default value is true .
 
           Valid Values: true | false
 
        --requester-pays | --no-requester-pays (boolean)
-          A value that sets who pays the cost of the request and the cost  as-
+          A  value that sets who pays the cost of the request and the cost as-
           sociated with data download from the S3 bucket. If this value is set
-          to true , the requester pays the costs;  otherwise,  the  S3  bucket
-          owner  pays.  However,  the  S3 bucket owner always pays the cost of
+          to  true  ,  the  requester pays the costs; otherwise, the S3 bucket
+          owner pays. However, the S3 bucket owner always  pays  the  cost  of
           storing data.
 
           NOTE:
-              RequesterPays is a configuration for the S3  bucket  that  backs
-              the  file share, so make sure that the configuration on the file
+              RequesterPays  is  a  configuration for the S3 bucket that backs
+              the file share, so make sure that the configuration on the  file
               share is the same as the S3 bucket configuration.
 
           Valid Values: true | false
@@ -194,17 +231,17 @@ OPTIONS
           The name of the file share. Optional.
 
           NOTE:
-              FileShareName must be set if an S3 prefix name is set  in  Loca-
+              FileShareName  must  be set if an S3 prefix name is set in Loca-
               tionARN , or if an access point or access point alias is used.
 
        --cache-attributes (structure)
           Specifies refresh cache information for the file share.
 
           CacheStaleTimeoutInSeconds -> (integer)
-              Refreshes  a file share's cache by using Time To Live (TTL). TTL
-              is the length of time since the last refresh after which  access
-              to  the  directory would cause the file gateway to first refresh
-              that directory's contents from the Amazon S3  bucket  or  Amazon
+              Refreshes a file share's cache by using Time To Live (TTL).  TTL
+              is  the length of time since the last refresh after which access
+              to the directory would cause the file gateway to  first  refresh
+              that  directory's  contents  from the Amazon S3 bucket or Amazon
               FSx file system. The TTL duration is in seconds.
 
               Valid Values:0, 300 to 2,592,000 seconds (5 minutes to 30 days)
@@ -220,18 +257,24 @@ OPTIONS
           }
 
        --notification-policy (string)
-          The  notification  policy  of  the file share. SettlingTimeInSeconds
-          controls the number of seconds to wait after the last point in  time
+          The notification policy of  the  file  share.  SettlingTimeInSeconds
+          controls  the number of seconds to wait after the last point in time
           a client wrote to a file before generating an ObjectUploaded notifi-
-          cation. Because clients can make many small writes  to  files,  it's
+          cation.  Because  clients  can make many small writes to files, it's
           best to set this parameter for as long as possible to avoid generat-
           ing multiple notifications for the same file in a small time period.
 
           NOTE:
-              SettlingTimeInSeconds has no effect on the timing of the  object
-              uploading to Amazon S3, only the timing of the notification.
+                 SettlingTimeInSeconds  has no effect on the timing of the ob-
+                 ject uploading to Amazon S3, only the timing of the notifica-
+                 tion.
 
-          The  following  example  sets  NotificationPolicy  on with Settling-
+              This  setting is not meant to specify an exact time at which the
+              notification will be sent. In some cases, the gateway might  re-
+              quire  more  than  the specified delay time to generate and send
+              notifications.
+
+          The following example  sets  NotificationPolicy  on  with  Settling-
           TimeInSeconds set to 60.
               {\"Upload\": {\"SettlingTimeInSeconds\": 60}}
 
@@ -241,17 +284,17 @@ OPTIONS
        --audit-destination-arn (string)
           The Amazon Resource Name (ARN) of the storage used for audit logs.
 
-       --cli-input-json (string) Performs service operation based on the  JSON
-       string  provided. The JSON string follows the format provided by --gen-
-       erate-cli-skeleton. If other arguments  are  provided  on  the  command
-       line,  the CLI values will override the JSON-provided values. It is not
+       --cli-input-json  (string) Performs service operation based on the JSON
+       string provided. The JSON string follows the format provided by  --gen-
+       erate-cli-skeleton.  If  other  arguments  are  provided on the command
+       line, the CLI values will override the JSON-provided values. It is  not
        possible to pass arbitrary binary values using a JSON-provided value as
        the string will be taken literally.
 
-       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
+       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
        output without sending an API request. If provided with no value or the
        value input, prints a sample input JSON that can be used as an argument
-       for --cli-input-json. If provided with the value output,  it  validates
+       for  --cli-input-json.  If provided with the value output, it validates
        the command inputs and returns a sample output JSON for that command.
 
 GLOBAL OPTIONS
@@ -265,7 +308,7 @@ GLOBAL OPTIONS
 
        --no-verify-ssl (boolean)
 
-       By  default, the AWS CLI uses SSL when communicating with AWS services.
+       By default, the AWS CLI uses SSL when communicating with AWS  services.
        For each SSL connection, the AWS CLI will verify SSL certificates. This
        option overrides the default behavior of verifying SSL certificates.
 
@@ -311,7 +354,7 @@ GLOBAL OPTIONS
 
        --no-sign-request (boolean)
 
-       Do  not  sign requests. Credentials will not be loaded if this argument
+       Do not sign requests. Credentials will not be loaded if  this  argument
        is provided.
 
        --ca-bundle (string)
@@ -321,14 +364,14 @@ GLOBAL OPTIONS
 
        --cli-read-timeout (int)
 
-       The  maximum socket read time in seconds. If the value is set to 0, the
-       socket read will be blocking and not timeout. The default value  is  60
+       The maximum socket read time in seconds. If the value is set to 0,  the
+       socket  read  will be blocking and not timeout. The default value is 60
        seconds.
 
        --cli-connect-timeout (int)
 
-       The  maximum  socket connect time in seconds. If the value is set to 0,
-       the socket connect will be blocking and not timeout. The default  value
+       The maximum socket connect time in seconds. If the value is set  to  0,
+       the  socket connect will be blocking and not timeout. The default value
        is 60 seconds.
 
 OUTPUT

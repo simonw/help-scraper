@@ -51,6 +51,10 @@ OPTIONS
 
           o compaction
 
+          o retention
+
+          o orphan_file_deletion
+
        --cli-input-json (string) Performs service operation based on the  JSON
        string  provided. The JSON string follows the format provided by --gen-
        erate-cli-skeleton. If other arguments  are  provided  on  the  command
@@ -155,39 +159,92 @@ OUTPUT
           The optimizer associated with the specified table.
 
           type -> (string)
-              The  type of table optimizer. Currently, the only valid value is
-              compaction .
+              The type of table optimizer. The valid values are:
+
+              o compaction : for managing compaction with a table optimizer.
+
+              o retention  : for managing the retention of snapshot with a ta-
+                ble optimizer.
+
+              o orphan_file_deletion : for managing  the  deletion  of  orphan
+                files with a table optimizer.
 
           configuration -> (structure)
-              A TableOptimizerConfiguration object  that  was  specified  when
+              A  TableOptimizerConfiguration  object  that  was specified when
               creating or updating a table optimizer.
 
               roleArn -> (string)
-                 A  role  passed by the caller which gives the service permis-
+                 A role passed by the caller which gives the  service  permis-
                  sion to update the resources associated with the optimizer on
                  the caller's behalf.
 
               enabled -> (boolean)
                  Whether table optimization is enabled.
 
+              retentionConfiguration -> (structure)
+                 The configuration for a snapshot retention optimizer.
+
+                 icebergConfiguration -> (structure)
+                     The configuration for an Iceberg snapshot retention opti-
+                     mizer.
+
+                     snapshotRetentionPeriodInDays -> (integer)
+                        The number of days to retain the Iceberg snapshots. If
+                        an input is not provided,  the  corresponding  Iceberg
+                        table  configuration  field  will  be  used  or if not
+                        present, the default value 5 will be used.
+
+                     numberOfSnapshotsToRetain -> (integer)
+                        The number of Iceberg snapshots to retain  within  the
+                        retention  period.  If  an  input is not provided, the
+                        corresponding Iceberg table configuration  field  will
+                        be used or if not present, the default value 1 will be
+                        used.
+
+                     cleanExpiredFiles -> (boolean)
+                        If set to false, snapshots are only deleted from table
+                        metadata,  and  the underlying data and metadata files
+                        are not deleted.
+
+              orphanFileDeletionConfiguration -> (structure)
+                 The configuration for an orphan file deletion optimizer.
+
+                 icebergConfiguration -> (structure)
+                     The configuration for an Iceberg orphan file deletion op-
+                     timizer.
+
+                     orphanFileRetentionPeriodInDays -> (integer)
+                        The  number  of  days  that orphan files should be re-
+                        tained before file deletion. If an input is  not  pro-
+                        vided, the default value 3 will be used.
+
+                     location -> (string)
+                        Specifies  a directory in which to look for files (de-
+                        faults to the table's  location).  You  may  choose  a
+                        sub-directory  rather  than  the top-level table loca-
+                        tion.
+
           lastRun -> (structure)
-              A  TableOptimizerRun object representing the last run of the ta-
+              A TableOptimizerRun object representing the last run of the  ta-
               ble optimizer.
 
               eventType -> (string)
-                 An event type representing the status of the table  optimizer
+                 An  event type representing the status of the table optimizer
                  run.
 
               startTimestamp -> (timestamp)
-                 Represents  the  epoch  timestamp at which the compaction job
+                 Represents the epoch timestamp at which  the  compaction  job
                  was started within Lake Formation.
 
               endTimestamp -> (timestamp)
-                 Represents the epoch timestamp at which  the  compaction  job
+                 Represents  the  epoch  timestamp at which the compaction job
                  ended.
 
               metrics -> (structure)
                  A RunMetrics object containing metrics for the optimizer run.
+
+                 This member is deprecated. See the individual metric  members
+                 for compaction, retention, and orphan file deletion.
 
                  NumberOfBytesCompacted -> (string)
                      The number of bytes removed by the compaction job run.
@@ -203,6 +260,70 @@ OUTPUT
 
               error -> (string)
                  An error that occured during the optimizer run.
+
+              compactionMetrics -> (structure)
+                 A  CompactionMetrics  object containing metrics for the opti-
+                 mizer run.
+
+                 IcebergMetrics -> (structure)
+                     A structure containing the Iceberg compaction metrics for
+                     the optimizer run.
+
+                     NumberOfBytesCompacted -> (long)
+                        The number of bytes removed by the compaction job run.
+
+                     NumberOfFilesCompacted -> (long)
+                        The number of files removed by the compaction job run.
+
+                     NumberOfDpus -> (integer)
+                        The number of DPU hours consumed by the job.
+
+                     JobDurationInHour -> (double)
+                        The duration of the job in hours.
+
+              retentionMetrics -> (structure)
+                 A  RetentionMetrics  object  containing metrics for the opti-
+                 mizer run.
+
+                 IcebergMetrics -> (structure)
+                     A structure containing the Iceberg retention metrics  for
+                     the optimizer run.
+
+                     NumberOfDataFilesDeleted -> (long)
+                        The  number of data files deleted by the retention job
+                        run.
+
+                     NumberOfManifestFilesDeleted -> (long)
+                        The number of manifest files deleted by the  retention
+                        job run.
+
+                     NumberOfManifestListsDeleted -> (long)
+                        The  number of manifest lists deleted by the retention
+                        job run.
+
+                     NumberOfDpus -> (integer)
+                        The number of DPU hours consumed by the job.
+
+                     JobDurationInHour -> (double)
+                        The duration of the job in hours.
+
+              orphanFileDeletionMetrics -> (structure)
+                 An OrphanFileDeletionMetrics object  containing  metrics  for
+                 the optimizer run.
+
+                 IcebergMetrics -> (structure)
+                     A  structure  containing the Iceberg orphan file deletion
+                     metrics for the optimizer run.
+
+                     NumberOfOrphanFilesDeleted -> (long)
+                        The number of orphan files deleted by the orphan  file
+                        deletion job run.
+
+                     NumberOfDpus -> (integer)
+                        The number of DPU hours consumed by the job.
+
+                     JobDurationInHour -> (double)
+                        The duration of the job in hours.
 
 
 
