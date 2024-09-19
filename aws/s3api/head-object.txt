@@ -52,7 +52,11 @@ DESCRIPTION
          session expires. For more information about authorization, see ` Cre-
          ateSession
          https://docs.aws.amazon.com/AmazonS3/latest/API/API_CreateSession.html`__
-         .
+         .  If you enable x-amz-checksum-mode in the request and the object is
+         encrypted with Amazon Web Services Key Management Service (Amazon Web
+         Services KMS), you must also have the kms:GenerateDataKey and kms:De-
+         crypt permissions in IAM identity-based policies and KMS key policies
+         for the KMS key to retrieve the checksum of the object.
 
          Encryption
 
@@ -85,9 +89,11 @@ DESCRIPTION
        Customer-Provided Encryption Keys) in the Amazon S3 User Guide .
 
        NOTE:
-              Directory bucket  permissions  -  For  directory  buckets,  only
-              server-side  encryption  with  Amazon  S3  managed keys (SSE-S3)
-              (AES256 ) is supported.
+              Directory bucket - For directory buckets,  there  are  only  two
+              supported   options   for  server-side  encryption:  SSE-S3  and
+              SSE-KMS.  SSE-C  isn't  supported.  For  more  information,  see
+              Protecting  data  with  server-side  encryption in the Amazon S3
+              User Guide .
 
           Versioning
 
@@ -362,27 +368,33 @@ OPTIONS
 
        --checksum-mode (string)
           To retrieve the checksum, this parameter must be enabled.
+              General  purpose  buckets  - If you enable checksum mode and the
+              object is uploaded with a checksum and  encrypted  with  an  Key
+              Management  Service  (KMS)  key, you must have permission to use
+              the kms:Decrypt action to retrieve the checksum.
 
-          In  addition, if you enable checksum mode and the object is uploaded
-          with a checksum and encrypted with an Key Management  Service  (KMS)
-          key,  you  must have permission to use the kms:Decrypt action to re-
-          trieve the checksum.
+              Directory buckets - If you enable ChecksumMode and the object is
+              encrypted  with Amazon Web Services Key Management Service (Ama-
+              zon Web Services KMS), you  must  also  have  the  kms:Generate-
+              DataKey  and kms:Decrypt permissions in IAM identity-based poli-
+              cies and KMS key policies for the KMS key to retrieve the check-
+              sum of the object.
 
           Possible values:
 
           o ENABLED
 
-       --cli-input-json (string) Performs service operation based on the  JSON
-       string  provided. The JSON string follows the format provided by --gen-
-       erate-cli-skeleton. If other arguments  are  provided  on  the  command
-       line,  the CLI values will override the JSON-provided values. It is not
+       --cli-input-json  (string) Performs service operation based on the JSON
+       string provided. The JSON string follows the format provided by  --gen-
+       erate-cli-skeleton.  If  other  arguments  are  provided on the command
+       line, the CLI values will override the JSON-provided values. It is  not
        possible to pass arbitrary binary values using a JSON-provided value as
        the string will be taken literally.
 
-       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
+       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
        output without sending an API request. If provided with no value or the
        value input, prints a sample input JSON that can be used as an argument
-       for --cli-input-json. If provided with the value output,  it  validates
+       for  --cli-input-json.  If provided with the value output, it validates
        the command inputs and returns a sample output JSON for that command.
 
 GLOBAL OPTIONS
@@ -396,7 +408,7 @@ GLOBAL OPTIONS
 
        --no-verify-ssl (boolean)
 
-       By  default, the AWS CLI uses SSL when communicating with AWS services.
+       By default, the AWS CLI uses SSL when communicating with AWS  services.
        For each SSL connection, the AWS CLI will verify SSL certificates. This
        option overrides the default behavior of verifying SSL certificates.
 
@@ -442,7 +454,7 @@ GLOBAL OPTIONS
 
        --no-sign-request (boolean)
 
-       Do  not  sign requests. Credentials will not be loaded if this argument
+       Do not sign requests. Credentials will not be loaded if  this  argument
        is provided.
 
        --ca-bundle (string)
@@ -452,28 +464,28 @@ GLOBAL OPTIONS
 
        --cli-read-timeout (int)
 
-       The  maximum socket read time in seconds. If the value is set to 0, the
-       socket read will be blocking and not timeout. The default value  is  60
+       The maximum socket read time in seconds. If the value is set to 0,  the
+       socket  read  will be blocking and not timeout. The default value is 60
        seconds.
 
        --cli-connect-timeout (int)
 
-       The  maximum  socket connect time in seconds. If the value is set to 0,
-       the socket connect will be blocking and not timeout. The default  value
+       The maximum socket connect time in seconds. If the value is set  to  0,
+       the  socket connect will be blocking and not timeout. The default value
        is 60 seconds.
 
 EXAMPLES
        NOTE:
-          To  use  the following examples, you must have the AWS CLI installed
-          and configured. See the Getting started guide in the  AWS  CLI  User
+          To use the following examples, you must have the AWS  CLI  installed
+          and  configured.  See  the Getting started guide in the AWS CLI User
           Guide for more information.
 
-          Unless  otherwise  stated,  all  examples  have  unix-like quotation
-          rules. These examples will need to be  adapted  to  your  terminal's
+          Unless otherwise  stated,  all  examples  have  unix-like  quotation
+          rules.  These  examples  will  need to be adapted to your terminal's
           quoting rules. See Using quotation marks with strings in the AWS CLI
           User Guide .
 
-       The following command retrieves metadata for  an  object  in  a  bucket
+       The  following  command  retrieves  metadata  for an object in a bucket
        named my-bucket:
 
           aws s3api head-object --bucket my-bucket --key index.html
@@ -493,7 +505,7 @@ EXAMPLES
 OUTPUT
        DeleteMarker -> (boolean)
           Specifies whether the object retrieved was (true) or was not (false)
-          a Delete Marker. If false, this response header does not  appear  in
+          a  Delete  Marker. If false, this response header does not appear in
           the response.
 
           NOTE:
@@ -506,7 +518,7 @@ OUTPUT
           If the object expiration is configured (see ` PutBucketLifecycleCon-
           figuration
           https://docs.aws.amazon.com/AmazonS3/latest/API/API_PutBucketLifecycleConfiguration.html`__
-          ), the response includes this header. It  includes  the  expiry-date
+          ),  the  response  includes this header. It includes the expiry-date
           and rule-id key-value pairs providing object expiration information.
           The value of the rule-id is URL-encoded.
 
@@ -514,25 +526,25 @@ OUTPUT
               This functionality is not supported for directory buckets.
 
        Restore -> (string)
-          If the object is an archived object (an object whose  storage  class
+          If  the  object is an archived object (an object whose storage class
           is GLACIER), the response includes this header if either the archive
-          restoration is in progress (see RestoreObject or an archive copy  is
+          restoration  is in progress (see RestoreObject or an archive copy is
           already restored.
 
-          If  an  archive copy is already restored, the header value indicates
+          If an archive copy is already restored, the header  value  indicates
           when Amazon S3 is scheduled to delete the object copy. For example:
               x-amz-restore: ongoing-request="false", expiry-date="Fri, 21 Dec
               2012 00:00:00 GMT"
 
-          If  the  object  restoration  is in progress, the header returns the
+          If the object restoration is in progress,  the  header  returns  the
           value ongoing-request="true" .
 
-          For more information about archiving objects, see Transitioning  Ob-
+          For  more information about archiving objects, see Transitioning Ob-
           jects: General Considerations .
 
           NOTE:
-              This  functionality is not supported for directory buckets. Only
-              the S3 Express One Zone storage class is supported by  directory
+              This functionality is not supported for directory buckets.  Only
+              the  S3 Express One Zone storage class is supported by directory
               buckets to store objects.
 
        ArchiveStatus -> (string)
@@ -548,7 +560,17 @@ OUTPUT
           Size of the body in bytes.
 
        ChecksumCRC32 -> (string)
-          The  base64-encoded,  32-bit CRC32 checksum of the object. This will
+          The base64-encoded, 32-bit CRC32 checksum of the object.  This  will
+          only  be present if it was uploaded with the object. When you use an
+          API operation on an object that was  uploaded  using  multipart  up-
+          loads, this value may not be a direct checksum value of the full ob-
+          ject. Instead, it's a calculation based on the  checksum  values  of
+          each  individual  part. For more information about how checksums are
+          calculated with multipart uploads, see Checking object integrity  in
+          the Amazon S3 User Guide .
+
+       ChecksumCRC32C -> (string)
+          The  base64-encoded, 32-bit CRC32C checksum of the object. This will
           only be present if it was uploaded with the object. When you use  an
           API  operation  on  an  object that was uploaded using multipart up-
           loads, this value may not be a direct checksum value of the full ob-
@@ -557,9 +579,9 @@ OUTPUT
           calculated  with multipart uploads, see Checking object integrity in
           the Amazon S3 User Guide .
 
-       ChecksumCRC32C -> (string)
-          The base64-encoded, 32-bit CRC32C checksum of the object. This  will
-          only  be present if it was uploaded with the object. When you use an
+       ChecksumSHA1 -> (string)
+          The base64-encoded, 160-bit SHA-1 digest of the  object.  This  will
+          only be present if it was uploaded with the object. When you use the
           API operation on an object that was  uploaded  using  multipart  up-
           loads, this value may not be a direct checksum value of the full ob-
           ject. Instead, it's a calculation based on the  checksum  values  of
@@ -567,9 +589,9 @@ OUTPUT
           calculated with multipart uploads, see Checking object integrity  in
           the Amazon S3 User Guide .
 
-       ChecksumSHA1 -> (string)
-          The  base64-encoded,  160-bit  SHA-1 digest of the object. This will
-          only be present if it was uploaded with the object. When you use the
+       ChecksumSHA256 -> (string)
+          The  base64-encoded, 256-bit SHA-256 digest of the object. This will
+          only be present if it was uploaded with the object. When you use  an
           API  operation  on  an  object that was uploaded using multipart up-
           loads, this value may not be a direct checksum value of the full ob-
           ject.  Instead,  it's  a calculation based on the checksum values of
@@ -577,25 +599,15 @@ OUTPUT
           calculated  with multipart uploads, see Checking object integrity in
           the Amazon S3 User Guide .
 
-       ChecksumSHA256 -> (string)
-          The base64-encoded, 256-bit SHA-256 digest of the object. This  will
-          only  be present if it was uploaded with the object. When you use an
-          API operation on an object that was  uploaded  using  multipart  up-
-          loads, this value may not be a direct checksum value of the full ob-
-          ject. Instead, it's a calculation based on the  checksum  values  of
-          each  individual  part. For more information about how checksums are
-          calculated with multipart uploads, see Checking object integrity  in
-          the Amazon S3 User Guide .
-
        ETag -> (string)
-          An  entity  tag  (ETag)  is  an  opaque identifier assigned by a web
+          An entity tag (ETag) is an  opaque  identifier  assigned  by  a  web
           server to a specific version of a resource found at a URL.
 
        MissingMeta -> (integer)
-          This is set to the  number  of  metadata  entries  not  returned  in
-          x-amz-meta  headers. This can happen if you create metadata using an
-          API like SOAP that supports more flexible  metadata  than  the  REST
-          API.  For  example, using SOAP, you can create metadata whose values
+          This  is  set  to  the  number  of  metadata entries not returned in
+          x-amz-meta headers. This can happen if you create metadata using  an
+          API  like  SOAP  that  supports more flexible metadata than the REST
+          API. For example, using SOAP, you can create metadata  whose  values
           are not legal HTTP headers.
 
           NOTE:
@@ -615,7 +627,7 @@ OUTPUT
 
        ContentEncoding -> (string)
           Indicates what content encodings have been applied to the object and
-          thus  what  decoding  mechanisms  must  be applied to obtain the me-
+          thus what decoding mechanisms must be  applied  to  obtain  the  me-
           dia-type referenced by the Content-Type header field.
 
        ContentLanguage -> (string)
@@ -628,9 +640,9 @@ OUTPUT
           The date and time at which the object is no longer cacheable.
 
        WebsiteRedirectLocation -> (string)
-          If the bucket is configured as a  website,  redirects  requests  for
-          this  object  to another object in the same bucket or to an external
-          URL. Amazon S3 stores the value of this header in the  object  meta-
+          If  the  bucket  is  configured as a website, redirects requests for
+          this object to another object in the same bucket or to  an  external
+          URL.  Amazon  S3 stores the value of this header in the object meta-
           data.
 
           NOTE:
@@ -639,10 +651,6 @@ OUTPUT
        ServerSideEncryption -> (string)
           The server-side encryption algorithm used when you store this object
           in Amazon S3 (for example, AES256 , aws:kms , aws:kms:dsse ).
-
-          NOTE:
-              For directory buckets, only server-side encryption  with  Amazon
-              S3 managed keys (SSE-S3) (AES256 ) is supported.
 
        Metadata -> (map)
           A map of metadata to store with the object in S3.
@@ -669,70 +677,63 @@ OUTPUT
               This functionality is not supported for directory buckets.
 
        SSEKMSKeyId -> (string)
-          If present, indicates the ID of the  Key  Management  Service  (KMS)
-          symmetric  encryption customer managed key that was used for the ob-
-          ject.
-
-          NOTE:
-              This functionality is not supported for directory buckets.
+          If present, indicates the ID of the KMS key that was used for object
+          encryption.
 
        BucketKeyEnabled -> (boolean)
-          Indicates whether the object uses an S3 Bucket Key  for  server-side
+          Indicates  whether  the object uses an S3 Bucket Key for server-side
           encryption with Key Management Service (KMS) keys (SSE-KMS).
 
-          NOTE:
-              This functionality is not supported for directory buckets.
-
        StorageClass -> (string)
-          Provides  storage class information of the object. Amazon S3 returns
+          Provides storage class information of the object. Amazon S3  returns
           this header for all objects except for S3 Standard storage class ob-
           jects.
 
           For more information, see Storage Classes .
 
           NOTE:
-              Directory  buckets  - Only the S3 Express One Zone storage class
+              Directory buckets - Only the S3 Express One Zone  storage  class
               is supported by directory buckets to store objects.
 
        RequestCharged -> (string)
-          If present, indicates that the requester  was  successfully  charged
+          If  present,  indicates  that the requester was successfully charged
           for the request.
 
           NOTE:
               This functionality is not supported for directory buckets.
 
        ReplicationStatus -> (string)
-          Amazon  S3  can return this header if your request involves a bucket
+          Amazon S3 can return this header if your request involves  a  bucket
           that is either a source or a destination in a replication rule.
 
-          In replication, you have a source  bucket  on  which  you  configure
+          In  replication,  you  have  a  source bucket on which you configure
           replication and destination bucket or buckets where Amazon S3 stores
-          object replicas. When you request an object (GetObject )  or  object
+          object  replicas.  When you request an object (GetObject ) or object
           metadata (HeadObject ) from these buckets, Amazon S3 will return the
           x-amz-replication-status header in the response as follows:
 
-          o If requesting an object from the source bucket ,  Amazon  S3  will
-            return  the  x-amz-replication-status header if the object in your
-            request is eligible for replication. For example, suppose that  in
-            your  replication configuration, you specify object prefix TaxDocs
-            requesting Amazon S3 to replicate objects with key prefix  TaxDocs
-            .  Any  objects  you upload with this key name prefix, for example
-            TaxDocs/document1.pdf , are eligible for replication. For any  ob-
-            ject  request with this key name prefix, Amazon S3 will return the
-            x-amz-replication-status header with value PENDING,  COMPLETED  or
+          o If  requesting  an  object from the source bucket , Amazon S3 will
+            return the x-amz-replication-status header if the object  in  your
+            request  is eligible for replication. For example, suppose that in
+            your replication configuration, you specify object prefix  TaxDocs
+            requesting  Amazon S3 to replicate objects with key prefix TaxDocs
+            . Any objects you upload with this key name  prefix,  for  example
+            TaxDocs/document1.pdf  , are eligible for replication. For any ob-
+            ject request with this key name prefix, Amazon S3 will return  the
+            x-amz-replication-status  header  with value PENDING, COMPLETED or
             FAILED indicating object replication status.
 
           o If requesting an object from a destination bucket , Amazon S3 will
-            return the x-amz-replication-status header with value  REPLICA  if
+            return  the  x-amz-replication-status header with value REPLICA if
             the object in your request is a replica that Amazon S3 created and
             there is no replica modification replication in progress.
 
-          o When replicating objects to multiple  destination  buckets  ,  the
-            x-amz-replication-status  header  acts  differently. The header of
-            the source object will only  return  a  value  of  COMPLETED  when
+          o When  replicating  objects  to  multiple destination buckets , the
+            x-amz-replication-status header acts differently.  The  header  of
+            the  source  object  will  only  return  a value of COMPLETED when
             replication is successful to all destinations. The header will re-
             main at value PENDING until replication has completed for all des-
-            tinations.  If  one  or  more  destinations  fails replication the
+            tinations. If one  or  more  destinations  fails  replication  the
             header will return FAILED.
 
           For more information, see Replication .
@@ -741,31 +742,31 @@ OUTPUT
               This functionality is not supported for directory buckets.
 
        PartsCount -> (integer)
-          The count of parts this object has. This value is only  returned  if
-          you  specify  partNumber in your request and the object was uploaded
+          The  count  of parts this object has. This value is only returned if
+          you specify partNumber in your request and the object  was  uploaded
           as a multipart upload.
 
        ObjectLockMode -> (string)
           The Object Lock mode, if any, that's in effect for this object. This
-          header  is only returned if the requester has the s3:GetObjectReten-
-          tion permission. For more information  about  S3  Object  Lock,  see
+          header is only returned if the requester has the  s3:GetObjectReten-
+          tion  permission.  For  more  information  about S3 Object Lock, see
           Object Lock .
 
           NOTE:
               This functionality is not supported for directory buckets.
 
        ObjectLockRetainUntilDate -> (timestamp)
-          The  date  and  time  when the Object Lock retention period expires.
-          This header is only returned if the requester has  the  s3:GetObjec-
+          The date and time when the Object  Lock  retention  period  expires.
+          This  header  is only returned if the requester has the s3:GetObjec-
           tRetention permission.
 
           NOTE:
               This functionality is not supported for directory buckets.
 
        ObjectLockLegalHoldStatus -> (string)
-          Specifies  whether  a  legal hold is in effect for this object. This
-          header is only returned if the requester has the  s3:GetObjectLegal-
-          Hold  permission.  This header is not returned if the specified ver-
+          Specifies whether a legal hold is in effect for  this  object.  This
+          header  is only returned if the requester has the s3:GetObjectLegal-
+          Hold permission. This header is not returned if the  specified  ver-
           sion of this object has never had a legal hold applied. For more in-
           formation about S3 Object Lock, see Object Lock .
 
