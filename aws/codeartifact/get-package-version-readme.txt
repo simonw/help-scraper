@@ -136,7 +136,8 @@ GLOBAL OPTIONS
 
        --no-paginate (boolean)
 
-       Disable automatic pagination.
+       Disable  automatic pagination. If automatic pagination is disabled, the
+       AWS CLI will only make one call, for the first page of results.
 
        --output (string)
 
@@ -176,7 +177,7 @@ GLOBAL OPTIONS
 
        --no-sign-request (boolean)
 
-       Do  not  sign requests. Credentials will not be loaded if this argument
+       Do not sign requests. Credentials will not be loaded if  this  argument
        is provided.
 
        --ca-bundle (string)
@@ -186,30 +187,30 @@ GLOBAL OPTIONS
 
        --cli-read-timeout (int)
 
-       The  maximum socket read time in seconds. If the value is set to 0, the
-       socket read will be blocking and not timeout. The default value  is  60
+       The maximum socket read time in seconds. If the value is set to 0,  the
+       socket  read  will be blocking and not timeout. The default value is 60
        seconds.
 
        --cli-connect-timeout (int)
 
-       The  maximum  socket connect time in seconds. If the value is set to 0,
-       the socket connect will be blocking and not timeout. The default  value
+       The maximum socket connect time in seconds. If the value is set  to  0,
+       the  socket connect will be blocking and not timeout. The default value
        is 60 seconds.
 
 EXAMPLES
        NOTE:
-          To  use  the following examples, you must have the AWS CLI installed
-          and configured. See the Getting started guide in the  AWS  CLI  User
+          To use the following examples, you must have the AWS  CLI  installed
+          and  configured.  See  the Getting started guide in the AWS CLI User
           Guide for more information.
 
-          Unless  otherwise  stated,  all  examples  have  unix-like quotation
-          rules. These examples will need to be  adapted  to  your  terminal's
+          Unless otherwise  stated,  all  examples  have  unix-like  quotation
+          rules.  These  examples  will  need to be adapted to your terminal's
           quoting rules. See Using quotation marks with strings in the AWS CLI
           User Guide .
 
        To get a package version's readme file
 
-       The following get-package-version-readme example retrieves  the  readme
+       The  following  get-package-version-readme example retrieves the readme
        file for version 4.0.0 of an npm package named test-package.
 
           aws codeartifact get-package-version-readme \
@@ -229,7 +230,7 @@ EXAMPLES
               "versionRevision": "Ciqe5/9yicvkJT13b5/LdLpCyE6fqA7poa9qp+FilPs="
           }
 
-       For  more  information, see View package version readme file in the AWS
+       For more information, see View package version readme file in  the  AWS
        CodeArtifact User Guide.
 
 OUTPUT
@@ -238,7 +239,7 @@ OUTPUT
 
        namespace -> (string)
           The namespace of the package version with the requested readme file.
-          The  package  component  that specifies its namespace depends on its
+          The package component that specifies its namespace  depends  on  its
           type. For example:
 
           o The namespace of a Maven package version is its groupId .
@@ -247,8 +248,8 @@ OUTPUT
 
           o The namespace of a generic package is its namespace .
 
-          o Python, NuGet, Ruby, and Cargo package versions do not  contain  a
-            corresponding  component, package versions of those formats do not
+          o Python,  NuGet,  Ruby, and Cargo package versions do not contain a
+            corresponding component, package versions of those formats do  not
             have a namespace.
 
        package -> (string)
