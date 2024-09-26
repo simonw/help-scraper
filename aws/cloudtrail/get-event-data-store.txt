@@ -143,13 +143,14 @@ OUTPUT
 
           (structure)
               Advanced event selectors let you create  fine-grained  selectors
-              for CloudTrail management and data events. They help you control
-              costs by logging only those events that are  important  to  you.
-              For more information about advanced event selectors, see Logging
-              management events and Logging data events in the CloudTrail User
-              Guide .
+              for  CloudTrail  management,  data, and network activity events.
+              They help you control costs by logging only  those  events  that
+              are important to you. For more information about configuring ad-
+              vanced event selectors, see the Logging data  events  ,  Logging
+              network  activity  events , and Logging management events topics
+              in the CloudTrail User Guide .
 
-              You  cannot apply both event selectors and advanced event selec-
+              You cannot apply both event selectors and advanced event  selec-
               tors to a trail.
                  Supported  CloudTrail  event  record  fields  for  management
                  events
@@ -170,6 +171,23 @@ OUTPUT
               o eventName
 
               o resources.ARN
+                 Supported CloudTrail event record fields for network activity
+                 events
+
+              NOTE:
+                 Network  activity events is in preview release for CloudTrail
+                 and is subject to change.
+
+              o eventCategory (required)
+
+              o eventSource (required)
+
+              o eventName
+
+              o errorCode - The only valid value for errorCode is  VpceAccess-
+                Denied .
+
+              o vpcEndpointId
 
               NOTE:
                  For  event data stores for CloudTrail Insights events, Config
@@ -198,11 +216,17 @@ OUTPUT
                         lecting events as filtering is not supported.
 
                         For CloudTrail management events, supported fields in-
-                        clude readOnly , eventCategory , and eventSource .
+                        clude  eventCategory  (required),  eventSource  ,  and
+                        readOnly .
 
-                        For  CloudTrail  data events, supported fields include
-                        readOnly , eventCategory , eventName ,  resources.type
-                        , and resources.ARN .
+                        For CloudTrail data events, supported  fields  include
+                        eventCategory  (required),  resources.type (required),
+                        eventName , readOnly , and resources.ARN .
+
+                        For  CloudTrail  network  activity  events,  supported
+                        fields  include  eventCategory (required), eventSource
+                        (required), eventName , errorCode , and  vpcEndpointId
+                        .
 
                         For  event data stores for CloudTrail Insights events,
                         Config configuration items, Audit Manager evidence, or
@@ -212,44 +236,66 @@ OUTPUT
                         o
 
                           **
-                          readOnly ** - Optional. Can be set to Equals a value
-                          of  true  or  false  . If you do not add this field,
-                          CloudTrail logs both read and write events. A  value
-                          of true logs only read events. A value of false logs
-                          only write events.
+                          readOnly ** - This is an optional field that is only
+                          used  for  management  events  and data events. This
+                          field can be set to Equals with a value of  true  or
+                          false  .  If  you  do not add this field, CloudTrail
+                          logs both read and write events.  A  value  of  true
+                          logs  only  read  events. A value of false logs only
+                          write events.
 
-                        System Message: WARNING/2 (<string>:, line 293)
+                        System Message: WARNING/2 (<string>:, line 325)
                           Inline strong start-string without end-string.
 
                         o
 
                           **
-                          eventSource ** -  For  filtering  management  events
-                          only.  This  can  be  set  to NotEquals  kms.amazon-
-                          aws.com or NotEquals  rdsdata.amazonaws.com .
+                          eventSource ** - This field is only used for manage-
+                          ment events and network activity events. For manage-
+                          ment events, this is an optional field that  can  be
+                          set  to  NotEquals  kms.amazonaws.com to exclude KMS
+                          management  events,  or  NotEquals   rdsdata.amazon-
+                          aws.com  to  exclude RDS management events. For net-
+                          work activity events, this is a required field  that
+                          only uses the Equals operator. Set this field to the
+                          event source for which you want to log  network  ac-
+                          tivity  events.  If you want to log network activity
+                          events for multiple event sources, you must create a
+                          separate  field  selector for each event source. The
+                          following are  valid  values  for  network  activity
+                          events:
 
-                        System Message: WARNING/2 (<string>:, line 295)
+                        System Message: WARNING/2 (<string>:, line 327)
+                          Inline strong start-string without end-string.
+
+                          o cloudtrail.amazonaws.com
+
+                          o ec2.amazonaws.com
+
+                          o kms.amazonaws.com
+
+                          o secretsmanager.amazonaws.com
+
+                        o
+
+                          **
+                          eventName  **  -  This  is an optional field that is
+                          only used  for  data  events  and  network  activity
+                          events.  You  can  use any operator with eventName .
+                          You can use it to  lter  in  or  lter  out  specific
+                          events.  You  can have multiple values for this eld,
+                          separated by commas.
+
+                        System Message: WARNING/2 (<string>:, line 341)
                           Inline strong start-string without end-string.
 
                         o
 
                           **
-                          eventName ** - Can use any operator. You can use  it
-                          to  lter  in  or  lter  out any data event logged to
-                          CloudTrail, such as PutBucket or GetSnapshotBlock  .
-                          You can have multiple values for this eld, separated
-                          by commas.
+                          eventCategory ** - This field is required  and  must
+                          be set to Equals .
 
-                        System Message: WARNING/2 (<string>:, line 297)
-                          Inline strong start-string without end-string.
-
-                        o
-
-                          **
-                          eventCategory ** - This is required and must be  set
-                          to Equals .
-
-                        System Message: WARNING/2 (<string>:, line 299)
+                        System Message: WARNING/2 (<string>:, line 343)
                           Inline strong start-string without end-string.
 
                           o For  CloudTrail  management events, the value must
@@ -258,42 +304,55 @@ OUTPUT
                           o For CloudTrail data events, the value must be Data
                             .
 
+                          o For  CloudTrail network activity events, the value
+                            must be NetworkActivity .
+
                         The following are used only for event data stores:
 
-                            o For  CloudTrail  Insights events, the value must
+                            o For CloudTrail Insights events, the  value  must
                               be Insight .
 
-                            o For Config configuration items, the  value  must
+                            o For  Config  configuration items, the value must
                               be ConfigurationItem .
 
-                            o For  Audit  Manager  evidence, the value must be
+                            o For Audit Manager evidence, the  value  must  be
                               Evidence .
 
-                            o For non-Amazon Web Services  events,  the  value
+                            o For  non-Amazon  Web  Services events, the value
                               must be ActivityAuditLog .
 
                         o
 
                           **
-                          resources.type  ** - This eld is required for Cloud-
-                          Trail data events. resources.type can only  use  the
-                          Equals  operator,  and  the  value can be one of the
-                          following:
+                          errorCode ** - This  eld  is  only  used  to  filter
+                          CloudTrail  network activity events and is optional.
+                          This is the error code to filter on. Currently,  the
+                          only valid errorCode is VpceAccessDenied . errorCode
+                          can only use the Equals operator.
 
-                        System Message: WARNING/2 (<string>:, line 325)
+                        System Message: WARNING/2 (<string>:, line 371)
                           Inline strong start-string without end-string.
 
-                          o AWS::DynamoDB::Table
+                        o
 
-                          o AWS::Lambda::Function
+                          **
+                          resources.type ** - This eld is required for  Cloud-
+                          Trail  data  events. resources.type can only use the
+                          Equals operator. The value can be one of the follow-
+                          ing:
 
-                          o AWS::S3::Object
+                        System Message: WARNING/2 (<string>:, line 373)
+                          Inline strong start-string without end-string.
 
                           o AWS::AppConfig::Configuration
 
                           o AWS::B2BI::Transformer
 
                           o AWS::Bedrock::AgentAlias
+
+                          o AWS::Bedrock::FlowAlias
+
+                          o AWS::Bedrock::Guardrail
 
                           o AWS::Bedrock::KnowledgeBase
 
@@ -303,6 +362,8 @@ OUTPUT
 
                           o AWS::CloudTrail::Channel
 
+                          o AWS::CloudWatch::Metric
+
                           o AWS::CodeWhisperer::Customization
 
                           o AWS::CodeWhisperer::Profile
@@ -310,6 +371,8 @@ OUTPUT
                           o AWS::Cognito::IdentityPool
 
                           o AWS::DynamoDB::Stream
+
+                          o AWS::DynamoDB::Table
 
                           o AWS::EC2::Snapshot
 
@@ -339,7 +402,15 @@ OUTPUT
 
                           o AWS::KendraRanking::ExecutionPlan
 
+                          o AWS::Kinesis::Stream
+
+                          o AWS::Kinesis::StreamConsumer
+
                           o AWS::KinesisVideo::Stream
+
+                          o AWS::Lambda::Function
+
+                          o AWS::MachineLearning::MlModel
 
                           o AWS::ManagedBlockchain::Network
 
@@ -349,7 +420,17 @@ OUTPUT
 
                           o AWS::NeptuneGraph::Graph
 
+                          o AWS::One::UKey
+
+                          o AWS::One::User
+
+                          o AWS::PaymentCryptography::Alias
+
+                          o AWS::PaymentCryptography::Key
+
                           o AWS::PCAConnectorAD::Connector
+
+                          o AWS::PCAConnectorSCEP::Connector
 
                           o AWS::QApps:QApp
 
@@ -363,7 +444,13 @@ OUTPUT
 
                           o AWS::RDS::DBCluster
 
+                          o AWS::RUM::AppMonitor
+
                           o AWS::S3::AccessPoint
+
+                          o AWS::S3::Object
+
+                          o AWS::S3Express::Object
 
                           o AWS::S3ObjectLambda::AccessPoint
 
@@ -391,6 +478,8 @@ OUTPUT
 
                           o AWS::SSMMessages::ControlChannel
 
+                          o AWS::StepFunctions::StateMachine
+
                           o AWS::SWF::Domain
 
                           o AWS::ThinClient::Device
@@ -406,530 +495,94 @@ OUTPUT
                           o AWS::XRay::Trace
 
                         You can have only one resources.type eld per selector.
-                        To log data events on more than one resource type, add
-                        another selector.
+                        To log events on more than one resource type, add  an-
+                        other selector.
 
                         o
 
                           **
-                          resources.ARN ** - You can use any operator with re-
-                          sources.ARN  ,  but if you use Equals or NotEquals ,
+                          resources.ARN  ** - The resources.ARN is an optional
+                          field for data events. You can use any operator with
+                          resources.ARN , but if you use Equals or NotEquals ,
                           the value must exactly match the ARN of a valid  re-
                           source of the type you've specied in the template as
-                          the value of resources.type.
+                          the value of resources.type. To log all data  events
+                          for  all  objects  in  a specific S3 bucket, use the
+                          StartsWith operator, and include only the bucket ARN
+                          as the matching value. For information about filter-
+                          ing data events  on  the  resources.ARN  field,  see
+                          Filtering data events by resources.ARN in the Cloud-
+                          Trail User Guide .
 
-                        System Message: WARNING/2 (<string>:, line 457)
+                        System Message: WARNING/2 (<string>:, line 533)
                           Inline strong start-string without end-string.
 
                         NOTE:
-                               You can't use the resources.ARN field to filter
-                               resource types that do not have ARNs.
-
-                            The resources.ARN field can be set one of the fol-
-                            lowing. If resources.type equals AWS::S3::Object ,
-                            the  ARN  must be in one of the following formats.
-                            To log all data events for all objects in  a  spe-
-                            cific  S3 bucket, use the StartsWith operator, and
-                            include only the bucket ARN as the matching value.
-                            The  trailing slash is intentional; do not exclude
-                            it. Replace the text between less than and greater
-                            than  symbols (<>) with resource-specific informa-
-                            tion.
-
-                               o arn:<partition>:s3:::<bucket_name>/
-
-                               o arn:<partition>:s3:::<bucket_name>/<ob-
-                                 ject_path>/
-
-                        When  resources.type equals AWS::DynamoDB::Table , and
-                        the operator is set to Equals or NotEquals ,  the  ARN
-                        must be in the following format:
-
-                            o arn:<partition>:dynamodb:<region>:<ac-
-                              count_ID>:table/<table_name>
-
-                        When resources.type equals AWS::Lambda::Function , and
-                        the  operator  is set to Equals or NotEquals , the ARN
-                        must be in the following format:
-
-                            o arn:<partition>:lambda:<region>:<ac-
-                              count_ID>:function:<function_name>
-
-                        When  resources.type equals AWS::AppConfig::Configura-
-                        tion , and the operator is set to Equals or  NotEquals
-                        , the ARN must be in the following format:
-
-                            o arn:<partition>:appconfig:<region>:<ac-
-                              count_ID>:application/<application_ID>/environ-
-                              ment/<environment_ID>/configuration/<configura-
-                              tion_profile_ID>
-
-                        When resources.type  equals  AWS::B2BI::Transformer  ,
-                        and  the  operator is set to Equals or NotEquals , the
-                        ARN must be in the following format:
-
-                            o arn:<partition>:b2bi:<region>:<ac-
-                              count_ID>:transformer/<transformer_ID>
-
-                        When  resources.type equals AWS::Bedrock::AgentAlias ,
-                        and the operator is set to Equals or NotEquals  ,  the
-                        ARN must be in the following format:
-
-                            o arn:<partition>:bedrock:<region>:<ac-
-                              count_ID>:agent-alias/<agent_ID>/<alias_ID>
-
-                        When resources.type equals AWS::Bedrock::KnowledgeBase
-                        , and the operator is set to Equals or NotEquals , the
-                        ARN must be in the following format:
-
-                            o arn:<partition>:bedrock:<region>:<ac-
-                              count_ID>:knowledge-base/<knowledge_base_ID>
-
-                        When resources.type equals AWS::Cassandra::Table , and
-                        the operator is set to Equals or NotEquals ,  the  ARN
-                        must be in the following format:
-
-                            o arn:<partition>:cassandra:<region>:<ac-
-                              count_ID>:/keyspace/<keyspace_name>/table/<ta-
-                              ble_name>
-
-                        When  resources.type equals AWS::CloudFront::KeyValue-
-                        Store , and the operator is set to Equals or NotEquals
-                        , the ARN must be in the following format:
-
-                            o arn:<partition>:cloudfront:<region>:<ac-
-                              count_ID>:key-value-store/<KVS_name>
-
-                        When resources.type equals AWS::CloudTrail::Channel  ,
-                        and  the  operator is set to Equals or NotEquals , the
-                        ARN must be in the following format:
-
-                            o arn:<partition>:cloudtrail:<region>:<ac-
-                              count_ID>:channel/<channel_UUID>
-
-                        When  resources.type  equals  AWS::CodeWhisperer::Cus-
-                        tomization , and the operator  is  set  to  Equals  or
-                        NotEquals , the ARN must be in the following format:
-
-                            o arn:<partition>:codewhisperer:<region>:<ac-
-                              count_ID>:customization/<customization_ID>
-
-                        When resources.type equals AWS::CodeWhisperer::Profile
-                        , and the operator is set to Equals or NotEquals , the
-                        ARN must be in the following format:
-
-                            o arn:<partition>:codewhisperer:<region>:<ac-
-                              count_ID>:profile/<profile_ID>
-
-                        When  resources.type equals AWS::Cognito::IdentityPool
-                        , and the operator is set to Equals or NotEquals , the
-                        ARN must be in the following format:
-
-                            o arn:<partition>:cognito-identity:<region>:<ac-
-                              count_ID>:identitypool/<identity_pool_ID>
-
-                        When resources.type equals AWS::DynamoDB::Stream , and
-                        the  operator  is set to Equals or NotEquals , the ARN
-                        must be in the following format:
-
-                            o arn:<partition>:dynamodb:<region>:<ac-
-                              count_ID>:table/<table_name>/stream/<date_time>
-
-                        When  resources.type  equals  AWS::EC2::Snapshot , and
-                        the operator is set to Equals or NotEquals ,  the  ARN
-                        must be in the following format:
-
-                            o arn:<partition>:ec2:<region>::snapshot/<snap-
-                              shot_ID>
-
-                        When resources.type  equals  AWS::EMRWAL::Workspace  ,
-                        and  the  operator is set to Equals or NotEquals , the
-                        ARN must be in the following format:
-
-                            o arn:<partition>:emrwal:<region>:<ac-
-                              count_ID>:workspace/<workspace_name>
-
-                        When  resources.type equals AWS::FinSpace::Environment
-                        , and the operator is set to Equals or NotEquals , the
-                        ARN must be in the following format:
-
-                            o arn:<partition>:finspace:<region>:<ac-
-                              count_ID>:environment/<environment_ID>
-
-                        When resources.type equals AWS::Glue::Table , and  the
-                        operator  is set to Equals or NotEquals , the ARN must
-                        be in the following format:
-
-                            o arn:<partition>:glue:<region>:<account_ID>:ta-
-                              ble/<database_name>/<table_name>
-
-                        When  resources.type  equals AWS::GreengrassV2::Compo-
-                        nentVersion , and the operator is  set  to  Equals  or
-                        NotEquals , the ARN must be in the following format:
-
-                            o arn:<partition>:greengrass:<region>:<ac-
-                              count_ID>:components/<component_name>
-
-                        When resources.type equals  AWS::GreengrassV2::Deploy-
-                        ment  , and the operator is set to Equals or NotEquals
-                        , the ARN must be in the following format:
-
-                            o arn:<partition>:greengrass:<region>:<ac-
-                              count_ID>:deployments/<deployment_ID
-
-                        When  resources.type equals AWS::GuardDuty::Detector ,
-                        and the operator is set to Equals or NotEquals  ,  the
-                        ARN must be in the following format:
-
-                            o arn:<partition>:guardduty:<region>:<ac-
-                              count_ID>:detector/<detector_ID>
-
-                        When resources.type equals AWS::IoT::Certificate , and
-                        the  operator  is set to Equals or NotEquals , the ARN
-                        must be in the following format:
-
-                            o arn:<partition>:iot:<region>:<ac-
-                              count_ID>:cert/<certificate_ID>
-
-                        When  resources.type  equals AWS::IoT::Thing , and the
-                        operator is set to Equals or NotEquals , the ARN  must
-                        be in the following format:
-
-                            o arn:<partition>:iot:<region>:<ac-
-                              count_ID>:thing/<thing_ID>
-
-                        When resources.type equals  AWS::IoTSiteWise::Asset  ,
-                        and  the  operator is set to Equals or NotEquals , the
-                        ARN must be in the following format:
-
-                            o arn:<partition>:iotsitewise:<region>:<ac-
-                              count_ID>:asset/<asset_ID>
-
-                        When   resources.type  equals  AWS::IoTSiteWise::Time-
-                        Series , and the operator is set to  Equals  or  NotE-
-                        quals , the ARN must be in the following format:
-
-                            o arn:<partition>:iotsitewise:<region>:<ac-
-                              count_ID>:timeseries/<timeseries_ID>
-
-                        When resources.type equals AWS::IoTTwinMaker::Entity ,
-                        and  the  operator is set to Equals or NotEquals , the
-                        ARN must be in the following format:
-
-                            o arn:<partition>:iottwinmaker:<region>:<ac-
-                              count_ID>:workspace/<workspace_ID>/entity/<en-
-                              tity_ID>
-
-                        When     resources.type      equals      AWS::IoTTwin-
-                        Maker::Workspace  ,  and the operator is set to Equals
-                        or NotEquals , the ARN must be in the  following  for-
-                        mat:
-
-                            o arn:<partition>:iottwinmaker:<region>:<ac-
-                              count_ID>:workspace/<workspace_ID>
-
-                        When resources.type equals  AWS::KendraRanking::Execu-
-                        tionPlan  , and the operator is set to Equals or NotE-
-                        quals , the ARN must be in the following format:
-
-                            o arn:<partition>:kendra-ranking:<region>:<ac-
-                              count_ID>:rescore-execution-plan/<rescore_execu-
-                              tion_plan_ID>
-
-                        When resources.type equals AWS::KinesisVideo::Stream ,
-                        and  the  operator is set to Equals or NotEquals , the
-                        ARN must be in the following format:
-
-                            o arn:<partition>:kinesisvideo:<region>:<ac-
-                              count_ID>:stream/<stream_name>/<creation_time>
-
-                        When      resources.type      equals     AWS::Managed-
-                        Blockchain::Network ,  and  the  operator  is  set  to
-                        Equals or NotEquals , the ARN must be in the following
-                        format:
-
-                            o arn:<partition>:managedblockchain:::net-
-                              works/<network_name>
-
-                        When      resources.type      equals     AWS::Managed-
-                        Blockchain::Node , and the operator is set  to  Equals
-                        or  NotEquals  , the ARN must be in the following for-
-                        mat:
-
-                            o arn:<partition>:managedblockchain:<region>:<ac-
-                              count_ID>:nodes/<node_ID>
-
-                        When resources.type equals AWS::MedicalImaging::Datas-
-                        tore , and the operator is set to Equals or  NotEquals
-                        , the ARN must be in the following format:
-
-                            o arn:<partition>:medical-imaging:<region>:<ac-
-                              count_ID>:datastore/<data_store_ID>
-
-                        When resources.type equals AWS::NeptuneGraph::Graph  ,
-                        and  the  operator is set to Equals or NotEquals , the
-                        ARN must be in the following format:
-
-                            o arn:<partition>:neptune-graph:<region>:<ac-
-                              count_ID>:graph/<graph_ID>
-
-                        When  resources.type  equals AWS::PCAConnectorAD::Con-
-                        nector , and the operator is set to  Equals  or  NotE-
-                        quals , the ARN must be in the following format:
-
-                            o arn:<partition>:pca-connector-ad:<region>:<ac-
-                              count_ID>:connector/<connector_ID>
-
-                        When resources.type equals AWS::QApps:QApp ,  and  the
-                        operator  is set to Equals or NotEquals , the ARN must
-                        be in the following format:
-
-                            o arn:<partition>:qapps:<region>:<account_ID>:ap-
-                              plication/<application_UUID>/qapp/<qapp_UUID>
-
-                        When resources.type equals AWS::QBusiness::Application
-                        , and the operator is set to Equals or NotEquals , the
-                        ARN must be in the following format:
-
-                            o arn:<partition>:qbusiness:<region>:<ac-
-                              count_ID>:application/<application_ID>
-
-                        When resources.type equals  AWS::QBusiness::DataSource
-                        , and the operator is set to Equals or NotEquals , the
-                        ARN must be in the following format:
-
-                            o arn:<partition>:qbusiness:<region>:<ac-
-                              count_ID>:application/<application_ID>/in-
-                              dex/<index_ID>/data-source/<datasource_ID>
-
-                        When resources.type equals AWS::QBusiness::Index , and
-                        the  operator  is set to Equals or NotEquals , the ARN
-                        must be in the following format:
-
-                            o arn:<partition>:qbusiness:<region>:<ac-
-                              count_ID>:application/<application_ID>/in-
-                              dex/<index_ID>
-
-                        When resources.type equals  AWS::QBusiness::WebExperi-
-                        ence  , and the operator is set to Equals or NotEquals
-                        , the ARN must be in the following format:
-
-                            o arn:<partition>:qbusiness:<region>:<ac-
-                              count_ID>:application/<application_ID>/web-expe-
-                              rience/<web_experience_ID>
-
-                        When resources.type equals AWS::RDS::DBCluster  ,  and
-                        the  operator  is set to Equals or NotEquals , the ARN
-                        must be in the following format:
-
-                            o arn:<partition>:rds:<region>:<account_ID>:clus-
-                              ter/<cluster_name>
-
-                        When  resources.type equals AWS::S3::AccessPoint , and
-                        the operator is set to Equals or NotEquals ,  the  ARN
-                        must be in one of the following formats. To log events
-                        on all objects in an S3  access  point,  we  recommend
-                        that  you  use only the access point ARN, dont include
-                        the object  path,  and  use  the  StartsWith  or  Not-
-                        StartsWith operators.
-
-                            o arn:<partition>:s3:<region>:<account_ID>:access-
-                              point/<access_point_name>
-
-                            o arn:<partition>:s3:<region>:<account_ID>:access-
-                              point/<access_point_name>/object/<object_path>
-
-                        When  resources.type  equals  AWS::S3ObjectLambda::Ac-
-                        cessPoint , and the operator is set to Equals or NotE-
-                        quals , the ARN must be in the following format:
-
-                            o arn:<partition>:s3-object-lambda:<region>:<ac-
-                              count_ID>:accesspoint/<access_point_name>
-
-                        When resources.type equals  AWS::S3Outposts::Object  ,
-                        and  the  operator is set to Equals or NotEquals , the
-                        ARN must be in the following format:
-
-                            o arn:<partition>:s3-outposts:<region>:<ac-
-                              count_ID>:<object_path>
-
-                        When  resources.type equals AWS::SageMaker::Endpoint ,
-                        and the operator is set to Equals or NotEquals  ,  the
-                        ARN must be in the following format:
-
-                            o arn:<partition>:sagemaker:<region>:<ac-
-                              count_ID>:endpoint/<endpoint_name>
-
-                        When resources.type equals AWS::SageMaker::Experiment-
-                        TrialComponent  , and the operator is set to Equals or
-                        NotEquals , the ARN must be in the following format:
-
-                            o arn:<partition>:sagemaker:<region>:<ac-
-                              count_ID>:experiment-trial-component/<experi-
-                              ment_trial_component_name>
-
-                        When  resources.type  equals  AWS::SageMaker::Feature-
-                        Group , and the operator is set to Equals or NotEquals
-                        , the ARN must be in the following format:
-
-                            o arn:<partition>:sagemaker:<region>:<ac-
-                              count_ID>:feature-group/<feature_group_name>
-
-                        When  resources.type  equals  AWS::SCN::Instance , and
-                        the operator is set to Equals or NotEquals ,  the  ARN
-                        must be in the following format:
-
-                            o arn:<partition>:scn:<region>:<account_ID>:in-
-                              stance/<instance_ID>
-
-                        When   resources.type    equals    AWS::ServiceDiscov-
-                        ery::Namespace  , and the operator is set to Equals or
-                        NotEquals , the ARN must be in the following format:
-
-                            o arn:<partition>:servicediscovery:<region>:<ac-
-                              count_ID>:namespace/<namespace_ID>
-
-                        When resources.type equals AWS::ServiceDiscovery::Ser-
-                        vice , and the operator is set to Equals or  NotEquals
-                        , the ARN must be in the following format:
-
-                            o arn:<partition>:servicediscovery:<region>:<ac-
-                              count_ID>:service/<service_ID>
-
-                        When resources.type equals  AWS::SNS::PlatformEndpoint
-                        , and the operator is set to Equals or NotEquals , the
-                        ARN must be in the following format:
-
-                            o arn:<partition>:sns:<region>:<account_ID>:end-
-                              point/<endpoint_type>/<endpoint_name>/<end-
-                              point_ID>
-
-                        When resources.type equals AWS::SNS::Topic ,  and  the
-                        operator  is set to Equals or NotEquals , the ARN must
-                        be in the following format:
-
-                            o arn:<partition>:sns:<region>:<ac-
-                              count_ID>:<topic_name>
-
-                        When  resources.type  equals AWS::SQS::Queue , and the
-                        operator is set to Equals or NotEquals , the ARN  must
-                        be in the following format:
-
-                            o arn:<partition>:sqs:<region>:<ac-
-                              count_ID>:<queue_name>
-
-                        When resources.type equals AWS::SSM::ManagedNode , and
-                        the  operator  is set to Equals or NotEquals , the ARN
-                        must be in one of the following formats:
-
-                            o arn:<partition>:ssm:<region>:<account_ID>:man-
-                              aged-instance/<instance_ID>
-
-                            o arn:<partition>:ec2:<region>:<account_ID>:in-
-                              stance/<instance_ID>
-
-                        When  resources.type   equals   AWS::SSMMessages::Con-
-                        trolChannel  ,  and  the  operator is set to Equals or
-                        NotEquals , the ARN must be in the following format:
-
-                            o arn:<partition>:ssmmessages:<region>:<ac-
-                              count_ID>:control-channel/<channel_ID>
-
-                        When  resources.type equals AWS::SWF::Domain , and the
-                        operator is set to Equals or NotEquals , the ARN  must
-                        be in the following format:
-
-                            o arn:<partition>:swf:<region>:<account_ID>:do-
-                              main/<domain_name>
-
-                        When resources.type equals  AWS::ThinClient::Device  ,
-                        and  the  operator is set to Equals or NotEquals , the
-                        ARN must be in the following format:
-
-                            o arn:<partition>:thinclient:<region>:<ac-
-                              count_ID>:device/<device_ID>
-
-                        When  resources.type  equals AWS::ThinClient::Environ-
-                        ment , and the operator is set to Equals or  NotEquals
-                        , the ARN must be in the following format:
-
-                            o arn:<partition>:thinclient:<region>:<ac-
-                              count_ID>:environment/<environment_ID>
-
-                        When resources.type equals AWS::Timestream::Database ,
-                        and  the  operator is set to Equals or NotEquals , the
-                        ARN must be in the following format:
-
-                            o arn:<partition>:timestream:<region>:<ac-
-                              count_ID>:database/<database_name>
-
-                        When  resources.type  equals  AWS::Timestream::Table ,
-                        and the operator is set to Equals or NotEquals  ,  the
-                        ARN must be in the following format:
-
-                            o arn:<partition>:timestream:<region>:<ac-
-                              count_ID>:database/<database_name>/table/<ta-
-                              ble_name>
-
-                        When    resources.type   equals   AWS::VerifiedPermis-
-                        sions::PolicyStore , and the operator is set to Equals
-                        or  NotEquals  , the ARN must be in the following for-
-                        mat:
-
-                            o arn:<partition>:verifiedpermissions:<re-
-                              gion>:<account_ID>:policy-store/<pol-
-                              icy_store_UUID>
+                            You can't use the resources.ARN  field  to  filter
+                            resource types that do not have ARNs.
+
+                        o
+
+                          **
+                          vpcEndpointId  **  - This eld is only used to filter
+                          CloudTrail network activity events and is  optional.
+                          This  field identifies the VPC endpoint that the re-
+                          quest passed through. You can use any operator  with
+                          vpcEndpointId .
+
+                        System Message: WARNING/2 (<string>:, line 541)
+                          Inline strong start-string without end-string.
 
                      Equals -> (list)
-                        An operator that includes events that match the  exact
+                        An  operator that includes events that match the exact
                         value of the event record field specified as the value
-                        of Field . This is the only valid  operator  that  you
-                        can  use  with  the readOnly , eventCategory , and re-
+                        of  Field  .  This is the only valid operator that you
+                        can use with the readOnly , eventCategory  ,  and  re-
                         sources.type fields.
 
                         (string)
 
                      StartsWith -> (list)
-                        An operator that includes events that match the  first
-                        few  characters of the event record field specified as
+                        An  operator that includes events that match the first
+                        few characters of the event record field specified  as
                         the value of Field .
 
                         (string)
 
                      EndsWith -> (list)
-                        An operator that includes events that match  the  last
-                        few  characters of the event record field specified as
+                        An  operator  that includes events that match the last
+                        few characters of the event record field specified  as
                         the value of Field .
 
                         (string)
 
                      NotEquals -> (list)
-                        An operator that excludes events that match the  exact
+                        An  operator that excludes events that match the exact
                         value of the event record field specified as the value
                         of Field .
 
                         (string)
 
                      NotStartsWith -> (list)
-                        An operator that excludes events that match the  first
-                        few  characters of the event record field specified as
+                        An  operator that excludes events that match the first
+                        few characters of the event record field specified  as
                         the value of Field .
 
                         (string)
 
                      NotEndsWith -> (list)
-                        An operator that excludes events that match  the  last
-                        few  characters of the event record field specified as
+                        An  operator  that excludes events that match the last
+                        few characters of the event record field specified  as
                         the value of Field .
 
                         (string)
 
        MultiRegionEnabled -> (boolean)
-          Indicates whether the event data store includes events from all  Re-
+          Indicates  whether the event data store includes events from all Re-
           gions, or only from the Region in which it was created.
 
        OrganizationEnabled -> (boolean)
-          Indicates  whether  an  event data store is collecting logged events
+          Indicates whether an event data store is  collecting  logged  events
           for an organization in Organizations.
 
        RetentionPeriod -> (integer)
@@ -942,13 +595,13 @@ OUTPUT
           The timestamp of the event data store's creation.
 
        UpdatedTimestamp -> (timestamp)
-          Shows the time that an event data store was updated, if  applicable.
-          UpdatedTimestamp  is  always  either the same or newer than the time
+          Shows  the time that an event data store was updated, if applicable.
+          UpdatedTimestamp is always either the same or newer  than  the  time
           shown in CreatedTimestamp .
 
        KmsKeyId -> (string)
-          Specifies the KMS key ID  that  encrypts  the  events  delivered  by
-          CloudTrail.  The  value is a fully specified ARN to a KMS key in the
+          Specifies  the  KMS  key  ID  that  encrypts the events delivered by
+          CloudTrail. The value is a fully specified ARN to a KMS key  in  the
           following format.
               arn:aws:kms:us-east-2:123456789012:key/12345678-1234-1234-1234-123456789012
 
@@ -957,29 +610,29 @@ OUTPUT
 
        FederationStatus -> (string)
           Indicates the Lake query federation status. The status is ENABLED if
-          Lake query federation is enabled, or DISABLED if Lake query  federa-
-          tion  is disabled. You cannot delete an event data store if the Fed-
+          Lake  query federation is enabled, or DISABLED if Lake query federa-
+          tion is disabled. You cannot delete an event data store if the  Fed-
           erationStatus is ENABLED .
 
        FederationRoleArn -> (string)
           If Lake query federation is enabled, provides the ARN of the federa-
-          tion  role used to access the resources for the federated event data
+          tion role used to access the resources for the federated event  data
           store.
 
        PartitionKeys -> (list)
-          The partition keys for the event data store. To improve  query  per-
-          formance  and  efficiency, CloudTrail Lake organizes event data into
+          The  partition  keys for the event data store. To improve query per-
+          formance and efficiency, CloudTrail Lake organizes event  data  into
           partitions based on values derived from partition keys.
 
           (structure)
-              Contains information about a partition key  for  an  event  data
+              Contains  information  about  a  partition key for an event data
               store.
 
               Name -> (string)
                  The name of the partition key.
 
               Type -> (string)
-                 The  data  type  of the partition key. For example, bigint or
+                 The data type of the partition key. For  example,  bigint  or
                  string .
 
 
