@@ -122,9 +122,11 @@ Version: `3.47.0`
 
 .once ?OPTIONS? ?FILE?   Output for the next SQL command only to FILE
      If FILE begins with '|' then open as a pipe
-       --bom  Put a UTF8 byte-order mark at the beginning
-       -e     Send output to the system text editor
-       -x     Send output as CSV to a spreadsheet (same as ".excel")
+       --bom    Put a UTF8 byte-order mark at the beginning
+       -e       Send output to the system text editor
+       --plain  Use text/plain output instead of HTML for -w option
+       -w       Send output as HTML to a web browser (same as ".www")
+       -x       Send output as CSV to a spreadsheet (same as ".excel")
 
 .open ?OPTIONS? ?FILE?   Close existing database and reopen FILE
      Options:
@@ -142,6 +144,8 @@ Version: `3.47.0`
    Options:
      --bom                 Prefix output with a UTF8 byte-order mark
      -e                    Send output to the system text editor
+     --plain               Use text/plain for -w option
+     -w                    Send output to a web browser
      -x                    Send output as CSV to a spreadsheet
 
 .parameter CMD ...       Manage SQL parameter bindings
@@ -228,4 +232,7 @@ Version: `3.47.0`
 .vfsname ?AUX?           Print the name of the VFS stack
 
 .width NUM1 NUM2 ...     Set minimum column widths for columnar output
+     Negative values right-justify
+
+.www                     Display output of the next command in web browser
 ```
