@@ -1,21 +1,36 @@
-TEST-PARSING()                                                  TEST-PARSING()
+CREATE-STARTER-MAPPING-TEMPLATE()            CREATE-STARTER-MAPPING-TEMPLATE()
 
 
 
 NAME
-       test-parsing -
+       create-starter-mapping-template -
 
 DESCRIPTION
-       Parses the input EDI (electronic data interchange) file. The input file
-       has a file size limit of 250 KB.
+       Amazon  Web  Services  B2B  Data Interchange uses a mapping template in
+       JSONata or XSLT format to transform a customer input file into  a  JSON
+       or XML file that can be converted to EDI.
+
+       If  you  provide  a  sample EDI file with the same structure as the EDI
+       files that you wish to generate, then the service can generate  a  map-
+       ping  template.  The starter template contains placeholder values which
+       you can replace with JSONata or XSLT expressions to take data from your
+       input file and insert it into the JSON or XML file that is used to gen-
+       erate the EDI.
+
+       If you do not provide a sample EDI file, then the service can  generate
+       a mapping template based on the EDI settings in the templateDetails pa-
+       rameter.
+
+       Currently, we only support generating a template that can generate  the
+       input to produce an Outbound X12 EDI file.
 
        See also: AWS API Documentation
 
 SYNOPSIS
-            test-parsing
-          --input-file <value>
-          --file-format <value>
-          --edi-type <value>
+            create-starter-mapping-template
+          [--output-sample-location <value>]
+          --mapping-type <value>
+          --template-details <value>
           [--cli-input-json <value>]
           [--generate-cli-skeleton <value>]
           [--debug]
@@ -34,9 +49,9 @@ SYNOPSIS
           [--cli-connect-timeout <value>]
 
 OPTIONS
-       --input-file (structure)
-          Specifies an S3Location object, which contains the Amazon S3  bucket
-          and prefix for the location of the input file.
+       --output-sample-location (structure)
+          Specify the location of the sample EDI file that is used to generate
+          the mapping template.
 
           bucketName -> (string)
               Specifies the name of the Amazon S3 bucket.
@@ -55,67 +70,68 @@ OPTIONS
             "key": "string"
           }
 
-       --file-format (string)
-          Specifies  that  the currently supported file formats for EDI trans-
-          formations are JSON and XML .
+       --mapping-type (string)
+          Specify the format for the mapping template: either JSONATA or XSLT.
 
           Possible values:
 
-          o XML
+          o JSONATA
 
-          o JSON
+          o XSLT
 
-          o NOT_USED
-
-       --edi-type (tagged union structure)
-          Specifies the details for the EDI standard that is  being  used  for
-          the  transformer.  Currently, only X12 is supported. X12 is a set of
-          standards and corresponding messages that define  specific  business
-          documents.
+       --template-details (tagged union structure)
+          Describes the details needed for generating  the  template.  Specify
+          the  X12 transaction set and version for which the template is used:
+          currently, we only support X12.
 
           NOTE:
-              This  is a Tagged Union structure. Only one of the following top
-              level keys can be set: x12Details.
+              This is a Tagged Union structure. Only one of the following  top
+              level keys can be set: x12.
 
-          x12Details -> (structure)
-              Returns the details for the EDI standard that is being used  for
-              the  transformer. Currently, only X12 is supported. X12 is a set
-              of standards and corresponding  messages  that  define  specific
-              business documents.
+          x12 -> (structure)
+              A  structure  that contains the X12 transaction set and version.
+              The X12 structure is used when  the  system  transforms  an  EDI
+              (electronic data interchange) file.
+
+              NOTE:
+                 If an EDI input file contains more than one transaction, each
+                 transaction must have the same transaction set  and  version,
+                 for  example  214/4010.  If not, the transformer cannot parse
+                 the file.
 
               transactionSet -> (string)
                  Returns an enumerated type where each value identifies an X12
-                 transaction set. Transaction sets are maintained by  the  X12
+                 transaction  set.  Transaction sets are maintained by the X12
                  Accredited Standards Committee.
 
               version -> (string)
-                 Returns  the version to use for the specified X12 transaction
+                 Returns the version to use for the specified X12  transaction
                  set.
 
        Shorthand Syntax:
 
-          x12Details={transactionSet=string,version=string}
+          x12={transactionSet=string,version=string}
 
        JSON Syntax:
 
           {
-            "x12Details": {
+            "x12": {
               "transactionSet": "X12_110"|"X12_180"|"X12_204"|"X12_210"|"X12_211"|"X12_214"|"X12_215"|"X12_259"|"X12_260"|"X12_266"|"X12_269"|"X12_270"|"X12_271"|"X12_274"|"X12_275"|"X12_276"|"X12_277"|"X12_278"|"X12_310"|"X12_315"|"X12_322"|"X12_404"|"X12_410"|"X12_417"|"X12_421"|"X12_426"|"X12_810"|"X12_820"|"X12_824"|"X12_830"|"X12_832"|"X12_834"|"X12_835"|"X12_837"|"X12_844"|"X12_846"|"X12_849"|"X12_850"|"X12_852"|"X12_855"|"X12_856"|"X12_860"|"X12_861"|"X12_864"|"X12_865"|"X12_869"|"X12_870"|"X12_940"|"X12_945"|"X12_990"|"X12_997"|"X12_999"|"X12_270_X279"|"X12_271_X279"|"X12_275_X210"|"X12_275_X211"|"X12_276_X212"|"X12_277_X212"|"X12_277_X214"|"X12_277_X364"|"X12_278_X217"|"X12_820_X218"|"X12_820_X306"|"X12_824_X186"|"X12_834_X220"|"X12_834_X307"|"X12_834_X318"|"X12_835_X221"|"X12_837_X222"|"X12_837_X223"|"X12_837_X224"|"X12_837_X291"|"X12_837_X292"|"X12_837_X298"|"X12_999_X231",
               "version": "VERSION_4010"|"VERSION_4030"|"VERSION_5010"|"VERSION_5010_HIPAA"
             }
           }
 
-       --cli-input-json (string) Performs service operation based on the  JSON
-       string  provided. The JSON string follows the format provided by --gen-
-       erate-cli-skeleton. If other arguments  are  provided  on  the  command
-       line,  the CLI values will override the JSON-provided values. It is not
+       --cli-input-json  (string) Performs service operation based on the JSON
+       string provided. The JSON string follows the format provided by  --gen-
+       erate-cli-skeleton.  If  other  arguments  are  provided on the command
+       line, the CLI values will override the JSON-provided values. It is  not
        possible to pass arbitrary binary values using a JSON-provided value as
        the string will be taken literally.
 
-       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
+       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
        output without sending an API request. If provided with no value or the
        value input, prints a sample input JSON that can be used as an argument
-       for --cli-input-json. If provided with the value output,  it  validates
+       for  --cli-input-json.  If provided with the value output, it validates
        the command inputs and returns a sample output JSON for that command.
 
 GLOBAL OPTIONS
@@ -129,13 +145,13 @@ GLOBAL OPTIONS
 
        --no-verify-ssl (boolean)
 
-       By  default, the AWS CLI uses SSL when communicating with AWS services.
+       By default, the AWS CLI uses SSL when communicating with AWS  services.
        For each SSL connection, the AWS CLI will verify SSL certificates. This
        option overrides the default behavior of verifying SSL certificates.
 
        --no-paginate (boolean)
 
-       Disable  automatic pagination. If automatic pagination is disabled, the
+       Disable automatic pagination. If automatic pagination is disabled,  the
        AWS CLI will only make one call, for the first page of results.
 
        --output (string)
@@ -176,7 +192,7 @@ GLOBAL OPTIONS
 
        --no-sign-request (boolean)
 
-       Do not sign requests. Credentials will not be loaded if  this  argument
+       Do  not  sign requests. Credentials will not be loaded if this argument
        is provided.
 
        --ca-bundle (string)
@@ -186,21 +202,20 @@ GLOBAL OPTIONS
 
        --cli-read-timeout (int)
 
-       The maximum socket read time in seconds. If the value is set to 0,  the
-       socket  read  will be blocking and not timeout. The default value is 60
+       The  maximum socket read time in seconds. If the value is set to 0, the
+       socket read will be blocking and not timeout. The default value  is  60
        seconds.
 
        --cli-connect-timeout (int)
 
-       The maximum socket connect time in seconds. If the value is set  to  0,
-       the  socket connect will be blocking and not timeout. The default value
+       The  maximum  socket connect time in seconds. If the value is set to 0,
+       the socket connect will be blocking and not timeout. The default  value
        is 60 seconds.
 
 OUTPUT
-       parsedFileContent -> (string)
-          Returns the contents of the input file being tested, parsed  accord-
-          ing to the specified EDI (electronic data interchange) type.
+       mappingTemplate -> (string)
+          Returns a string that represents the mapping template.
 
 
 
-                                                                TEST-PARSING()
+                                             CREATE-STARTER-MAPPING-TEMPLATE()
