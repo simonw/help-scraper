@@ -72,15 +72,6 @@ SYNOPSIS
           [--security-groups <value>]
           [--subnet-id <value>]
           [--user-data <value>]
-          [--additional-info <value>]
-          [--client-token <value>]
-          [--disable-api-termination | --enable-api-termination]
-          [--dry-run | --no-dry-run]
-          [--ebs-optimized | --no-ebs-optimized]
-          [--iam-instance-profile <value>]
-          [--instance-initiated-shutdown-behavior <value>]
-          [--network-interfaces <value>]
-          [--private-ip-address <value>]
           [--elastic-gpu-specification <value>]
           [--elastic-inference-accelerators <value>]
           [--tag-specifications <value>]
@@ -97,6 +88,15 @@ SYNOPSIS
           [--maintenance-options <value>]
           [--disable-api-stop | --no-disable-api-stop]
           [--enable-primary-ipv6 | --no-enable-primary-ipv6]
+          [--dry-run | --no-dry-run]
+          [--disable-api-termination | --enable-api-termination]
+          [--instance-initiated-shutdown-behavior <value>]
+          [--private-ip-address <value>]
+          [--client-token <value>]
+          [--additional-info <value>]
+          [--network-interfaces <value>]
+          [--iam-instance-profile <value>]
+          [--ebs-optimized | --no-ebs-optimized]
           [--count <value>]
           [--secondary-private-ip-addresses <value>]
           [--secondary-private-ip-address-count <value>]
@@ -127,26 +127,6 @@ OPTIONS
           (structure)
               Describes a block device mapping, which defines the EBS  volumes
               and instance store volumes to attach to an instance at launch.
-
-              DeviceName -> (string)
-                 The device name (for example, /dev/sdh or xvdh ).
-
-              VirtualName -> (string)
-                 The virtual device name (ephemeral N). Instance store volumes
-                 are numbered starting from 0. An instance type with 2  avail-
-                 able   instance   store  volumes  can  specify  mappings  for
-                 ephemeral0 and ephemeral1 . The number of available  instance
-                 store volumes depends on the instance type. After you connect
-                 to the instance, you must mount the volume.
-
-                 NVMe instance store volumes are automatically enumerated  and
-                 assigned  a  device name. Including them in your block device
-                 mapping has no effect.
-
-                 Constraints: For M3  instances,  you  must  specify  instance
-                 store  volumes  in the block device mapping for the instance.
-                 When you launch an M3 instance, we ignore any instance  store
-                 volumes specified in the block device mapping for the AMI.
 
               Ebs -> (structure)
                  Parameters  used to automatically set up EBS volumes when the
@@ -285,16 +265,34 @@ OPTIONS
                  removed from the block device mapping regardless of  the  as-
                  signed value.
 
+              DeviceName -> (string)
+                 The device name (for example, /dev/sdh or xvdh ).
+
+              VirtualName -> (string)
+                 The virtual device name (ephemeral N). Instance store volumes
+                 are numbered starting from 0. An instance type with 2  avail-
+                 able   instance   store  volumes  can  specify  mappings  for
+                 ephemeral0 and ephemeral1 . The number of available  instance
+                 store volumes depends on the instance type. After you connect
+                 to the instance, you must mount the volume.
+
+                 NVMe instance store volumes are automatically enumerated  and
+                 assigned  a  device name. Including them in your block device
+                 mapping has no effect.
+
+                 Constraints: For M3  instances,  you  must  specify  instance
+                 store  volumes  in the block device mapping for the instance.
+                 When you launch an M3 instance, we ignore any instance  store
+                 volumes specified in the block device mapping for the AMI.
+
        Shorthand Syntax:
 
-          DeviceName=string,VirtualName=string,Ebs={DeleteOnTermination=boolean,Iops=integer,SnapshotId=string,VolumeSize=integer,VolumeType=string,KmsKeyId=string,Throughput=integer,OutpostArn=string,Encrypted=boolean},NoDevice=string ...
+          Ebs={DeleteOnTermination=boolean,Iops=integer,SnapshotId=string,VolumeSize=integer,VolumeType=string,KmsKeyId=string,Throughput=integer,OutpostArn=string,Encrypted=boolean},NoDevice=string,DeviceName=string,VirtualName=string ...
 
        JSON Syntax:
 
           [
             {
-              "DeviceName": "string",
-              "VirtualName": "string",
               "Ebs": {
                 "DeleteOnTermination": true|false,
                 "Iops": integer,
@@ -306,7 +304,9 @@ OPTIONS
                 "OutpostArn": "string",
                 "Encrypted": true|false
               },
-              "NoDevice": "string"
+              "NoDevice": "string",
+              "DeviceName": "string",
+              "VirtualName": "string"
             }
             ...
           ]
@@ -2062,15 +2062,6 @@ OPTIONS
        --placement (structure)
           The placement for the instance.
 
-          AvailabilityZone -> (string)
-              The Availability Zone of the instance.
-
-              If not specified, an Availability  Zone  will  be  automatically
-              chosen  for you based on the load balancing criteria for the Re-
-              gion.
-
-              This parameter is not supported for CreateFleet .
-
           Affinity -> (string)
               The affinity setting for the instance on the Dedicated Host.
 
@@ -2117,14 +2108,22 @@ OPTIONS
               The  ID  of  the placement group that the instance is in. If you
               specify GroupId , you can't specify GroupName .
 
+          AvailabilityZone -> (string)
+              The Availability Zone of the instance.
+
+              If not specified, an Availability  Zone  will  be  automatically
+              chosen  for you based on the load balancing criteria for the Re-
+              gion.
+
+              This parameter is not supported for CreateFleet .
+
        Shorthand Syntax:
 
-          AvailabilityZone=string,Affinity=string,GroupName=string,PartitionNumber=integer,HostId=string,Tenancy=string,SpreadDomain=string,HostResourceGroupArn=string,GroupId=string
+          Affinity=string,GroupName=string,PartitionNumber=integer,HostId=string,Tenancy=string,SpreadDomain=string,HostResourceGroupArn=string,GroupId=string,AvailabilityZone=string
 
        JSON Syntax:
 
           {
-            "AvailabilityZone": "string",
             "Affinity": "string",
             "GroupName": "string",
             "PartitionNumber": integer,
@@ -2132,7 +2131,8 @@ OPTIONS
             "Tenancy": "default"|"dedicated"|"host",
             "SpreadDomain": "string",
             "HostResourceGroupArn": "string",
-            "GroupId": "string"
+            "GroupId": "string",
+            "AvailabilityZone": "string"
           }
 
        --ramdisk-id (string)
@@ -2188,62 +2188,598 @@ OPTIONS
           base64-encoding might be performed for you.  For  more  information,
           see Work with instance user data .
 
-       --additional-info (string)
-          Reserved.
+       --elastic-gpu-specification (list)
+          An elastic GPU to associate with the instance.
 
-       --client-token (string)
-          Unique,  case-sensitive identifier you provide to ensure the idempo-
-          tency of the request. If you do not specify a client token,  a  ran-
-          domly generated token is used for the request to ensure idempotency.
+          NOTE:
+              Amazon Elastic Graphics reached end of life on January 8, 2024.
 
-          For more information, see Ensuring Idempotency .
+          (structure)
 
-          Constraints: Maximum 64 ASCII characters
+              NOTE:
+                 Amazon  Elastic  Graphics  reached  end of life on January 8,
+                 2024. For workloads that require  graphics  acceleration,  we
+                 recommend that you use Amazon EC2 G4, G5, or G6 instances.
 
-       --disable-api-termination | --enable-api-termination (boolean)
-          If you set this parameter to true , you can't terminate the instance
-          using the Amazon EC2 console, CLI, or API; otherwise,  you  can.  To
-          change  this  attribute  after launch, use ModifyInstanceAttribute .
-          Alternatively, if you set InstanceInitiatedShutdownBehavior to  ter-
-          minate , you can terminate the instance by running the shutdown com-
-          mand from the instance.
+              A specification for an Elastic Graphics accelerator.
 
-          Default: false
-
-       --dry-run | --no-dry-run (boolean)
-          Checks whether you have the required permissions for the  operation,
-          without actually making the request, and provides an error response.
-          If you have the required permissions, the error response is  DryRun-
-          Operation . Otherwise, it is UnauthorizedOperation .
-
-       --ebs-optimized | --no-ebs-optimized (boolean)
-          Indicates whether the instance is optimized for Amazon EBS I/O. This
-          optimization provides dedicated throughput to Amazon EBS and an  op-
-          timized  configuration  stack to provide optimal Amazon EBS I/O per-
-          formance. This optimization isn't available with all instance types.
-          Additional usage charges apply when using an EBS-optimized instance.
-
-          Default: false
-
-       --iam-instance-profile (structure)
-          The name or Amazon Resource Name (ARN) of an IAM instance profile.
-
-          Arn -> (string)
-              The Amazon Resource Name (ARN) of the instance profile.
-
-          Name -> (string)
-              The name of the instance profile.
+              Type -> (string)
+                 The type of Elastic Graphics accelerator.
 
        Shorthand Syntax:
 
-          Arn=string,Name=string
+          Type=string ...
+
+       JSON Syntax:
+
+          [
+            {
+              "Type": "string"
+            }
+            ...
+          ]
+
+       --elastic-inference-accelerators (list)
+          An elastic inference accelerator to associate with the instance.
+
+          NOTE:
+              Amazon Elastic Inference (EI) is no longer available to new cus-
+              tomers. For more information, see Amazon Elastic Inference  FAQs
+              .
+
+          (structure)
+              Describes an elastic inference accelerator.
+
+              Type -> (string)
+                 The  type of elastic inference accelerator. The possible val-
+                 ues are eia1.medium , eia1.large , eia1.xlarge ,  eia2.medium
+                 , eia2.large , and eia2.xlarge .
+
+              Count -> (integer)
+                 The number of elastic inference accelerators to attach to the
+                 instance.
+
+                 Default: 1
+
+       Shorthand Syntax:
+
+          Type=string,Count=integer ...
+
+       JSON Syntax:
+
+          [
+            {
+              "Type": "string",
+              "Count": integer
+            }
+            ...
+          ]
+
+       --tag-specifications (list)
+          The tags to apply to the resources that are created during  instance
+          launch.
+
+          You can specify tags for the following resources only:
+
+          o Instances
+
+          o Volumes
+
+          o Spot Instance requests
+
+          o Network interfaces
+
+          To tag a resource after it has been created, see CreateTags .
+
+          (structure)
+              The  tags to apply to a resource when the resource is being cre-
+              ated. When you specify a tag, you must specify the resource type
+              to tag, otherwise the request will fail.
+
+              NOTE:
+                 The  Valid  Values  lists  all the resource types that can be
+                 tagged. However, the action you're using  might  not  support
+                 tagging  all of these resource types. If you try to tag a re-
+                 source type that is unsupported for the action you're  using,
+                 you'll get an error.
+
+              ResourceType -> (string)
+                 The type of resource to tag on creation.
+
+              Tags -> (list)
+                 The tags to apply to the resource.
+
+                 (structure)
+                     Describes a tag.
+
+                     Key -> (string)
+                        The key of the tag.
+
+                        Constraints:  Tag keys are case-sensitive and accept a
+                        maximum of 127 Unicode characters. May not begin  with
+                        aws: .
+
+                     Value -> (string)
+                        The value of the tag.
+
+                        Constraints:  Tag values are case-sensitive and accept
+                        a maximum of 256 Unicode characters.
+
+       Shorthand Syntax:
+
+          ResourceType=string,Tags=[{Key=string,Value=string},{Key=string,Value=string}] ...
+
+       JSON Syntax:
+
+          [
+            {
+              "ResourceType": "capacity-reservation"|"client-vpn-endpoint"|"customer-gateway"|"carrier-gateway"|"coip-pool"|"dedicated-host"|"dhcp-options"|"egress-only-internet-gateway"|"elastic-ip"|"elastic-gpu"|"export-image-task"|"export-instance-task"|"fleet"|"fpga-image"|"host-reservation"|"image"|"import-image-task"|"import-snapshot-task"|"instance"|"instance-event-window"|"internet-gateway"|"ipam"|"ipam-pool"|"ipam-scope"|"ipv4pool-ec2"|"ipv6pool-ec2"|"key-pair"|"launch-template"|"local-gateway"|"local-gateway-route-table"|"local-gateway-virtual-interface"|"local-gateway-virtual-interface-group"|"local-gateway-route-table-vpc-association"|"local-gateway-route-table-virtual-interface-group-association"|"natgateway"|"network-acl"|"network-interface"|"network-insights-analysis"|"network-insights-path"|"network-insights-access-scope"|"network-insights-access-scope-analysis"|"placement-group"|"prefix-list"|"replace-root-volume-task"|"reserved-instances"|"route-table"|"security-group"|"security-group-rule"|"snapshot"|"spot-fleet-request"|"spot-instances-request"|"subnet"|"subnet-cidr-reservation"|"traffic-mirror-filter"|"traffic-mirror-session"|"traffic-mirror-target"|"transit-gateway"|"transit-gateway-attachment"|"transit-gateway-connect-peer"|"transit-gateway-multicast-domain"|"transit-gateway-policy-table"|"transit-gateway-route-table"|"transit-gateway-route-table-announcement"|"volume"|"vpc"|"vpc-endpoint"|"vpc-endpoint-connection"|"vpc-endpoint-service"|"vpc-endpoint-service-permission"|"vpc-peering-connection"|"vpn-connection"|"vpn-gateway"|"vpc-flow-log"|"capacity-reservation-fleet"|"traffic-mirror-filter-rule"|"vpc-endpoint-connection-device-type"|"verified-access-instance"|"verified-access-group"|"verified-access-endpoint"|"verified-access-policy"|"verified-access-trust-provider"|"vpn-connection-device-type"|"vpc-block-public-access-exclusion"|"ipam-resource-discovery"|"ipam-resource-discovery-association"|"instance-connect-endpoint"|"ipam-external-resource-verification-token",
+              "Tags": [
+                {
+                  "Key": "string",
+                  "Value": "string"
+                }
+                ...
+              ]
+            }
+            ...
+          ]
+
+       --launch-template (structure)
+          The launch template. Any additional parameters that you specify  for
+          the  new instance overwrite the corresponding parameters included in
+          the launch template.
+
+          LaunchTemplateId -> (string)
+              The ID of the launch template.
+
+              You must specify either the launch template  ID  or  the  launch
+              template name, but not both.
+
+          LaunchTemplateName -> (string)
+              The name of the launch template.
+
+              You  must  specify  either  the launch template ID or the launch
+              template name, but not both.
+
+          Version -> (string)
+              The launch template version number, $Latest , or $Default .
+
+              A value of $Latest uses the latest version of  the  launch  tem-
+              plate.
+
+              A  value of $Default uses the default version of the launch tem-
+              plate.
+
+              Default: The default version of the launch template.
+
+       Shorthand Syntax:
+
+          LaunchTemplateId=string,LaunchTemplateName=string,Version=string
 
        JSON Syntax:
 
           {
-            "Arn": "string",
-            "Name": "string"
+            "LaunchTemplateId": "string",
+            "LaunchTemplateName": "string",
+            "Version": "string"
           }
+
+       --instance-market-options (structure)
+          The market (purchasing) option for the instances.
+
+          For  RunInstances , persistent Spot Instance requests are only  sup-
+          ported  when InstanceInterruptionBehavior is set to either hibernate
+          or stop .
+
+          MarketType -> (string)
+              The market type.
+
+          SpotOptions -> (structure)
+              The options for Spot Instances.
+
+              MaxPrice -> (string)
+                 The maximum hourly price that you're willing  to  pay  for  a
+                 Spot  Instance.  We do not recommend using this parameter be-
+                 cause it can lead to increased interruptions. If you  do  not
+                 specify this parameter, you will pay the current Spot price.
+
+                 WARNING:
+                     If  you specify a maximum price, your Spot Instances will
+                     be interrupted more frequently than if you do not specify
+                     this parameter.
+
+              SpotInstanceType -> (string)
+                 The Spot Instance request type. For RunInstances , persistent
+                 Spot Instance requests are only supported when  the  instance
+                 interruption behavior is either hibernate or stop .
+
+              BlockDurationMinutes -> (integer)
+                 Deprecated.
+
+              ValidUntil -> (timestamp)
+                 The  end  date  of  the  request, in UTC format (YYYY -MM -DD
+                 T*HH* :MM :SS Z). Supported only for persistent requests.
+
+                 o For a persistent request, the request remains active  until
+                   the ValidUntil date and time is reached. Otherwise, the re-
+                   quest remains active until you cancel it.
+
+                 o For a one-time request, ValidUntil is  not  supported.  The
+                   request  remains  active  until all instances launch or you
+                   cancel the request.
+
+              InstanceInterruptionBehavior -> (string)
+                 The behavior when a Spot Instance is interrupted.
+
+                 If      Configured      (for       `       HibernationOptions
+                 https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_HibernationOptionsRequest.html`__
+                 ) is set to true , the InstanceInterruptionBehavior parameter
+                 is  automatically set to hibernate . If you set it to stop or
+                 terminate , you'll get an error.
+
+                 If      Configured      (for       `       HibernationOptions
+                 https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_HibernationOptionsRequest.html`__
+                 ) is set to false or null , the  InstanceInterruptionBehavior
+                 parameter  is  automatically  set to terminate . You can also
+                 set it to stop or hibernate .
+
+                 For more information, see Interruption behavior in the Amazon
+                 EC2 User Guide .
+
+       Shorthand Syntax:
+
+          MarketType=string,SpotOptions={MaxPrice=string,SpotInstanceType=string,BlockDurationMinutes=integer,ValidUntil=timestamp,InstanceInterruptionBehavior=string}
+
+       JSON Syntax:
+
+          {
+            "MarketType": "spot"|"capacity-block",
+            "SpotOptions": {
+              "MaxPrice": "string",
+              "SpotInstanceType": "one-time"|"persistent",
+              "BlockDurationMinutes": integer,
+              "ValidUntil": timestamp,
+              "InstanceInterruptionBehavior": "hibernate"|"stop"|"terminate"
+            }
+          }
+
+       --credit-specification (structure)
+          The  credit  option  for  CPU usage of the burstable performance in-
+          stance. Valid values are standard and unlimited . To change this at-
+          tribute  after  launch,  use ModifyInstanceCreditSpecification . For
+          more information, see Burstable performance instances in the  Amazon
+          EC2 User Guide .
+
+          Default: standard (T2 instances) or unlimited (T3/T3a/T4g instances)
+
+          For T3 instances with host tenancy, only standard is supported.
+
+          CpuCredits -> (string)
+              The credit option for CPU usage of a T instance.
+
+              Valid values: standard | unlimited
+
+       Shorthand Syntax:
+
+          CpuCredits=string
+
+       JSON Syntax:
+
+          {
+            "CpuCredits": "string"
+          }
+
+       --cpu-options (structure)
+          The CPU options for the instance. For more information, see Optimize
+          CPU options in the Amazon EC2 User Guide .
+
+          CoreCount -> (integer)
+              The number of CPU cores for the instance.
+
+          ThreadsPerCore -> (integer)
+              The number of threads per CPU core.  To  disable  multithreading
+              for  the instance, specify a value of 1 . Otherwise, specify the
+              default value of 2 .
+
+          AmdSevSnp -> (string)
+              Indicates whether to enable the instance for  AMD  SEV-SNP.  AMD
+              SEV-SNP is supported with M6a, R6a, and C6a instance types only.
+              For more information, see AMD SEV-SNP .
+
+       Shorthand Syntax:
+
+          CoreCount=integer,ThreadsPerCore=integer,AmdSevSnp=string
+
+       JSON Syntax:
+
+          {
+            "CoreCount": integer,
+            "ThreadsPerCore": integer,
+            "AmdSevSnp": "enabled"|"disabled"
+          }
+
+       --capacity-reservation-specification (structure)
+          Information about the Capacity Reservation targeting option. If  you
+          do  not  specify this parameter, the instance's Capacity Reservation
+          preference defaults to open , which enables it to run  in  any  open
+          Capacity  Reservation  that  has matching attributes (instance type,
+          platform, Availability Zone).
+
+          CapacityReservationPreference -> (string)
+              Indicates the instance's Capacity Reservation preferences.  Pos-
+              sible preferences include:
+
+              o open  -  The instance can run in any open Capacity Reservation
+                that has matching attributes (instance type, platform,  Avail-
+                ability Zone).
+
+              o none  -  The instance avoids running in a Capacity Reservation
+                even if one is available. The instance runs  as  an  On-Demand
+                Instance.
+
+          CapacityReservationTarget -> (structure)
+              Information  about  the  target Capacity Reservation or Capacity
+              Reservation group.
+
+              CapacityReservationId -> (string)
+                 The ID of the Capacity Reservation in which to  run  the  in-
+                 stance.
+
+              CapacityReservationResourceGroupArn -> (string)
+                 The  ARN  of the Capacity Reservation resource group in which
+                 to run the instance.
+
+       Shorthand Syntax:
+
+          CapacityReservationPreference=string,CapacityReservationTarget={CapacityReservationId=string,CapacityReservationResourceGroupArn=string}
+
+       JSON Syntax:
+
+          {
+            "CapacityReservationPreference": "open"|"none",
+            "CapacityReservationTarget": {
+              "CapacityReservationId": "string",
+              "CapacityReservationResourceGroupArn": "string"
+            }
+          }
+
+       --hibernation-options (structure)
+          Indicates whether an instance is enabled for hibernation.  This  pa-
+          rameter  is valid only if the instance meets the hibernation prereq-
+          uisites . For more information, see Hibernate your  Amazon  EC2  in-
+          stance in the Amazon EC2 User Guide .
+
+          You  can't enable hibernation and Amazon Web Services Nitro Enclaves
+          on the same instance.
+
+          Configured -> (boolean)
+              Set to true to enable your instance for hibernation.
+
+              For Spot Instances, if you set Configured to true , either  omit
+              the  InstanceInterruptionBehavior parameter (for ` SpotMarketOp-
+              tions
+              https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_SpotMarketOptions.html`__
+              ), or set it to hibernate . When Configured is true:
+
+              o If you omit InstanceInterruptionBehavior , it defaults to  hi-
+                bernate .
+
+              o If  you set InstanceInterruptionBehavior to a value other than
+                hibernate , you'll get an error.
+
+              Default: false
+
+       Shorthand Syntax:
+
+          Configured=boolean
+
+       JSON Syntax:
+
+          {
+            "Configured": true|false
+          }
+
+       --license-specifications (list)
+          The license configurations.
+
+          (structure)
+              Describes a license configuration.
+
+              LicenseConfigurationArn -> (string)
+                 The Amazon Resource Name (ARN) of the license configuration.
+
+       Shorthand Syntax:
+
+          LicenseConfigurationArn=string ...
+
+       JSON Syntax:
+
+          [
+            {
+              "LicenseConfigurationArn": "string"
+            }
+            ...
+          ]
+
+       --metadata-options (structure)
+          The metadata options for the instance.  For  more  information,  see
+          Instance metadata and user data .
+
+          HttpTokens -> (string)
+              Indicates whether IMDSv2 is required.
+
+              o optional  -  IMDSv2  is optional, which means that you can use
+                either IMDSv2 or IMDSv1.
+
+              o required - IMDSv2 is required, which means that IMDSv1 is dis-
+                abled, and you must use IMDSv2.
+
+              Default:
+
+              o If the value of ImdsSupport for the Amazon Machine Image (AMI)
+                for your instance is v2.0 and the account level default is set
+                to no-preference , the default is required .
+
+              o If the value of ImdsSupport for the Amazon Machine Image (AMI)
+                for your instance is v2.0 , but the account level  default  is
+                set to V1 or V2 , the default is optional .
+
+              The  default value can also be affected by other combinations of
+              parameters. For more information, see Order  of  precedence  for
+              instance metadata options in the Amazon EC2 User Guide .
+
+          HttpPutResponseHopLimit -> (integer)
+              The maximum number of hops that the metadata token can travel.
+
+              Possible values: Integers from 1 to 64
+
+          HttpEndpoint -> (string)
+              Enables  or  disables  the  HTTP  metadata  endpoint on your in-
+              stances.
+
+              If you specify a value of disabled , you cannot access your  in-
+              stance metadata.
+
+              Default: enabled
+
+          HttpProtocolIpv6 -> (string)
+              Enables  or disables the IPv6 endpoint for the instance metadata
+              service.
+
+              Default: disabled
+
+          InstanceMetadataTags -> (string)
+              Set to enabled to allow access to instance  tags  from  the  in-
+              stance  metadata. Set to disabled to turn off access to instance
+              tags from the instance metadata. For more information, see  Work
+              with instance tags using the instance metadata .
+
+              Default: disabled
+
+       Shorthand Syntax:
+
+          HttpTokens=string,HttpPutResponseHopLimit=integer,HttpEndpoint=string,HttpProtocolIpv6=string,InstanceMetadataTags=string
+
+       JSON Syntax:
+
+          {
+            "HttpTokens": "optional"|"required",
+            "HttpPutResponseHopLimit": integer,
+            "HttpEndpoint": "disabled"|"enabled",
+            "HttpProtocolIpv6": "disabled"|"enabled",
+            "InstanceMetadataTags": "disabled"|"enabled"
+          }
+
+       --enclave-options (structure)
+          Indicates  whether  the  instance is enabled for Amazon Web Services
+          Nitro Enclaves. For more information, see What is  Amazon  Web  Ser-
+          vices Nitro Enclaves? in the Amazon Web Services Nitro Enclaves User
+          Guide .
+
+          You can't enable Amazon Web Services Nitro Enclaves and  hibernation
+          on the same instance.
+
+          Enabled -> (boolean)
+              To  enable  the instance for Amazon Web Services Nitro Enclaves,
+              set this parameter to true .
+
+       Shorthand Syntax:
+
+          Enabled=boolean
+
+       JSON Syntax:
+
+          {
+            "Enabled": true|false
+          }
+
+       --private-dns-name-options (structure)
+          The options for the instance hostname. The default values are inher-
+          ited  from the subnet. Applies only if creating a network interface,
+          not attaching an existing one.
+
+          HostnameType -> (string)
+              The type of hostname for EC2 instances. For IPv4  only  subnets,
+              an instance DNS name must be based on the instance IPv4 address.
+              For IPv6 only subnets, an instance DNS name must be based on the
+              instance ID. For dual-stack subnets, you can specify whether DNS
+              names use the instance IPv4 address or the instance ID.
+
+          EnableResourceNameDnsARecord -> (boolean)
+              Indicates whether to respond to DNS queries for  instance  host-
+              names with DNS A records.
+
+          EnableResourceNameDnsAAAARecord -> (boolean)
+              Indicates  whether  to respond to DNS queries for instance host-
+              names with DNS AAAA records.
+
+       Shorthand Syntax:
+
+          HostnameType=string,EnableResourceNameDnsARecord=boolean,EnableResourceNameDnsAAAARecord=boolean
+
+       JSON Syntax:
+
+          {
+            "HostnameType": "ip-name"|"resource-name",
+            "EnableResourceNameDnsARecord": true|false,
+            "EnableResourceNameDnsAAAARecord": true|false
+          }
+
+       --maintenance-options (structure)
+          The maintenance and recovery options for the instance.
+
+          AutoRecovery -> (string)
+              Disables the automatic recovery behavior  of  your  instance  or
+              sets  it  to default. For more information, see Simplified auto-
+              matic recovery .
+
+       Shorthand Syntax:
+
+          AutoRecovery=string
+
+       JSON Syntax:
+
+          {
+            "AutoRecovery": "disabled"|"default"
+          }
+
+       --disable-api-stop | --no-disable-api-stop (boolean)
+          Indicates whether an instance is enabled for  stop  protection.  For
+          more information, see Stop protection .
+
+       --enable-primary-ipv6 | --no-enable-primary-ipv6 (boolean)
+          If  youre  launching an instance into a dual-stack or IPv6-only sub-
+          net, you can enable assigning a primary IPv6 address. A primary IPv6
+          address  is an IPv6 GUA address associated with an ENI that you have
+          enabled to use a primary IPv6 address. Use this  option  if  an  in-
+          stance  relies on its IPv6 address not changing. When you launch the
+          instance, Amazon Web Services will automatically assign an IPv6  ad-
+          dress  associated  with  the ENI attached to your instance to be the
+          primary IPv6 address. Once you enable an IPv6 GUA address  to  be  a
+          primary IPv6, you cannot disable it. When you enable an IPv6 GUA ad-
+          dress to be a primary IPv6, the first IPv6 GUA will be made the pri-
+          mary  IPv6  address  until the instance is terminated or the network
+          interface is detached. If you have multiple IPv6  addresses  associ-
+          ated  with an ENI attached to your instance and you enable a primary
+          IPv6 address, the first IPv6 GUA address associated with the ENI be-
+          comes the primary IPv6 address.
+
+       --dry-run | --no-dry-run (boolean)
+          Checks  whether you have the required permissions for the operation,
+          without actually making the request, and provides an error response.
+          If  you have the required permissions, the error response is DryRun-
+          Operation . Otherwise, it is UnauthorizedOperation .
+
+       --disable-api-termination | --enable-api-termination (boolean)
+          If you set this parameter to true , you can't terminate the instance
+          using  the  Amazon  EC2 console, CLI, or API; otherwise, you can. To
+          change this attribute after launch,  use  ModifyInstanceAttribute  .
+          Alternatively,  if you set InstanceInitiatedShutdownBehavior to ter-
+          minate , you can terminate the instance by running the shutdown com-
+          mand from the instance.
+
+          Default: false
 
        --instance-initiated-shutdown-behavior (string)
           Indicates  whether an instance stops or terminates when you initiate
@@ -2257,6 +2793,31 @@ OPTIONS
           o stop
 
           o terminate
+
+       --private-ip-address (string)
+          The primary IPv4 address. You must specify a value from the IPv4 ad-
+          dress range of the subnet.
+
+          Only one private IP address can be designated as primary. You  can't
+          specify  this  option  if you've specified the option to designate a
+          private IP address as the primary IP address in a network  interface
+          specification.  You  cannot  specify this option if you're launching
+          more than one instance in the request.
+
+          You cannot specify this option and the network interfaces option  in
+          the same request.
+
+       --client-token (string)
+          Unique,  case-sensitive identifier you provide to ensure the idempo-
+          tency of the request. If you do not specify a client token,  a  ran-
+          domly generated token is used for the request to ensure idempotency.
+
+          For more information, see Ensuring Idempotency .
+
+          Constraints: Maximum 64 ASCII characters
+
+       --additional-info (string)
+          Reserved.
 
        --network-interfaces (list)
           The network interfaces to associate with the instance.
@@ -2550,595 +3111,34 @@ OPTIONS
             ...
           ]
 
-       --private-ip-address (string)
-          The primary IPv4 address. You must specify a value from the IPv4 ad-
-          dress range of the subnet.
+       --iam-instance-profile (structure)
+          The name or Amazon Resource Name (ARN) of an IAM instance profile.
 
-          Only  one private IP address can be designated as primary. You can't
-          specify this option if you've specified the option  to  designate  a
-          private  IP address as the primary IP address in a network interface
-          specification. You cannot specify this option  if  you're  launching
-          more than one instance in the request.
+          Arn -> (string)
+              The Amazon Resource Name (ARN) of the instance profile.
 
-          You  cannot specify this option and the network interfaces option in
-          the same request.
-
-       --elastic-gpu-specification (list)
-          An elastic GPU to associate with the instance.
-
-          NOTE:
-              Amazon Elastic Graphics reached end of life on January 8, 2024.
-
-          (structure)
-
-              NOTE:
-                 Amazon Elastic Graphics reached end of  life  on  January  8,
-                 2024.  For  workloads  that require graphics acceleration, we
-                 recommend that you use Amazon EC2 G4, G5, or G6 instances.
-
-              A specification for an Elastic Graphics accelerator.
-
-              Type -> (string)
-                 The type of Elastic Graphics accelerator.
+          Name -> (string)
+              The name of the instance profile.
 
        Shorthand Syntax:
 
-          Type=string ...
-
-       JSON Syntax:
-
-          [
-            {
-              "Type": "string"
-            }
-            ...
-          ]
-
-       --elastic-inference-accelerators (list)
-          An elastic inference accelerator to associate with the instance.
-
-          NOTE:
-              Amazon Elastic Inference (EI) is no longer available to new cus-
-              tomers.  For more information, see Amazon Elastic Inference FAQs
-              .
-
-          (structure)
-              Describes an elastic inference accelerator.
-
-              Type -> (string)
-                 The type of elastic inference accelerator. The possible  val-
-                 ues  are eia1.medium , eia1.large , eia1.xlarge , eia2.medium
-                 , eia2.large , and eia2.xlarge .
-
-              Count -> (integer)
-                 The number of elastic inference accelerators to attach to the
-                 instance.
-
-                 Default: 1
-
-       Shorthand Syntax:
-
-          Type=string,Count=integer ...
-
-       JSON Syntax:
-
-          [
-            {
-              "Type": "string",
-              "Count": integer
-            }
-            ...
-          ]
-
-       --tag-specifications (list)
-          The  tags to apply to the resources that are created during instance
-          launch.
-
-          You can specify tags for the following resources only:
-
-          o Instances
-
-          o Volumes
-
-          o Spot Instance requests
-
-          o Network interfaces
-
-          To tag a resource after it has been created, see CreateTags .
-
-          (structure)
-              The tags to apply to a resource when the resource is being  cre-
-              ated. When you specify a tag, you must specify the resource type
-              to tag, otherwise the request will fail.
-
-              NOTE:
-                 The Valid Values lists all the resource  types  that  can  be
-                 tagged.  However,  the  action you're using might not support
-                 tagging all of these resource types. If you try to tag a  re-
-                 source  type that is unsupported for the action you're using,
-                 you'll get an error.
-
-              ResourceType -> (string)
-                 The type of resource to tag on creation.
-
-              Tags -> (list)
-                 The tags to apply to the resource.
-
-                 (structure)
-                     Describes a tag.
-
-                     Key -> (string)
-                        The key of the tag.
-
-                        Constraints: Tag keys are case-sensitive and accept  a
-                        maximum  of 127 Unicode characters. May not begin with
-                        aws: .
-
-                     Value -> (string)
-                        The value of the tag.
-
-                        Constraints: Tag values are case-sensitive and  accept
-                        a maximum of 256 Unicode characters.
-
-       Shorthand Syntax:
-
-          ResourceType=string,Tags=[{Key=string,Value=string},{Key=string,Value=string}] ...
-
-       JSON Syntax:
-
-          [
-            {
-              "ResourceType": "capacity-reservation"|"client-vpn-endpoint"|"customer-gateway"|"carrier-gateway"|"coip-pool"|"dedicated-host"|"dhcp-options"|"egress-only-internet-gateway"|"elastic-ip"|"elastic-gpu"|"export-image-task"|"export-instance-task"|"fleet"|"fpga-image"|"host-reservation"|"image"|"import-image-task"|"import-snapshot-task"|"instance"|"instance-event-window"|"internet-gateway"|"ipam"|"ipam-pool"|"ipam-scope"|"ipv4pool-ec2"|"ipv6pool-ec2"|"key-pair"|"launch-template"|"local-gateway"|"local-gateway-route-table"|"local-gateway-virtual-interface"|"local-gateway-virtual-interface-group"|"local-gateway-route-table-vpc-association"|"local-gateway-route-table-virtual-interface-group-association"|"natgateway"|"network-acl"|"network-interface"|"network-insights-analysis"|"network-insights-path"|"network-insights-access-scope"|"network-insights-access-scope-analysis"|"placement-group"|"prefix-list"|"replace-root-volume-task"|"reserved-instances"|"route-table"|"security-group"|"security-group-rule"|"snapshot"|"spot-fleet-request"|"spot-instances-request"|"subnet"|"subnet-cidr-reservation"|"traffic-mirror-filter"|"traffic-mirror-session"|"traffic-mirror-target"|"transit-gateway"|"transit-gateway-attachment"|"transit-gateway-connect-peer"|"transit-gateway-multicast-domain"|"transit-gateway-policy-table"|"transit-gateway-route-table"|"transit-gateway-route-table-announcement"|"volume"|"vpc"|"vpc-endpoint"|"vpc-endpoint-connection"|"vpc-endpoint-service"|"vpc-endpoint-service-permission"|"vpc-peering-connection"|"vpn-connection"|"vpn-gateway"|"vpc-flow-log"|"capacity-reservation-fleet"|"traffic-mirror-filter-rule"|"vpc-endpoint-connection-device-type"|"verified-access-instance"|"verified-access-group"|"verified-access-endpoint"|"verified-access-policy"|"verified-access-trust-provider"|"vpn-connection-device-type"|"vpc-block-public-access-exclusion"|"ipam-resource-discovery"|"ipam-resource-discovery-association"|"instance-connect-endpoint"|"ipam-external-resource-verification-token",
-              "Tags": [
-                {
-                  "Key": "string",
-                  "Value": "string"
-                }
-                ...
-              ]
-            }
-            ...
-          ]
-
-       --launch-template (structure)
-          The  launch template. Any additional parameters that you specify for
-          the new instance overwrite the corresponding parameters included  in
-          the launch template.
-
-          LaunchTemplateId -> (string)
-              The ID of the launch template.
-
-              You  must  specify  either  the launch template ID or the launch
-              template name, but not both.
-
-          LaunchTemplateName -> (string)
-              The name of the launch template.
-
-              You must specify either the launch template  ID  or  the  launch
-              template name, but not both.
-
-          Version -> (string)
-              The launch template version number, $Latest , or $Default .
-
-              A  value  of  $Latest uses the latest version of the launch tem-
-              plate.
-
-              A value of $Default uses the default version of the launch  tem-
-              plate.
-
-              Default: The default version of the launch template.
-
-       Shorthand Syntax:
-
-          LaunchTemplateId=string,LaunchTemplateName=string,Version=string
+          Arn=string,Name=string
 
        JSON Syntax:
 
           {
-            "LaunchTemplateId": "string",
-            "LaunchTemplateName": "string",
-            "Version": "string"
+            "Arn": "string",
+            "Name": "string"
           }
 
-       --instance-market-options (structure)
-          The market (purchasing) option for the instances.
-
-          For   RunInstances , persistent Spot Instance requests are only sup-
-          ported when InstanceInterruptionBehavior is set to either  hibernate
-          or stop .
-
-          MarketType -> (string)
-              The market type.
-
-          SpotOptions -> (structure)
-              The options for Spot Instances.
-
-              MaxPrice -> (string)
-                 The  maximum  hourly  price  that you're willing to pay for a
-                 Spot Instance. We do not recommend using this  parameter  be-
-                 cause  it  can lead to increased interruptions. If you do not
-                 specify this parameter, you will pay the current Spot price.
-
-                 WARNING:
-                     If you specify a maximum price, your Spot Instances  will
-                     be interrupted more frequently than if you do not specify
-                     this parameter.
-
-              SpotInstanceType -> (string)
-                 The Spot Instance request type. For RunInstances , persistent
-                 Spot  Instance  requests are only supported when the instance
-                 interruption behavior is either hibernate or stop .
-
-              BlockDurationMinutes -> (integer)
-                 Deprecated.
-
-              ValidUntil -> (timestamp)
-                 The end date of the request, in  UTC  format  (YYYY  -MM  -DD
-                 T*HH* :MM :SS Z). Supported only for persistent requests.
-
-                 o For  a persistent request, the request remains active until
-                   the ValidUntil date and time is reached. Otherwise, the re-
-                   quest remains active until you cancel it.
-
-                 o For  a  one-time  request, ValidUntil is not supported. The
-                   request remains active until all instances  launch  or  you
-                   cancel the request.
-
-              InstanceInterruptionBehavior -> (string)
-                 The behavior when a Spot Instance is interrupted.
-
-                 If       Configured       (for      `      HibernationOptions
-                 https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_HibernationOptionsRequest.html`__
-                 ) is set to true , the InstanceInterruptionBehavior parameter
-                 is automatically set to hibernate . If you set it to stop  or
-                 terminate , you'll get an error.
-
-                 If       Configured       (for      `      HibernationOptions
-                 https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_HibernationOptionsRequest.html`__
-                 )  is set to false or null , the InstanceInterruptionBehavior
-                 parameter is automatically set to terminate .  You  can  also
-                 set it to stop or hibernate .
-
-                 For more information, see Interruption behavior in the Amazon
-                 EC2 User Guide .
-
-       Shorthand Syntax:
-
-          MarketType=string,SpotOptions={MaxPrice=string,SpotInstanceType=string,BlockDurationMinutes=integer,ValidUntil=timestamp,InstanceInterruptionBehavior=string}
-
-       JSON Syntax:
-
-          {
-            "MarketType": "spot"|"capacity-block",
-            "SpotOptions": {
-              "MaxPrice": "string",
-              "SpotInstanceType": "one-time"|"persistent",
-              "BlockDurationMinutes": integer,
-              "ValidUntil": timestamp,
-              "InstanceInterruptionBehavior": "hibernate"|"stop"|"terminate"
-            }
-          }
-
-       --credit-specification (structure)
-          The credit option for CPU usage of  the  burstable  performance  in-
-          stance. Valid values are standard and unlimited . To change this at-
-          tribute after launch, use  ModifyInstanceCreditSpecification  .  For
-          more  information, see Burstable performance instances in the Amazon
-          EC2 User Guide .
-
-          Default: standard (T2 instances) or unlimited (T3/T3a/T4g instances)
-
-          For T3 instances with host tenancy, only standard is supported.
-
-          CpuCredits -> (string)
-              The credit option for CPU usage of a T instance.
-
-              Valid values: standard | unlimited
-
-       Shorthand Syntax:
-
-          CpuCredits=string
-
-       JSON Syntax:
-
-          {
-            "CpuCredits": "string"
-          }
-
-       --cpu-options (structure)
-          The CPU options for the instance. For more information, see Optimize
-          CPU options in the Amazon EC2 User Guide .
-
-          CoreCount -> (integer)
-              The number of CPU cores for the instance.
-
-          ThreadsPerCore -> (integer)
-              The  number  of  threads per CPU core. To disable multithreading
-              for the instance, specify a value of 1 . Otherwise, specify  the
-              default value of 2 .
-
-          AmdSevSnp -> (string)
-              Indicates  whether  to  enable the instance for AMD SEV-SNP. AMD
-              SEV-SNP is supported with M6a, R6a, and C6a instance types only.
-              For more information, see AMD SEV-SNP .
-
-       Shorthand Syntax:
-
-          CoreCount=integer,ThreadsPerCore=integer,AmdSevSnp=string
-
-       JSON Syntax:
-
-          {
-            "CoreCount": integer,
-            "ThreadsPerCore": integer,
-            "AmdSevSnp": "enabled"|"disabled"
-          }
-
-       --capacity-reservation-specification (structure)
-          Information  about the Capacity Reservation targeting option. If you
-          do not specify this parameter, the instance's  Capacity  Reservation
-          preference  defaults  to  open , which enables it to run in any open
-          Capacity Reservation that has matching  attributes  (instance  type,
-          platform, Availability Zone).
-
-          CapacityReservationPreference -> (string)
-              Indicates  the instance's Capacity Reservation preferences. Pos-
-              sible preferences include:
-
-              o open - The instance can run in any open  Capacity  Reservation
-                that  has matching attributes (instance type, platform, Avail-
-                ability Zone).
-
-              o none - The instance avoids running in a  Capacity  Reservation
-                even  if  one  is available. The instance runs as an On-Demand
-                Instance.
-
-          CapacityReservationTarget -> (structure)
-              Information about the target Capacity  Reservation  or  Capacity
-              Reservation group.
-
-              CapacityReservationId -> (string)
-                 The  ID  of  the Capacity Reservation in which to run the in-
-                 stance.
-
-              CapacityReservationResourceGroupArn -> (string)
-                 The ARN of the Capacity Reservation resource group  in  which
-                 to run the instance.
-
-       Shorthand Syntax:
-
-          CapacityReservationPreference=string,CapacityReservationTarget={CapacityReservationId=string,CapacityReservationResourceGroupArn=string}
-
-       JSON Syntax:
-
-          {
-            "CapacityReservationPreference": "open"|"none",
-            "CapacityReservationTarget": {
-              "CapacityReservationId": "string",
-              "CapacityReservationResourceGroupArn": "string"
-            }
-          }
-
-       --hibernation-options (structure)
-          Indicates  whether  an instance is enabled for hibernation. This pa-
-          rameter is valid only if the instance meets the hibernation  prereq-
-          uisites  .  For  more information, see Hibernate your Amazon EC2 in-
-          stance in the Amazon EC2 User Guide .
-
-          You can't enable hibernation and Amazon Web Services Nitro  Enclaves
-          on the same instance.
-
-          Configured -> (boolean)
-              Set to true to enable your instance for hibernation.
-
-              For  Spot Instances, if you set Configured to true , either omit
-              the InstanceInterruptionBehavior parameter (for `  SpotMarketOp-
-              tions
-              https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_SpotMarketOptions.html`__
-              ), or set it to hibernate . When Configured is true:
-
-              o If  you omit InstanceInterruptionBehavior , it defaults to hi-
-                bernate .
-
-              o If you set InstanceInterruptionBehavior to a value other  than
-                hibernate , you'll get an error.
-
-              Default: false
-
-       Shorthand Syntax:
-
-          Configured=boolean
-
-       JSON Syntax:
-
-          {
-            "Configured": true|false
-          }
-
-       --license-specifications (list)
-          The license configurations.
-
-          (structure)
-              Describes a license configuration.
-
-              LicenseConfigurationArn -> (string)
-                 The Amazon Resource Name (ARN) of the license configuration.
-
-       Shorthand Syntax:
-
-          LicenseConfigurationArn=string ...
-
-       JSON Syntax:
-
-          [
-            {
-              "LicenseConfigurationArn": "string"
-            }
-            ...
-          ]
-
-       --metadata-options (structure)
-          The  metadata  options  for  the instance. For more information, see
-          Instance metadata and user data .
-
-          HttpTokens -> (string)
-              Indicates whether IMDSv2 is required.
-
-              o optional - IMDSv2 is optional, which means that  you  can  use
-                either IMDSv2 or IMDSv1.
-
-              o required - IMDSv2 is required, which means that IMDSv1 is dis-
-                abled, and you must use IMDSv2.
-
-              Default:
-
-              o If the value of ImdsSupport for the Amazon Machine Image (AMI)
-                for your instance is v2.0 and the account level default is set
-                to no-preference , the default is required .
-
-              o If the value of ImdsSupport for the Amazon Machine Image (AMI)
-                for  your  instance is v2.0 , but the account level default is
-                set to V1 or V2 , the default is optional .
-
-              The default value can also be affected by other combinations  of
-              parameters.  For  more  information, see Order of precedence for
-              instance metadata options in the Amazon EC2 User Guide .
-
-          HttpPutResponseHopLimit -> (integer)
-              The maximum number of hops that the metadata token can travel.
-
-              Possible values: Integers from 1 to 64
-
-          HttpEndpoint -> (string)
-              Enables or disables the  HTTP  metadata  endpoint  on  your  in-
-              stances.
-
-              If  you specify a value of disabled , you cannot access your in-
-              stance metadata.
-
-              Default: enabled
-
-          HttpProtocolIpv6 -> (string)
-              Enables or disables the IPv6 endpoint for the instance  metadata
-              service.
-
-              Default: disabled
-
-          InstanceMetadataTags -> (string)
-              Set  to  enabled  to  allow access to instance tags from the in-
-              stance metadata. Set to disabled to turn off access to  instance
-              tags  from the instance metadata. For more information, see Work
-              with instance tags using the instance metadata .
-
-              Default: disabled
-
-       Shorthand Syntax:
-
-          HttpTokens=string,HttpPutResponseHopLimit=integer,HttpEndpoint=string,HttpProtocolIpv6=string,InstanceMetadataTags=string
-
-       JSON Syntax:
-
-          {
-            "HttpTokens": "optional"|"required",
-            "HttpPutResponseHopLimit": integer,
-            "HttpEndpoint": "disabled"|"enabled",
-            "HttpProtocolIpv6": "disabled"|"enabled",
-            "InstanceMetadataTags": "disabled"|"enabled"
-          }
-
-       --enclave-options (structure)
-          Indicates whether the instance is enabled for  Amazon  Web  Services
-          Nitro  Enclaves.  For  more information, see What is Amazon Web Ser-
-          vices Nitro Enclaves? in the Amazon Web Services Nitro Enclaves User
-          Guide .
-
-          You  can't enable Amazon Web Services Nitro Enclaves and hibernation
-          on the same instance.
-
-          Enabled -> (boolean)
-              To enable the instance for Amazon Web Services  Nitro  Enclaves,
-              set this parameter to true .
-
-       Shorthand Syntax:
-
-          Enabled=boolean
-
-       JSON Syntax:
-
-          {
-            "Enabled": true|false
-          }
-
-       --private-dns-name-options (structure)
-          The options for the instance hostname. The default values are inher-
-          ited from the subnet. Applies only if creating a network  interface,
-          not attaching an existing one.
-
-          HostnameType -> (string)
-              The  type  of hostname for EC2 instances. For IPv4 only subnets,
-              an instance DNS name must be based on the instance IPv4 address.
-              For IPv6 only subnets, an instance DNS name must be based on the
-              instance ID. For dual-stack subnets, you can specify whether DNS
-              names use the instance IPv4 address or the instance ID.
-
-          EnableResourceNameDnsARecord -> (boolean)
-              Indicates  whether  to respond to DNS queries for instance host-
-              names with DNS A records.
-
-          EnableResourceNameDnsAAAARecord -> (boolean)
-              Indicates whether to respond to DNS queries for  instance  host-
-              names with DNS AAAA records.
-
-       Shorthand Syntax:
-
-          HostnameType=string,EnableResourceNameDnsARecord=boolean,EnableResourceNameDnsAAAARecord=boolean
-
-       JSON Syntax:
-
-          {
-            "HostnameType": "ip-name"|"resource-name",
-            "EnableResourceNameDnsARecord": true|false,
-            "EnableResourceNameDnsAAAARecord": true|false
-          }
-
-       --maintenance-options (structure)
-          The maintenance and recovery options for the instance.
-
-          AutoRecovery -> (string)
-              Disables  the  automatic  recovery  behavior of your instance or
-              sets it to default. For more information, see  Simplified  auto-
-              matic recovery .
-
-       Shorthand Syntax:
-
-          AutoRecovery=string
-
-       JSON Syntax:
-
-          {
-            "AutoRecovery": "disabled"|"default"
-          }
-
-       --disable-api-stop | --no-disable-api-stop (boolean)
-          Indicates  whether  an  instance is enabled for stop protection. For
-          more information, see Stop protection .
-
-       --enable-primary-ipv6 | --no-enable-primary-ipv6 (boolean)
-          If youre launching an instance into a dual-stack or  IPv6-only  sub-
-          net, you can enable assigning a primary IPv6 address. A primary IPv6
-          address is an IPv6 GUA address associated with an ENI that you  have
-          enabled  to  use  a  primary IPv6 address. Use this option if an in-
-          stance relies on its IPv6 address not changing. When you launch  the
-          instance,  Amazon Web Services will automatically assign an IPv6 ad-
-          dress associated with the ENI attached to your instance  to  be  the
-          primary  IPv6  address.  Once you enable an IPv6 GUA address to be a
-          primary IPv6, you cannot disable it. When you enable an IPv6 GUA ad-
-          dress to be a primary IPv6, the first IPv6 GUA will be made the pri-
-          mary IPv6 address until the instance is terminated  or  the  network
-          interface  is  detached. If you have multiple IPv6 addresses associ-
-          ated with an ENI attached to your instance and you enable a  primary
-          IPv6 address, the first IPv6 GUA address associated with the ENI be-
-          comes the primary IPv6 address.
+       --ebs-optimized | --no-ebs-optimized (boolean)
+          Indicates whether the instance is optimized for Amazon EBS I/O. This
+          optimization  provides dedicated throughput to Amazon EBS and an op-
+          timized configuration stack to provide optimal Amazon EBS  I/O  per-
+          formance. This optimization isn't available with all instance types.
+          Additional usage charges apply when using an EBS-optimized instance.
+
+          Default: false
 
        --count (string)
           Number of instances to launch. If a single number is provided, it is
@@ -3500,207 +3500,34 @@ EXAMPLES
        Burstable performance instances in the Amazon EC2 User Guide.
 
 OUTPUT
+       ReservationId -> (string)
+          The ID of the reservation.
+
+       OwnerId -> (string)
+          The ID of the Amazon Web Services account that owns the reservation.
+
+       RequesterId -> (string)
+          The ID of the requester that launched the instances on  your  behalf
+          (for  example,  Amazon Web Services Management Console or Auto Scal-
+          ing).
+
        Groups -> (list)
           Not supported.
 
           (structure)
               Describes a security group.
 
-              GroupName -> (string)
-                 The name of the security group.
-
               GroupId -> (string)
                  The ID of the security group.
+
+              GroupName -> (string)
+                 The name of the security group.
 
        Instances -> (list)
           The instances.
 
           (structure)
               Describes an instance.
-
-              AmiLaunchIndex -> (integer)
-                 The AMI launch index, which can be used to find this instance
-                 in the launch group.
-
-              ImageId -> (string)
-                 The ID of the AMI used to launch the instance.
-
-              InstanceId -> (string)
-                 The ID of the instance.
-
-              InstanceType -> (string)
-                 The instance type.
-
-              KernelId -> (string)
-                 The kernel associated with this instance, if applicable.
-
-              KeyName -> (string)
-                 The  name of the key pair, if this instance was launched with
-                 an associated key pair.
-
-              LaunchTime -> (timestamp)
-                 The time the instance was launched.
-
-              Monitoring -> (structure)
-                 The monitoring for the instance.
-
-                 State -> (string)
-                     Indicates whether detailed monitoring is enabled.  Other-
-                     wise, basic monitoring is enabled.
-
-              Placement -> (structure)
-                 The location where the instance launched, if applicable.
-
-                 AvailabilityZone -> (string)
-                     The Availability Zone of the instance.
-
-                     If  not specified, an Availability Zone will be automati-
-                     cally chosen for you based on the load balancing criteria
-                     for the Region.
-
-                     This parameter is not supported for CreateFleet .
-
-                 Affinity -> (string)
-                     The  affinity  setting  for the instance on the Dedicated
-                     Host.
-
-                     This  parameter  is  not  supported  for  CreateFleet  or
-                     ImportInstance .
-
-                 GroupName -> (string)
-                     The  name of the placement group that the instance is in.
-                     If you specify GroupName , you can't specify GroupId .
-
-                 PartitionNumber -> (integer)
-                     The number of the partition  that  the  instance  is  in.
-                     Valid only if the placement group strategy is set to par-
-                     tition .
-
-                     This parameter is not supported for CreateFleet .
-
-                 HostId -> (string)
-                     The ID of the Dedicated Host on which  the  instance  re-
-                     sides.
-
-                     This  parameter  is  not  supported  for  CreateFleet  or
-                     ImportInstance .
-
-                 Tenancy -> (string)
-                     The tenancy of the instance. An instance with  a  tenancy
-                     of dedicated runs on single-tenant hardware.
-
-                     This  parameter  is  not  supported for CreateFleet . The
-                     host tenancy is not supported for ImportInstance  or  for
-                     T3  instances  that  are configured for the unlimited CPU
-                     credit option.
-
-                 SpreadDomain -> (string)
-                     Reserved for future use.
-
-                 HostResourceGroupArn -> (string)
-                     The ARN of the host resource group in which to launch the
-                     instances.
-
-                     If  you  specify  this parameter, either omit the Tenancy
-                     parameter or set it to host .
-
-                     This parameter is not supported for CreateFleet .
-
-                 GroupId -> (string)
-                     The ID of the placement group that the instance is in. If
-                     you specify GroupId , you can't specify GroupName .
-
-              Platform -> (string)
-                 The  platform.  This  value is windows for Windows instances;
-                 otherwise, it is empty.
-
-              PrivateDnsName -> (string)
-                 [IPv4 only] The private DNS hostname name assigned to the in-
-                 stance.  This DNS hostname can only be used inside the Amazon
-                 EC2 network. This name is not available  until  the  instance
-                 enters the running state.
-
-                 The  Amazon-provided DNS server resolves Amazon-provided pri-
-                 vate DNS hostnames if you've enabled DNS resolution  and  DNS
-                 hostnames  in  your VPC. If you are not using the Amazon-pro-
-                 vided DNS server in your VPC, your custom domain name servers
-                 must resolve the hostname as appropriate.
-
-              PrivateIpAddress -> (string)
-                 The private IPv4 address assigned to the instance.
-
-              ProductCodes -> (list)
-                 The product codes attached to this instance, if applicable.
-
-                 (structure)
-                     Describes a product code.
-
-                     ProductCodeId -> (string)
-                        The product code.
-
-                     ProductCodeType -> (string)
-                        The type of product code.
-
-              PublicDnsName -> (string)
-                 [IPv4  only]  The  public  DNS name assigned to the instance.
-                 This name is not available until the instance enters the run-
-                 ning state. This name is only available if you've enabled DNS
-                 hostnames for your VPC.
-
-              PublicIpAddress -> (string)
-                 The public IPv4 address, or the Carrier IP  address  assigned
-                 to the instance, if applicable.
-
-                 A  Carrier IP address only applies to an instance launched in
-                 a subnet associated with a Wavelength Zone.
-
-              RamdiskId -> (string)
-                 The RAM disk associated with this instance, if applicable.
-
-              State -> (structure)
-                 The current state of the instance.
-
-                 Code -> (integer)
-                     The state of the instance as a 16-bit unsigned integer.
-
-                     The high  byte  is  all  of  the  bits  between  2^8  and
-                     (2^16)-1,  which  equals  decimal  values between 256 and
-                     65,535. These numerical values are used for internal pur-
-                     poses and should be ignored.
-
-                     The  low byte is all of the bits between 2^0 and (2^8)-1,
-                     which equals decimal values between 0 and 255.
-
-                     The valid values for instance-state-code will all  be  in
-                     the range of the low byte and they are:
-
-                     o 0 : pending
-
-                     o 16 : running
-
-                     o 32 : shutting-down
-
-                     o 48 : terminated
-
-                     o 64 : stopping
-
-                     o 80 : stopped
-
-                     You  can ignore the high byte value by zeroing out all of
-                     the bits above 2^8 or 256 in decimal.
-
-                 Name -> (string)
-                     The current state of the instance.
-
-              StateTransitionReason -> (string)
-                 The reason for the most recent state transition.  This  might
-                 be an empty string.
-
-              SubnetId -> (string)
-                 The ID of the subnet in which the instance is running.
-
-              VpcId -> (string)
-                 The ID of the VPC in which the instance is running.
 
               Architecture -> (string)
                  The architecture of the image.
@@ -3715,14 +3542,14 @@ OUTPUT
                         The device name (for example, /dev/sdh or xvdh ).
 
                      Ebs -> (structure)
-                        Parameters  used  to  automatically set up EBS volumes
+                        Parameters used to automatically set  up  EBS  volumes
                         when the instance is launched.
 
                         AttachTime -> (timestamp)
                             The time stamp when the attachment initiated.
 
                         DeleteOnTermination -> (boolean)
-                            Indicates whether the volume  is  deleted  on  in-
+                            Indicates  whether  the  volume  is deleted on in-
                             stance termination.
 
                         Status -> (string)
@@ -3736,21 +3563,21 @@ OUTPUT
                             the volume is attached.
 
                         VolumeOwnerId -> (string)
-                            The ID of the Amazon  Web  Services  account  that
+                            The  ID  of  the  Amazon Web Services account that
                             owns the volume.
 
-                            This  parameter  is returned only for volumes that
+                            This parameter is returned only for  volumes  that
                             are attached to Fargate tasks.
 
               ClientToken -> (string)
-                 The idempotency token you provided when you launched the  in-
+                 The  idempotency token you provided when you launched the in-
                  stance, if applicable.
 
               EbsOptimized -> (boolean)
-                 Indicates  whether  the  instance is optimized for Amazon EBS
-                 I/O. This optimization provides dedicated throughput to  Ama-
+                 Indicates whether the instance is optimized  for  Amazon  EBS
+                 I/O.  This optimization provides dedicated throughput to Ama-
                  zon EBS and an optimized configuration stack to provide opti-
-                 mal I/O performance. This optimization isn't  available  with
+                 mal  I/O  performance. This optimization isn't available with
                  all instance types. Additional usage charges apply when using
                  an EBS Optimized instance.
 
@@ -3758,7 +3585,7 @@ OUTPUT
                  Specifies whether enhanced networking with ENA is enabled.
 
               Hypervisor -> (string)
-                 The hypervisor type of the instance. The value  xen  is  used
+                 The  hypervisor  type  of the instance. The value xen is used
                  for both Xen and Nitro hypervisors.
 
               IamInstanceProfile -> (structure)
@@ -3772,7 +3599,7 @@ OUTPUT
                      The ID of the instance profile.
 
               InstanceLifecycle -> (string)
-                 Indicates whether this is a Spot Instance or a Scheduled  In-
+                 Indicates  whether this is a Spot Instance or a Scheduled In-
                  stance.
 
               ElasticGpuAssociations -> (list)
@@ -3780,8 +3607,8 @@ OUTPUT
 
                  NOTE:
                      Amazon Elastic Graphics reached end of life on January 8,
-                     2024. For workloads that require  graphics  acceleration,
-                     we  recommend  that  you use Amazon EC2 G4ad, G4dn, or G5
+                     2024.  For  workloads that require graphics acceleration,
+                     we recommend that you use Amazon EC2 G4ad,  G4dn,  or  G5
                      instances.
 
                  (structure)
@@ -3789,10 +3616,10 @@ OUTPUT
                      NOTE:
                         Amazon Elastic Graphics reached end of life on January
                         8, 2024. For workloads that require graphics accelera-
-                        tion, we recommend that you use Amazon EC2 G4, G5,  or
+                        tion,  we recommend that you use Amazon EC2 G4, G5, or
                         G6 instances.
 
-                     Describes  the  association  between  an  instance and an
+                     Describes the association  between  an  instance  and  an
                      Elastic Graphics accelerator.
 
                      ElasticGpuId -> (string)
@@ -3802,23 +3629,23 @@ OUTPUT
                         The ID of the association.
 
                      ElasticGpuAssociationState -> (string)
-                        The state of the association between the instance  and
+                        The  state of the association between the instance and
                         the Elastic Graphics accelerator.
 
                      ElasticGpuAssociationTime -> (string)
-                        The  time the Elastic Graphics accelerator was associ-
+                        The time the Elastic Graphics accelerator was  associ-
                         ated with the instance.
 
               ElasticInferenceAcceleratorAssociations -> (list)
-                 The elastic inference accelerator  associated  with  the  in-
+                 The  elastic  inference  accelerator  associated with the in-
                  stance.
 
                  (structure)
-                     Describes  the  association  between  an  instance and an
+                     Describes the association  between  an  instance  and  an
                      elastic inference accelerator.
 
                      ElasticInferenceAcceleratorArn -> (string)
-                        The Amazon Resource Name (ARN) of the  elastic  infer-
+                        The  Amazon  Resource Name (ARN) of the elastic infer-
                         ence accelerator.
 
                      ElasticInferenceAcceleratorAssociationId -> (string)
@@ -3838,7 +3665,7 @@ OUTPUT
                      Describes a network interface.
 
                      Association -> (structure)
-                        The association information for an Elastic IPv4  asso-
+                        The  association information for an Elastic IPv4 asso-
                         ciated with the network interface.
 
                         CarrierIp -> (string)
@@ -3846,7 +3673,7 @@ OUTPUT
                             interface.
 
                         CustomerOwnedIp -> (string)
-                            The customer-owned IP address associated with  the
+                            The  customer-owned IP address associated with the
                             network interface.
 
                         IpOwnerId -> (string)
@@ -3856,7 +3683,7 @@ OUTPUT
                             The public DNS name.
 
                         PublicIp -> (string)
-                            The  public IP address or Elastic IP address bound
+                            The public IP address or Elastic IP address  bound
                             to the network interface.
 
                      Attachment -> (structure)
@@ -3873,7 +3700,7 @@ OUTPUT
                             when the instance is terminated.
 
                         DeviceIndex -> (integer)
-                            The  index  of  the device on the instance for the
+                            The index of the device on the  instance  for  the
                             network interface attachment.
 
                         Status -> (string)
@@ -3883,19 +3710,19 @@ OUTPUT
                             The index of the network card.
 
                         EnaSrdSpecification -> (structure)
-                            Contains the ENA Express settings for the  network
+                            Contains  the ENA Express settings for the network
                             interface that's attached to the instance.
 
                             EnaSrdEnabled -> (boolean)
-                               Indicates  whether  ENA  Express is enabled for
+                               Indicates whether ENA Express  is  enabled  for
                                the network interface.
 
                             EnaSrdUdpSpecification -> (structure)
                                Configures ENA Express for UDP network traffic.
 
                                EnaSrdUdpEnabled -> (boolean)
-                                   Indicates whether UDP traffic to  and  from
-                                   the  instance  uses ENA Express. To specify
+                                   Indicates  whether  UDP traffic to and from
+                                   the instance uses ENA Express.  To  specify
                                    this setting, you must first enable ENA Ex-
                                    press.
 
@@ -3908,14 +3735,14 @@ OUTPUT
                         (structure)
                             Describes a security group.
 
-                            GroupName -> (string)
-                               The name of the security group.
-
                             GroupId -> (string)
                                The ID of the security group.
 
+                            GroupName -> (string)
+                               The name of the security group.
+
                      Ipv6Addresses -> (list)
-                        The  IPv6 addresses associated with the network inter-
+                        The IPv6 addresses associated with the network  inter-
                         face.
 
                         (structure)
@@ -3926,12 +3753,12 @@ OUTPUT
 
                             IsPrimaryIpv6 -> (boolean)
                                Determines if an IPv6 address associated with a
-                               network  interface is the primary IPv6 address.
-                               When you enable an IPv6 GUA  address  to  be  a
-                               primary  IPv6,  the first IPv6 GUA will be made
-                               the primary IPv6 address until the instance  is
-                               terminated  or  the  network  interface  is de-
-                               tached. For more information, see  RunInstances
+                               network interface is the primary IPv6  address.
+                               When  you  enable  an  IPv6 GUA address to be a
+                               primary IPv6, the first IPv6 GUA will  be  made
+                               the  primary IPv6 address until the instance is
+                               terminated or  the  network  interface  is  de-
+                               tached.  For more information, see RunInstances
                                .
 
                      MacAddress -> (string)
@@ -3948,7 +3775,7 @@ OUTPUT
                         The private DNS name.
 
                      PrivateIpAddress -> (string)
-                        The IPv4 address of the network interface  within  the
+                        The  IPv4  address of the network interface within the
                         subnet.
 
                      PrivateIpAddresses -> (list)
@@ -3959,19 +3786,19 @@ OUTPUT
                             Describes a private IPv4 address.
 
                             Association -> (structure)
-                               The association information for an  Elastic  IP
+                               The  association  information for an Elastic IP
                                address for the network interface.
 
                                CarrierIp -> (string)
-                                   The  carrier IP address associated with the
+                                   The carrier IP address associated with  the
                                    network interface.
 
                                CustomerOwnedIp -> (string)
-                                   The customer-owned  IP  address  associated
+                                   The  customer-owned  IP  address associated
                                    with the network interface.
 
                                IpOwnerId -> (string)
-                                   The  ID  of the owner of the Elastic IP ad-
+                                   The ID of the owner of the Elastic  IP  ad-
                                    dress.
 
                                PublicDnsName -> (string)
@@ -3983,18 +3810,18 @@ OUTPUT
 
                             Primary -> (boolean)
                                Indicates whether this IPv4 address is the pri-
-                               mary private IP address of the  network  inter-
+                               mary  private  IP address of the network inter-
                                face.
 
                             PrivateDnsName -> (string)
                                The private IPv4 DNS name.
 
                             PrivateIpAddress -> (string)
-                               The  private IPv4 address of the network inter-
+                               The private IPv4 address of the network  inter-
                                face.
 
                      SourceDestCheck -> (boolean)
-                        Indicates whether source/destination checking  is  en-
+                        Indicates  whether  source/destination checking is en-
                         abled.
 
                      Status -> (string)
@@ -4012,49 +3839,49 @@ OUTPUT
                         Valid values: interface | efa | trunk
 
                      Ipv4Prefixes -> (list)
-                        The  IPv4  delegated prefixes that are assigned to the
+                        The IPv4 delegated prefixes that are assigned  to  the
                         network interface.
 
                         (structure)
                             Information about an IPv4 prefix.
 
                             Ipv4Prefix -> (string)
-                               One or more IPv4 prefixes assigned to the  net-
+                               One  or more IPv4 prefixes assigned to the net-
                                work interface.
 
                      Ipv6Prefixes -> (list)
-                        The  IPv6  delegated prefixes that are assigned to the
+                        The IPv6 delegated prefixes that are assigned  to  the
                         network interface.
 
                         (structure)
                             Information about an IPv6 prefix.
 
                             Ipv6Prefix -> (string)
-                               One or more IPv6 prefixes assigned to the  net-
+                               One  or more IPv6 prefixes assigned to the net-
                                work interface.
 
                      ConnectionTrackingConfiguration -> (structure)
-                        A  security  group  connection  tracking configuration
-                        that enables you to set  the  timeout  for  connection
+                        A security  group  connection  tracking  configuration
+                        that  enables  you  to  set the timeout for connection
                         tracking on an Elastic network interface. For more in-
-                        formation, see Connection  tracking  timeouts  in  the
+                        formation,  see  Connection  tracking  timeouts in the
                         Amazon EC2 User Guide .
 
                         TcpEstablishedTimeout -> (integer)
-                            Timeout  (in  seconds) for idle TCP connections in
+                            Timeout (in seconds) for idle TCP  connections  in
                             an established state. Min: 60 seconds. Max: 432000
-                            seconds  (5 days). Default: 432000 seconds. Recom-
+                            seconds (5 days). Default: 432000 seconds.  Recom-
                             mended: Less than 432000 seconds.
 
                         UdpStreamTimeout -> (integer)
                             Timeout (in seconds) for idle UDP flows classified
-                            as  streams  which  have  seen  more  than one re-
-                            quest-response transaction. Min: 60 seconds.  Max:
+                            as streams which  have  seen  more  than  one  re-
+                            quest-response  transaction. Min: 60 seconds. Max:
                             180 seconds (3 minutes). Default: 180 seconds.
 
                         UdpTimeout -> (integer)
-                            Timeout  (in seconds) for idle UDP flows that have
-                            seen traffic only in a single direction or a  sin-
+                            Timeout (in seconds) for idle UDP flows that  have
+                            seen  traffic only in a single direction or a sin-
                             gle request-response transaction. Min: 30 seconds.
                             Max: 60 seconds. Default: 30 seconds.
 
@@ -4062,11 +3889,11 @@ OUTPUT
                  The Amazon Resource Name (ARN) of the Outpost.
 
               RootDeviceName -> (string)
-                 The device name of  the  root  device  volume  (for  example,
+                 The  device  name  of  the  root  device volume (for example,
                  /dev/sda1 ).
 
               RootDeviceType -> (string)
-                 The  root device type used by the AMI. The AMI can use an EBS
+                 The root device type used by the AMI. The AMI can use an  EBS
                  volume or an instance store volume.
 
               SecurityGroups -> (list)
@@ -4075,21 +3902,21 @@ OUTPUT
                  (structure)
                      Describes a security group.
 
-                     GroupName -> (string)
-                        The name of the security group.
-
                      GroupId -> (string)
                         The ID of the security group.
+
+                     GroupName -> (string)
+                        The name of the security group.
 
               SourceDestCheck -> (boolean)
                  Indicates whether source/destination checking is enabled.
 
               SpotInstanceRequestId -> (string)
-                 If the request is a Spot Instance request, the ID of the  re-
+                 If  the request is a Spot Instance request, the ID of the re-
                  quest.
 
               SriovNetSupport -> (string)
-                 Specifies  whether  enhanced  networking with the Intel 82599
+                 Specifies whether enhanced networking with  the  Intel  82599
                  Virtual Function interface is enabled.
 
               StateReason -> (structure)
@@ -4101,26 +3928,26 @@ OUTPUT
                  Message -> (string)
                      The message for the state change.
 
-                     o Server.InsufficientInstanceCapacity : There was  insuf-
-                       ficient  capacity  available  to satisfy the launch re-
+                     o Server.InsufficientInstanceCapacity  : There was insuf-
+                       ficient capacity available to satisfy  the  launch  re-
                        quest.
 
                      o Server.InternalError : An internal error caused the in-
                        stance to terminate during launch.
 
-                     o Server.ScheduledStop  : The instance was stopped due to
+                     o Server.ScheduledStop : The instance was stopped due  to
                        a scheduled retirement.
 
-                     o Server.SpotInstanceShutdown : The instance was  stopped
-                       because  the  number  of  Spot  requests with a maximum
-                       price equal to or higher than the Spot  price  exceeded
-                       available  capacity  or  because  of an increase in the
+                     o Server.SpotInstanceShutdown  : The instance was stopped
+                       because the number of  Spot  requests  with  a  maximum
+                       price  equal  to or higher than the Spot price exceeded
+                       available capacity or because of  an  increase  in  the
                        Spot price.
 
-                     o Server.SpotInstanceTermination : The instance was  ter-
+                     o Server.SpotInstanceTermination  : The instance was ter-
                        minated because the number of Spot requests with a max-
-                       imum price equal to or higher than the Spot  price  ex-
-                       ceeded  available capacity or because of an increase in
+                       imum  price  equal to or higher than the Spot price ex-
+                       ceeded available capacity or because of an increase  in
                        the Spot price.
 
                      o Client.InstanceInitiatedShutdown  :  The  instance  was
@@ -4129,16 +3956,16 @@ OUTPUT
                      o Client.InstanceTerminated : The instance was terminated
                        or rebooted during AMI creation.
 
-                     o Client.InternalError : A client error  caused  the  in-
+                     o Client.InternalError  :  A  client error caused the in-
                        stance to terminate during launch.
 
-                     o Client.InvalidSnapshot.NotFound  :  The specified snap-
+                     o Client.InvalidSnapshot.NotFound : The  specified  snap-
                        shot was not found.
 
-                     o Client.UserInitiatedHibernate : Hibernation was  initi-
+                     o Client.UserInitiatedHibernate  : Hibernation was initi-
                        ated on the instance.
 
-                     o Client.UserInitiatedShutdown  :  The  instance was shut
+                     o Client.UserInitiatedShutdown : The  instance  was  shut
                        down using the Amazon EC2 API.
 
                      o Client.VolumeLimitExceeded : The limit on the number of
@@ -4154,14 +3981,14 @@ OUTPUT
                      Key -> (string)
                         The key of the tag.
 
-                        Constraints: Tag keys are case-sensitive and accept  a
-                        maximum  of 127 Unicode characters. May not begin with
+                        Constraints:  Tag keys are case-sensitive and accept a
+                        maximum of 127 Unicode characters. May not begin  with
                         aws: .
 
                      Value -> (string)
                         The value of the tag.
 
-                        Constraints: Tag values are case-sensitive and  accept
+                        Constraints:  Tag values are case-sensitive and accept
                         a maximum of 256 Unicode characters.
 
               VirtualizationType -> (string)
@@ -4177,7 +4004,7 @@ OUTPUT
                      The number of threads per CPU core.
 
                  AmdSevSnp -> (string)
-                     Indicates   whether  the  instance  is  enabled  for  AMD
+                     Indicates  whether  the  instance  is  enabled  for   AMD
                      SEV-SNP. For more information, see AMD SEV-SNP .
 
               CapacityReservationId -> (string)
@@ -4187,19 +4014,19 @@ OUTPUT
                  Information about the Capacity Reservation targeting option.
 
                  CapacityReservationPreference -> (string)
-                     Describes the  instance's  Capacity  Reservation  prefer-
+                     Describes  the  instance's  Capacity  Reservation prefer-
                      ences. Possible preferences include:
 
                      o open - The instance can run in any open Capacity Reser-
-                       vation that has  matching  attributes  (instance  type,
+                       vation  that  has  matching  attributes (instance type,
                        platform, Availability Zone).
 
                      o none - The instance avoids running in a Capacity Reser-
-                       vation even if one is available. The instance  runs  in
+                       vation  even  if one is available. The instance runs in
                        On-Demand capacity.
 
                  CapacityReservationTarget -> (structure)
-                     Information  about  the  targeted Capacity Reservation or
+                     Information about the targeted  Capacity  Reservation  or
                      Capacity Reservation group.
 
                      CapacityReservationId -> (string)
@@ -4212,7 +4039,7 @@ OUTPUT
                  Indicates whether the instance is enabled for hibernation.
 
                  Configured -> (boolean)
-                     If true , your instance is enabled for hibernation;  oth-
+                     If  true , your instance is enabled for hibernation; oth-
                      erwise, it is not enabled for hibernation.
 
               Licenses -> (list)
@@ -4230,11 +4057,11 @@ OUTPUT
 
                  State -> (string)
                      The state of the metadata option changes.
-                        pending - The metadata options are being  updated  and
-                        the  instance is not ready to process metadata traffic
+                        pending  -  The metadata options are being updated and
+                        the instance is not ready to process metadata  traffic
                         with the new selection.
 
-                        applied - The metadata options have been  successfully
+                        applied  - The metadata options have been successfully
                         applied on the instance.
 
                  HttpTokens -> (string)
@@ -4243,32 +4070,32 @@ OUTPUT
                      o optional - IMDSv2 is optional, which means that you can
                        use either IMDSv2 or IMDSv1.
 
-                     o required - IMDSv2 is required, which means that  IMDSv1
+                     o required  - IMDSv2 is required, which means that IMDSv1
                        is disabled, and you must use IMDSv2.
 
                  HttpPutResponseHopLimit -> (integer)
-                     The  maximum  number  of hops that the metadata token can
+                     The maximum number of hops that the  metadata  token  can
                      travel.
 
                      Possible values: Integers from 1 to 64
 
                  HttpEndpoint -> (string)
-                     Indicates whether the HTTP metadata endpoint on your  in-
+                     Indicates  whether the HTTP metadata endpoint on your in-
                      stances is enabled or disabled.
 
-                     If  the  value  is  disabled , you cannot access your in-
+                     If the value is disabled , you  cannot  access  your  in-
                      stance metadata.
 
                  HttpProtocolIpv6 -> (string)
-                     Indicates whether the  IPv6  endpoint  for  the  instance
+                     Indicates  whether  the  IPv6  endpoint  for the instance
                      metadata service is enabled or disabled.
 
                      Default: disabled
 
                  InstanceMetadataTags -> (string)
-                     Indicates  whether  access  to instance tags from the in-
+                     Indicates whether access to instance tags  from  the  in-
                      stance metadata is enabled or disabled. For more informa-
-                     tion,  see  Work  with  instance  tags using the instance
+                     tion, see Work with  instance  tags  using  the  instance
                      metadata .
 
               EnclaveOptions -> (structure)
@@ -4276,31 +4103,31 @@ OUTPUT
                  vices Nitro Enclaves.
 
                  Enabled -> (boolean)
-                     If  this  parameter  is set to true , the instance is en-
-                     abled for Amazon Web Services Nitro Enclaves;  otherwise,
+                     If this parameter is set to true , the  instance  is  en-
+                     abled  for Amazon Web Services Nitro Enclaves; otherwise,
                      it is not enabled for Amazon Web Services Nitro Enclaves.
 
               BootMode -> (string)
-                 The  boot mode that was specified by the AMI. If the value is
-                 uefi-preferred , the AMI supports both UEFI and Legacy  BIOS.
-                 The  currentInstanceBootMode  parameter is the boot mode that
+                 The boot mode that was specified by the AMI. If the value  is
+                 uefi-preferred  , the AMI supports both UEFI and Legacy BIOS.
+                 The currentInstanceBootMode parameter is the boot  mode  that
                  is used to boot the instance at launch or start.
 
                  NOTE:
                      The operating system contained in the AMI must be config-
                      ured to support the specified boot mode.
 
-                 For  more  information, see Boot modes in the Amazon EC2 User
+                 For more information, see Boot modes in the Amazon  EC2  User
                  Guide .
 
               PlatformDetails -> (string)
-                 The platform details value for the instance. For more  infor-
-                 mation,  see AMI billing information fields in the Amazon EC2
+                 The  platform details value for the instance. For more infor-
+                 mation, see AMI billing information fields in the Amazon  EC2
                  User Guide .
 
               UsageOperation -> (string)
                  The usage operation value for the instance. For more informa-
-                 tion,  see  AMI  billing information fields in the Amazon EC2
+                 tion, see AMI billing information fields in  the  Amazon  EC2
                  User Guide .
 
               UsageOperationUpdateTime -> (timestamp)
@@ -4313,11 +4140,11 @@ OUTPUT
                      The type of hostname to assign to an instance.
 
                  EnableResourceNameDnsARecord -> (boolean)
-                     Indicates whether to respond to DNS queries for  instance
+                     Indicates  whether to respond to DNS queries for instance
                      hostnames with DNS A records.
 
                  EnableResourceNameDnsAAAARecord -> (boolean)
-                     Indicates  whether to respond to DNS queries for instance
+                     Indicates whether to respond to DNS queries for  instance
                      hostnames with DNS AAAA records.
 
               Ipv6Address -> (string)
@@ -4325,32 +4152,205 @@ OUTPUT
 
               TpmSupport -> (string)
                  If the instance is configured for NitroTPM support, the value
-                 is  v2.0  .  For more information, see NitroTPM in the Amazon
+                 is v2.0 . For more information, see NitroTPM  in  the  Amazon
                  EC2 User Guide .
 
               MaintenanceOptions -> (structure)
-                 Provides information on the recovery and maintenance  options
+                 Provides  information on the recovery and maintenance options
                  of your instance.
 
                  AutoRecovery -> (string)
-                     Provides  information  on  the current automatic recovery
+                     Provides information on the  current  automatic  recovery
                      behavior of your instance.
 
               CurrentInstanceBootMode -> (string)
-                 The boot mode that is used to boot the instance at launch  or
+                 The  boot mode that is used to boot the instance at launch or
                  start. For more information, see Boot modes in the Amazon EC2
                  User Guide .
 
-       OwnerId -> (string)
-          The ID of the Amazon Web Services account that owns the reservation.
+              InstanceId -> (string)
+                 The ID of the instance.
 
-       RequesterId -> (string)
-          The ID of the requester that launched the instances on  your  behalf
-          (for  example,  Amazon Web Services Management Console or Auto Scal-
-          ing).
+              ImageId -> (string)
+                 The ID of the AMI used to launch the instance.
 
-       ReservationId -> (string)
-          The ID of the reservation.
+              State -> (structure)
+                 The current state of the instance.
+
+                 Code -> (integer)
+                     The state of the instance as a 16-bit unsigned integer.
+
+                     The  high  byte  is  all  of  the  bits  between  2^8 and
+                     (2^16)-1, which equals decimal  values  between  256  and
+                     65,535. These numerical values are used for internal pur-
+                     poses and should be ignored.
+
+                     The low byte is all of the bits between 2^0 and  (2^8)-1,
+                     which equals decimal values between 0 and 255.
+
+                     The  valid  values for instance-state-code will all be in
+                     the range of the low byte and they are:
+
+                     o 0 : pending
+
+                     o 16 : running
+
+                     o 32 : shutting-down
+
+                     o 48 : terminated
+
+                     o 64 : stopping
+
+                     o 80 : stopped
+
+                     You can ignore the high byte value by zeroing out all  of
+                     the bits above 2^8 or 256 in decimal.
+
+                 Name -> (string)
+                     The current state of the instance.
+
+              PrivateDnsName -> (string)
+                 [IPv4 only] The private DNS hostname name assigned to the in-
+                 stance. This DNS hostname can only be used inside the  Amazon
+                 EC2  network.  This  name is not available until the instance
+                 enters the running state.
+
+                 The Amazon-provided DNS server resolves Amazon-provided  pri-
+                 vate  DNS  hostnames if you've enabled DNS resolution and DNS
+                 hostnames in your VPC. If you are not using  the  Amazon-pro-
+                 vided DNS server in your VPC, your custom domain name servers
+                 must resolve the hostname as appropriate.
+
+              PublicDnsName -> (string)
+                 [IPv4 only] The public DNS name  assigned  to  the  instance.
+                 This name is not available until the instance enters the run-
+                 ning state. This name is only available if you've enabled DNS
+                 hostnames for your VPC.
+
+              StateTransitionReason -> (string)
+                 The  reason  for the most recent state transition. This might
+                 be an empty string.
+
+              KeyName -> (string)
+                 The name of the key pair, if this instance was launched  with
+                 an associated key pair.
+
+              AmiLaunchIndex -> (integer)
+                 The AMI launch index, which can be used to find this instance
+                 in the launch group.
+
+              ProductCodes -> (list)
+                 The product codes attached to this instance, if applicable.
+
+                 (structure)
+                     Describes a product code.
+
+                     ProductCodeId -> (string)
+                        The product code.
+
+                     ProductCodeType -> (string)
+                        The type of product code.
+
+              InstanceType -> (string)
+                 The instance type.
+
+              LaunchTime -> (timestamp)
+                 The time the instance was launched.
+
+              Placement -> (structure)
+                 The location where the instance launched, if applicable.
+
+                 Affinity -> (string)
+                     The affinity setting for the instance  on  the  Dedicated
+                     Host.
+
+                     This  parameter  is  not  supported  for  CreateFleet  or
+                     ImportInstance .
+
+                 GroupName -> (string)
+                     The name of the placement group that the instance is  in.
+                     If you specify GroupName , you can't specify GroupId .
+
+                 PartitionNumber -> (integer)
+                     The  number  of  the  partition  that the instance is in.
+                     Valid only if the placement group strategy is set to par-
+                     tition .
+
+                     This parameter is not supported for CreateFleet .
+
+                 HostId -> (string)
+                     The  ID  of  the Dedicated Host on which the instance re-
+                     sides.
+
+                     This  parameter  is  not  supported  for  CreateFleet  or
+                     ImportInstance .
+
+                 Tenancy -> (string)
+                     The  tenancy  of the instance. An instance with a tenancy
+                     of dedicated runs on single-tenant hardware.
+
+                     This parameter is not supported  for  CreateFleet  .  The
+                     host  tenancy  is not supported for ImportInstance or for
+                     T3 instances that are configured for  the  unlimited  CPU
+                     credit option.
+
+                 SpreadDomain -> (string)
+                     Reserved for future use.
+
+                 HostResourceGroupArn -> (string)
+                     The ARN of the host resource group in which to launch the
+                     instances.
+
+                     If you specify this parameter, either  omit  the  Tenancy
+                     parameter or set it to host .
+
+                     This parameter is not supported for CreateFleet .
+
+                 GroupId -> (string)
+                     The ID of the placement group that the instance is in. If
+                     you specify GroupId , you can't specify GroupName .
+
+                 AvailabilityZone -> (string)
+                     The Availability Zone of the instance.
+
+                     If not specified, an Availability Zone will be  automati-
+                     cally chosen for you based on the load balancing criteria
+                     for the Region.
+
+                     This parameter is not supported for CreateFleet .
+
+              KernelId -> (string)
+                 The kernel associated with this instance, if applicable.
+
+              RamdiskId -> (string)
+                 The RAM disk associated with this instance, if applicable.
+
+              Platform -> (string)
+                 The platform. This value is windows  for  Windows  instances;
+                 otherwise, it is empty.
+
+              Monitoring -> (structure)
+                 The monitoring for the instance.
+
+                 State -> (string)
+                     Indicates  whether detailed monitoring is enabled. Other-
+                     wise, basic monitoring is enabled.
+
+              SubnetId -> (string)
+                 The ID of the subnet in which the instance is running.
+
+              VpcId -> (string)
+                 The ID of the VPC in which the instance is running.
+
+              PrivateIpAddress -> (string)
+                 The private IPv4 address assigned to the instance.
+
+              PublicIpAddress -> (string)
+                 The public IPv4 address, or the Carrier IP  address  assigned
+                 to the instance, if applicable.
+
+                 A  Carrier IP address only applies to an instance launched in
+                 a subnet associated with a Wavelength Zone.
 
 
 
