@@ -143,6 +143,14 @@ OUTPUT
           description -> (string)
               The description.
 
+          ingestionFailureReasons -> (list)
+              List of failure reasons on ingestion per file.
+
+              (string)
+
+          ingestionStatus -> (string)
+              Status of ingestion on data source.
+
           knowledgeBaseArn -> (string)
               The Amazon Resource Name (ARN) of the knowledge base.
 
@@ -205,23 +213,24 @@ OUTPUT
 
               NOTE:
                  This is a Tagged Union structure. Only one of  the  following
-                 top level keys can be set: appIntegrations.
+                 top level keys can be set: appIntegrations, managedSourceCon-
+                 figuration.
 
               appIntegrations -> (structure)
                  Configuration information for Amazon AppIntegrations to auto-
                  matically ingest content.
 
                  appIntegrationArn -> (string)
-                     The Amazon Resource Name  (ARN)  of  the  AppIntegrations
+                     The  Amazon  Resource  Name  (ARN) of the AppIntegrations
                      DataIntegration to use for ingesting content.
 
-                     o For  Salesforce  , your AppIntegrations DataIntegration
+                     o For Salesforce , your  AppIntegrations  DataIntegration
                        must have an ObjectConfiguration if objectFields is not
-                       provided,  including at least Id , ArticleNumber , Ver-
-                       sionNumber , Title , PublishStatus , and  IsDeleted  as
+                       provided, including at least Id , ArticleNumber ,  Ver-
+                       sionNumber  ,  Title , PublishStatus , and IsDeleted as
                        source fields.
 
-                     o For  ServiceNow  , your AppIntegrations DataIntegration
+                     o For ServiceNow , your  AppIntegrations  DataIntegration
                        must have an ObjectConfiguration if objectFields is not
                        provided, including at least number , short_description
                        , sys_mod_count , workflow_state , and active as source
@@ -232,44 +241,103 @@ OUTPUT
                        vided, including at least id , title , updated_at , and
                        draft as source fields.
 
-                     o For SharePoint , your  AppIntegrations  DataIntegration
-                       must  have a FileConfiguration, including only file ex-
-                       tensions that are among docx , pdf , html , htm  ,  and
+                     o For  SharePoint  , your AppIntegrations DataIntegration
+                       must have a FileConfiguration, including only file  ex-
+                       tensions  that  are among docx , pdf , html , htm , and
                        txt .
 
                      o For Amazon S3 , the ObjectConfiguration and FileConfig-
                        uration of your AppIntegrations DataIntegration must be
-                       null.  The  SourceURI  of your DataIntegration must use
+                       null. The SourceURI of your  DataIntegration  must  use
                        the following format: s3://your_s3_bucket_name .
 
                      WARNING:
-                        The bucket policy of the corresponding S3 bucket  must
-                        allow  the  Amazon Web Services principal app-integra-
+                        The  bucket policy of the corresponding S3 bucket must
+                        allow the Amazon Web Services  principal  app-integra-
                         tions.amazonaws.com   to   perform   s3:ListBucket   ,
-                        s3:GetObject  ,  and  s3:GetBucketLocation against the
+                        s3:GetObject , and  s3:GetBucketLocation  against  the
                         bucket.
 
                  objectFields -> (list)
-                     The fields from the source that  are  made  available  to
-                     your  agents  in Amazon Q in Connect. Optional if Object-
-                     Configuration is included in  the  provided  DataIntegra-
+                     The  fields  from  the  source that are made available to
+                     your agents in Amazon Q in Connect. Optional  if  Object-
+                     Configuration  is  included  in the provided DataIntegra-
                      tion.
 
-                     o For  Salesforce  , you must include at least Id , Arti-
+                     o For Salesforce , you must include at least Id  ,  Arti-
                        cleNumber , VersionNumber , Title , PublishStatus , and
                        IsDeleted .
 
-                     o For  ServiceNow  ,  you  must include at least number ,
-                       short_description , sys_mod_count  ,  workflow_state  ,
+                     o For ServiceNow , you must include  at  least  number  ,
+                       short_description  ,  sys_mod_count  , workflow_state ,
                        and active .
 
-                     o For  Zendesk  ,  you must include at least id , title ,
+                     o For Zendesk , you must include at least id  ,  title  ,
                        updated_at , and draft .
 
-                     Make sure to include additional fields. These fields  are
+                     Make  sure to include additional fields. These fields are
                      indexed and used to source recommendations.
 
                      (string)
+
+              managedSourceConfiguration -> (tagged union structure)
+                 Source configuration for managed resources.
+
+                 NOTE:
+                     This is a Tagged Union structure. Only one of the follow-
+                     ing top level keys can be set: webCrawlerConfiguration.
+
+                 webCrawlerConfiguration -> (structure)
+                     Configuration data for web crawler data source.
+
+                     crawlerLimits -> (structure)
+                        The configuration of crawl limits for the web URLs.
+
+                        rateLimit -> (integer)
+                            Rate of web URLs retrieved per minute.
+
+                     exclusionFilters -> (list)
+                        A  list  of  one  or more exclusion regular expression
+                        patterns to exclude certain URLs. If  you  specify  an
+                        inclusion  and exclusion filter/pattern and both match
+                        a URL, the exclusion filter takes precedence  and  the
+                        web content of the URL isnt crawled.
+
+                        (string)
+
+                     inclusionFilters -> (list)
+                        A  list  of  one  or more inclusion regular expression
+                        patterns to include certain URLs. If  you  specify  an
+                        inclusion  and exclusion filter/pattern and both match
+                        a URL, the exclusion filter takes precedence  and  the
+                        web content of the URL isnt crawled.
+
+                        (string)
+
+                     scope -> (string)
+                        The  scope  of  what is crawled for your URLs. You can
+                        choose to crawl only web pages that belong to the same
+                        host  or  primary  domain. For example, only web pages
+                        that  contain  the  seed   URL   https://docs.aws.ama-
+                        zon.com/bedrock/latest/userguide/  and  no  other  do-
+                        mains. You can choose to include sub domains in  addi-
+                        tion  to  the host or primary domain. For example, web
+                        pages that contain aws.amazon.com can also include sub
+                        domain docs.aws.amazon.com .
+
+                     urlConfiguration -> (structure)
+                        The  configuration of the URL/URLs for the web content
+                        that you want to crawl. You should  be  authorized  to
+                        crawl the URLs.
+
+                        seedUrls -> (list)
+                            List of URLs for crawling.
+
+                            (structure)
+                               A URL for crawling.
+
+                               url -> (string)
+                                   URL for crawling
 
           status -> (string)
               The status of the knowledge base.
@@ -281,6 +349,93 @@ OUTPUT
               key -> (string)
 
               value -> (string)
+
+          vectorIngestionConfiguration -> (structure)
+              Contains details about how to ingest the  documents  in  a  data
+              source.
+
+              chunkingConfiguration -> (structure)
+                 Details  about how to chunk the documents in the data source.
+                 A chunk refers to an excerpt from a data source that  is  re-
+                 turned when the knowledge base that it belongs to is queried.
+
+                 chunkingStrategy -> (string)
+                     Knowledge  base can split your source data into chunks. A
+                     chunk refers to an excerpt from a data source that is re-
+                     turned  when  the  knowledge  base  that it belongs to is
+                     queried. You have the following options for chunking your
+                     data.  If  you  opt  for  NONE  ,  then  you  may want to
+                     pre-process your files by splitting  them  up  such  that
+                     each file corresponds to a chunk.
+
+                 fixedSizeChunkingConfiguration -> (structure)
+                     Configurations  for  when you choose fixed-size chunking.
+                     If you set the chunkingStrategy as NONE  ,  exclude  this
+                     field.
+
+                     maxTokens -> (integer)
+                        The maximum number of tokens to include in a chunk.
+
+                     overlapPercentage -> (integer)
+                        The percentage of overlap between adjacent chunks of a
+                        data source.
+
+                 hierarchicalChunkingConfiguration -> (structure)
+                     Settings for hierarchical document chunking  for  a  data
+                     source.  Hierarchical chunking splits documents into lay-
+                     ers of  chunks  where  the  first  layer  contains  large
+                     chunks,  and the second layer contains smaller chunks de-
+                     rived from the first layer.
+
+                     levelConfigurations -> (list)
+                        Token settings for each layer.
+
+                        (structure)
+                            Token settings for each layer.
+
+                            maxTokens -> (integer)
+                               The maximum number of tokens that a  chunk  can
+                               contain in this layer.
+
+                     overlapTokens -> (integer)
+                        The  number  of  tokens to repeat across chunks in the
+                        same layer.
+
+                 semanticChunkingConfiguration -> (structure)
+                     Settings  for  semantic  document  chunking  for  a  data
+                     source.  Semantic chunking splits a document into smaller
+                     documents based on groups of similar content derived from
+                     the text with natural language processing.
+
+                     breakpointPercentileThreshold -> (integer)
+                        The dissimilarity threshold for splitting chunks.
+
+                     bufferSize -> (integer)
+                        The buffer size.
+
+                     maxTokens -> (integer)
+                        The maximum number of tokens that a chunk can contain.
+
+              parsingConfiguration -> (structure)
+                 A custom parser for data source documents.
+
+                 bedrockFoundationModelConfiguration -> (structure)
+                     Settings  for  a foundation model used to parse documents
+                     for a data source.
+
+                     modelArn -> (string)
+                        The ARN of the foundation model.
+
+                     parsingPrompt -> (structure)
+                        Instructions for interpreting the contents of a  docu-
+                        ment.
+
+                        parsingPromptText -> (string)
+                            Instructions  for  interpreting  the contents of a
+                            document.
+
+                 parsingStrategy -> (string)
+                     The parsing strategy for the data source.
 
 
 
