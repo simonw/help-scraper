@@ -22,6 +22,8 @@ Version: `3.47.0`
 
 .connection [close] [#]  Open or close an auxiliary database connection
 
+.crnl on|off             Translate \n to \r\n sometimes.  Default OFF
+
 .databases               List names and files of attached databases
 
 .dbconfig ?op? ?val?     List or change sqlite3_db_config() options
