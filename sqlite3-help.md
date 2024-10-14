@@ -22,7 +22,7 @@ Version: `3.47.0`
 
 .connection [close] [#]  Open or close an auxiliary database connection
 
-.crnl on|off             Translate \n to \r\n sometimes.  Default OFF
+.crlf ?on|off?           Whether or not to use \r\n line endings
 
 .databases               List names and files of attached databases
 
