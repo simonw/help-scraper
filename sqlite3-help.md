@@ -1,6 +1,6 @@
 # sqlite3 .help
 
-Version: `3.47.0`
+Version: `3.48.0`
 
 ```
 .auth ON|OFF             Show authorizer callbacks
