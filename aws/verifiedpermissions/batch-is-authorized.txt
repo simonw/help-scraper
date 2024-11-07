@@ -1,41 +1,40 @@
-BATCH-IS-AUTHORIZED-WITH-TOKEN()              BATCH-IS-AUTHORIZED-WITH-TOKEN()
+BATCH-IS-AUTHORIZED()                                    BATCH-IS-AUTHORIZED()
 
 
 
 NAME
-       batch-is-authorized-with-token -
+       batch-is-authorized -
 
 DESCRIPTION
        Makes  a  series of decisions about multiple authorization requests for
-       one token. The principal in this request comes from an  external  iden-
-       tity  source in the form of an identity or access token, formatted as a
-       JSON web token (JWT) . The information in the parameters can  also  de-
-       fine  additional  context  that Verified Permissions can include in the
-       evaluations.
+       one principal or resource. Each request contains the equivalent content
+       of  an  IsAuthorized request: principal, action, resource, and context.
+       Either the principal or the resource parameter must be identical across
+       all  requests.  For example, Verified Permissions won't evaluate a pair
+       of requests where bob views photo1 and alice views photo2 .  Authoriza-
+       tion of bob to view photo1 and photo2 , or bob and alice to view photo1
+       , are valid batches.
 
        The request is evaluated against all policies in the  specified  policy
-       store that match the entities that you provide in the entities declara-
-       tion and in the token. The result of the decisions is a series of Allow
-       or  Deny  responses,  along  with the IDs of the policies that produced
-       each decision.
+       store that match the entities that you declare. The result of the deci-
+       sions is a series of Allow or Deny responses, along with the IDs of the
+       policies that produced each decision.
 
-       The entities of a BatchIsAuthorizedWithToken API request can contain up
-       to  100  resources  and  up  to  99  user  groups.  The  requests  of a
-       BatchIsAuthorizedWithToken API request can contain up to 30 requests.
+       The  entities  of a BatchIsAuthorized API request can contain up to 100
+       principals and up to 100 resources. The requests of a BatchIsAuthorized
+       API request can contain up to 30 requests.
 
        NOTE:
-          The BatchIsAuthorizedWithToken operation doesn't have  its  own  IAM
-          permission.  To  authorize  this  operation  for Amazon Web Services
-          principals, include the permission verifiedpermissions:IsAuthorized-
-          WithToken in their IAM policies.
+          The BatchIsAuthorized operation doesn't have its own IAM permission.
+          To authorize this operation for Amazon Web Services principals,  in-
+          clude  the  permission verifiedpermissions:IsAuthorized in their IAM
+          policies.
 
        See also: AWS API Documentation
 
 SYNOPSIS
-            batch-is-authorized-with-token
+            batch-is-authorized
           --policy-store-id <value>
-          [--identity-token <value>]
-          [--access-token <value>]
           [--entities <value>]
           --requests <value>
           [--cli-input-json <value>]
@@ -57,63 +56,37 @@ SYNOPSIS
 
 OPTIONS
        --policy-store-id (string)
-          Specifies  the ID of the policy store. Policies in this policy store
-          will be used to make an authorization decision for the input.
-
-       --identity-token (string)
-          Specifies an identity (ID) token for the principal that you want  to
-          authorize  in  each  request.  This  token is provided to you by the
-          identity provider  (IdP)  associated  with  the  specified  identity
-          source.  You must specify either an accessToken , an identityToken ,
-          or both.
-
-          Must be an ID token. Verified Permissions returns an  error  if  the
-          token_use claim in the submitted token isn't id .
-
-       --access-token (string)
-          Specifies  an access token for the principal that you want to autho-
-          rize in each request. This token is provided to you by the  identity
-          provider  (IdP)  associated  with the specified identity source. You
-          must specify either an accessToken , an identityToken , or both.
-
-          Must be an access token. Verified Permissions returns  an  error  if
-          the token_use claim in the submitted token isn't access .
+          Specifies the ID of the policy store. Policies in this policy  store
+          will be used to make the authorization decisions for the input.
 
        --entities (tagged union structure)
-          Specifies the list of resources and their associated attributes that
-          Verified Permissions can examine when evaluating the policies.
-
-          WARNING:
-              You can't include principals in this  parameter,  only  resource
-              and  action  entities. This parameter can't include any entities
-              of a type that matches the user or group entity types  that  you
-              defined in your identity source.
-
-              o The  BatchIsAuthorizedWithToken  operation takes principal at-
-                tributes from ** only  **  the  identityToken  or  accessToken
-                passed to the operation.
-
-              o For action entities, you can include only their Identifier and
-                EntityType .
+          Specifies  the list of resources and principals and their associated
+          attributes that Verified Permissions can examine when evaluating the
+          policies.
 
           NOTE:
-              This is a Tagged Union structure. Only one of the following  top
+              You can include only principal and resource entities in this pa-
+              rameter; you can't include actions. You must specify actions  in
+              the schema.
+
+          NOTE:
+              This  is a Tagged Union structure. Only one of the following top
               level keys can be set: entityList.
 
           entityList -> (list)
               An array of entities that are needed to successfully evaluate an
               authorization request. Each entity in this array must include an
-              identifier  for  the entity, the attributes of the entity, and a
+              identifier for the entity, the attributes of the entity,  and  a
               list of any parent entities.
 
               (structure)
-                 Contains information about an entity that can  be  referenced
+                 Contains  information  about an entity that can be referenced
                  in a Cedar policy.
 
                  This  data  type  is  used  as  one  of  the  fields  in  the
                  EntitiesDefinition structure.
                      { "identifier": { "entityType": "Photo", "entityId": "Va-
-                     cationPhoto94.jpg"  },  "attributes":  {}, "parents": [ {
+                     cationPhoto94.jpg" }, "attributes": {},  "parents":  [  {
                      "entityType": "Album", "entityId": "alice_folder" } ] }
 
                  identifier -> (structure)
@@ -136,17 +109,17 @@ OPTIONS
                      value -> (tagged union structure)
                         The value of an attribute.
 
-                        Contains information about the runtime context  for  a
+                        Contains  information  about the runtime context for a
                         request for which an authorization decision is made.
 
-                        This   data   type   is   used  as  a  member  of  the
+                        This  data  type  is  used  as   a   member   of   the
                         ContextDefinition structure which is uses as a request
-                        parameter  for  the IsAuthorized , BatchIsAuthorized ,
+                        parameter for the IsAuthorized ,  BatchIsAuthorized  ,
                         and IsAuthorizedWithToken operations.
 
                         NOTE:
-                            This is a Tagged Union structure. Only one of  the
-                            following  top level keys can be set: boolean, en-
+                            This  is a Tagged Union structure. Only one of the
+                            following top level keys can be set: boolean,  en-
                             tityIdentifier, long, string, set, record, ipaddr,
                             decimal.
 
@@ -186,89 +159,6 @@ OPTIONS
                             Example: {"set": [ {} ] }
 
                             (tagged union structure)
-                               The value of an attribute.
-
-                               Contains information about the runtime  context
-                               for  a request for which an authorization deci-
-                               sion is made.
-
-                               This data type is  used  as  a  member  of  the
-                               ContextDefinition  structure which is uses as a
-                               request  parameter  for  the   IsAuthorized   ,
-                               BatchIsAuthorized  ,  and IsAuthorizedWithToken
-                               operations.
-
-                               NOTE:
-                                   This is a Tagged Union structure. Only  one
-                                   of the following top level keys can be set:
-                                   boolean,  entityIdentifier,  long,  string,
-                                   set, record, ipaddr, decimal.
-
-                               boolean -> (boolean)
-                                   An attribute value of Boolean type.
-
-                                   Example: {"boolean": true}
-
-                               entityIdentifier -> (structure)
-                                   An attribute value of type EntityIdentifier
-                                   .
-
-                                   Example: "entityIdentifier": {  "entityId":
-                                   "<id>", "entityType": "<entity type>"}
-
-                                   entityType -> (string)
-                                      The type of an entity.
-
-                                      Example: "entityType":"*typeName* "
-
-                                   entityId -> (string)
-                                      The identifier of an entity.
-                                          "entityId":"*identifier* "
-
-                               long -> (long)
-                                   An attribute value of Long type.
-
-                                   Example: {"long": 0}
-
-                               string -> (string)
-                                   An attribute value of String type.
-
-                                   Example: {"string": "abc"}
-
-                               set -> (list)
-                                   An attribute value of Set type.
-
-                                   Example: {"set": [ {} ] }
-
-                                   ( ... recursive ... )
-
-                               record -> (map)
-                                   An attribute value of Record type.
-
-                                   Example: {"record": { "keyName": {} } }
-
-                                   key -> (string)
-
-                                   ( ... recursive ... )
-
-                               ipaddr -> (string)
-                                   An attribute value of ipaddr type.
-
-                                   Example: {"ip": "192.168.1.100"}
-
-                               decimal -> (string)
-                                   An attribute value of decimal type.
-
-                                   Example: {"decimal": "1.1"}
-
-                        record -> (map)
-                            An attribute value of Record type.
-
-                            Example: {"record": { "keyName": {} } }
-
-                            key -> (string)
-
-                            value -> (tagged union structure)
                                The value of an attribute.
 
                                Contains  information about the runtime context
@@ -344,6 +234,89 @@ OPTIONS
 
                                    Example: {"decimal": "1.1"}
 
+                        record -> (map)
+                            An attribute value of Record type.
+
+                            Example: {"record": { "keyName": {} } }
+
+                            key -> (string)
+
+                            value -> (tagged union structure)
+                               The value of an attribute.
+
+                               Contains information about the runtime  context
+                               for  a request for which an authorization deci-
+                               sion is made.
+
+                               This data type is  used  as  a  member  of  the
+                               ContextDefinition  structure which is uses as a
+                               request  parameter  for  the   IsAuthorized   ,
+                               BatchIsAuthorized  ,  and IsAuthorizedWithToken
+                               operations.
+
+                               NOTE:
+                                   This is a Tagged Union structure. Only  one
+                                   of the following top level keys can be set:
+                                   boolean,  entityIdentifier,  long,  string,
+                                   set, record, ipaddr, decimal.
+
+                               boolean -> (boolean)
+                                   An attribute value of Boolean type.
+
+                                   Example: {"boolean": true}
+
+                               entityIdentifier -> (structure)
+                                   An attribute value of type EntityIdentifier
+                                   .
+
+                                   Example: "entityIdentifier": {  "entityId":
+                                   "<id>", "entityType": "<entity type>"}
+
+                                   entityType -> (string)
+                                      The type of an entity.
+
+                                      Example: "entityType":"*typeName* "
+
+                                   entityId -> (string)
+                                      The identifier of an entity.
+                                          "entityId":"*identifier* "
+
+                               long -> (long)
+                                   An attribute value of Long type.
+
+                                   Example: {"long": 0}
+
+                               string -> (string)
+                                   An attribute value of String type.
+
+                                   Example: {"string": "abc"}
+
+                               set -> (list)
+                                   An attribute value of Set type.
+
+                                   Example: {"set": [ {} ] }
+
+                                   ( ... recursive ... )
+
+                               record -> (map)
+                                   An attribute value of Record type.
+
+                                   Example: {"record": { "keyName": {} } }
+
+                                   key -> (string)
+
+                                   ( ... recursive ... )
+
+                               ipaddr -> (string)
+                                   An attribute value of ipaddr type.
+
+                                   Example: {"ip": "192.168.1.100"}
+
+                               decimal -> (string)
+                                   An attribute value of decimal type.
+
+                                   Example: {"decimal": "1.1"}
+
                         ipaddr -> (string)
                             An attribute value of ipaddr type.
 
@@ -355,28 +328,28 @@ OPTIONS
                             Example: {"decimal": "1.1"}
 
                  parents -> (list)
-                     The parent entities in the hierarchy  that  contains  the
-                     entity.  A  principal  or  resource entity can be defined
-                     with at most 99 transitive parents per authorization  re-
+                     The  parent  entities  in the hierarchy that contains the
+                     entity. A principal or resource  entity  can  be  defined
+                     with  at most 99 transitive parents per authorization re-
                      quest.
 
-                     A  transitive parent is an entity in the hierarchy of en-
-                     tities including all direct parents, and parents of  par-
+                     A transitive parent is an entity in the hierarchy of  en-
+                     tities  including all direct parents, and parents of par-
                      ents. For example, a user can be a member of 91 groups if
-                     one of those groups is a member of eight  groups,  for  a
-                     total  of  100:  one entity, 91 entity parents, and eight
+                     one  of  those  groups is a member of eight groups, for a
+                     total of 100: one entity, 91 entity  parents,  and  eight
                      parents of parents.
 
                      (structure)
                         Contains the identifier of an entity, including its ID
                         and type.
 
-                        This  data  type  is  used  as a request parameter for
-                        IsAuthorized operation, and as  a  response  parameter
-                        for  the  CreatePolicy  , GetPolicy , and UpdatePolicy
+                        This data type is used  as  a  request  parameter  for
+                        IsAuthorized  operation,  and  as a response parameter
+                        for the CreatePolicy , GetPolicy  ,  and  UpdatePolicy
                         operations.
 
-                        Example:       {"entityId":"*string*        ","entity-
+                        Example:        {"entityId":"*string*       ","entity-
                         Type":"*string* "}
 
                         entityType -> (string)
@@ -460,12 +433,25 @@ OPTIONS
           }
 
        --requests (list)
-          An  array of up to 30 requests that you want Verified Permissions to
+          An array of up to 30 requests that you want Verified Permissions  to
           evaluate.
 
           (structure)
-              An authorization request that you  include  in  a  BatchIsAutho-
-              rizedWithToken API request.
+              An authorization request that you include in a BatchIsAuthorized
+              API request.
+
+              principal -> (structure)
+                 Specifies the principal for which the authorization  decision
+                 is to be made.
+
+                 entityType -> (string)
+                     The type of an entity.
+
+                     Example: "entityType":"*typeName* "
+
+                 entityId -> (string)
+                     The identifier of an entity.
+                        "entityId":"*identifier* "
 
               action -> (structure)
                  Specifies the requested action to be authorized. For example,
@@ -733,6 +719,10 @@ OPTIONS
 
           [
             {
+              "principal": {
+                "entityType": "string",
+                "entityId": "string"
+              },
               "action": {
                 "actionType": "string",
                 "actionId": "string"
@@ -889,18 +879,6 @@ GLOBAL OPTIONS
        is 60 seconds.
 
 OUTPUT
-       principal -> (structure)
-          The identifier of the principal in the ID or access token.
-
-          entityType -> (string)
-              The type of an entity.
-
-              Example: "entityType":"*typeName* "
-
-          entityId -> (string)
-              The identifier of an entity.
-                 "entityId":"*identifier* "
-
        results -> (list)
           A series of Allow or Deny decisions for each request, and the  poli-
           cies  that  produced  them.  These results are returned in the order
@@ -908,13 +886,26 @@ OUTPUT
 
           (structure)
               The decision, based on policy evaluation, from an individual au-
-              thorization request in a BatchIsAuthorizedWithToken API request.
+              thorization request in a BatchIsAuthorized API request.
 
               request -> (structure)
                  The authorization request that initiated the decision.
 
+                 principal -> (structure)
+                     Specifies the principal for which the authorization deci-
+                     sion is to be made.
+
+                     entityType -> (string)
+                        The type of an entity.
+
+                        Example: "entityType":"*typeName* "
+
+                     entityId -> (string)
+                        The identifier of an entity.
+                            "entityId":"*identifier* "
+
                  action -> (structure)
-                     Specifies  the requested action to be authorized. For ex-
+                     Specifies the requested action to be authorized. For  ex-
                      ample, PhotoFlash::ReadPhoto .
 
                      actionType -> (string)
@@ -937,7 +928,7 @@ OUTPUT
                             "entityId":"*identifier* "
 
                  context -> (tagged union structure)
-                     Specifies  additional  context  that  can be used to make
+                     Specifies additional context that can  be  used  to  make
                      more granular authorization decisions.
 
                      NOTE:
@@ -945,9 +936,9 @@ OUTPUT
                         lowing top level keys can be set: contextMap.
 
                      contextMap -> (map)
-                        An  list of attributes that are needed to successfully
-                        evaluate an authorization request. Each  attribute  in
-                        this  array  must include a map of a data type and its
+                        An list of attributes that are needed to  successfully
+                        evaluate  an  authorization request. Each attribute in
+                        this array must include a map of a data type  and  its
                         value.
 
                         Example:            "contextMap":{"<KeyName1>":{"bool-
@@ -959,19 +950,19 @@ OUTPUT
                             The value of an attribute.
 
                             Contains information about the runtime context for
-                            a request for which an authorization  decision  is
+                            a  request  for which an authorization decision is
                             made.
 
                             This  data  type  is  used  as  a  member  of  the
                             ContextDefinition structure which is uses as a re-
-                            quest    parameter    for   the   IsAuthorized   ,
-                            BatchIsAuthorized , and IsAuthorizedWithToken  op-
+                            quest   parameter   for   the    IsAuthorized    ,
+                            BatchIsAuthorized  , and IsAuthorizedWithToken op-
                             erations.
 
                             NOTE:
-                               This  is  a Tagged Union structure. Only one of
-                               the following top level keys can be set:  bool-
-                               ean,   entityIdentifier,   long,  string,  set,
+                               This is a Tagged Union structure. Only  one  of
+                               the  following top level keys can be set: bool-
+                               ean,  entityIdentifier,  long,   string,   set,
                                record, ipaddr, decimal.
 
                             boolean -> (boolean)
@@ -982,7 +973,7 @@ OUTPUT
                             entityIdentifier -> (structure)
                                An attribute value of type EntityIdentifier .
 
-                               Example:  "entityIdentifier":   {   "entityId":
+                               Example:   "entityIdentifier":   {  "entityId":
                                "<id>", "entityType": "<entity type>"}
 
                                entityType -> (string)
@@ -1013,18 +1004,18 @@ OUTPUT
                                    The value of an attribute.
 
                                    Contains information about the runtime con-
-                                   text for a request for which an  authoriza-
+                                   text  for a request for which an authoriza-
                                    tion decision is made.
 
-                                   This  data  type is used as a member of the
-                                   ContextDefinition structure which  is  uses
+                                   This data type is used as a member  of  the
+                                   ContextDefinition  structure  which is uses
                                    as a request parameter for the IsAuthorized
                                    ,       BatchIsAuthorized       ,       and
                                    IsAuthorizedWithToken operations.
 
                                    NOTE:
-                                      This  is  a Tagged Union structure. Only
-                                      one of the following top level keys  can
+                                      This is a Tagged Union  structure.  Only
+                                      one  of the following top level keys can
                                       be set: boolean, entityIdentifier, long,
                                       string, set, record, ipaddr, decimal.
 
@@ -1034,7 +1025,7 @@ OUTPUT
                                       Example: {"boolean": true}
 
                                    entityIdentifier -> (structure)
-                                      An    attribute    value     of     type
+                                      An     attribute     value    of    type
                                       EntityIdentifier .
 
                                       Example:  "entityIdentifier":  {  "enti-
@@ -1097,18 +1088,18 @@ OUTPUT
                                    The value of an attribute.
 
                                    Contains information about the runtime con-
-                                   text for a request for which an  authoriza-
+                                   text  for a request for which an authoriza-
                                    tion decision is made.
 
-                                   This  data  type is used as a member of the
-                                   ContextDefinition structure which  is  uses
+                                   This data type is used as a member  of  the
+                                   ContextDefinition  structure  which is uses
                                    as a request parameter for the IsAuthorized
                                    ,       BatchIsAuthorized       ,       and
                                    IsAuthorizedWithToken operations.
 
                                    NOTE:
-                                      This  is  a Tagged Union structure. Only
-                                      one of the following top level keys  can
+                                      This is a Tagged Union  structure.  Only
+                                      one  of the following top level keys can
                                       be set: boolean, entityIdentifier, long,
                                       string, set, record, ipaddr, decimal.
 
@@ -1118,7 +1109,7 @@ OUTPUT
                                       Example: {"boolean": true}
 
                                    entityIdentifier -> (structure)
-                                      An    attribute    value     of     type
+                                      An     attribute     value    of    type
                                       EntityIdentifier .
 
                                       Example:  "entityIdentifier":  {  "enti-
@@ -1185,21 +1176,21 @@ OUTPUT
                  request should be allowed or denied.
 
               determiningPolicies -> (list)
-                 The list of determining policies used to make the  authoriza-
-                 tion  decision.  For example, if there are two matching poli-
-                 cies, where one is a forbid and the other is a  permit,  then
+                 The  list of determining policies used to make the authoriza-
+                 tion decision. For example, if there are two  matching  poli-
+                 cies,  where  one is a forbid and the other is a permit, then
                  the forbid policy will be the determining policy. In the case
                  of multiple matching permit policies then there would be mul-
-                 tiple  determining  policies.  In  the  case that no policies
-                 match, and hence the response is DENY, there would be no  de-
+                 tiple determining policies. In  the  case  that  no  policies
+                 match,  and hence the response is DENY, there would be no de-
                  termining policies.
 
                  (structure)
-                     Contains  information  about one of the policies that de-
+                     Contains information about one of the policies  that  de-
                      termined an authorization decision.
 
                      This data type is used as an element in a response param-
-                     eter  for  the  IsAuthorized  ,  BatchIsAuthorized  , and
+                     eter for  the  IsAuthorized  ,  BatchIsAuthorized  ,  and
                      IsAuthorizedWithToken operations.
 
                      Example:      "determiningPolicies":[{"policyId":"SPEXAM-
@@ -1212,15 +1203,15 @@ OUTPUT
                         Example: "policyId":"SPEXAMPLEabcdefg111111"
 
               errors -> (list)
-                 Errors that occurred while making an authorization  decision.
-                 For  example, a policy might reference an entity or attribute
+                 Errors  that occurred while making an authorization decision.
+                 For example, a policy might reference an entity or  attribute
                  that doesn't exist in the request.
 
                  (structure)
                      Contains a description of an evaluation error.
 
-                     This  data  type  is  a   response   parameter   of   the
-                     IsAuthorized      ,      BatchIsAuthorized      ,     and
+                     This   data   type   is   a  response  parameter  of  the
+                     IsAuthorized     ,      BatchIsAuthorized      ,      and
                      IsAuthorizedWithToken operations.
 
                      errorDescription -> (string)
@@ -1228,4 +1219,4 @@ OUTPUT
 
 
 
-                                              BATCH-IS-AUTHORIZED-WITH-TOKEN()
+                                                         BATCH-IS-AUTHORIZED()
