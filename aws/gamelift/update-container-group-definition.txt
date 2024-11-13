@@ -1,125 +1,63 @@
-CREATE-CONTAINER-GROUP-DEFINITION()        CREATE-CONTAINER-GROUP-DEFINITION()
+UPDATE-CONTAINER-GROUP-DEFINITION()        UPDATE-CONTAINER-GROUP-DEFINITION()
 
 
 
 NAME
-       create-container-group-definition -
+       update-container-group-definition -
 
 DESCRIPTION
-       Creates  a  ContainerGroupDefinition that describes a set of containers
-       for hosting your game server with Amazon  GameLift  managed  containers
-       hosting.  An  Amazon GameLift container group is similar to a container
-       task or pod. Use container group definitions when  you  create  a  con-
-       tainer fleet with  CreateContainerFleet .
+       Updates  properties in an existing container group definition. This op-
+       eration doesn't replace the definition. Instead, it creates a new  ver-
+       sion of the definition and saves it separately. You can access all ver-
+       sions that you choose to retain.
 
-       A  container  group  definition  determines how Amazon GameLift deploys
-       your containers to each instance in a container fleet. You can maintain
-       multiple versions of a container group definition.
+       The only property you can't update is the container group type.
+          Request options:
 
-       There are two types of container groups:
+       o Update based on the latest version of the container group definition.
+         Specify the container group definition name only, or use an ARN value
+         without a version number. Provide updated values for  the  properties
+         that you want to change only. All other values remain the same as the
+         latest version.
 
-       o A  game  server container group has the containers that run your game
-         server application and supporting software. A game  server  container
-         group can have these container types:
+       o Update based on a specific version of the container group definition.
+         Specify the container group definition name and a source version num-
+         ber, or use an ARN value with a version number. Provide updated  val-
+         ues for the properties that you want to change only. All other values
+         remain the same as the source version.
 
-         o Game  server  container.  This container runs your game server. You
-           can define one game server container in  a  game  server  container
-           group.
+       o Change a game server container definition. Provide the  updated  con-
+         tainer definition.
 
-         o Support  container.  This  container runs software in parallel with
-           your game server. You can define up to 8 support  containers  in  a
-           game server group.
+       o Add  or change a support container definition. Provide a complete set
+         of container definitions, including the updated definition.
 
-       When  building a game server container group definition, you can choose
-       to bundle your game server executable and all dependent software into a
-       single game server container. Alternatively, you can separate the soft-
-       ware into one game server container and one or more support containers.
+       o Remove a support container definition. Provide a complete set of con-
+         tainer  definitions,  excluding the definition to remove. If the con-
+         tainer group has only one support container  definition,  provide  an
+         empty set.
+          Results:
 
-       On a container fleet instance, a game server container group can be de-
-       ployed  multiple  times  (depending on the compute resources of the in-
-       stance). This means that all containers  in  the  container  group  are
-       replicated together.
+       If  successful,  this  operation returns the complete properties of the
+       new container group definition version.
 
-       o A  per-instance  container  group  has  containers for processes that
-         aren't replicated on a container fleet instance. This  might  include
-         background  services, logging, test processes, or processes that need
-         to persist independently of the game  server  container  group.  When
-         building a per-instance container group, you can define up to 10 sup-
-         port containers.
-
-       NOTE:
-              This operation requires Identity  and  Access  Management  (IAM)
-              permissions  to  access container images in Amazon ECR reposito-
-              ries. See IAM permissions for Amazon GameLift for  help  setting
-              the appropriate permissions.
-
-          Request options
-
-       Use  this  operation  to  make the following types of requests. You can
-       specify values for the minimum required parameters  and  customize  op-
-       tional values later.
-
-       o Create  a game server container group definition. Provide the follow-
-         ing required parameter values:
-
-         o Name
-
-         o ContainerGroupType (GAME_SERVER )
-
-         o OperatingSystem (omit to use default value)
-
-         o TotalMemoryLimitMebibytes (omit to use default value)
-
-         o TotalVcpuLimit (omit to use default value)
-
-         o At least one GameServerContainerDefinition
-
-           o ContainerName
-
-           o ImageUrl
-
-           o PortConfiguration
-
-           o ServerSdkVersion (omit to use default value)
-
-       o Create a per-instance container group definition. Provide the follow-
-         ing required parameter values:
-
-         o Name
-
-         o ContainerGroupType (PER_INSTANCE )
-
-         o OperatingSystem (omit to use default value)
-
-         o TotalMemoryLimitMebibytes (omit to use default value)
-
-         o TotalVcpuLimit (omit to use default value)
-
-         o At least one SupportContainerDefinition
-
-           o ContainerName
-
-           o ImageUrl
-          Results
-
-       If successful, this request creates a ContainerGroupDefinition resource
-       and assigns a unique ARN value. You can update  most  properties  of  a
-       container group definition by calling  UpdateContainerGroupDefinition ,
-       and optionally save the update as a new version.
+       If the container group definition version is used in an active  fleets,
+       the  update  automatically  initiates a new fleet deployment of the new
+       version. You can track a fleet's  deployments  using   ListFleetDeploy-
+       ments .
 
        See also: AWS API Documentation
 
 SYNOPSIS
-            create-container-group-definition
+            update-container-group-definition
           --name <value>
-          [--container-group-type <value>]
-          --total-memory-limit-mebibytes <value>
-          --total-vcpu-limit <value>
           [--game-server-container-definition <value>]
           [--support-container-definitions <value>]
-          --operating-system <value>
+          [--total-memory-limit-mebibytes <value>]
+          [--total-vcpu-limit <value>]
           [--version-description <value>]
-          [--tags <value>]
+          [--source-version-number <value>]
+          [--operating-system <value>]
           [--cli-input-json <value>]
           [--generate-cli-skeleton <value>]
           [--debug]
@@ -139,137 +77,106 @@ SYNOPSIS
 
 OPTIONS
        --name (string)
-          A descriptive identifier for the  container  group  definition.  The
+          A  descriptive  identifier  for  the container group definition. The
           name value must be unique in an Amazon Web Services Region.
 
-       --container-group-type (string)
-          The  type of container group being defined. Container group type de-
-          termines how Amazon GameLift deploys the  container  group  on  each
-          fleet instance.
-
-          Default value: GAME_SERVER
-
-          Possible values:
-
-          o GAME_SERVER
-
-          o PER_INSTANCE
-
-       --total-memory-limit-mebibytes (integer)
-          The  maximum  amount of memory (in MiB) to allocate to the container
-          group. All containers in the group share this memory. If you specify
-          memory  limits  for an individual container, the total value must be
-          greater than any individual container's memory limit.
-
-          Default value: 1024
-
-       --total-vcpu-limit (double)
-          The maximum amount of vCPU units to allocate to the container  group
-          (1  vCPU  is  equal  to 1024 CPU units). All containers in the group
-          share this memory. If you specify vCPU limits  for  individual  con-
-          tainers, the total value must be equal to or greater than the sum of
-          the CPU limits for all containers in the group.
-
-          Default value: 1
-
        --game-server-container-definition (structure)
-          The definition for the game server container in this group. Define a
-          game  server  container  only  when  the  container  group  type  is
-          GAME_SERVER . Game server containers specify a container image  with
-          your  game  server build. You can pass in your container definitions
-          as a JSON file.
+          An updated definition for the game server container in  this  group.
+          Define a game server container only when the container group type is
+          GAME_SERVER . You can pass in your container definitions as  a  JSON
+          file.
 
           ContainerName -> (string)
-              A string  that  uniquely  identifies  the  container  definition
+              A  string  that  uniquely  identifies  the  container definition
               within a container group.
 
           DependsOn -> (list)
-              Establishes  dependencies  between this container and the status
+              Establishes dependencies between this container and  the  status
               of other containers in the same container group. A container can
               have dependencies on multiple different containers.
 
-              You  can  use  dependencies  to establish a startup/shutdown se-
-              quence across the container group. For example, you might  spec-
-              ify  that ContainerB has a START dependency on ContainerA . This
-              dependency means that ContainerB can't start  until  after  Con-
-              tainerA  has  started.  This dependency is reversed on shutdown,
+              You can use dependencies to  establish  a  startup/shutdown  se-
+              quence  across the container group. For example, you might spec-
+              ify that ContainerB has a START dependency on ContainerA .  This
+              dependency  means  that  ContainerB can't start until after Con-
+              tainerA has started. This dependency is  reversed  on  shutdown,
               which means that ContainerB must shut down before ContainerA can
               shut down.
 
               (structure)
-                 A  container's  dependency  on  another container in the same
-                 container group. The dependency  impacts  how  the  dependent
-                 container  is  able to start or shut down based the status of
+                 A container's dependency on another  container  in  the  same
+                 container  group.  The  dependency  impacts how the dependent
+                 container is able to start or shut down based the  status  of
                  the other container.
 
-                 For example, ContainerA is configured with the following  de-
-                 pendency:  a START dependency on ContainerB . This means that
-                 ContainerA can't start until ContainerB has started. It  also
+                 For  example, ContainerA is configured with the following de-
+                 pendency: a START dependency on ContainerB . This means  that
+                 ContainerA  can't start until ContainerB has started. It also
                  means that ContainerA must shut down before ContainerB .
 
                  eiifcbfhgrdurhnucnufkgbnbnnerrvbtjvljdetkehc**Part      of:**
                  GameServerContainerDefinition  ,   GameServerContainerDefini-
-                 tionInput  ,   SupportContainerDefinition  ,  SupportContain-
+                 tionInput ,   SupportContainerDefinition  ,   SupportContain-
                  erDefinitionInput
 
                  ContainerName -> (string)
-                     A descriptive label for  the  container  definition  that
+                     A  descriptive  label  for  the container definition that
                      this container depends on.
 
                  Condition -> (string)
-                     The  condition  that  the dependency container must reach
-                     before the dependent container can  start.  Valid  condi-
+                     The condition that the dependency  container  must  reach
+                     before  the  dependent  container can start. Valid condi-
                      tions include:
 
                      o START - The dependency container must have started.
 
-                     o COMPLETE  - The dependency container has run to comple-
+                     o COMPLETE - The dependency container has run to  comple-
                        tion (exits). Use this condition with nonessential con-
                        tainers, such as those that run a script and then exit.
-                       The dependency container can't  be  an  essential  con-
+                       The  dependency  container  can't  be an essential con-
                        tainer.
 
-                     o SUCCESS  -  The dependency container has run to comple-
+                     o SUCCESS - The dependency container has run  to  comple-
                        tion and exited with a zero status. The dependency con-
                        tainer can't be an essential container.
 
-                     o HEALTHY  -  The  dependency  container  has  passed its
+                     o HEALTHY -  The  dependency  container  has  passed  its
                        Docker health check. Use this condition with dependency
-                       containers  that  have  health  checks configured. This
+                       containers that have  health  checks  configured.  This
                        condition is confirmed at container group startup only.
 
           MountPoints -> (list)
-              A mount point that binds a path inside the container to  a  file
-              or  directory  on the host system and lets it access the file or
+              A  mount  point that binds a path inside the container to a file
+              or directory on the host system and lets it access the  file  or
               directory.
 
               (structure)
-                 A mount point that binds a container to a file  or  directory
+                 A  mount  point that binds a container to a file or directory
                  on the host system.
-                     Part  of:    GameServerContainerDefinition ,  GameServer-
-                     ContainerDefinitionInput ,  SupportContainerDefinition  ,
+                     Part of:   GameServerContainerDefinition  ,   GameServer-
+                     ContainerDefinitionInput  ,  SupportContainerDefinition ,
                      SupportContainerDefinitionInput
 
                  InstancePath -> (string)
                      The path to the source file or directory.
 
                  ContainerPath -> (string)
-                     The  mount  path on the container. If this property isn't
+                     The mount path on the container. If this  property  isn't
                      set, the instance path is used.
 
                  AccessLevel -> (string)
                      The type of access for the container.
 
           EnvironmentOverride -> (list)
-              A set of environment variables  to  pass  to  the  container  on
-              startup.  See  the ContainerDefinition::environment parameter in
+              A  set  of  environment  variables  to  pass to the container on
+              startup. See the ContainerDefinition::environment  parameter  in
               the Amazon Elastic Container Service API Reference .
 
               (structure)
-                 An environment variable to set inside  a  container,  in  the
+                 An  environment  variable  to  set inside a container, in the
                  form of a key-value pair.
-                     Part  of:    GameServerContainerDefinition ,  GameServer-
-                     ContainerDefinitionInput ,  SupportContainerDefinition  ,
+                     Part of:   GameServerContainerDefinition  ,   GameServer-
+                     ContainerDefinitionInput  ,  SupportContainerDefinition ,
                      SupportContainerDefinitionInput
 
                  Name -> (string)
@@ -279,29 +186,29 @@ OPTIONS
                      The environment variable value.
 
           ImageUri -> (string)
-              The  location  of  the  container image to deploy to a container
-              fleet. Provide an image in an Amazon Elastic Container  Registry
+              The location of the container image to  deploy  to  a  container
+              fleet.  Provide an image in an Amazon Elastic Container Registry
               public or private repository. The repository must be in the same
               Amazon Web Services account and Amazon Web Services Region where
-              you're  creating  the  container group definition. For limits on
-              image size, see Amazon GameLift endpoints and quotas .  You  can
+              you're creating the container group definition.  For  limits  on
+              image  size,  see Amazon GameLift endpoints and quotas . You can
               use any of the following image URI formats:
 
               o Image  ID  only:  [AWS  account].dkr.ecr.[AWS  region].amazon-
                 aws.com/[repository ID]
 
-              o Image ID and digest: [AWS  account].dkr.ecr.[AWS  region].ama-
+              o Image  ID  and digest: [AWS account].dkr.ecr.[AWS region].ama-
                 zonaws.com/[repository ID]@[digest]
 
-              o Image  ID  and tag: [AWS account].dkr.ecr.[AWS region].amazon-
+              o Image ID and tag: [AWS  account].dkr.ecr.[AWS  region].amazon-
                 aws.com/[repository ID]:[tag]
 
           PortConfiguration -> (structure)
-              A set of ports that Amazon GameLift can assign to  processes  in
-              the  container.  Processes, must be assigned a container port to
-              accept inbound traffic connections. For example, a  game  server
-              process  requires a container port to allow game clients to con-
-              nect to it. Container ports aren't directly accessed by  inbound
+              A  set  of ports that Amazon GameLift can assign to processes in
+              the container. Processes, must be assigned a container  port  to
+              accept  inbound  traffic connections. For example, a game server
+              process requires a container port to allow game clients to  con-
+              nect  to it. Container ports aren't directly accessed by inbound
               traffic. Instead, Amazon GameLift maps container ports to exter-
               nally accessible connection ports (see the container fleet prop-
               erty ConnectionPortRange ).
@@ -311,25 +218,25 @@ OPTIONS
                  can't overlap.
 
                  (structure)
-                     A set of one or more port numbers that can be  opened  on
+                     A  set  of one or more port numbers that can be opened on
                      the container.
                         Part of:   ContainerPortConfiguration
 
                      FromPort -> (integer)
-                        A  starting  value  for the range of allowed port num-
+                        A starting value for the range of  allowed  port  num-
                         bers.
 
                      ToPort -> (integer)
                         An ending value for the range of allowed port numbers.
-                        Port  numbers  are  end-inclusive.  This value must be
+                        Port numbers are end-inclusive.  This  value  must  be
                         equal to or greater than FromPort .
 
                      Protocol -> (string)
                         The network protocol that these ports support.
 
           ServerSdkVersion -> (string)
-              The Amazon GameLift server SDK version that the game  server  is
-              integrated  with.  Only  game  servers using 5.2.0 or higher are
+              The  Amazon  GameLift server SDK version that the game server is
+              integrated with. Only game servers using  5.2.0  or  higher  are
               compatible with container fleets.
 
        JSON Syntax:
@@ -373,62 +280,62 @@ OPTIONS
           }
 
        --support-container-definitions (list)
-          One or more definition for support containers in this group. You can
-          define  a  support container in any type of container group. You can
-          pass in your container definitions as a JSON file.
+          One  or  more  definitions for support containers in this group. You
+          can define a support container in any type of container  group.  You
+          can pass in your container definitions as a JSON file.
 
           (structure)
-              Describes a support container in a container group. You can  de-
+              Describes  a support container in a container group. You can de-
               fine a support container in either a game server container group
-              or a per-instance container group. Support containers don't  run
+              or  a per-instance container group. Support containers don't run
               game server processes.
 
               This definition includes container configuration, resources, and
               start instructions. Use this data type when creating or updating
-              a  container group definition. For properties of a deployed sup-
+              a container group definition. For properties of a deployed  sup-
               port container, see  SupportContainerDefinition .
-                 Use with:   CreateContainerGroupDefinition ,   UpdateContain-
+                 Use  with:   CreateContainerGroupDefinition ,  UpdateContain-
                  erGroupDefinition
 
               ContainerName -> (string)
-                 A  string  that  uniquely identifies the container definition
+                 A string that uniquely identifies  the  container  definition
                  within a container group.
 
               DependsOn -> (list)
-                 Establishes dependencies between this container and the  sta-
-                 tus  of  other containers in the same container group. A con-
-                 tainer can have dependencies on multiple  different  contain-
+                 Establishes  dependencies between this container and the sta-
+                 tus of other containers in the same container group.  A  con-
+                 tainer  can  have dependencies on multiple different contain-
                  ers.
 
                  .
 
-                 You  can use dependencies to establish a startup/shutdown se-
-                 quence across the container group.  For  example,  you  might
-                 specify  that ContainerB has a START dependency on ContainerA
+                 You can use dependencies to establish a startup/shutdown  se-
+                 quence  across  the  container  group. For example, you might
+                 specify that ContainerB has a START dependency on  ContainerA
                  . This dependency means that ContainerB can't start until af-
-                 ter  ContainerA  has  started. This dependency is reversed on
-                 shutdown, which means that ContainerB must shut  down  before
+                 ter ContainerA has started. This dependency  is  reversed  on
+                 shutdown,  which  means that ContainerB must shut down before
                  ContainerA can shut down.
 
                  (structure)
                      A container's dependency on another container in the same
                      container group. The dependency impacts how the dependent
-                     container  is able to start or shut down based the status
+                     container is able to start or shut down based the  status
                      of the other container.
 
-                     For example, ContainerA is configured with the  following
+                     For  example, ContainerA is configured with the following
                      dependency: a START dependency on ContainerB . This means
                      that ContainerA can't start until ContainerB has started.
-                     It  also means that ContainerA must shut down before Con-
+                     It also means that ContainerA must shut down before  Con-
                      tainerB .
 
                      eiifcbfhgrdurhnucnufkgbnbnnerrvbtjvljdetkehc**Part  of:**
                      GameServerContainerDefinition ,  GameServerContainerDefi-
-                     nitionInput ,  SupportContainerDefinition ,   SupportCon-
+                     nitionInput  ,  SupportContainerDefinition ,  SupportCon-
                      tainerDefinitionInput
 
                      ContainerName -> (string)
-                        A  descriptive label for the container definition that
+                        A descriptive label for the container definition  that
                         this container depends on.
 
                      Condition -> (string)
@@ -438,31 +345,31 @@ OPTIONS
 
                         o START - The dependency container must have started.
 
-                        o COMPLETE - The dependency container has run to  com-
-                          pletion  (exits).  Use this condition with nonessen-
+                        o COMPLETE  - The dependency container has run to com-
+                          pletion (exits). Use this condition  with  nonessen-
                           tial containers, such as those that run a script and
-                          then  exit. The dependency container can't be an es-
+                          then exit. The dependency container can't be an  es-
                           sential container.
 
-                        o SUCCESS - The dependency container has run  to  com-
-                          pletion  and  exited  with a zero status. The depen-
+                        o SUCCESS  -  The dependency container has run to com-
+                          pletion and exited with a zero  status.  The  depen-
                           dency container can't be an essential container.
 
-                        o HEALTHY - The dependency container  has  passed  its
-                          Docker  health check. Use this condition with depen-
+                        o HEALTHY  -  The  dependency container has passed its
+                          Docker health check. Use this condition with  depen-
                           dency containers that have health checks configured.
                           This  condition  is  confirmed  at  container  group
                           startup only.
 
               MountPoints -> (list)
-                 A mount point that binds a path inside  the  container  to  a
-                 file  or  directory on the host system and lets it access the
+                 A  mount  point  that  binds a path inside the container to a
+                 file or directory on the host system and lets it  access  the
                  file or directory.
 
                  (structure)
-                     A mount point that binds a container to a file or  direc-
+                     A  mount point that binds a container to a file or direc-
                      tory on the host system.
-                        Part   of:    GameServerContainerDefinition  ,   Game-
+                        Part  of:    GameServerContainerDefinition  ,    Game-
                         ServerContainerDefinitionInput ,  SupportContainerDef-
                         inition ,  SupportContainerDefinitionInput
 
@@ -470,21 +377,21 @@ OPTIONS
                         The path to the source file or directory.
 
                      ContainerPath -> (string)
-                        The  mount  path  on  the  container. If this property
+                        The mount path on  the  container.  If  this  property
                         isn't set, the instance path is used.
 
                      AccessLevel -> (string)
                         The type of access for the container.
 
               EnvironmentOverride -> (list)
-                 A set of environment variables to pass to  the  container  on
-                 startup.  See  the ContainerDefinition::environment parameter
+                 A  set  of  environment variables to pass to the container on
+                 startup. See the  ContainerDefinition::environment  parameter
                  in the Amazon Elastic Container Service API Reference .
 
                  (structure)
                      An environment variable to set inside a container, in the
                      form of a key-value pair.
-                        Part   of:    GameServerContainerDefinition  ,   Game-
+                        Part  of:    GameServerContainerDefinition  ,    Game-
                         ServerContainerDefinitionInput ,  SupportContainerDef-
                         inition ,  SupportContainerDefinitionInput
 
@@ -496,21 +403,21 @@ OPTIONS
 
               Essential -> (boolean)
                  Flags the container as vital for the container group to func-
-                 tion properly. If an essential container  fails,  the  entire
+                 tion  properly.  If  an essential container fails, the entire
                  container group restarts. At least one support container in a
                  per-instance container group must be essential. When flagging
-                 a  container  as  essential, also configure a health check so
+                 a container as essential, also configure a  health  check  so
                  that the container can signal that it's healthy.
 
               HealthCheck -> (structure)
-                 Configuration for a non-terminal health  check.  A  container
+                 Configuration  for  a  non-terminal health check. A container
                  automatically restarts if it stops functioning. With a health
-                 check, you can define additional reasons to flag a  container
-                 as  unhealthy and restart it. If an essential container fails
+                 check,  you can define additional reasons to flag a container
+                 as unhealthy and restart it. If an essential container  fails
                  a health check, the entire container group restarts.
 
                  Command -> (list)
-                     A string array that specifies the command that  the  con-
+                     A  string  array that specifies the command that the con-
                      tainer runs to determine if it's healthy.
 
                      (string)
@@ -520,83 +427,83 @@ OPTIONS
 
                  Retries -> (integer)
                      The number of times to retry a failed health check before
-                     flagging the container unhealthy. The first  run  of  the
+                     flagging  the  container  unhealthy. The first run of the
                      command does not count as a retry.
 
                  StartPeriod -> (integer)
-                     The  optional  grace  period  (in seconds) to give a con-
-                     tainer time to bootstrap before the first  failed  health
+                     The optional grace period (in seconds)  to  give  a  con-
+                     tainer  time  to bootstrap before the first failed health
                      check counts toward the number of retries.
 
                  Timeout -> (integer)
-                     The  time  period (in seconds) to wait for a health check
+                     The time period (in seconds) to wait for a  health  check
                      to succeed before counting a failed health check.
 
               ImageUri -> (string)
-                 The location of the container image to deploy to a  container
-                 fleet.  Provide  an image in an Amazon Elastic Container Reg-
+                 The  location of the container image to deploy to a container
+                 fleet. Provide an image in an Amazon Elastic  Container  Reg-
                  istry public or private repository. The repository must be in
-                 the  same Amazon Web Services account and Amazon Web Services
-                 Region where you're creating the container group  definition.
-                 For  limits  on image size, see Amazon GameLift endpoints and
+                 the same Amazon Web Services account and Amazon Web  Services
+                 Region  where you're creating the container group definition.
+                 For limits on image size, see Amazon GameLift  endpoints  and
                  quotas . You can use any of the following image URI formats:
 
-                 o Image ID only: [AWS  account].dkr.ecr.[AWS  region].amazon-
+                 o Image  ID  only: [AWS account].dkr.ecr.[AWS region].amazon-
                    aws.com/[repository ID]
 
-                 o Image   ID   and  digest:  [AWS  account].dkr.ecr.[AWS  re-
+                 o Image  ID  and  digest:  [AWS   account].dkr.ecr.[AWS   re-
                    gion].amazonaws.com/[repository ID]@[digest]
 
-                 o Image ID and tag: [AWS  account].dkr.ecr.[AWS  region].ama-
+                 o Image  ID  and tag: [AWS account].dkr.ecr.[AWS region].ama-
                    zonaws.com/[repository ID]:[tag]
 
               MemoryHardLimitMebibytes -> (integer)
-                 A  specified  amount  of  memory (in MiB) to reserve for this
-                 container. If you don't specify a  container-specific  memory
-                 limit,  the container shares the container group's total mem-
+                 A specified amount of memory (in MiB)  to  reserve  for  this
+                 container.  If  you don't specify a container-specific memory
+                 limit, the container shares the container group's total  mem-
                  ory allocation.
-                     Related data type:   ContainerGroupDefinition  TotalMemo-
+                     Related  data type:   ContainerGroupDefinition TotalMemo-
                      ryLimitMebibytes
 
               PortConfiguration -> (structure)
-                 A  set  of ports that Amazon GameLift can assign to processes
-                 in the container. Any processes that accept  inbound  traffic
-                 connections  must  be assigned a port from this set. The con-
-                 tainer port range must be large enough to assign one to  each
+                 A set of ports that Amazon GameLift can assign  to  processes
+                 in  the  container. Any processes that accept inbound traffic
+                 connections must be assigned a port from this set.  The  con-
+                 tainer  port range must be large enough to assign one to each
                  process in the container that needs one.
 
-                 Container  ports aren't directly accessed by inbound traffic.
-                 Amazon GameLift maps these container ports to externally  ac-
-                 cessible  connection ports, which are assigned as needed from
+                 Container ports aren't directly accessed by inbound  traffic.
+                 Amazon  GameLift maps these container ports to externally ac-
+                 cessible connection ports, which are assigned as needed  from
                  the container fleet's ConnectionPortRange .
 
                  ContainerPortRanges -> (list)
-                     A set of one or more container port  number  ranges.  The
+                     A  set  of  one or more container port number ranges. The
                      ranges can't overlap.
 
                      (structure)
-                        A  set  of one or more port numbers that can be opened
+                        A set of one or more port numbers that can  be  opened
                         on the container.
                             Part of:   ContainerPortConfiguration
 
                         FromPort -> (integer)
-                            A starting value for the  range  of  allowed  port
+                            A  starting  value  for  the range of allowed port
                             numbers.
 
                         ToPort -> (integer)
                             An ending value for the range of allowed port num-
-                            bers. Port numbers are end-inclusive.  This  value
+                            bers.  Port  numbers are end-inclusive. This value
                             must be equal to or greater than FromPort .
 
                         Protocol -> (string)
                             The network protocol that these ports support.
 
               Vcpu -> (double)
-                 The  number  of vCPU units to reserve for this container. The
-                 container can use more resources when needed,  if  available.
-                 If  you don't reserve CPU units for this container, it shares
+                 The number of vCPU units to reserve for this  container.  The
+                 container  can  use more resources when needed, if available.
+                 If you don't reserve CPU units for this container, it  shares
                  the container group's total vCPU limit.
-                     Related  data  type:    ContainerGroupDefinition   Total-
+                     Related   data  type:    ContainerGroupDefinition  Total-
                      CpuLimit
 
        JSON Syntax:
@@ -651,11 +558,30 @@ OPTIONS
             ...
           ]
 
+       --total-memory-limit-mebibytes (integer)
+          The maximum amount of memory (in MiB) to allocate to  the  container
+          group. All containers in the group share this memory. If you specify
+          memory limits for an individual container, the total value  must  be
+          greater than any individual container's memory limit.
+
+       --total-vcpu-limit (double)
+          The  maximum amount of vCPU units to allocate to the container group
+          (1 vCPU is equal to 1024 CPU units). All  containers  in  the  group
+          share  this  memory.  If you specify vCPU limits for individual con-
+          tainers, the total value must be equal to or greater than the sum of
+          the CPU limits for all containers in the group.
+
+       --version-description (string)
+          A description for this update to the container group definition.
+
+       --source-version-number (integer)
+          The  container  group  definition version to update. The new version
+          starts with values from the source version, and then updates  values
+          included in this request.
+
        --operating-system (string)
           The  platform  that all containers in the group use. Containers in a
           group must run on the same operating system.
-
-          Default value: AMAZON_LINUX_2023
 
           NOTE:
               Amazon Linux 2 (AL2) will reach end of support on 6/30/2025. See
@@ -669,64 +595,17 @@ OPTIONS
 
           o AMAZON_LINUX_2023
 
-       --version-description (string)
-          A  description for the initial version of this container group defi-
-          nition.
-
-       --tags (list)
-          A list of labels to assign to the  container  group  definition  re-
-          source.  Tags  are developer-defined key-value pairs. Tagging Amazon
-          Web Services resources are useful for  resource  management,  access
-          management  and  cost  allocation. For more information, see Tagging
-          Amazon Web Services Resources in the  Amazon  Web  Services  General
-          Reference .
-
-          (structure)
-              A label that you can assign to a Amazon GameLift resource.
-                 Learn more
-
-                 Tagging  Amazon Web Services Resources in the Amazon Web Ser-
-                 vices General Reference
-
-                 Amazon Web Services Tagging Strategies
-
-                 Related actions
-
-                 All APIs by task
-
-              Key -> (string)
-                 The key for a developer-defined key value pair for tagging an
-                 Amazon Web Services resource.
-
-              Value -> (string)
-                 The  value for a developer-defined key value pair for tagging
-                 an Amazon Web Services resource.
-
-       Shorthand Syntax:
-
-          Key=string,Value=string ...
-
-       JSON Syntax:
-
-          [
-            {
-              "Key": "string",
-              "Value": "string"
-            }
-            ...
-          ]
-
-       --cli-input-json (string) Performs service operation based on the  JSON
-       string  provided. The JSON string follows the format provided by --gen-
-       erate-cli-skeleton. If other arguments  are  provided  on  the  command
-       line,  the CLI values will override the JSON-provided values. It is not
+       --cli-input-json  (string) Performs service operation based on the JSON
+       string provided. The JSON string follows the format provided by  --gen-
+       erate-cli-skeleton.  If  other  arguments  are  provided on the command
+       line, the CLI values will override the JSON-provided values. It is  not
        possible to pass arbitrary binary values using a JSON-provided value as
        the string will be taken literally.
 
-       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
+       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
        output without sending an API request. If provided with no value or the
        value input, prints a sample input JSON that can be used as an argument
-       for --cli-input-json. If provided with the value output,  it  validates
+       for  --cli-input-json.  If provided with the value output, it validates
        the command inputs and returns a sample output JSON for that command.
 
 GLOBAL OPTIONS
@@ -740,13 +619,13 @@ GLOBAL OPTIONS
 
        --no-verify-ssl (boolean)
 
-       By  default, the AWS CLI uses SSL when communicating with AWS services.
+       By default, the AWS CLI uses SSL when communicating with AWS  services.
        For each SSL connection, the AWS CLI will verify SSL certificates. This
        option overrides the default behavior of verifying SSL certificates.
 
        --no-paginate (boolean)
 
-       Disable  automatic pagination. If automatic pagination is disabled, the
+       Disable automatic pagination. If automatic pagination is disabled,  the
        AWS CLI will only make one call, for the first page of results.
 
        --output (string)
@@ -787,7 +666,7 @@ GLOBAL OPTIONS
 
        --no-sign-request (boolean)
 
-       Do not sign requests. Credentials will not be loaded if  this  argument
+       Do  not  sign requests. Credentials will not be loaded if this argument
        is provided.
 
        --ca-bundle (string)
@@ -797,20 +676,19 @@ GLOBAL OPTIONS
 
        --cli-read-timeout (int)
 
-       The maximum socket read time in seconds. If the value is set to 0,  the
-       socket  read  will be blocking and not timeout. The default value is 60
+       The  maximum socket read time in seconds. If the value is set to 0, the
+       socket read will be blocking and not timeout. The default value  is  60
        seconds.
 
        --cli-connect-timeout (int)
 
-       The maximum socket connect time in seconds. If the value is set  to  0,
-       the  socket connect will be blocking and not timeout. The default value
+       The  maximum  socket connect time in seconds. If the value is set to 0,
+       the socket connect will be blocking and not timeout. The default  value
        is 60 seconds.
 
 OUTPUT
        ContainerGroupDefinition -> (structure)
-          The properties of the new container group definition  resource.  You
-          can use this resource to create a container fleet.
+          The properties of the updated container group definition version.
 
           ContainerGroupDefinitionArn -> (string)
               The  Amazon  Resource  Name (ARN ) that is assigned to an Amazon
@@ -1274,4 +1152,4 @@ OUTPUT
 
 
 
-                                           CREATE-CONTAINER-GROUP-DEFINITION()
+                                           UPDATE-CONTAINER-GROUP-DEFINITION()
