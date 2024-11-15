@@ -259,6 +259,13 @@ OUTPUT
                  Whether the channel is private (enabled for  playback  autho-
                  rization). Default: false .
 
+              containerFormat -> (string)
+                 Indicates  which content-packaging format is used (MPEG-TS or
+                 fMP4). If multitrackInputConfiguration is specified  and  en-
+                 abled  is true , then containerFormat is required and must be
+                 set to FRAGMENTED_MP4 . Otherwise, containerFormat may be set
+                 to TS or FRAGMENTED_MP4 . Default: TS .
+
               ingestEndpoint -> (string)
                  Channel  ingest endpoint, part of the definition of an ingest
                  server, used when you set up streaming software.
@@ -271,6 +278,26 @@ OUTPUT
                  Channel  latency  mode.  Use  NORMAL to broadcast and deliver
                  live video up to Full HD. Use LOW for near-real-time interac-
                  tion with viewers. Default: LOW .
+
+              multitrackInputConfiguration -> (structure)
+                 Object specifying multitrack input configuration. Default: no
+                 multitrack input configuration is specified.
+
+                 enabled -> (boolean)
+                     Indicates whether multitrack input is enabled. Can be set
+                     to  true  only  if channel type is STANDARD . Setting en-
+                     abled to true with any other channel type will  cause  an
+                     exception.  If  true  , then policy , maximumResolution ,
+                     and containerFormat  are  required,  and  containerFormat
+                     must be set to FRAGMENTED_MP4 . Default: false .
+
+                 maximumResolution -> (string)
+                     Maximum  resolution for multitrack input. Required if en-
+                     abled is true .
+
+                 policy -> (string)
+                     Indicates whether multitrack  input  is  allowed  or  re-
+                     quired. Required if enabled is true .
 
               name -> (string)
                  Channel name.
@@ -332,7 +359,15 @@ OUTPUT
               streams, this is NULL .
 
           ingestConfiguration -> (structure)
-              The properties of the incoming RTMP stream for the stream.
+              The properties of the incoming RTMP stream.
+                 Note:   ingestConfiguration is deprecated in favor of ingest-
+                 Configurations but retained to ensure backward compatibility.
+                 If multitrack is not enabled, ingestConfiguration and ingest-
+                 Configurations contain  the  same  data,  namely  information
+                 about  track0 (the sole track). If multitrack is enabled, in-
+                 gestConfiguration contains data  for  only  the  first  track
+                 (track0)  and  ingestConfigurations  contains  data  for  all
+                 tracks.
 
               audio -> (structure)
                  Encoder settings for audio.
@@ -347,20 +382,25 @@ OUTPUT
                      Number of audio samples recorded per second.
 
                  targetBitrate -> (long)
-                     The  expected  ingest  bitrate (bits per second). This is
+                     The expected ingest bitrate (bits per  second).  This  is
                      configured in the encoder.
+
+                 track -> (string)
+                     Name  of  the  audio  track  (if  the stream has an audio
+                     track). If multitrack is not enabled, this is track0 (the
+                     sole track).
 
               video -> (structure)
                  Encoder settings for video.
 
                  avcLevel -> (string)
-                     Indicates the degree of required decoder performance  for
-                     a  profile. Normally this is set automatically by the en-
+                     Indicates  the degree of required decoder performance for
+                     a profile. Normally this is set automatically by the  en-
                      coder. For details, see the H.264 specification.
 
                  avcProfile -> (string)
-                     Indicates to the decoder the  requirements  for  decoding
-                     the  stream. For definitions of the valid values, see the
+                     Indicates  to  the  decoder the requirements for decoding
+                     the stream. For definitions of the valid values, see  the
                      H.264 specification.
 
                  codec -> (string)
@@ -368,6 +408,17 @@ OUTPUT
 
                  encoder -> (string)
                      Software or hardware used to encode the video.
+
+                 level -> (string)
+                     Indicates  the degree of required decoder performance for
+                     a profile. Normally this is set automatically by the  en-
+                     coder. When an AVC codec is used, this field has the same
+                     value as avcLevel .
+
+                 profile -> (string)
+                     Indicates to the decoder the  requirements  for  decoding
+                     the stream. When an AVC codec is used, this field has the
+                     same value as avcProfile .
 
                  targetBitrate -> (long)
                      The expected ingest bitrate (bits per  second).  This  is
@@ -377,11 +428,103 @@ OUTPUT
                      The  expected ingest framerate. This is configured in the
                      encoder.
 
+                 track -> (string)
+                     Name of the video track. If multitrack  is  not  enabled,
+                     this is track0 (the sole track).
+
                  videoHeight -> (long)
                      Video-resolution height in pixels.
 
                  videoWidth -> (long)
                      Video-resolution width in pixels.
+
+          ingestConfigurations -> (structure)
+              The properties of the incoming RTMP stream. If multitrack is en-
+              abled, ingestConfigurations contains data for all tracks; other-
+              wise, it contains data only for track0 (the sole track).
+
+              audioConfigurations -> (list)
+                 Encoder settings for audio.
+
+                 (structure)
+                     Object  specifying  a streams audio configuration, as set
+                     up by the broadcaster (usually in an  encoder).  This  is
+                     part  of  the  IngestConfigurations object and the depre-
+                     cated  IngestConfiguration object. It is used  for  moni-
+                     toring stream health.
+
+                     channels -> (long)
+                        Number of audio channels.
+
+                     codec -> (string)
+                        Codec used for the audio encoding.
+
+                     sampleRate -> (long)
+                        Number of audio samples recorded per second.
+
+                     targetBitrate -> (long)
+                        The expected ingest bitrate (bits per second). This is
+                        configured in the encoder.
+
+                     track -> (string)
+                        Name of the audio track (if the stream  has  an  audio
+                        track).  If  multitrack is not enabled, this is track0
+                        (the sole track).
+
+              videoConfigurations -> (list)
+                 Encoder settings for video
+
+                 (structure)
+                     Object specifying a streams video configuration,  as  set
+                     up  by  the  broadcaster (usually in an encoder). This is
+                     part of the  IngestConfigurations object and  the  depre-
+                     cated   IngestConfiguration  object. It is used for moni-
+                     toring stream health.
+
+                     avcLevel -> (string)
+                        Indicates the degree of required  decoder  performance
+                        for  a  profile. Normally this is set automatically by
+                        the encoder. For details, see the H.264 specification.
+
+                     avcProfile -> (string)
+                        Indicates to the decoder the requirements for decoding
+                        the  stream.  For definitions of the valid values, see
+                        the H.264 specification.
+
+                     codec -> (string)
+                        Codec used for the video encoding.
+
+                     encoder -> (string)
+                        Software or hardware used to encode the video.
+
+                     level -> (string)
+                        Indicates the degree of required  decoder  performance
+                        for  a  profile. Normally this is set automatically by
+                        the encoder. When an AVC codec is used, this field has
+                        the same value as avcLevel .
+
+                     profile -> (string)
+                        Indicates to the decoder the requirements for decoding
+                        the stream. When an AVC codec is used, this field  has
+                        the same value as avcProfile .
+
+                     targetBitrate -> (long)
+                        The expected ingest bitrate (bits per second). This is
+                        configured in the encoder.
+
+                     targetFramerate -> (long)
+                        The expected ingest framerate. This is  configured  in
+                        the encoder.
+
+                     track -> (string)
+                        Name of the video track. If multitrack is not enabled,
+                        this is track0 (the sole track).
+
+                     videoHeight -> (long)
+                        Video-resolution height in pixels.
+
+                     videoWidth -> (long)
+                        Video-resolution width in pixels.
 
           recordingConfiguration -> (structure)
               The properties of recording the live stream.
@@ -481,28 +624,29 @@ OUTPUT
                      The targeted thumbnail-generation  interval  in  seconds.
                      This is configurable (and required) only if recordingMode
                      is INTERVAL . Default: 60.
-                        Important: For the BASIC channel type, setting a value
+                        Important: For the BASIC channel type, or the STANDARD
+                        channel  type  with  multitrack input, setting a value
                         for  targetIntervalSeconds  does  not  guarantee  that
-                        thumbnails are generated at  the  specified  interval.
-                        For  thumbnails  to  be  generated at the targetInter-
-                        valSeconds interval, the IDR/Keyframe  value  for  the
-                        input  video  must be less than the targetIntervalSec-
+                        thumbnails  are  generated  at the specified interval.
+                        For thumbnails to be  generated  at  the  targetInter-
+                        valSeconds  interval,  the  IDR/Keyframe value for the
+                        input video must be less than  the  targetIntervalSec-
                         onds value. See Amazon IVS Streaming Configuration for
                         information on setting IDR/Keyframe to the recommended
                         value in video-encoder settings.
 
           startTime -> (timestamp)
-              Time when the channel went live. This is an ISO 8601  timestamp;
+              Time  when the channel went live. This is an ISO 8601 timestamp;
               note that this is returned as a string .
 
           streamId -> (string)
-              Unique  identifier  for  a live or previously live stream in the
+              Unique identifier for a live or previously live  stream  in  the
               specified channel.
 
           truncatedEvents -> (list)
-              List of Amazon IVS events that the stream encountered. The  list
-              is  sorted  by most recent events and contains up to 500 events.
-              For Amazon IVS events, see Using Amazon EventBridge with  Amazon
+              List  of Amazon IVS events that the stream encountered. The list
+              is sorted by most recent events and contains up to  500  events.
+              For  Amazon IVS events, see Using Amazon EventBridge with Amazon
               IVS .
 
               (structure)
@@ -511,21 +655,50 @@ OUTPUT
 
                  code -> (string)
                      Provides additional details about the stream event. There
-                     are  several  values; note that the long descriptions are
-                     provided in the IVS console but not delivered through the
-                     IVS API or EventBridge:
+                     are several values; the long descriptions are provided in
+                     the  IVS console but not delivered through the IVS API or
+                     EventBridge. Multitrack-related codes are used  only  for
+                     certain Session Ended events.
 
-                     o StreamTakeoverMediaMismatch   The  broadcast client at-
-                       tempted to take over with  different  media  properties
+                     o MultitrackInputNotAllowed   The  broadcast  client  at-
+                       tempted to connect with multitrack  input,  but  multi-
+                       track  input was not enabled on the channel. Check your
+                       broadcast software settings or set  MultitrackInputCon-
+                       figuration.Policy to ALLOW or REQUIRE .
+
+                     o MultitrackInputRequired  The broadcast client attempted
+                       to connect with single-track video, but multitrack  in-
+                       put  is  required  on  this  channel. Enable multitrack
+                       video in your broadcast software or configure the chan-
+                       nels MultitrackInputConfiguration.Policy to ALLOW .
+
+                     o InvalidGetClientConfigurationStreamKey   The  broadcast
+                       client attempted to connect with an  invalid,  expired,
+                       or corrupt stream key.
+
+                     o GetClientConfigurationStreamKeyRequired   The broadcast
+                       client attempted to  stream  multitrack  video  without
+                       providing  an  authenticated stream key from GetClient-
+                       Configuration.
+
+                     o InvalidMultitrackInputTrackCount  The multitrack  input
+                       stream contained an invalid number of tracks.
+
+                     o InvalidMultitrackInputVideoTrackMediaProperties     The
+                       multitrack input stream contained one  or  more  tracks
+                       with  an invalid codec, resolution, bitrate, or framer-
+                       ate.
+
+                     o StreamTakeoverMediaMismatch  The broadcast  client  at-
+                       tempted  to  take  over with different media properties
                        (e.g., codec, resolution, or video track type) from the
                        original stream.
 
                      o StreamTakeoverInvalidPriority  The broadcast client at-
                        tempted a takeover with either a priority integer value
                        equal to or lower than the original stream's value or a
-                       value outside the allowed range of 1 to 2,147,483,647.
-
-                     o StreamTakeoverLimitBreached    The   broadcast   client
+                       value outside the allowed range of 1 to  2,147,483,647.
+                       StreamTakeoverLimitBreached    The   broadcast   client
                        reached the maximum allowed takeover attempts for  this
                        stream.
 
