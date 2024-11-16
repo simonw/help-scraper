@@ -15,7 +15,7 @@ SYNOPSIS
             create-firewall-rule
           [--creator-request-id <value>]
           --firewall-rule-group-id <value>
-          --firewall-domain-list-id <value>
+          [--firewall-domain-list-id <value>]
           --priority <value>
           --action <value>
           [--block-response <value>]
@@ -25,6 +25,8 @@ SYNOPSIS
           --name <value>
           [--firewall-domain-redirection-action <value>]
           [--qtype <value>]
+          [--dns-threat-protection <value>]
+          [--confidence-threshold <value>]
           [--cli-input-json <value>]
           [--generate-cli-skeleton <value>]
           [--debug]
@@ -54,28 +56,31 @@ OPTIONS
           create the rule.
 
        --firewall-domain-list-id (string)
-          The ID of the domain list that you want to use in the rule.
+          The ID of the domain list that you want to use in the rule. Can't be
+          used together with DnsThreatProtecton .
 
        --priority (integer)
-          The setting that determines the processing order of the rule in  the
-          rule  group. DNS Firewall processes the rules in a rule group by or-
+          The  setting that determines the processing order of the rule in the
+          rule group. DNS Firewall processes the rules in a rule group by  or-
           der of priority, starting from the lowest setting.
 
           You must specify a unique priority for each rule in a rule group. To
-          make  it  easier to insert rules later, leave space between the num-
-          bers, for example, use 100, 200, and so on. You can change the  pri-
+          make it easier to insert rules later, leave space between  the  num-
+          bers,  for example, use 100, 200, and so on. You can change the pri-
           ority setting for the rules in a rule group at any time.
 
        --action (string)
-          The  action  that  DNS  Firewall  should take on a DNS query when it
-          matches one of the domains in the rule's domain list:
+          The action that DNS Firewall should take on  a  DNS  query  when  it
+          matches one of the domains in the rule's domain list, or a threat in
+          a DNS Firewall Advanced rule:
 
-          o ALLOW - Permit the request to go through.
+          o ALLOW - Permit the request to go through. Not  available  for  DNS
+            Firewall Advanced rules.
 
-          o ALERT - Permit the request and send  metrics  and  logs  to  Cloud
+          o ALERT  -  Permit  the  request  and send metrics and logs to Cloud
             Watch.
 
-          o BLOCK  - Disallow the request. This option requires additional de-
+          o BLOCK - Disallow the request. This option requires additional  de-
             tails in the rule's BlockResponse .
 
           Possible values:
@@ -87,16 +92,16 @@ OPTIONS
           o ALERT
 
        --block-response (string)
-          The way that you want DNS Firewall to block the request,  used  with
+          The  way  that you want DNS Firewall to block the request, used with
           the rule action setting BLOCK .
 
-          o NODATA  - Respond indicating that the query was successful, but no
+          o NODATA - Respond indicating that the query was successful, but  no
             response is available for it.
 
-          o NXDOMAIN - Respond indicating that the domain name that's  in  the
+          o NXDOMAIN  -  Respond indicating that the domain name that's in the
             query doesn't exist.
 
-          o OVERRIDE  - Provide a custom override in the response. This option
+          o OVERRIDE - Provide a custom override in the response. This  option
             requires custom handling details in the rule's BlockOverride* set-
             tings.
 
@@ -111,14 +116,14 @@ OPTIONS
           o OVERRIDE
 
        --block-override-domain (string)
-          The  custom  DNS  record to send back in response to the query. Used
+          The custom DNS record to send back in response to  the  query.  Used
           for the rule action BLOCK with a BlockResponse setting of OVERRIDE .
 
           This setting is required if the BlockResponse setting is OVERRIDE .
 
        --block-override-dns-type (string)
-          The DNS record's type. This determines  the  format  of  the  record
-          value  that  you provided in BlockOverrideDomain . Used for the rule
+          The  DNS  record's  type.  This  determines the format of the record
+          value that you provided in BlockOverrideDomain . Used for  the  rule
           action BLOCK with a BlockResponse setting of OVERRIDE .
 
           This setting is required if the BlockResponse setting is OVERRIDE .
@@ -128,7 +133,7 @@ OPTIONS
           o CNAME
 
        --block-override-ttl (integer)
-          The recommended amount of time, in seconds, for the DNS resolver  or
+          The  recommended amount of time, in seconds, for the DNS resolver or
           web browser to cache the provided override record. Used for the rule
           action BLOCK with a BlockResponse setting of OVERRIDE .
 
@@ -140,12 +145,12 @@ OPTIONS
        --firewall-domain-redirection-action (string)
           How you want the the rule to evaluate DNS redirection in the DNS re-
           direction chain, such as CNAME or DNAME.
-              Inspect_Redirection_Domain (Default) inspects all domains in the
-              redirection chain. The individual  domains  in  the  redirection
+              INSPECT_REDIRECTION_DOMAIN : (Default) inspects all  domains  in
+              the redirection chain. The individual domains in the redirection
               chain must be added to the domain list.
 
-              Trust_Redirection_Domain  inspects  only the first domain in the
-              redirection chain. You don't need to add the subsequent  domains
+              TRUST_REDIRECTION_DOMAIN : Inspects only the first domain in the
+              redirection  chain. You don't need to add the subsequent domains
               in the domain in the redirection list to the domain list.
 
           Possible values:
@@ -155,19 +160,19 @@ OPTIONS
           o TRUST_REDIRECTION_DOMAIN
 
        --qtype (string)
-          The  DNS  query  type  you want the rule to evaluate. Allowed values
+          The DNS query type you want the rule  to  evaluate.  Allowed  values
           are;
 
           o A: Returns an IPv4 address.
 
           o AAAA: Returns an Ipv6 address.
 
-          o CAA: Restricts CAs that can create SSL/TLS certifications for  the
+          o CAA:  Restricts CAs that can create SSL/TLS certifications for the
             domain.
 
           o CNAME: Returns another domain name.
 
-          o DS:  Record  that identifies the DNSSEC signing key of a delegated
+          o DS: Record that identifies the DNSSEC signing key of  a  delegated
             zone.
 
           o MX: Specifies mail servers.
@@ -186,10 +191,41 @@ OPTIONS
 
           o TXT: Verifies email senders and application-specific values.
 
-          o A query type you define by using the DNS type ID, for  example  28
+          o A  query  type you define by using the DNS type ID, for example 28
             for AAAA. The values must be defined as TYPENUMBER, where the NUM-
             BER can be 1-65334, for example, TYPE28. For more information, see
             List of DNS record types .
+
+       --dns-threat-protection (string)
+          Use to create a DNS Firewall Advanced rule.
+
+          Possible values:
+
+          o DGA
+
+          o DNS_TUNNELING
+
+       --confidence-threshold (string)
+          The confidence threshold for DNS Firewall Advanced. You must provide
+          this  value when you create a DNS Firewall Advanced rule. The confi-
+          dence level values mean:
+
+          o LOW : Provides the highest detection rate for  threats,  but  also
+            increases false positives.
+
+          o MEDIUM  :  Provides  a balance between detecting threats and false
+            positives.
+
+          o HIGH : Detects only the most well corroborated threats with a  low
+            rate of false positives.
+
+          Possible values:
+
+          o LOW
+
+          o MEDIUM
+
+          o HIGH
 
        --cli-input-json  (string) Performs service operation based on the JSON
        string provided. The JSON string follows the format provided by  --gen-
@@ -328,10 +364,13 @@ OUTPUT
           The firewall rule that you just created.
 
           FirewallRuleGroupId -> (string)
-              The unique identifier of the firewall rule group of the rule.
+              The unique identifier of the Firewall rule group of the rule.
 
           FirewallDomainListId -> (string)
               The ID of the domain list that's used in the rule.
+
+          FirewallThreatProtectionId -> (string)
+              ID of the DNS Firewall Advanced rule.
 
           Name -> (string)
               The name of the rule.
@@ -344,9 +383,11 @@ OUTPUT
 
           Action -> (string)
               The  action that DNS Firewall should take on a DNS query when it
-              matches one of the domains in the rule's domain list:
+              matches one of the domains in  the  rule's  domain  list,  or  a
+              threat in a DNS Firewall Advanced rule:
 
-              o ALLOW - Permit the request to go through.
+              o ALLOW  -  Permit  the request to go through. Not available for
+                DNS Firewall Advanced rules.
 
               o ALERT - Permit the request to go through but send an alert  to
                 the logs.
@@ -401,11 +442,11 @@ OUTPUT
           FirewallDomainRedirectionAction -> (string)
               How you want the the rule to evaluate DNS redirection in the DNS
               redirection chain, such as CNAME or DNAME.
-                 Inspect_Redirection_Domain (Default) inspects all domains  in
-                 the  redirection  chain.  The individual domains in the redi-
+                 INSPECT_REDIRECTION_DOMAIN : (Default) inspects  all  domains
+                 in the redirection chain. The individual domains in the redi-
                  rection chain must be added to the domain list.
 
-                 Trust_Redirection_Domain inspects only the  first  domain  in
+                 TRUST_REDIRECTION_DOMAIN : Inspects only the first domain  in
                  the  redirection  chain. You don't need to add the subsequent
                  domains in the domain in the redirection list to  the  domain
                  list.
@@ -447,6 +488,31 @@ OUTPUT
                 28 for AAAA. The values must be defined as  TYPENUMBER,  where
                 the  NUMBER  can be 1-65334, for example, TYPE28. For more in-
                 formation, see List of DNS record types .
+
+          DnsThreatProtection -> (string)
+              The type of the DNS Firewall Advanced rule. Valid values are:
+
+              o DGA : Domain generation algorithms detection. DGAs are used by
+                attackers  to  generate a large number of domains to to launch
+                malware attacks.
+
+              o DNS_TUNNELING : DNS tunneling detection. DNS tunneling is used
+                by  attackers  to exfiltrate data from the client by using the
+                DNS tunnel without making a network connection to the client.
+
+          ConfidenceThreshold -> (string)
+              The confidence threshold for DNS  Firewall  Advanced.  You  must
+              provide this value when you create a DNS Firewall Advanced rule.
+              The confidence level values mean:
+
+              o LOW : Provides the highest detection  rate  for  threats,  but
+                also increases false positives.
+
+              o MEDIUM  :  Provides  a  balance  between detecting threats and
+                false positives.
+
+              o HIGH : Detects only the most well corroborated threats with  a
+                low rate of false positives.
 
 
 
