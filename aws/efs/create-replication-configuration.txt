@@ -6,72 +6,29 @@ NAME
        create-replication-configuration -
 
 DESCRIPTION
-       Creates  a  replication  configuration  that replicates an existing EFS
-       file system to a new, read-only file system. For more information,  see
-       Amazon  EFS  replication in the Amazon EFS User Guide . The replication
-       configuration specifies the following:
+       Creates  a replication conguration to either a new or existing EFS file
+       system. For more information, see Amazon EFS replication in the  Amazon
+       EFS User Guide . The replication configuration specifies the following:
 
-       o Source file system  The EFS file system that you want replicated. The
-         source file system cannot be a destination file system in an existing
-         replication configuration.
+       o Source file system  The EFS file system that you want to replicate.
 
-       o Amazon Web Services Region  The Amazon Web Services Region  in  which
-         the  destination  file  system  is created. Amazon EFS replication is
-         available in all Amazon Web Services Regions in which EFS  is  avail-
-         able.  The Region must be enabled. For more information, see Managing
-         Amazon Web Services Regions in the Amazon Web Services General Refer-
-         ence Reference Guide .
-
-       o Destination  file system configuration  The configuration of the des-
-         tination file system to which the source file system will  be  repli-
-         cated. There can only be one destination file system in a replication
-         configuration.  Parameters for the replication configuration include:
-
-         o File system ID  The ID of  the  destination  file  system  for  the
-           replication. If no ID is provided, then EFS creates a new file sys-
-           tem with the default settings. For existing file systems, the  file
-           system's  replication  overwrite  protection  must be disabled. For
-           more information, see Replicating to an existing file system .
-
-         o Availability Zone  If you want the destination file system  to  use
-           One  Zone storage, you must specify the Availability Zone to create
-           the file system in. For more information, see EFS file system types
-           in the Amazon EFS User Guide .
-
-         o Encryption   All  destination file systems are created with encryp-
-           tion at rest enabled. You can specify the  Key  Management  Service
-           (KMS)  key  that is used to encrypt the destination file system. If
-           you don't specify a KMS key, your service-managed KMS key for  Ama-
-           zon EFS is used.
-
-         NOTE:
-            After the file system is created, you cannot change the KMS key.
+       o Destination  file  system   The  destination file system to which the
+         source file system is replicated. There can only be  one  destination
+         file system in a replication configuration.
 
        NOTE:
-          After the file system is created, you cannot change the KMS key.
+              A file system can be part of only one replication configuration.
 
-       For  new  destination file systems, the following properties are set by
-       default:
+          The  destination parameters for the replication configuration depend
+          on whether you are replicating to a new file system or to an  exist-
+          ing  file  system, and if you are replicating across Amazon Web Ser-
+          vices accounts. See  DestinationToCreate for more information.
 
-       o Performance mode - The destination  file  system's  performance  mode
-         matches  that  of the source file system, unless the destination file
-         system uses EFS One Zone storage. In that case, the  General  Purpose
-         performance mode is used. The performance mode cannot be changed.
-
-       o Throughput  mode  -  The  destination  file  system's throughput mode
-         matches that of the source file system. After the file system is cre-
-         ated, you can modify the throughput mode.
-
-       o Lifecycle management  Lifecycle management is not enabled on the des-
-         tination file system. After the destination file system  is  created,
-         you can enable lifecycle management.
-
-       o Automatic  backups  Automatic daily backups are enabled on the desti-
-         nation file system. After the file system is created, you can  change
-         this setting.
-
-       For more information, see Amazon EFS replication in the Amazon EFS User
-       Guide .
+       This operation  requires  permissions  for  the  elasticfilesystem:Cre-
+       ateReplicationConfiguration action. Additionally, other permissions are
+       required depending on how you are replicating file  systems.  For  more
+       information, see Required permissions for replication in the Amazon EFS
+       User Guide .
 
        See also: AWS API Documentation
 
@@ -110,10 +67,43 @@ OPTIONS
               Describes  the  new  or existing destination file system for the
               replication configuration.
 
+              o If you want to replicate to a new file system, do not  specify
+                the File System ID for the destination file system. Amazon EFS
+                creates a new, empty file system. For One Zone storage,  spec-
+                ify the Availability Zone to create the file system in. To use
+                an Key Management Service key other than the default KMS  key,
+                then  specify it. For more information, see Configuring repli-
+                cation to new Amazon EFS file system in the  Amazon  EFS  User
+                Guide .
+
+              NOTE:
+                 After  the  file system is created, you cannot change the KMS
+                 key or the performance mode.
+
+              o If you want to replicate to an existing file system that's  in
+                the  same  account as the source file system, then you need to
+                provide the ID or Amazon Resource Name (ARN) of the file  sys-
+                tem to which to replicate. The file system's replication over-
+                write protection must be disabled. For more  information,  see
+                Replicating  to an existing file system in the Amazon EFS User
+                Guide .
+
+              o If you are replicating the file system to a file system that's
+                in  a different account than the source file system (cross-ac-
+                count replication), you need to provide the ARN for  the  file
+                system  and  the  IAM  role  that allows Amazon EFS to perform
+                replication on the  destination  account.  The  file  system's
+                replication  overwrite  protection  must be disabled. For more
+                information, see Replicating across Amazon  Web  Services  ac-
+                counts in the Amazon EFS User Guide .
+
               Region -> (string)
-                 To create a file system that uses Regional  storage,  specify
-                 the  Amazon Web Services Region in which to create the desti-
-                 nation file system.
+                 To  create  a file system that uses Regional storage, specify
+                 the Amazon Web Services Region in which to create the  desti-
+                 nation file system. The Region must be enabled for the Amazon
+                 Web Services account that owns the source  file  system.  For
+                 more information, see Managing Amazon Web Services Regions in
+                 the Amazon Web Services General Reference Reference Guide .
 
               AvailabilityZoneName -> (string)
                  To create a file system that uses One Zone  storage,  specify
@@ -130,26 +120,32 @@ OPTIONS
                  o Key ID - The unique identifier  of  the  key,  for  example
                    1234abcd-12ab-34cd-56ef-1234567890ab .
 
-                 o ARN - The Amazon Resource Name (ARN) for the key, for exam-
-                   ple
+                 o ARN    -    The    ARN    for    the   key,   for   example
                    arn:aws:kms:us-west-2:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab
                    .
 
-                 o Key alias - A previously created display name  for  a  key,
+                 o Key  alias  -  A previously created display name for a key,
                    for example alias/projectKey1 .
 
-                 o Key  alias  ARN  -  The  ARN  for  a key alias, for example
+                 o Key alias ARN - The  ARN  for  a  key  alias,  for  example
                    arn:aws:kms:us-west-2:444455556666:alias/projectKey1 .
 
               FileSystemId -> (string)
-                 The ID of the file system to use  for  the  destination.  The
-                 file  system's replication overwrite replication must be dis-
-                 abled. If you do not provide an ID, then EFS  creates  a  new
-                 file system for the replication destination.
+                 The  ID or ARN of the file system to use for the destination.
+                 For cross-account replication, this must be an ARN. The  file
+                 system's  replication overwrite replication must be disabled.
+                 If no ID or ARN is specified, then a new file system is  cre-
+                 ated.
+
+              RoleArn -> (string)
+                 Amazon  Resource Name (ARN) of the IAM role in the source ac-
+                 count that allows Amazon EFS to perform  replication  on  its
+                 behalf. This is optional for same-account replication and re-
+                 quired for cross-account replication.
 
        Shorthand Syntax:
 
-          Region=string,AvailabilityZoneName=string,KmsKeyId=string,FileSystemId=string ...
+          Region=string,AvailabilityZoneName=string,KmsKeyId=string,FileSystemId=string,RoleArn=string ...
 
        JSON Syntax:
 
@@ -158,22 +154,23 @@ OPTIONS
               "Region": "string",
               "AvailabilityZoneName": "string",
               "KmsKeyId": "string",
-              "FileSystemId": "string"
+              "FileSystemId": "string",
+              "RoleArn": "string"
             }
             ...
           ]
 
-       --cli-input-json  (string) Performs service operation based on the JSON
-       string provided. The JSON string follows the format provided by  --gen-
-       erate-cli-skeleton.  If  other  arguments  are  provided on the command
-       line, the CLI values will override the JSON-provided values. It is  not
+       --cli-input-json (string) Performs service operation based on the  JSON
+       string  provided. The JSON string follows the format provided by --gen-
+       erate-cli-skeleton. If other arguments  are  provided  on  the  command
+       line,  the CLI values will override the JSON-provided values. It is not
        possible to pass arbitrary binary values using a JSON-provided value as
        the string will be taken literally.
 
-       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
+       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
        output without sending an API request. If provided with no value or the
        value input, prints a sample input JSON that can be used as an argument
-       for  --cli-input-json.  If provided with the value output, it validates
+       for --cli-input-json. If provided with the value output,  it  validates
        the command inputs and returns a sample output JSON for that command.
 
 GLOBAL OPTIONS
@@ -187,13 +184,13 @@ GLOBAL OPTIONS
 
        --no-verify-ssl (boolean)
 
-       By default, the AWS CLI uses SSL when communicating with AWS  services.
+       By  default, the AWS CLI uses SSL when communicating with AWS services.
        For each SSL connection, the AWS CLI will verify SSL certificates. This
        option overrides the default behavior of verifying SSL certificates.
 
        --no-paginate (boolean)
 
-       Disable automatic pagination. If automatic pagination is disabled,  the
+       Disable  automatic pagination. If automatic pagination is disabled, the
        AWS CLI will only make one call, for the first page of results.
 
        --output (string)
@@ -234,7 +231,7 @@ GLOBAL OPTIONS
 
        --no-sign-request (boolean)
 
-       Do  not  sign requests. Credentials will not be loaded if this argument
+       Do not sign requests. Credentials will not be loaded if  this  argument
        is provided.
 
        --ca-bundle (string)
@@ -244,31 +241,31 @@ GLOBAL OPTIONS
 
        --cli-read-timeout (int)
 
-       The  maximum socket read time in seconds. If the value is set to 0, the
-       socket read will be blocking and not timeout. The default value  is  60
+       The maximum socket read time in seconds. If the value is set to 0,  the
+       socket  read  will be blocking and not timeout. The default value is 60
        seconds.
 
        --cli-connect-timeout (int)
 
-       The  maximum  socket connect time in seconds. If the value is set to 0,
-       the socket connect will be blocking and not timeout. The default  value
+       The maximum socket connect time in seconds. If the value is set  to  0,
+       the  socket connect will be blocking and not timeout. The default value
        is 60 seconds.
 
 OUTPUT
        SourceFileSystemId -> (string)
-          The  ID  of  the  source Amazon EFS file system that is being repli-
+          The ID of the source Amazon EFS file system  that  is  being  repli-
           cated.
 
        SourceFileSystemRegion -> (string)
-          The Amazon Web Services Region in which the source EFS  file  system
+          The  Amazon  Web Services Region in which the source EFS file system
           is located.
 
        SourceFileSystemArn -> (string)
-          The  Amazon Resource Name (ARN) of the current source file system in
+          The Amazon Resource Name (ARN) of the current source file system  in
           the replication configuration.
 
        OriginalSourceFileSystemArn -> (string)
-          The Amazon Resource Name (ARN) of the original source EFS file  sys-
+          The  Amazon Resource Name (ARN) of the original source EFS file sys-
           tem in the replication configuration.
 
        CreationTime -> (timestamp)
@@ -283,38 +280,44 @@ OUTPUT
               uration.
 
               Status -> (string)
-                 Describes the status of the destination EFS file system.
-
-                 o The  Paused  state  occurs as a result of opting out of the
-                   source or destination Region after the replication configu-
-                   ration was created. To resume replication for the file sys-
-                   tem, you need to again opt in to the  Amazon  Web  Services
-                   Region.  For more information, see Managing Amazon Web Ser-
-                   vices Regions in the Amazon Web Services General  Reference
-                   Guide .
-
-                 o The Error state occurs when either the source or the desti-
-                   nation file system (or both) is in a failed  state  and  is
-                   unrecoverable.  For more information, see Monitoring repli-
-                   cation status in the Amazon  EFS  User  Guide  .  You  must
-                   delete  the replication configuration, and then restore the
-                   most recent backup of the failed file  system  (either  the
-                   source or the destination) to a new file system.
+                 Describes the status of the  replication  configuration.  For
+                 more information about replication status, see Viewing repli-
+                 cation details in the Amazon EFS User Guide .
 
               FileSystemId -> (string)
                  The ID of the destination Amazon EFS file system.
 
               Region -> (string)
-                 The  Amazon Web Services Region in which the destination file
+                 The Amazon Web Services Region in which the destination  file
                  system is located.
 
               LastReplicatedTimestamp -> (timestamp)
                  The time when the most recent sync was successfully completed
-                 on  the  destination  file system. Any changes to data on the
-                 source file system that occurred before this time  have  been
-                 successfully  replicated  to the destination file system. Any
-                 changes that occurred after this  time  might  not  be  fully
+                 on the destination file system. Any changes to  data  on  the
+                 source  file  system that occurred before this time have been
+                 successfully replicated to the destination file  system.  Any
+                 changes  that  occurred  after  this  time might not be fully
                  replicated.
+
+              OwnerId -> (string)
+                 ID of the Amazon Web Services account in which  the  destina-
+                 tion file system resides.
+
+              StatusMessage -> (string)
+                 Message  that  provides  details  about  the PAUSED or ERRROR
+                 state of the replication destination configuration. For  more
+                 information  about  replication  status messages, see Viewing
+                 replication details in the Amazon EFS User Guide .
+
+              RoleArn -> (string)
+                 Amazon Resource Name (ARN) of the IAM role in the source  ac-
+                 count  that  allows  Amazon EFS to perform replication on its
+                 behalf. This is optional for same-account replication and re-
+                 quired for cross-account replication.
+
+       SourceFileSystemOwnerId -> (string)
+          ID  of the Amazon Web Services account in which the source file sys-
+          tem resides.
 
 
 
