@@ -21,6 +21,7 @@ SYNOPSIS
             update-account-settings
           [--max-query-tcu <value>]
           [--query-pricing-model <value>]
+          [--query-compute <value>]
           [--cli-input-json <value>]
           [--generate-cli-skeleton <value>]
           [--debug]
@@ -43,19 +44,24 @@ OPTIONS
           The  maximum  number  of  compute  units the service will use at any
           point in time to serve your queries. To run queries, you must set  a
           minimum  capacity of 4 TCU. You can set the maximum number of TCU in
-          multiples of 4, for example, 4, 8, 16, 32, and so on.
+          multiples of 4, for example, 4, 8, 16, 32, and so  on.  The  maximum
+          value  supported  for MaxQueryTCU is 1000. To request an increase to
+          this soft limit, contact Amazon Web Services Support.  For  informa-
+          tion  about  the  default quota for maxQueryTCU, see Default quotas.
+          This  configuration  is  applicable  only  for  on-demand  usage  of
+          Timestream Compute Units (TCUs).
 
-          The maximum value supported for MaxQueryTCU is 1000. To  request  an
-          increase  to  this  soft limit, contact Amazon Web Services Support.
-          For information about the default quota for maxQueryTCU, see Default
-          quotas .
+          The  maximum  value supported for MaxQueryTCU is 1000. To request an
+          increase to this soft limit, contact Amazon  Web  Services  Support.
+          For  information  about  the  default  quota  for  maxQueryTCU , see
+          Default quotas .
 
        --query-pricing-model (string)
           The pricing model for queries in an account.
 
           NOTE:
-              The  QueryPricingModel  parameter  is used by several Timestream
-              operations; however,  the  UpdateAccountSettings  API  operation
+              The QueryPricingModel parameter is used  by  several  Timestream
+              operations;  however,  the  UpdateAccountSettings  API operation
               doesn't recognize any values other than COMPUTE_UNITS .
 
           Possible values:
@@ -63,6 +69,63 @@ OPTIONS
           o BYTES_SCANNED
 
           o COMPUTE_UNITS
+
+       --query-compute (structure)
+          Modifies the query compute settings configured in your account,  in-
+          cluding  the  query pricing model and provisioned Timestream Compute
+          Units (TCUs) in your account.
+
+          NOTE:
+              This API is idempotent, meaning that  making  the  same  request
+              multiple  times  will have the same effect as making the request
+              once.
+
+          ComputeMode -> (string)
+              The mode in which Timestream Compute Units (TCUs) are  allocated
+              and  utilized  within  an account. Note that in the Asia Pacific
+              (Mumbai) region, the API operation  only  recognizes  the  value
+              PROVISIONED .
+
+          ProvisionedCapacity -> (structure)
+              Configuration  object  that  contains  settings  for provisioned
+              Timestream Compute Units (TCUs) in your account.
+
+              TargetQueryTCU -> (integer)
+                 The target compute capacity for querying data,  specified  in
+                 Timestream Compute Units (TCUs).
+
+              NotificationConfiguration -> (structure)
+                 Configuration  settings for notifications related to the pro-
+                 visioned capacity update.
+
+                 SnsConfiguration -> (structure)
+                     Details on SNS that are required to  send  the  notifica-
+                     tion.
+
+                     TopicArn -> (string)
+                        SNS  topic ARN that the scheduled query status notifi-
+                        cations will be sent to.
+
+                 RoleArn -> (string)
+                     An Amazon Resource Name (ARN) that grants Timestream per-
+                     mission to publish notifications. This field is only vis-
+                     ible if SNS Topic is provided when updating  the  account
+                     settings.
+
+       JSON Syntax:
+
+          {
+            "ComputeMode": "ON_DEMAND"|"PROVISIONED",
+            "ProvisionedCapacity": {
+              "TargetQueryTCU": integer,
+              "NotificationConfiguration": {
+                "SnsConfiguration": {
+                  "TopicArn": "string"
+                },
+                "RoleArn": "string"
+              }
+            }
+          }
 
        --cli-input-json  (string) Performs service operation based on the JSON
        string provided. The JSON string follows the format provided by  --gen-
@@ -162,6 +225,61 @@ OUTPUT
 
        QueryPricingModel -> (string)
           The pricing model for an account.
+
+       QueryCompute -> (structure)
+          Confirms the updated account settings for querying data in your  ac-
+          count.
+
+          ComputeMode -> (string)
+              The  mode in which Timestream Compute Units (TCUs) are allocated
+              and utilized within an account. Note that in  the  Asia  Pacific
+              (Mumbai)  region,  the  API  operation only recognizes the value
+              PROVISIONED .
+
+          ProvisionedCapacity -> (structure)
+              Configuration object  that  contains  settings  for  provisioned
+              Timestream Compute Units (TCUs) in your account.
+
+              ActiveQueryTCU -> (integer)
+                 The  number of Timestream Compute Units (TCUs) provisioned in
+                 the account. This field is only visible when the compute mode
+                 is PROVISIONED .
+
+              NotificationConfiguration -> (structure)
+                 An  object  that contains settings for notifications that are
+                 sent whenever the provisioned capacity settings are modified.
+                 This  field  is  only visible when the compute mode is PROVI-
+                 SIONED .
+
+                 SnsConfiguration -> (structure)
+                     Details on SNS that are required to  send  the  notifica-
+                     tion.
+
+                     TopicArn -> (string)
+                        SNS  topic ARN that the scheduled query status notifi-
+                        cations will be sent to.
+
+                 RoleArn -> (string)
+                     An Amazon Resource Name (ARN) that grants Timestream per-
+                     mission to publish notifications. This field is only vis-
+                     ible if SNS Topic is provided when updating  the  account
+                     settings.
+
+              LastUpdate -> (structure)
+                 Information about the last update to the provisioned capacity
+                 settings.
+
+                 TargetQueryTCU -> (integer)
+                     The number of TimeStream Compute Units  (TCUs)  requested
+                     in the last account settings update.
+
+                 Status -> (string)
+                     The  status  of  the last update. Can be either PENDING ,
+                     FAILED , or SUCCEEDED .
+
+                 StatusMessage -> (string)
+                     Error message describing the last account settings update
+                     status, visible only if an error occurred.
 
 
 

@@ -1379,37 +1379,122 @@ OPTIONS
                      match  your  attributes,  include one of these parameters
                      and specify a high value, such as 999999 .
 
+              BaselinePerformanceFactors -> (structure)
+                 The baseline performance to consider, using an instance  fam-
+                 ily  as a baseline reference. The instance family establishes
+                 the lowest acceptable level of performance. Amazon  EC2  uses
+                 this  baseline to guide instance type selection, but there is
+                 no guarantee that the selected instance types will always ex-
+                 ceed  the baseline for every application. Currently, this pa-
+                 rameter only supports CPU performance as a  baseline  perfor-
+                 mance  factor.  For more information, see Performance protec-
+                 tion in the Amazon EC2 User Guide .
+
+                 Cpu -> (structure)
+                     The CPU performance to consider, using an instance family
+                     as the baseline reference.
+
+                     References -> (list)
+                        Specify an instance family to use as the baseline ref-
+                        erence for CPU performance. All  instance  types  that
+                        match  your  specified  attributes  will  be  compared
+                        against the CPU performance of the referenced instance
+                        family, regardless of CPU manufacturer or architecture
+                        differences.
+
+                        NOTE:
+                            Currently, only one instance family can be  speci-
+                            fied in the list.
+
+                        (structure)
+                            Specify  an instance family to use as the baseline
+                            reference for CPU performance. All instance  types
+                            that  match your specified attributes will be com-
+                            pared against the CPU performance  of  the  refer-
+                            enced  instance family, regardless of CPU manufac-
+                            turer or architecture.
+
+                            NOTE:
+                               Currently, only  one  instance  family  can  be
+                               specified in the list.
+
+                            InstanceFamily -> (string)
+                               The instance family to use as a baseline refer-
+                               ence.
+
+                               NOTE:
+                                   Ensure that you specify the  correct  value
+                                   for  the instance family. The instance fam-
+                                   ily is everything before the period (. ) in
+                                   the instance type name. For example, in the
+                                   instance type c6i.large , the instance fam-
+                                   ily is c6i , not c6 . For more information,
+                                   see Amazon EC2 instance type naming conven-
+                                   tions in Amazon EC2 Instance Types .
+
+                               The  following  instance  families are not sup-
+                               ported for performance protection:
+
+                               o c1
+
+                               o g3 | g3s
+
+                               o hpc7g
+
+                               o m1 | m2
+
+                               o mac1  |  mac2  |  mac2-m1ultra  |  mac2-m2  |
+                                 mac2-m2pro
+
+                               o p3dn | p4d | p5
+
+                               o t1
+
+                               o u-12tb1 | u-18tb1 | u-24tb1 | u-3tb1 | u-6tb1
+                                 | u-9tb1 | u7i-12tb | u7in-16tb | u7in-24tb |
+                                 u7in-32tb
+
+                               If  you enable performance protection by speci-
+                               fying a supported instance family, the returned
+                               instance  types  will  exclude the above unsup-
+                               ported instance families.
+
+                               If you specify an unsupported  instance  family
+                               as  a  value  for baseline performance, the API
+                               returns an empty response for and an  exception
+                               for , , , and .
+
           PrivateDnsNameOptions -> (structure)
-              The options for the instance hostname. The  default  values  are
+              The  options  for  the instance hostname. The default values are
               inherited from the subnet.
 
               HostnameType -> (string)
-                 The  type of hostname for Amazon EC2 instances. For IPv4 only
-                 subnets, an instance DNS name must be based on  the  instance
-                 IPv4  address.  For IPv6 native subnets, an instance DNS name
+                 The type of hostname for Amazon EC2 instances. For IPv4  only
+                 subnets,  an  instance DNS name must be based on the instance
+                 IPv4 address. For IPv6 native subnets, an instance  DNS  name
                  must be based on the instance ID. For dual-stack subnets, you
-                 can  specify  whether DNS names use the instance IPv4 address
+                 can specify whether DNS names use the instance  IPv4  address
                  or the instance ID.
 
               EnableResourceNameDnsARecord -> (boolean)
-                 Indicates whether to respond  to  DNS  queries  for  instance
+                 Indicates  whether  to  respond  to  DNS queries for instance
                  hostnames with DNS A records.
 
               EnableResourceNameDnsAAAARecord -> (boolean)
-                 Indicates  whether  to  respond  to  DNS queries for instance
+                 Indicates whether to respond  to  DNS  queries  for  instance
                  hostnames with DNS AAAA records.
 
           MaintenanceOptions -> (structure)
               The maintenance options for the instance.
 
               AutoRecovery -> (string)
-                 Disables the automatic recovery behavior of your instance  or
-                 sets  it to default. For more information, see Simplified au-
+                 Disables  the automatic recovery behavior of your instance or
+                 sets it to default. For more information, see Simplified  au-
                  tomatic recovery .
 
           DisableApiStop -> (boolean)
-              Indicates whether to enable the instance  for  stop  protection.
-              For  more  information,  see Enable stop protection for your in-
+              Indicates  whether  to  enable the instance for stop protection.
+              For more information, see Enable stop protection  for  your  in-
               stance in the Amazon EC2 User Guide .
 
           Operator -> (structure)
@@ -1570,7 +1655,7 @@ OPTIONS
               "AmdSevSnp": "enabled"|"disabled"
             },
             "CapacityReservationSpecification": {
-              "CapacityReservationPreference": "open"|"none",
+              "CapacityReservationPreference": "capacity-reservations-only"|"open"|"none",
               "CapacityReservationTarget": {
                 "CapacityReservationId": "string",
                 "CapacityReservationResourceGroupArn": "string"
@@ -1604,7 +1689,7 @@ OPTIONS
                 "Min": integer,
                 "Max": integer
               },
-              "CpuManufacturers": ["intel"|"amd"|"amazon-web-services", ...],
+              "CpuManufacturers": ["intel"|"amd"|"amazon-web-services"|"apple", ...],
               "MemoryGiBPerVCpu": {
                 "Min": double,
                 "Max": double
@@ -1646,7 +1731,17 @@ OPTIONS
                 "Max": double
               },
               "AllowedInstanceTypes": ["string", ...],
-              "MaxSpotPriceAsPercentageOfOptimalOnDemandPrice": integer
+              "MaxSpotPriceAsPercentageOfOptimalOnDemandPrice": integer,
+              "BaselinePerformanceFactors": {
+                "Cpu": {
+                  "References": [
+                    {
+                      "InstanceFamily": "string"
+                    }
+                    ...
+                  ]
+                }
+              }
             },
             "PrivateDnsNameOptions": {
               "HostnameType": "ip-name"|"resource-name",
@@ -1663,24 +1758,24 @@ OPTIONS
           }
 
        --resolve-alias | --no-resolve-alias (boolean)
-          If true , and if a Systems Manager parameter is  specified  for  Im-
-          ageId  ,  the  AMI ID is displayed in the response for imageID . For
-          more information, see Use a Systems Manager parameter instead of  an
+          If  true  ,  and if a Systems Manager parameter is specified for Im-
+          ageId , the AMI ID is displayed in the response for  imageID  .  For
+          more  information, see Use a Systems Manager parameter instead of an
           AMI ID in the Amazon EC2 User Guide .
 
           Default: false
 
-       --cli-input-json  (string) Performs service operation based on the JSON
-       string provided. The JSON string follows the format provided by  --gen-
-       erate-cli-skeleton.  If  other  arguments  are  provided on the command
-       line, the CLI values will override the JSON-provided values. It is  not
+       --cli-input-json (string) Performs service operation based on the  JSON
+       string  provided. The JSON string follows the format provided by --gen-
+       erate-cli-skeleton. If other arguments  are  provided  on  the  command
+       line,  the CLI values will override the JSON-provided values. It is not
        possible to pass arbitrary binary values using a JSON-provided value as
        the string will be taken literally.
 
-       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
+       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
        output without sending an API request. If provided with no value or the
        value input, prints a sample input JSON that can be used as an argument
-       for  --cli-input-json.  If provided with the value output, it validates
+       for --cli-input-json. If provided with the value output,  it  validates
        the command inputs and returns a sample output JSON for that command.
 
 GLOBAL OPTIONS
@@ -1694,13 +1789,13 @@ GLOBAL OPTIONS
 
        --no-verify-ssl (boolean)
 
-       By default, the AWS CLI uses SSL when communicating with AWS  services.
+       By  default, the AWS CLI uses SSL when communicating with AWS services.
        For each SSL connection, the AWS CLI will verify SSL certificates. This
        option overrides the default behavior of verifying SSL certificates.
 
        --no-paginate (boolean)
 
-       Disable automatic pagination. If automatic pagination is disabled,  the
+       Disable  automatic pagination. If automatic pagination is disabled, the
        AWS CLI will only make one call, for the first page of results.
 
        --output (string)
@@ -1741,7 +1836,7 @@ GLOBAL OPTIONS
 
        --no-sign-request (boolean)
 
-       Do  not  sign requests. Credentials will not be loaded if this argument
+       Do not sign requests. Credentials will not be loaded if  this  argument
        is provided.
 
        --ca-bundle (string)
@@ -1751,30 +1846,30 @@ GLOBAL OPTIONS
 
        --cli-read-timeout (int)
 
-       The  maximum socket read time in seconds. If the value is set to 0, the
-       socket read will be blocking and not timeout. The default value  is  60
+       The maximum socket read time in seconds. If the value is set to 0,  the
+       socket  read  will be blocking and not timeout. The default value is 60
        seconds.
 
        --cli-connect-timeout (int)
 
-       The  maximum  socket connect time in seconds. If the value is set to 0,
-       the socket connect will be blocking and not timeout. The default  value
+       The maximum socket connect time in seconds. If the value is set  to  0,
+       the  socket connect will be blocking and not timeout. The default value
        is 60 seconds.
 
 EXAMPLES
        NOTE:
-          To  use  the following examples, you must have the AWS CLI installed
-          and configured. See the Getting started guide in the  AWS  CLI  User
+          To use the following examples, you must have the AWS  CLI  installed
+          and  configured.  See  the Getting started guide in the AWS CLI User
           Guide for more information.
 
-          Unless  otherwise  stated,  all  examples  have  unix-like quotation
-          rules. These examples will need to be  adapted  to  your  terminal's
+          Unless otherwise  stated,  all  examples  have  unix-like  quotation
+          rules.  These  examples  will  need to be adapted to your terminal's
           quoting rules. See Using quotation marks with strings in the AWS CLI
           User Guide .
 
        To create a launch template version
 
-       This example creates a new launch template version based on  version  1
+       This  example  creates a new launch template version based on version 1
        of the launch template and specifies a different AMI ID.
 
        Command:
@@ -1843,7 +1938,7 @@ OUTPUT
                  The ID of the kernel, if applicable.
 
               EbsOptimized -> (boolean)
-                 Indicates  whether  the  instance is optimized for Amazon EBS
+                 Indicates whether the instance is optimized  for  Amazon  EBS
                  I/O.
 
               IamInstanceProfile -> (structure)
@@ -1878,12 +1973,12 @@ OUTPUT
                             stance termination.
 
                         Iops -> (integer)
-                            The  number  of  I/O  operations per second (IOPS)
+                            The number of I/O  operations  per  second  (IOPS)
                             that the volume supports.
 
                         KmsKeyId -> (string)
-                            Identifier (key ID, key alias, key ARN,  or  alias
-                            ARN)  of  the  customer managed KMS key to use for
+                            Identifier  (key  ID, key alias, key ARN, or alias
+                            ARN) of the customer managed KMS key  to  use  for
                             EBS encryption.
 
                         SnapshotId -> (string)
@@ -1899,7 +1994,7 @@ OUTPUT
                             The throughput that the volume supports, in MiB/s.
 
                      NoDevice -> (string)
-                        To omit the device  from  the  block  device  mapping,
+                        To  omit  the  device  from  the block device mapping,
                         specify an empty string.
 
               NetworkInterfaces -> (list)
@@ -1909,27 +2004,27 @@ OUTPUT
                      Describes a network interface.
 
                      AssociateCarrierIpAddress -> (boolean)
-                        Indicates  whether  to  associate a Carrier IP address
+                        Indicates whether to associate a  Carrier  IP  address
                         with eth0 for a new network interface.
 
                         Use this option when you launch an instance in a Wave-
                         length Zone and want to associate a Carrier IP address
                         with the network interface. For more information about
-                        Carrier  IP addresses, see Carrier IP addresses in the
+                        Carrier IP addresses, see Carrier IP addresses in  the
                         Wavelength Developer Guide .
 
                      AssociatePublicIpAddress -> (boolean)
-                        Indicates whether to associate a public  IPv4  address
+                        Indicates  whether  to associate a public IPv4 address
                         with eth0 for a new network interface.
 
-                        Amazon  Web  Services  charges for all public IPv4 ad-
-                        dresses, including public  IPv4  addresses  associated
-                        with  running  instances and Elastic IP addresses. For
-                        more information, see the Public IPv4 Address  tab  on
+                        Amazon Web Services charges for all  public  IPv4  ad-
+                        dresses,  including  public  IPv4 addresses associated
+                        with running instances and Elastic IP  addresses.  For
+                        more  information,  see the Public IPv4 Address tab on
                         the Amazon VPC pricing page .
 
                      DeleteOnTermination -> (boolean)
-                        Indicates  whether  the  network  interface is deleted
+                        Indicates whether the  network  interface  is  deleted
                         when the instance is terminated.
 
                      Description -> (string)
@@ -1947,7 +2042,7 @@ OUTPUT
                         The type of network interface.
 
                      Ipv6AddressCount -> (integer)
-                        The number of IPv6 addresses for  the  network  inter-
+                        The  number  of  IPv6 addresses for the network inter-
                         face.
 
                      Ipv6Addresses -> (list)
@@ -1961,12 +2056,12 @@ OUTPUT
 
                             IsPrimaryIpv6 -> (boolean)
                                Determines if an IPv6 address associated with a
-                               network interface is the primary IPv6  address.
-                               When  you  enable  an  IPv6 GUA address to be a
-                               primary IPv6, the first IPv6 GUA will  be  made
-                               the  primary IPv6 address until the instance is
-                               terminated or  the  network  interface  is  de-
-                               tached.  For more information, see RunInstances
+                               network  interface is the primary IPv6 address.
+                               When you enable an IPv6 GUA  address  to  be  a
+                               primary  IPv6,  the first IPv6 GUA will be made
+                               the primary IPv6 address until the instance  is
+                               terminated  or  the  network  interface  is de-
+                               tached. For more information, see  RunInstances
                                .
 
                      NetworkInterfaceId -> (string)
@@ -1980,11 +2075,11 @@ OUTPUT
                         One or more private IPv4 addresses.
 
                         (structure)
-                            Describes  a  secondary private IPv4 address for a
+                            Describes a secondary private IPv4 address  for  a
                             network interface.
 
                             Primary -> (boolean)
-                               Indicates whether the private IPv4  address  is
+                               Indicates  whether  the private IPv4 address is
                                the primary private IPv4 address. Only one IPv4
                                address can be designated as primary.
 
@@ -2002,103 +2097,103 @@ OUTPUT
                         The index of the network card.
 
                      Ipv4Prefixes -> (list)
-                        One  or more IPv4 prefixes assigned to the network in-
+                        One or more IPv4 prefixes assigned to the network  in-
                         terface.
 
                         (structure)
-                            Information about the IPv4 delegated prefixes  as-
+                            Information  about the IPv4 delegated prefixes as-
                             signed to a network interface.
 
                             Ipv4Prefix -> (string)
-                               The  IPv4  delegated  prefixes  assigned to the
+                               The IPv4 delegated  prefixes  assigned  to  the
                                network interface.
 
                      Ipv4PrefixCount -> (integer)
-                        The number of IPv4 prefixes that Amazon  Web  Services
+                        The  number  of IPv4 prefixes that Amazon Web Services
                         automatically assigned to the network interface.
 
                      Ipv6Prefixes -> (list)
-                        One  or more IPv6 prefixes assigned to the network in-
+                        One or more IPv6 prefixes assigned to the network  in-
                         terface.
 
                         (structure)
-                            Information about the IPv6 delegated prefixes  as-
+                            Information  about the IPv6 delegated prefixes as-
                             signed to a network interface.
 
                             Ipv6Prefix -> (string)
-                               The  IPv6  delegated  prefixes  assigned to the
+                               The IPv6 delegated  prefixes  assigned  to  the
                                network interface.
 
                      Ipv6PrefixCount -> (integer)
-                        The number of IPv6 prefixes that Amazon  Web  Services
+                        The  number  of IPv6 prefixes that Amazon Web Services
                         automatically assigned to the network interface.
 
                      PrimaryIpv6 -> (boolean)
-                        The  primary  IPv6  address  of the network interface.
-                        When you enable an IPv6 GUA address to  be  a  primary
+                        The primary IPv6 address  of  the  network  interface.
+                        When  you  enable  an IPv6 GUA address to be a primary
                         IPv6, the first IPv6 GUA will be made the primary IPv6
-                        address until the instance is terminated or  the  net-
+                        address  until  the instance is terminated or the net-
                         work interface is detached. For more information about
                         primary IPv6 addresses, see RunInstances .
 
                      EnaSrdSpecification -> (structure)
-                        Contains  the  ENA  Express  settings  for   instances
+                        Contains   the  ENA  Express  settings  for  instances
                         launched from your launch template.
 
                         EnaSrdEnabled -> (boolean)
-                            Indicates  whether  ENA Express is enabled for the
+                            Indicates whether ENA Express is enabled  for  the
                             network interface.
 
                         EnaSrdUdpSpecification -> (structure)
                             Configures ENA Express for UDP network traffic.
 
                             EnaSrdUdpEnabled -> (boolean)
-                               Indicates whether UDP traffic to and  from  the
+                               Indicates  whether  UDP traffic to and from the
                                instance uses ENA Express. To specify this set-
                                ting, you must first enable ENA Express.
 
                      ConnectionTrackingSpecification -> (structure)
-                        A security  group  connection  tracking  specification
-                        that  enables  you  to  set the timeout for connection
+                        A  security  group  connection  tracking specification
+                        that enables you to set  the  timeout  for  connection
                         tracking on an Elastic network interface. For more in-
                         formation, see Idle connection tracking timeout in the
                         Amazon EC2 User Guide .
 
                         TcpEstablishedTimeout -> (integer)
-                            Timeout (in seconds) for idle TCP  connections  in
+                            Timeout  (in  seconds) for idle TCP connections in
                             an established state. Min: 60 seconds. Max: 432000
-                            seconds (5 days). Default: 432000 seconds.  Recom-
+                            seconds  (5 days). Default: 432000 seconds. Recom-
                             mended: Less than 432000 seconds.
 
                         UdpTimeout -> (integer)
-                            Timeout  (in seconds) for idle UDP flows that have
-                            seen traffic only in a single direction or a  sin-
+                            Timeout (in seconds) for idle UDP flows that  have
+                            seen  traffic only in a single direction or a sin-
                             gle request-response transaction. Min: 30 seconds.
                             Max: 60 seconds. Default: 30 seconds.
 
                         UdpStreamTimeout -> (integer)
                             Timeout (in seconds) for idle UDP flows classified
-                            as  streams  which  have  seen  more  than one re-
-                            quest-response transaction. Min: 60 seconds.  Max:
+                            as streams which  have  seen  more  than  one  re-
+                            quest-response  transaction. Min: 60 seconds. Max:
                             180 seconds (3 minutes). Default: 180 seconds.
 
               ImageId -> (string)
                  The ID of the AMI or a Systems Manager parameter. The Systems
-                 Manager parameter will resolve to the ID of the  AMI  at  in-
+                 Manager  parameter  will  resolve to the ID of the AMI at in-
                  stance launch.
 
-                 The  value  depends on what you specified in the request. The
+                 The value depends on what you specified in the  request.  The
                  possible values are:
 
                  o If an AMI ID was specified in the request, then this is the
                    AMI ID.
 
-                 o If  a  Systems  Manager  parameter was specified in the re-
-                   quest, and ResolveAlias was configured as true , then  this
+                 o If a Systems Manager parameter was  specified  in  the  re-
+                   quest,  and ResolveAlias was configured as true , then this
                    is the AMI ID that the parameter is mapped to in the Param-
                    eter Store.
 
-                 o If a Systems Manager parameter was  specified  in  the  re-
+                 o If  a  Systems  Manager  parameter was specified in the re-
                    quest, and ResolveAlias was configured as false , then this
                    is the parameter value.
 
@@ -2115,7 +2210,7 @@ OUTPUT
                  The monitoring for the instance.
 
                  Enabled -> (boolean)
-                     Indicates  whether detailed monitoring is enabled. Other-
+                     Indicates whether detailed monitoring is enabled.  Other-
                      wise, basic monitoring is enabled.
 
               Placement -> (structure)
@@ -2125,7 +2220,7 @@ OUTPUT
                      The Availability Zone of the instance.
 
                  Affinity -> (string)
-                     The affinity setting for the instance  on  the  Dedicated
+                     The  affinity  setting  for the instance on the Dedicated
                      Host.
 
                  GroupName -> (string)
@@ -2135,7 +2230,7 @@ OUTPUT
                      The ID of the Dedicated Host for the instance.
 
                  Tenancy -> (string)
-                     The  tenancy  of the instance. An instance with a tenancy
+                     The tenancy of the instance. An instance with  a  tenancy
                      of dedicated runs on single-tenant hardware.
 
                  SpreadDomain -> (string)
@@ -2146,13 +2241,13 @@ OUTPUT
                      instances.
 
                  PartitionNumber -> (integer)
-                     The  number  of  the partition the instance should launch
-                     in. Valid only if the placement group strategy is set  to
+                     The number of the partition the  instance  should  launch
+                     in.  Valid only if the placement group strategy is set to
                      partition .
 
                  GroupId -> (string)
                      The Group ID of the placement group. You must specify the
-                     Placement Group Group ID  to  launch  an  instance  in  a
+                     Placement  Group  Group  ID  to  launch  an instance in a
                      shared placement group.
 
               RamDiskId -> (string)
@@ -2160,11 +2255,11 @@ OUTPUT
 
               DisableApiTermination -> (boolean)
                  If set to true , indicates that the instance cannot be termi-
-                 nated using the Amazon EC2 console,  command  line  tool,  or
+                 nated  using  the  Amazon  EC2 console, command line tool, or
                  API.
 
               InstanceInitiatedShutdownBehavior -> (string)
-                 Indicates  whether  an  instance stops or terminates when you
+                 Indicates whether an instance stops or  terminates  when  you
                  initiate shutdown from the instance (using the operating sys-
                  tem command for system shutdown).
 
@@ -2172,7 +2267,7 @@ OUTPUT
                  The user data for the instance.
 
               TagSpecifications -> (list)
-                 The  tags  that are applied to the resources that are created
+                 The tags that are applied to the resources that  are  created
                  during instance launch.
 
                  (structure)
@@ -2190,14 +2285,14 @@ OUTPUT
                             Key -> (string)
                                The key of the tag.
 
-                               Constraints: Tag keys  are  case-sensitive  and
+                               Constraints:  Tag  keys  are case-sensitive and
                                accept a maximum of 127 Unicode characters. May
                                not begin with aws: .
 
                             Value -> (string)
                                The value of the tag.
 
-                               Constraints: Tag values are case-sensitive  and
+                               Constraints:  Tag values are case-sensitive and
                                accept a maximum of 256 Unicode characters.
 
               ElasticGpuSpecifications -> (list)
@@ -2205,8 +2300,8 @@ OUTPUT
 
                  NOTE:
                      Amazon Elastic Graphics reached end of life on January 8,
-                     2024. For workloads that require  graphics  acceleration,
-                     we  recommend  that  you use Amazon EC2 G4ad, G4dn, or G5
+                     2024.  For  workloads that require graphics acceleration,
+                     we recommend that you use Amazon EC2 G4ad,  G4dn,  or  G5
                      instances.
 
                  (structure)
@@ -2222,7 +2317,7 @@ OUTPUT
                         Deprecated.
 
                         NOTE:
-                            Amazon  Elastic  Graphics  reached  end of life on
+                            Amazon Elastic Graphics reached  end  of  life  on
                             January 8, 2024. For workloads that require graph-
                             ics acceleration, we recommend that you use Amazon
                             EC2 G4ad, G4dn, or G5 instances.
@@ -2232,9 +2327,9 @@ OUTPUT
                  NOTE:
                      Amazon Elastic Inference is no longer available.
 
-                 An elastic inference accelerator to associate  with  the  in-
+                 An  elastic  inference  accelerator to associate with the in-
                  stance. Elastic inference accelerators are a resource you can
-                 attach to your Amazon EC2 instances to accelerate  your  Deep
+                 attach  to  your Amazon EC2 instances to accelerate your Deep
                  Learning (DL) inference workloads.
 
                  You cannot specify accelerators from different generations in
@@ -2243,13 +2338,13 @@ OUTPUT
                  NOTE:
                      Starting April 15, 2023, Amazon Web Services will not on-
                      board new customers to Amazon Elastic Inference (EI), and
-                     will help current customers migrate  their  workloads  to
-                     options  that  offer  better price and performance. After
-                     April 15, 2023, new customers will not be able to  launch
-                     instances  with  Amazon  EI  accelerators in Amazon Sage-
-                     Maker, Amazon ECS, or Amazon EC2. However, customers  who
-                     have  used Amazon EI at least once during the past 30-day
-                     period are considered current customers and will be  able
+                     will  help  current  customers migrate their workloads to
+                     options that offer better price  and  performance.  After
+                     April  15, 2023, new customers will not be able to launch
+                     instances with Amazon EI  accelerators  in  Amazon  Sage-
+                     Maker,  Amazon ECS, or Amazon EC2. However, customers who
+                     have used Amazon EI at least once during the past  30-day
+                     period  are considered current customers and will be able
                      to continue using the service.
 
                  (structure)
@@ -2260,8 +2355,8 @@ OUTPUT
                      Describes an elastic inference accelerator.
 
                      Type -> (string)
-                        The  type of elastic inference accelerator. The possi-
-                        ble   values   are   eia1.medium,   eia1.large,    and
+                        The type of elastic inference accelerator. The  possi-
+                        ble    values   are   eia1.medium,   eia1.large,   and
                         eia1.xlarge.
 
                      Count -> (integer)
@@ -2293,27 +2388,27 @@ OUTPUT
                         The maximum hourly price you're willing to pay for the
                         Spot Instances. We do not recommend using this parame-
                         ter because it can lead to increased interruptions. If
-                        you  do  not  specify this parameter, you will pay the
+                        you do not specify this parameter, you  will  pay  the
                         current Spot price.
 
                         WARNING:
-                            If you specify a  maximum  price,  your  Spot  In-
-                            stances  will  be interrupted more frequently than
+                            If  you  specify  a  maximum  price, your Spot In-
+                            stances will be interrupted more  frequently  than
                             if you do not specify this parameter.
 
                      SpotInstanceType -> (string)
                         The Spot Instance request type.
 
                      BlockDurationMinutes -> (integer)
-                        The required duration for  the  Spot  Instances  (also
-                        known  as Spot blocks), in minutes. This value must be
+                        The  required  duration  for  the Spot Instances (also
+                        known as Spot blocks), in minutes. This value must  be
                         a multiple of 60 (60, 120, 180, 240, 300, or 360).
 
                      ValidUntil -> (timestamp)
-                        The end date of the request. For a  one-time  request,
+                        The  end  date of the request. For a one-time request,
                         the request remains active until all instances launch,
-                        the request is canceled, or this date is  reached.  If
-                        the  request is persistent, it remains active until it
+                        the  request  is canceled, or this date is reached. If
+                        the request is persistent, it remains active until  it
                         is canceled or this date and time is reached.
 
                      InstanceInterruptionBehavior -> (string)
@@ -2328,7 +2423,7 @@ OUTPUT
                      Valid values: standard | unlimited
 
               CpuOptions -> (structure)
-                 The CPU options for the instance. For more  information,  see
+                 The  CPU  options for the instance. For more information, see
                  Optimize CPU options in the Amazon EC2 User Guide .
 
                  CoreCount -> (integer)
@@ -2338,26 +2433,26 @@ OUTPUT
                      The number of threads per CPU core.
 
                  AmdSevSnp -> (string)
-                     Indicates   whether  the  instance  is  enabled  for  AMD
+                     Indicates  whether  the  instance  is  enabled  for   AMD
                      SEV-SNP. For more information, see AMD SEV-SNP .
 
               CapacityReservationSpecification -> (structure)
                  Information about the Capacity Reservation targeting option.
 
                  CapacityReservationPreference -> (string)
-                     Indicates the  instance's  Capacity  Reservation  prefer-
+                     Indicates  the  instance's  Capacity  Reservation prefer-
                      ences. Possible preferences include:
 
                      o open - The instance can run in any open Capacity Reser-
-                       vation that has  matching  attributes  (instance  type,
+                       vation  that  has  matching  attributes (instance type,
                        platform, Availability Zone).
 
                      o none - The instance avoids running in a Capacity Reser-
-                       vation even if one is available. The instance  runs  in
+                       vation  even  if one is available. The instance runs in
                        On-Demand capacity.
 
                  CapacityReservationTarget -> (structure)
-                     Information  about the target Capacity Reservation or Ca-
+                     Information about the target Capacity Reservation or  Ca-
                      pacity Reservation group.
 
                      CapacityReservationId -> (string)
@@ -2377,48 +2472,48 @@ OUTPUT
                         ration.
 
               HibernationOptions -> (structure)
-                 Indicates  whether an instance is configured for hibernation.
-                 For more information, see Hibernate your Amazon EC2  instance
+                 Indicates whether an instance is configured for  hibernation.
+                 For  more information, see Hibernate your Amazon EC2 instance
                  in the Amazon EC2 User Guide .
 
                  Configured -> (boolean)
-                     If  this  parameter  is set to true , the instance is en-
-                     abled for hibernation; otherwise, it is not  enabled  for
+                     If this parameter is set to true , the  instance  is  en-
+                     abled  for  hibernation; otherwise, it is not enabled for
                      hibernation.
 
               MetadataOptions -> (structure)
-                 The  metadata options for the instance. For more information,
-                 see Instance metadata and user data in the  Amazon  EC2  User
+                 The metadata options for the instance. For more  information,
+                 see  Instance  metadata  and user data in the Amazon EC2 User
                  Guide .
 
                  State -> (string)
                      The state of the metadata option changes.
-                        pending  -  The metadata options are being updated and
-                        the instance is not ready to process metadata  traffic
+                        pending - The metadata options are being  updated  and
+                        the  instance is not ready to process metadata traffic
                         with the new selection.
 
-                        applied  - The metadata options have been successfully
+                        applied - The metadata options have been  successfully
                         applied on the instance.
 
                  HttpTokens -> (string)
                      Indicates whether IMDSv2 is required.
 
-                     o optional - IMDSv2 is optional. You can  choose  whether
-                       to  send  a session token in your instance metadata re-
-                       trieval requests. If you retrieve IAM role  credentials
-                       without  a  session  token, you receive the IMDSv1 role
+                     o optional  -  IMDSv2 is optional. You can choose whether
+                       to send a session token in your instance  metadata  re-
+                       trieval  requests. If you retrieve IAM role credentials
+                       without a session token, you receive  the  IMDSv1  role
                        credentials. If you retrieve IAM role credentials using
                        a valid session token, you receive the IMDSv2 role cre-
                        dentials.
 
-                     o required - IMDSv2 is required. You must send a  session
-                       token  in  your  instance  metadata retrieval requests.
-                       With this option, retrieving the IAM  role  credentials
-                       always  returns  IMDSv2 credentials; IMDSv1 credentials
+                     o required  - IMDSv2 is required. You must send a session
+                       token in your  instance  metadata  retrieval  requests.
+                       With  this  option, retrieving the IAM role credentials
+                       always returns IMDSv2 credentials;  IMDSv1  credentials
                        are not available.
 
                  HttpPutResponseHopLimit -> (integer)
-                     The desired HTTP PUT  response  hop  limit  for  instance
+                     The  desired  HTTP  PUT  response  hop limit for instance
                      metadata requests. The larger the number, the further in-
                      stance metadata requests can travel.
 
@@ -2427,25 +2522,25 @@ OUTPUT
                      Possible values: Integers from 1 to 64
 
                  HttpEndpoint -> (string)
-                     Enables or disables the HTTP metadata  endpoint  on  your
+                     Enables  or  disables  the HTTP metadata endpoint on your
                      instances. If the parameter is not specified, the default
                      state is enabled .
 
                      NOTE:
-                        If you specify a value of disabled , you will  not  be
+                        If  you  specify a value of disabled , you will not be
                         able to access your instance metadata.
 
                  HttpProtocolIpv6 -> (string)
-                     Enables  or  disables  the IPv6 endpoint for the instance
+                     Enables or disables the IPv6 endpoint  for  the  instance
                      metadata service.
 
                      Default: disabled
 
                  InstanceMetadataTags -> (string)
-                     Set to enabled to allow access to instance tags from  the
-                     instance  metadata. Set to disabled to turn off access to
+                     Set  to enabled to allow access to instance tags from the
+                     instance metadata. Set to disabled to turn off access  to
                      instance tags from the instance metadata. For more infor-
-                     mation,  see  Work  with instance tags using the instance
+                     mation, see Work with instance tags  using  the  instance
                      metadata .
 
                      Default: disabled
@@ -2455,16 +2550,16 @@ OUTPUT
                  vices Nitro Enclaves.
 
                  Enabled -> (boolean)
-                     If  this  parameter  is set to true , the instance is en-
-                     abled for Amazon Web Services Nitro Enclaves;  otherwise,
+                     If this parameter is set to true , the  instance  is  en-
+                     abled  for Amazon Web Services Nitro Enclaves; otherwise,
                      it is not enabled for Amazon Web Services Nitro Enclaves.
 
               InstanceRequirements -> (structure)
-                 The  attributes  for the instance types. When you specify in-
-                 stance attributes, Amazon EC2 will  identify  instance  types
+                 The attributes for the instance types. When you  specify  in-
+                 stance  attributes,  Amazon  EC2 will identify instance types
                  with these attributes.
 
-                 If  you  specify InstanceRequirements , you can't specify In-
+                 If you specify InstanceRequirements , you can't  specify  In-
                  stanceTypes .
 
                  VCpuCount -> (structure)
@@ -2475,18 +2570,18 @@ OUTPUT
                         is no minimum limit.
 
                      Max -> (integer)
-                        The  maximum number of vCPUs. If this parameter is not
+                        The maximum number of vCPUs. If this parameter is  not
                         specified, there is no maximum limit.
 
                  MemoryMiB -> (structure)
                      The minimum and maximum amount of memory, in MiB.
 
                      Min -> (integer)
-                        The minimum amount of memory, in MiB. If this  parame-
+                        The  minimum amount of memory, in MiB. If this parame-
                         ter is not specified, there is no minimum limit.
 
                      Max -> (integer)
-                        The  maximum amount of memory, in MiB. If this parame-
+                        The maximum amount of memory, in MiB. If this  parame-
                         ter is not specified, there is no maximum limit.
 
                  CpuManufacturers -> (list)
@@ -2501,8 +2596,8 @@ OUTPUT
 
                      NOTE:
                         Don't confuse the CPU manufacturer with the CPU archi-
-                        tecture. Instances will be launched with a  compatible
-                        CPU  architecture  based  on  the Amazon Machine Image
+                        tecture.  Instances will be launched with a compatible
+                        CPU architecture based on  the  Amazon  Machine  Image
                         (AMI) that you specify in your launch template.
 
                      Default: Any manufacturer
@@ -2510,7 +2605,7 @@ OUTPUT
                      (string)
 
                  MemoryGiBPerVCpu -> (structure)
-                     The minimum and maximum amount of  memory  per  vCPU,  in
+                     The  minimum  and  maximum  amount of memory per vCPU, in
                      GiB.
 
                      Default: No minimum or maximum limits
@@ -2526,15 +2621,15 @@ OUTPUT
                  ExcludedInstanceTypes -> (list)
                      The instance types to exclude.
 
-                     You  can  use strings with one or more wild cards, repre-
-                     sented by an asterisk (* ), to exclude an instance  type,
-                     size,   or   generation.   The  following  are  examples:
+                     You can use strings with one or more wild  cards,  repre-
+                     sented  by an asterisk (* ), to exclude an instance type,
+                     size,  or  generation.  The   following   are   examples:
                      m5.8xlarge , c5*.* , m5a.* , r* , *3* .
 
-                     For example, if you specify c5* ,Amazon EC2 will  exclude
+                     For  example, if you specify c5* ,Amazon EC2 will exclude
                      the entire C5 instance family, which includes all C5a and
-                     C5n instance types. If you specify  m5a.*  ,  Amazon  EC2
-                     will  exclude all the M5a instance types, but not the M5n
+                     C5n  instance  types.  If  you specify m5a.* , Amazon EC2
+                     will exclude all the M5a instance types, but not the  M5n
                      instance types.
 
                      NOTE:
@@ -2548,14 +2643,14 @@ OUTPUT
                  InstanceGenerations -> (list)
                      Indicates whether current or previous generation instance
                      types are included. The current generation instance types
-                     are  recommended  for  use.  Current  generation instance
-                     types are typically the latest two to  three  generations
+                     are recommended  for  use.  Current  generation  instance
+                     types  are  typically the latest two to three generations
                      in  each  instance  family.  For  more  information,  see
                      Instance types in the Amazon EC2 User Guide .
 
                      For current generation instance types, specify current .
 
-                     For previous generation instance types, specify  previous
+                     For  previous generation instance types, specify previous
                      .
 
                      Default: Current and previous generation instance types
@@ -2563,101 +2658,101 @@ OUTPUT
                      (string)
 
                  SpotMaxPricePercentageOverLowestPrice -> (integer)
-                     [Price  protection]  The  price  protection threshold for
+                     [Price protection] The  price  protection  threshold  for
                      Spot Instances, as a percentage higher than an identified
-                     Spot  price.  The identified Spot price is the Spot price
-                     of the lowest priced current generation C, M,  or  R  in-
+                     Spot price. The identified Spot price is the  Spot  price
+                     of  the  lowest  priced current generation C, M, or R in-
                      stance type with your specified attributes. If no current
-                     generation C, M, or R  instance  type  matches  your  at-
+                     generation  C,  M,  or  R  instance type matches your at-
                      tributes, then the identified Spot price is from the low-
                      est priced current generation instance types, and failing
                      that, from the lowest priced previous generation instance
                      types that match your attributes. When Amazon EC2 selects
-                     instance  types with your attributes, it will exclude in-
-                     stance types whose  Spot  price  exceeds  your  specified
+                     instance types with your attributes, it will exclude  in-
+                     stance  types  whose  Spot  price  exceeds your specified
                      threshold.
 
                      The parameter accepts an integer, which Amazon EC2 inter-
                      prets as a percentage.
 
                      If you set TargetCapacityUnitType to vcpu or memory-mib ,
-                     the  price  protection  threshold is applied based on the
-                     per-vCPU or per-memory price instead of the  per-instance
+                     the price protection threshold is applied  based  on  the
+                     per-vCPU  or per-memory price instead of the per-instance
                      price.
 
-                     This      parameter      is     not     supported     for
+                     This     parameter     is     not      supported      for
                      GetSpotPlacementScores                                and
                      GetInstanceTypesFromInstanceRequirements .
 
                      NOTE:
-                        Only  one  of SpotMaxPricePercentageOverLowestPrice or
-                        MaxSpotPriceAsPercentageOfOptimalOnDemandPrice can  be
-                        specified.  If  you  don't  specify either, Amazon EC2
-                        will automatically apply optimal price  protection  to
-                        consistently  select  from  a  wide  range of instance
-                        types. To indicate no price protection  threshold  for
-                        Spot  Instances,  meaning you want to consider all in-
-                        stance types that match your attributes,  include  one
-                        of  these parameters and specify a high value, such as
+                        Only one of  SpotMaxPricePercentageOverLowestPrice  or
+                        MaxSpotPriceAsPercentageOfOptimalOnDemandPrice  can be
+                        specified. If you don't  specify  either,  Amazon  EC2
+                        will  automatically  apply optimal price protection to
+                        consistently select from  a  wide  range  of  instance
+                        types.  To  indicate no price protection threshold for
+                        Spot Instances, meaning you want to consider  all  in-
+                        stance  types  that match your attributes, include one
+                        of these parameters and specify a high value, such  as
                         999999 .
 
                      Default: 100
 
                  OnDemandMaxPricePercentageOverLowestPrice -> (integer)
-                     [Price protection] The  price  protection  threshold  for
+                     [Price  protection]  The  price  protection threshold for
                      On-Demand Instances, as a percentage higher than an iden-
                      tified On-Demand price. The identified On-Demand price is
-                     the  price  of the lowest priced current generation C, M,
-                     or R instance type with your specified  attributes.  When
-                     Amazon  EC2  selects instance types with your attributes,
-                     it will exclude instance types whose price  exceeds  your
+                     the price of the lowest priced current generation  C,  M,
+                     or  R  instance type with your specified attributes. When
+                     Amazon EC2 selects instance types with  your  attributes,
+                     it  will  exclude instance types whose price exceeds your
                      specified threshold.
 
                      The parameter accepts an integer, which Amazon EC2 inter-
                      prets as a percentage.
 
-                     To turn off price protection, specify a high value,  such
+                     To  turn off price protection, specify a high value, such
                      as 999999 .
 
-                     This      parameter      is     not     supported     for
+                     This     parameter     is     not      supported      for
                      GetSpotPlacementScores                                and
                      GetInstanceTypesFromInstanceRequirements .
 
                      NOTE:
-                        If  you  set  TargetCapacityUnitType  to  vcpu or mem-
-                        ory-mib , the price protection  threshold  is  applied
-                        based  on  the per-vCPU or per-memory price instead of
+                        If you set  TargetCapacityUnitType  to  vcpu  or  mem-
+                        ory-mib  ,  the  price protection threshold is applied
+                        based on the per-vCPU or per-memory price  instead  of
                         the per-instance price.
 
                      Default: 20
 
                  BareMetal -> (string)
-                     Indicates whether bare metal instance types must  be  in-
+                     Indicates  whether  bare metal instance types must be in-
                      cluded, excluded, or required.
 
-                     o To  include bare metal instance types, specify included
+                     o To include bare metal instance types, specify  included
                        .
 
-                     o To require only bare metal instance types, specify  re-
+                     o To  require only bare metal instance types, specify re-
                        quired .
 
-                     o To  exclude bare metal instance types, specify excluded
+                     o To exclude bare metal instance types, specify  excluded
                        .
 
                      Default: excluded
 
                  BurstablePerformance -> (string)
-                     Indicates whether burstable performance T instance  types
-                     are  included,  excluded,  or required. For more informa-
+                     Indicates  whether burstable performance T instance types
+                     are included, excluded, or required.  For  more  informa-
                      tion, see Burstable performance instances .
 
-                     o To include burstable performance instance types,  spec-
+                     o To  include burstable performance instance types, spec-
                        ify included .
 
-                     o To  require  only burstable performance instance types,
+                     o To require only burstable performance  instance  types,
                        specify required .
 
-                     o To exclude burstable performance instance types,  spec-
+                     o To  exclude burstable performance instance types, spec-
                        ify excluded .
 
                      Default: excluded
@@ -2666,7 +2761,7 @@ OUTPUT
                      Indicates whether instance types must support hibernation
                      for On-Demand Instances.
 
-                     This     parameter     is     not      supported      for
+                     This      parameter      is     not     supported     for
                      GetSpotPlacementScores .
 
                      Default: false
@@ -2677,26 +2772,26 @@ OUTPUT
                      Default: No minimum or maximum limits
 
                      Min -> (integer)
-                        The  minimum number of network interfaces. If this pa-
+                        The minimum number of network interfaces. If this  pa-
                         rameter is not specified, there is no minimum limit.
 
                      Max -> (integer)
-                        The maximum number of network interfaces. If this  pa-
+                        The  maximum number of network interfaces. If this pa-
                         rameter is not specified, there is no maximum limit.
 
                  LocalStorage -> (string)
                      Indicates whether instance types with instance store vol-
                      umes are included, excluded, or required. For more infor-
-                     mation,  Amazon EC2 instance store in the Amazon EC2 User
+                     mation, Amazon EC2 instance store in the Amazon EC2  User
                      Guide .
 
-                     o To include instance types with instance store  volumes,
+                     o To  include instance types with instance store volumes,
                        specify included .
 
                      o To require only instance types with instance store vol-
                        umes, specify required .
 
-                     o To exclude instance types with instance store  volumes,
+                     o To  exclude instance types with instance store volumes,
                        specify excluded .
 
                      Default: included
@@ -2704,10 +2799,10 @@ OUTPUT
                  LocalStorageTypes -> (list)
                      The type of local storage that is required.
 
-                     o For  instance types with hard disk drive (HDD) storage,
+                     o For instance types with hard disk drive (HDD)  storage,
                        specify hdd .
 
-                     o For instance types with solid state drive  (SSD)  stor-
+                     o For  instance  types with solid state drive (SSD) stor-
                        age, specify ssd .
 
                      Default: hdd and ssd
@@ -2721,28 +2816,28 @@ OUTPUT
                      Default: No minimum or maximum limits
 
                      Min -> (double)
-                        The minimum amount of total local storage, in  GB.  If
-                        this  parameter  is not specified, there is no minimum
+                        The  minimum  amount of total local storage, in GB. If
+                        this parameter is not specified, there is  no  minimum
                         limit.
 
                      Max -> (double)
-                        The maximum amount of total local storage, in  GB.  If
-                        this  parameter  is not specified, there is no maximum
+                        The  maximum  amount of total local storage, in GB. If
+                        this parameter is not specified, there is  no  maximum
                         limit.
 
                  BaselineEbsBandwidthMbps -> (structure)
                      The minimum and maximum baseline bandwidth to Amazon EBS,
-                     in  Mbps.  For  more information, see Amazon EBSoptimized
+                     in Mbps. For more information,  see  Amazon  EBSoptimized
                      instances in the Amazon EC2 User Guide .
 
                      Default: No minimum or maximum limits
 
                      Min -> (integer)
-                        The minimum baseline bandwidth, in Mbps. If  this  pa-
+                        The  minimum  baseline bandwidth, in Mbps. If this pa-
                         rameter is not specified, there is no minimum limit.
 
                      Max -> (integer)
-                        The  maximum  baseline bandwidth, in Mbps. If this pa-
+                        The maximum baseline bandwidth, in Mbps. If  this  pa-
                         rameter is not specified, there is no maximum limit.
 
                  AcceleratorTypes -> (list)
@@ -2759,7 +2854,7 @@ OUTPUT
 
                  AcceleratorCount -> (structure)
                      The minimum and maximum number of accelerators (GPUs, FP-
-                     GAs, or Amazon Web Services Inferentia chips) on  an  in-
+                     GAs,  or  Amazon Web Services Inferentia chips) on an in-
                      stance.
 
                      To exclude accelerator-enabled instance types, set Max to
@@ -2768,29 +2863,29 @@ OUTPUT
                      Default: No minimum or maximum limits
 
                      Min -> (integer)
-                        The minimum number of accelerators. If this  parameter
+                        The  minimum number of accelerators. If this parameter
                         is not specified, there is no minimum limit.
 
                      Max -> (integer)
-                        The  maximum number of accelerators. If this parameter
+                        The maximum number of accelerators. If this  parameter
                         is not specified, there is no maximum limit.
 
                  AcceleratorManufacturers -> (list)
-                     Indicates whether instance types must  have  accelerators
+                     Indicates  whether  instance types must have accelerators
                      by specific manufacturers.
 
-                     o For  instance  types  with Amazon Web Services devices,
+                     o For instance types with Amazon  Web  Services  devices,
                        specify amazon-web-services .
 
                      o For instance types with AMD devices, specify amd .
 
-                     o For instance types with Habana devices, specify  habana
+                     o For  instance types with Habana devices, specify habana
                        .
 
-                     o For  instance types with NVIDIA devices, specify nvidia
+                     o For instance types with NVIDIA devices, specify  nvidia
                        .
 
-                     o For instance types with Xilinx devices, specify  xilinx
+                     o For  instance types with Xilinx devices, specify xilinx
                        .
 
                      Default: Any manufacturer
@@ -2800,19 +2895,19 @@ OUTPUT
                  AcceleratorNames -> (list)
                      The accelerators that must be on the instance type.
 
-                     o For  instance types with NVIDIA A10G GPUs, specify a10g
+                     o For instance types with NVIDIA A10G GPUs, specify  a10g
                        .
 
-                     o For instance types with NVIDIA A100 GPUs, specify  a100
+                     o For  instance types with NVIDIA A100 GPUs, specify a100
                        .
 
-                     o For  instance types with NVIDIA H100 GPUs, specify h100
+                     o For instance types with NVIDIA H100 GPUs, specify  h100
                        .
 
-                     o For instance types with Amazon Web Services  Inferentia
+                     o For  instance types with Amazon Web Services Inferentia
                        chips, specify inferentia .
 
-                     o For  instance types with NVIDIA GRID K520 GPUs, specify
+                     o For instance types with NVIDIA GRID K520 GPUs,  specify
                        k520 .
 
                      o For instance types with NVIDIA K80 GPUs, specify k80 .
@@ -2829,7 +2924,7 @@ OUTPUT
                      o For instance types with Xilinx VU9P FPGAs, specify vu9p
                        .
 
-                     o For instance types with NVIDIA V100 GPUs, specify  v100
+                     o For  instance types with NVIDIA V100 GPUs, specify v100
                        .
 
                      Default: Any accelerator
@@ -2837,55 +2932,55 @@ OUTPUT
                      (string)
 
                  AcceleratorTotalMemoryMiB -> (structure)
-                     The  minimum and maximum amount of total accelerator mem-
+                     The minimum and maximum amount of total accelerator  mem-
                      ory, in MiB.
 
                      Default: No minimum or maximum limits
 
                      Min -> (integer)
-                        The minimum amount of accelerator memory, in  MiB.  If
-                        this  parameter  is not specified, there is no minimum
+                        The  minimum  amount of accelerator memory, in MiB. If
+                        this parameter is not specified, there is  no  minimum
                         limit.
 
                      Max -> (integer)
-                        The maximum amount of accelerator memory, in  MiB.  If
-                        this  parameter  is not specified, there is no maximum
+                        The  maximum  amount of accelerator memory, in MiB. If
+                        this parameter is not specified, there is  no  maximum
                         limit.
 
                  NetworkBandwidthGbps -> (structure)
-                     The minimum and maximum amount of network  bandwidth,  in
+                     The  minimum  and maximum amount of network bandwidth, in
                      gigabits per second (Gbps).
 
                      Default: No minimum or maximum limits
 
                      Min -> (double)
-                        The  minimum  amount of network bandwidth, in Gbps. If
-                        this parameter is not specified, there is  no  minimum
+                        The minimum amount of network bandwidth, in  Gbps.  If
+                        this  parameter  is not specified, there is no minimum
                         limit.
 
                      Max -> (double)
-                        The  maximum  amount of network bandwidth, in Gbps. If
-                        this parameter is not specified, there is  no  maximum
+                        The maximum amount of network bandwidth, in  Gbps.  If
+                        this  parameter  is not specified, there is no maximum
                         limit.
 
                  AllowedInstanceTypes -> (list)
-                     The  instance  types  to  apply your specified attributes
-                     against. All other instance types are  ignored,  even  if
+                     The instance types to  apply  your  specified  attributes
+                     against.  All  other  instance types are ignored, even if
                      they match your specified attributes.
 
-                     You  can  use strings with one or more wild cards, repre-
-                     sented by an asterisk (* ), to allow  an  instance  type,
-                     size,   or   generation.   The  following  are  examples:
+                     You can use strings with one or more wild  cards,  repre-
+                     sented  by  an  asterisk (* ), to allow an instance type,
+                     size,  or  generation.  The   following   are   examples:
                      m5.8xlarge , c5*.* , m5a.* , r* , *3* .
 
-                     For example, if you specify c5* ,Amazon  EC2  will  allow
+                     For  example,  if  you specify c5* ,Amazon EC2 will allow
                      the entire C5 instance family, which includes all C5a and
-                     C5n instance types. If you specify  m5a.*  ,  Amazon  EC2
-                     will  allow  all  the M5a instance types, but not the M5n
+                     C5n  instance  types.  If  you specify m5a.* , Amazon EC2
+                     will allow all the M5a instance types, but  not  the  M5n
                      instance types.
 
                      NOTE:
-                        If you specify AllowedInstanceTypes , you can't  spec-
+                        If  you specify AllowedInstanceTypes , you can't spec-
                         ify ExcludedInstanceTypes .
 
                      Default: All instance types
@@ -2893,38 +2988,125 @@ OUTPUT
                      (string)
 
                  MaxSpotPriceAsPercentageOfOptimalOnDemandPrice -> (integer)
-                     [Price  protection]  The  price  protection threshold for
-                     Spot Instances, as a percentage of an  identified  On-De-
-                     mand  price.  The identified On-Demand price is the price
-                     of the lowest priced current generation C, M,  or  R  in-
+                     [Price protection] The  price  protection  threshold  for
+                     Spot  Instances,  as a percentage of an identified On-De-
+                     mand price. The identified On-Demand price is  the  price
+                     of  the  lowest  priced current generation C, M, or R in-
                      stance type with your specified attributes. If no current
-                     generation C, M, or R  instance  type  matches  your  at-
-                     tributes,  then  the  identified price is from the lowest
-                     priced current generation  instance  types,  and  failing
+                     generation  C,  M,  or  R  instance type matches your at-
+                     tributes, then the identified price is  from  the  lowest
+                     priced  current  generation  instance  types, and failing
                      that, from the lowest priced previous generation instance
                      types that match your attributes. When Amazon EC2 selects
-                     instance  types with your attributes, it will exclude in-
-                     stance types whose price exceeds your  specified  thresh-
+                     instance types with your attributes, it will exclude  in-
+                     stance  types  whose price exceeds your specified thresh-
                      old.
 
                      The parameter accepts an integer, which Amazon EC2 inter-
                      prets as a percentage.
 
                      If you set TargetCapacityUnitType to vcpu or memory-mib ,
-                     the  price  protection threshold is based on the per vCPU
+                     the price protection threshold is based on the  per  vCPU
                      or per memory price instead of the per instance price.
 
                      NOTE:
-                        Only one of  SpotMaxPricePercentageOverLowestPrice  or
-                        MaxSpotPriceAsPercentageOfOptimalOnDemandPrice  can be
-                        specified. If you don't  specify  either,  Amazon  EC2
-                        will  automatically  apply optimal price protection to
-                        consistently select from  a  wide  range  of  instance
-                        types.  To  indicate no price protection threshold for
-                        Spot Instances, meaning you want to consider  all  in-
-                        stance  types  that match your attributes, include one
-                        of these parameters and specify a high value, such  as
+                        Only  one  of SpotMaxPricePercentageOverLowestPrice or
+                        MaxSpotPriceAsPercentageOfOptimalOnDemandPrice can  be
+                        specified.  If  you  don't  specify either, Amazon EC2
+                        will automatically apply optimal price  protection  to
+                        consistently  select  from  a  wide  range of instance
+                        types. To indicate no price protection  threshold  for
+                        Spot  Instances,  meaning you want to consider all in-
+                        stance types that match your attributes,  include  one
+                        of  these parameters and specify a high value, such as
                         999999 .
+
+                 BaselinePerformanceFactors -> (structure)
+                     The baseline performance to consider, using  an  instance
+                     family  as  a baseline reference. The instance family es-
+                     tablishes the lowest  acceptable  level  of  performance.
+                     Amazon  EC2 uses this baseline to guide instance type se-
+                     lection, but there is no guarantee that the selected  in-
+                     stance  types  will  always exceed the baseline for every
+                     application. Currently, this parameter only supports  CPU
+                     performance  as  a  baseline performance factor. For more
+                     information, see Performance protection in the Amazon EC2
+                     User Guide .
+
+                     Cpu -> (structure)
+                        The  CPU  performance  to  consider, using an instance
+                        family as the baseline reference.
+
+                        References -> (list)
+                            Specify an instance family to use as the  baseline
+                            reference  for CPU performance. All instance types
+                            that match your specified attributes will be  com-
+                            pared  against  the  CPU performance of the refer-
+                            enced instance family, regardless of CPU  manufac-
+                            turer or architecture differences.
+
+                            NOTE:
+                               Currently,  only  one  instance  family  can be
+                               specified in the list.
+
+                            (structure)
+                               Specify an instance family to use as the  base-
+                               line  reference  for  CPU  performance. All in-
+                               stance types  that  match  your  specified  at-
+                               tributes  will be compared against the CPU per-
+                               formance of the referenced instance family, re-
+                               gardless of CPU manufacturer or architecture.
+
+                               NOTE:
+                                   Currently,  only one instance family can be
+                                   specified in the list.
+
+                               InstanceFamily -> (string)
+                                   The instance family to use  as  a  baseline
+                                   reference.
+
+                                   NOTE:
+                                      Ensure  that  you  specify  the  correct
+                                      value for the instance family.  The  in-
+                                      stance  family  is everything before the
+                                      period (. ) in the instance  type  name.
+                                      For   example,   in  the  instance  type
+                                      c6i.large , the instance family is c6i ,
+                                      not  c6  .  For  more  information,  see
+                                      Amazon EC2 instance type naming  conven-
+                                      tions in Amazon EC2 Instance Types .
+
+                                   The  following  instance  families  are not
+                                   supported for performance protection:
+
+                                   o c1
+
+                                   o g3 | g3s
+
+                                   o hpc7g
+
+                                   o m1 | m2
+
+                                   o mac1 | mac2 | mac2-m1ultra  |  mac2-m2  |
+                                     mac2-m2pro
+
+                                   o p3dn | p4d | p5
+
+                                   o t1
+
+                                   o u-12tb1  |  u-18tb1  | u-24tb1 | u-3tb1 |
+                                     u-6tb1 | u-9tb1 | u7i-12tb | u7in-16tb  |
+                                     u7in-24tb | u7in-32tb
+
+                                   If  you  enable  performance  protection by
+                                   specifying a supported instance family, the
+                                   returned  instance  types  will exclude the
+                                   above unsupported instance families.
+
+                                   If you specify an unsupported instance fam-
+                                   ily  as  a  value for baseline performance,
+                                   the API returns an empty response  for  and
+                                   an exception for , , , and .
 
               PrivateDnsNameOptions -> (structure)
                  The options for the instance hostname.
