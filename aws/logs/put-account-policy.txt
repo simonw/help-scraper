@@ -6,9 +6,9 @@ NAME
        put-account-policy -
 
 DESCRIPTION
-       Creates  an account-level data protection policy or subscription filter
-       policy that applies to all log groups or a subset of log groups in  the
-       account.
+       Creates  an  account-level  data protection policy, subscription filter
+       policy, or field index policy that applies to all log groups or a  sub-
+       set of log groups in the account.
           Data protection policy
 
        A  data  protection policy can help safeguard sensitive data that's in-
@@ -79,6 +79,98 @@ DESCRIPTION
        correct name in PolicyName . To perform a PutAccountPolicy subscription
        filter operation for any destination except a Lambda function, you must
        also have the iam:PassRole permission.
+          Transformer policy
+
+       Creates or updates a log transformer policy for your account.  You  use
+       log  transformers to transform log events into a different format, mak-
+       ing them easier for you to process and analyze. You can also  transform
+       logs from different sources into standardized formats that contain rel-
+       evant, source-specific information. After you  have  created  a  trans-
+       former, CloudWatch Logs performs this transformation at the time of log
+       ingestion. You can then refer to the transformed versions of  the  logs
+       during  operations  such  as  querying with CloudWatch Logs Insights or
+       creating metric filters or subscription filters.
+
+       You can also use a transformer to copy metadata from metadata keys into
+       the  log  events  themselves. This metadata can include log group name,
+       log stream name, account ID and Region.
+
+       A transformer for a log group is a series  of  processors,  where  each
+       processor applies one type of transformation to the log events ingested
+       into this log group. For more information about the  available  proces-
+       sors to use in a transformer, see Processors that you can use .
+
+       Having log events in standardized format enables visibility across your
+       applications for your log  analysis,  reporting,  and  alarming  needs.
+       CloudWatch  Logs  provides  transformation  for  common  log types with
+       out-of-the-box transformation templates for major Amazon  Web  Services
+       log  sources such as VPC flow logs, Lambda, and Amazon RDS. You can use
+       pre-built transformation  templates  or  create  custom  transformation
+       policies.
+
+       You can create transformers only for the log groups in the Standard log
+       class.
+
+       You can have one account-level transformer policy that applies  to  all
+       log  groups  in  the  account.  Or  you  can  create  as many as 20 ac-
+       count-level transformer policies that are each scoped to  a  subset  of
+       log  groups  with the selectionCriteria parameter. If you have multiple
+       account-level transformer policies with selection criteria, no  two  of
+       them can use the same or overlapping log group name prefixes. For exam-
+       ple, if you have one policy filtered to  log  groups  that  start  with
+       my-log , you can't have another field index policy filtered to my-logp-
+       prod or my-logging .
+
+       You can also set up a transformer at the log-group level. For more  in-
+       formation,  see  PutTransformer  .  If  there is both a log-group level
+       transformer created with PutTransformer  and  an  account-level  trans-
+       former  that could apply to the same log group, the log group uses only
+       the log-group level transformer. It ignores  the  account-level  trans-
+       former.
+          Field index policy
+
+       You  can  use field index policies to create indexes on fields found in
+       log events in the log group. Creating field indexes can help lower  the
+       scan  volume  for CloudWatch Logs Insights queries that reference those
+       fields, because these queries attempt to skip  the  processing  of  log
+       events  that  are  known to not match the indexed field. Good fields to
+       index are fields that you often need to query for and fields or  values
+       that  match only a small fraction of the total log events. Common exam-
+       ples of indexes include request ID, session ID, user IDs,  or  instance
+       IDs.  For  more  information, see Create field indexes to improve query
+       performance and reduce costs
+
+       To find the  fields  that  are  in  your  log  group  events,  use  the
+       GetLogGroupFields operation.
+
+       For  example,  suppose  you  have created a field index for requestId .
+       Then, any CloudWatch Logs Insights query on that  log  group  that  in-
+       cludes  requestId  =  *value* `` or ``requestId in [*value* , *value* ,
+       ...] will attempt to process only the  log  events  where  the  indexed
+       field matches the specified value.
+
+       Matches  of  log  events to the names of indexed fields are case-sensi-
+       tive. For example, an indexed field of  RequestId  won't  match  a  log
+       event containing requestId .
+
+       You  can  have one account-level field index policy that applies to all
+       log groups in the account.  Or  you  can  create  as  many  as  20  ac-
+       count-level  field  index  policies that are each scoped to a subset of
+       log groups with the selectionCriteria parameter. If you  have  multiple
+       account-level  index  policies  with selection criteria, no two of them
+       can use the same or overlapping log group name prefixes.  For  example,
+       if  you have one policy filtered to log groups that start with my-log ,
+       you can't have another field index policy filtered  to  my-logpprod  or
+       my-logging .
+
+       If  you  create an account-level field index policy in a monitoring ac-
+       count in cross-account observability, the policy is applied only to the
+       monitoring account and not to any source accounts.
+
+       If  you want to create a field index policy for a single log group, you
+       can use PutIndexPolicy instead of PutAccountPolicy . If you do so, that
+       log  group  will  use only that log-group level policy, and will ignore
+       the account-level policy that you create with PutAccountPolicy .
 
        See also: AWS API Documentation
 
@@ -183,6 +275,24 @@ OPTIONS
             grouping can be set to Random for a more even  distribution.  This
             property  is  only  applicable  when the destination is an Kinesis
             Data Streams data stream.
+              Transformer policy
+
+          A transformer policy must include one JSON block with the  array  of
+          processors  and  their  configurations.  For  more information about
+          available processors, see Processors that you can use .
+              Field index policy
+
+          A field index filter policy can include the following attribute in a
+          JSON block:
+
+          o Fields The array of field indexes to create.
+
+          It must contain at least one field index.
+
+          The following is an example of an index policy document that creates
+          two indexes, RequestId and TransactionId .
+              "policyDocument": "{  \"Fields\":  [  \"RequestId\",  \"Transac-
+              tionId\" ] }"
 
        --policy-type (string)
           The type of policy that you're creating or updating.
@@ -193,10 +303,14 @@ OPTIONS
 
           o SUBSCRIPTION_FILTER_POLICY
 
+          o FIELD_INDEX_POLICY
+
+          o TRANSFORMER_POLICY
+
        --scope (string)
-          Currently the only valid value for this parameter  is  ALL  ,  which
-          specifies  that the data protection policy applies to all log groups
-          in the account. If you omit this parameter, the default  of  ALL  is
+          Currently  the  only  valid  value for this parameter is ALL , which
+          specifies that the data protection policy applies to all log  groups
+          in  the  account.  If you omit this parameter, the default of ALL is
           used.
 
           Possible values:
@@ -204,29 +318,37 @@ OPTIONS
           o ALL
 
        --selection-criteria (string)
-          Use this parameter to apply the subscription filter policy to a sub-
-          set of log groups in the account. Currently, the only supported fil-
-          ter  is LogGroupName NOT IN [] . The selectionCriteria string can be
-          up to 25KB in length. The length is determined by  using  its  UTF-8
-          bytes.
-
-          Using  the selectionCriteria parameter is useful to help prevent in-
-          finite loops. For more information, see Log recursion prevention .
+          Use this parameter to apply the new policy to a subset of log groups
+          in the account.
 
           Specifing selectionCriteria is valid only when you specify SUBSCRIP-
-          TION_FILTER_POLICY for policyType .
+          TION_FILTER_POLICY , FIELD_INDEX_POLICY  or  TRANSFORMER_POLICY  for
+          policyType .
 
-       --cli-input-json  (string) Performs service operation based on the JSON
-       string provided. The JSON string follows the format provided by  --gen-
-       erate-cli-skeleton.  If  other  arguments  are  provided on the command
-       line, the CLI values will override the JSON-provided values. It is  not
+          If policyType is SUBSCRIPTION_FILTER_POLICY , the only supported se-
+          lectionCriteria filter is LogGroupName NOT IN []
+
+          If policyType is FIELD_INDEX_POLICY or TRANSFORMER_POLICY , the only
+          supported selectionCriteria filter is LogGroupNamePrefix
+
+          The selectionCriteria string can be up to 25KB in length. The length
+          is determined by using its UTF-8 bytes.
+
+          Using the selectionCriteria parameter with  SUBSCRIPTION_FILTER_POL-
+          ICY  is useful to help prevent infinite loops. For more information,
+          see Log recursion prevention .
+
+       --cli-input-json (string) Performs service operation based on the  JSON
+       string  provided. The JSON string follows the format provided by --gen-
+       erate-cli-skeleton. If other arguments  are  provided  on  the  command
+       line,  the CLI values will override the JSON-provided values. It is not
        possible to pass arbitrary binary values using a JSON-provided value as
        the string will be taken literally.
 
-       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
+       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
        output without sending an API request. If provided with no value or the
        value input, prints a sample input JSON that can be used as an argument
-       for  --cli-input-json.  If provided with the value output, it validates
+       for --cli-input-json. If provided with the value output,  it  validates
        the command inputs and returns a sample output JSON for that command.
 
 GLOBAL OPTIONS
@@ -240,13 +362,13 @@ GLOBAL OPTIONS
 
        --no-verify-ssl (boolean)
 
-       By default, the AWS CLI uses SSL when communicating with AWS  services.
+       By  default, the AWS CLI uses SSL when communicating with AWS services.
        For each SSL connection, the AWS CLI will verify SSL certificates. This
        option overrides the default behavior of verifying SSL certificates.
 
        --no-paginate (boolean)
 
-       Disable automatic pagination. If automatic pagination is disabled,  the
+       Disable  automatic pagination. If automatic pagination is disabled, the
        AWS CLI will only make one call, for the first page of results.
 
        --output (string)
@@ -287,7 +409,7 @@ GLOBAL OPTIONS
 
        --no-sign-request (boolean)
 
-       Do  not  sign requests. Credentials will not be loaded if this argument
+       Do not sign requests. Credentials will not be loaded if  this  argument
        is provided.
 
        --ca-bundle (string)
@@ -297,14 +419,14 @@ GLOBAL OPTIONS
 
        --cli-read-timeout (int)
 
-       The  maximum socket read time in seconds. If the value is set to 0, the
-       socket read will be blocking and not timeout. The default value  is  60
+       The maximum socket read time in seconds. If the value is set to 0,  the
+       socket  read  will be blocking and not timeout. The default value is 60
        seconds.
 
        --cli-connect-timeout (int)
 
-       The  maximum  socket connect time in seconds. If the value is set to 0,
-       the socket connect will be blocking and not timeout. The default  value
+       The maximum socket connect time in seconds. If the value is set  to  0,
+       the  socket connect will be blocking and not timeout. The default value
        is 60 seconds.
 
 OUTPUT
@@ -330,8 +452,7 @@ OUTPUT
               The scope of the account policy.
 
           selectionCriteria -> (string)
-              The log group selection criteria for  this  subscription  filter
-              policy.
+              The log group selection criteria that is used for this policy.
 
           accountId -> (string)
               The Amazon Web Services account ID that the policy applies to.

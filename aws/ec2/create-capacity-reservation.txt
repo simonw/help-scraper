@@ -6,30 +6,28 @@ NAME
        create-capacity-reservation -
 
 DESCRIPTION
-       Creates a new Capacity Reservation with the specified attributes.
+       Creates  a  new Capacity Reservation with the specified attributes. Ca-
+       pacity Reservations enable you to reserve capacity for your Amazon  EC2
+       instances in a specific Availability Zone for any duration.
 
-       Capacity  Reservations  enable  you to reserve capacity for your Amazon
-       EC2 instances in a specific Availability Zone for  any  duration.  This
-       gives  you the flexibility to selectively add capacity reservations and
-       still get the Regional RI discounts for that usage. By creating  Capac-
-       ity  Reservations, you ensure that you always have access to Amazon EC2
-       capacity when you need it, for as long as you need it. For more  infor-
-       mation, see Capacity Reservations in the Amazon EC2 User Guide .
+       You  can  create a Capacity Reservation at any time, and you can choose
+       when it starts. You can create a Capacity Reservation for immediate use
+       or you can request a Capacity Reservation for a future date.
 
-       Your  request to create a Capacity Reservation could fail if Amazon EC2
-       does not have sufficient capacity to fulfill the request. If  your  re-
-       quest fails due to Amazon EC2 capacity constraints, either try again at
-       a later time, try in  a  different  Availability  Zone,  or  request  a
-       smaller  capacity  reservation.  If your application is flexible across
-       instance types and sizes, try to create  a  Capacity  Reservation  with
-       different instance attributes.
+       For  more  information, see Reserve compute capacity with On-Demand Ca-
+       pacity Reservations in the Amazon EC2 User Guide .
 
-       Your  request  could  also  fail if the requested quantity exceeds your
-       On-Demand Instance limit for the selected instance type.  If  your  re-
-       quest  fails due to limit constraints, increase your On-Demand Instance
-       limit for the required instance type and try again. For  more  informa-
-       tion about increasing your instance limits, see Amazon EC2 Service Quo-
-       tas in the Amazon EC2 User Guide .
+       Your request to create a Capacity Reservation could fail if:
+
+       o Amazon EC2 does not have sufficient capacity. In this case, try again
+         at  a  later time, try in a different Availability Zone, or request a
+         smaller Capacity Reservation. If your workload is flexible across in-
+         stance types and sizes, try with different instance attributes.
+
+       o The requested quantity exceeds your On-Demand Instance quota. In this
+         case, increase your On-Demand Instance quota for  the  requested  in-
+         stance  type and try again. For more information, see Amazon EC2 Ser-
+         vice Quotas in the Amazon EC2 User Guide .
 
        See also: AWS API Documentation
 
@@ -51,6 +49,9 @@ SYNOPSIS
           [--dry-run | --no-dry-run]
           [--outpost-arn <value>]
           [--placement-group-arn <value>]
+          [--start-date <value>]
+          [--commitment-duration <value>]
+          [--delivery-preference <value>]
           [--cli-input-json <value>]
           [--generate-cli-skeleton <value>]
           [--debug]
@@ -75,8 +76,14 @@ OPTIONS
           tency .
 
        --instance-type (string)
-          The instance type for which to reserve capacity. For  more  informa-
-          tion, see Instance types in the Amazon EC2 User Guide .
+          The instance type for which to reserve capacity.
+
+          NOTE:
+              You can request future-dated Capacity Reservations for  instance
+              types in the C, M, R, I, and T instance families only.
+
+          For  more  information,  see  Instance  types in the Amazon EC2 User
+          Guide .
 
        --instance-platform (string)
           The type of operating system for which to reserve capacity.
@@ -123,18 +130,18 @@ OPTIONS
           The Availability Zone in which to create the Capacity Reservation.
 
        --availability-zone-id (string)
-          The  ID  of  the  Availability  Zone in which to create the Capacity
+          The ID of the Availability Zone in  which  to  create  the  Capacity
           Reservation.
 
        --tenancy (string)
           Indicates the tenancy of the Capacity Reservation. A Capacity Reser-
           vation can have one of the following tenancy settings:
 
-          o default  - The Capacity Reservation is created on hardware that is
+          o default - The Capacity Reservation is created on hardware that  is
             shared with other Amazon Web Services accounts.
 
-          o dedicated - The Capacity Reservation is created  on  single-tenant
-            hardware  that  is  dedicated  to a single Amazon Web Services ac-
+          o dedicated  -  The Capacity Reservation is created on single-tenant
+            hardware that is dedicated to a single  Amazon  Web  Services  ac-
             count.
 
           Possible values:
@@ -146,33 +153,43 @@ OPTIONS
        --instance-count (integer)
           The number of instances for which to reserve capacity.
 
+          NOTE:
+              You  can  request  future-dated Capacity Reservations for an in-
+              stance count with a minimum of 100 VPUs. For example, if you re-
+              quest  a  future-dated  Capacity  Reservation  for m5.xlarge in-
+              stances, you must request at least 25 instances (25 *  m5.xlarge
+              = 100 vCPUs ).
+
           Valid range: 1 - 1000
 
        --ebs-optimized | --no-ebs-optimized (boolean)
-          Indicates whether the Capacity  Reservation  supports  EBS-optimized
+          Indicates  whether  the  Capacity Reservation supports EBS-optimized
           instances. This optimization provides dedicated throughput to Amazon
           EBS and an optimized configuration stack to provide optimal I/O per-
           formance. This optimization isn't available with all instance types.
-          Additional usage charges apply when  using  an  EBS-  optimized  in-
+          Additional  usage  charges  apply  when  using an EBS- optimized in-
           stance.
 
        --ephemeral-storage | --no-ephemeral-storage (boolean)
           Deprecated.
 
        --end-date (timestamp)
-          The  date and time at which the Capacity Reservation expires. When a
-          Capacity Reservation expires, the reserved capacity is released  and
-          you  can  no  longer launch instances into it. The Capacity Reserva-
-          tion's state changes to expired when it reaches  its  end  date  and
+          The date and time at which the Capacity Reservation expires. When  a
+          Capacity  Reservation expires, the reserved capacity is released and
+          you can no longer launch instances into it.  The  Capacity  Reserva-
+          tion's  state  changes  to  expired when it reaches its end date and
           time.
 
-          You  must  provide an EndDate value if EndDateType is limited . Omit
+          You must provide an EndDate value if EndDateType is limited  .  Omit
           EndDate if EndDateType is unlimited .
 
-          If the EndDateType is limited , the  Capacity  Reservation  is  can-
-          celled  within  an hour from the specified time. For example, if you
-          specify 5/31/2019, 13:30:55, the Capacity Reservation is  guaranteed
+          If  the  EndDateType  is  limited , the Capacity Reservation is can-
+          celled within an hour from the specified time. For example,  if  you
+          specify  5/31/2019, 13:30:55, the Capacity Reservation is guaranteed
           to end between 13:30:55 and 14:30:55 on 5/31/2019.
+
+          If you are requesting a future-dated Capacity Reservation, you can't
+          specify an end date and time that is within the commitment duration.
 
        --end-date-type (string)
           Indicates the way in which the Capacity Reservation ends. A Capacity
@@ -208,6 +225,10 @@ OPTIONS
             ensures that only permitted instances can use the reserved  capac-
             ity.
 
+          NOTE:
+              If  you  are requesting a future-dated Capacity Reservation, you
+              must specify targeted .
+
           Default: open
 
           Possible values:
@@ -220,15 +241,15 @@ OPTIONS
           The tags to apply to the Capacity Reservation during launch.
 
           (structure)
-              The  tags to apply to a resource when the resource is being cre-
+              The tags to apply to a resource when the resource is being  cre-
               ated. When you specify a tag, you must specify the resource type
               to tag, otherwise the request will fail.
 
               NOTE:
-                 The  Valid  Values  lists  all the resource types that can be
-                 tagged. However, the action you're using  might  not  support
-                 tagging  all of these resource types. If you try to tag a re-
-                 source type that is unsupported for the action you're  using,
+                 The Valid Values lists all the resource  types  that  can  be
+                 tagged.  However,  the  action you're using might not support
+                 tagging all of these resource types. If you try to tag a  re-
+                 source  type that is unsupported for the action you're using,
                  you'll get an error.
 
               ResourceType -> (string)
@@ -243,14 +264,14 @@ OPTIONS
                      Key -> (string)
                         The key of the tag.
 
-                        Constraints:  Tag keys are case-sensitive and accept a
-                        maximum of 127 Unicode characters. May not begin  with
+                        Constraints: Tag keys are case-sensitive and accept  a
+                        maximum  of 127 Unicode characters. May not begin with
                         aws: .
 
                      Value -> (string)
                         The value of the tag.
 
-                        Constraints:  Tag values are case-sensitive and accept
+                        Constraints: Tag values are case-sensitive and  accept
                         a maximum of 256 Unicode characters.
 
        Shorthand Syntax:
@@ -274,20 +295,74 @@ OPTIONS
           ]
 
        --dry-run | --no-dry-run (boolean)
-          Checks whether you have the required  permissions  for  the  action,
+          Checks  whether  you  have  the required permissions for the action,
           without actually making the request, and provides an error response.
-          If you have the required permissions, the error response is  DryRun-
+          If  you have the required permissions, the error response is DryRun-
           Operation . Otherwise, it is UnauthorizedOperation .
 
        --outpost-arn (string)
+
+          NOTE:
+              Not supported for future-dated Capacity Reservations.
+
           The Amazon Resource Name (ARN) of the Outpost on which to create the
           Capacity Reservation.
 
        --placement-group-arn (string)
-          The Amazon Resource Name (ARN) of the  cluster  placement  group  in
-          which  to create the Capacity Reservation. For more information, see
+
+          NOTE:
+              Not supported for future-dated Capacity Reservations.
+
+          The  Amazon  Resource  Name  (ARN) of the cluster placement group in
+          which to create the Capacity Reservation. For more information,  see
           Capacity Reservations for cluster placement groups in the Amazon EC2
           User Guide .
+
+       --start-date (timestamp)
+
+          NOTE:
+              Required for future-dated Capacity Reservations only. To  create
+              a Capacity Reservation for immediate use, omit this parameter.
+
+          The  date  and  time  at which the future-dated Capacity Reservation
+          should become available for use, in the ISO8601 format  in  the  UTC
+          time zone (YYYY-MM-DDThh:mm:ss.sssZ ).
+
+          You  can  request  a future-dated Capacity Reservation between 5 and
+          120 days in advance.
+
+       --commitment-duration (long)
+
+          NOTE:
+              Required for future-dated Capacity Reservations only. To  create
+              a Capacity Reservation for immediate use, omit this parameter.
+
+          Specify  a commitment duration, in seconds, for the future-dated Ca-
+          pacity Reservation.
+
+          The commitment duration is a minimum duration for which  you  commit
+          to  having the future-dated Capacity Reservation in the active state
+          in your account after it has been delivered.
+
+          For more information, see Commitment duration .
+
+       --delivery-preference (string)
+
+          NOTE:
+              Required for future-dated Capacity Reservations only. To  create
+              a Capacity Reservation for immediate use, omit this parameter.
+
+          Indicates  that the requested capacity will be delivered in addition
+          to any running instances or reserved capacity that you have in  your
+          account at the requested date and time.
+
+          The only supported value is incremental .
+
+          Possible values:
+
+          o fixed
+
+          o incremental
 
        --cli-input-json  (string) Performs service operation based on the JSON
        string provided. The JSON string follows the format provided by  --gen-
@@ -561,23 +636,43 @@ OUTPUT
               The current state of the Capacity Reservation. A Capacity Reser-
               vation can be in one of the following states:
 
-              o active  -  The Capacity Reservation is active and the capacity
-                is available for your use.
+              o active - The capacity is available for use.
 
-              o expired - The Capacity Reservation  expired  automatically  at
-                the  date and time specified in your request. The reserved ca-
-                pacity is no longer available for your use.
+              o expired  -  The  Capacity Reservation expired automatically at
+                the date and time specified in your reservation  request.  The
+                reserved capacity is no longer available for your use.
 
-              o cancelled - The Capacity Reservation was  cancelled.  The  re-
+              o cancelled  -  The  Capacity  Reservation was canceled. The re-
                 served capacity is no longer available for your use.
 
-              o pending  - The Capacity Reservation request was successful but
+              o pending - The Capacity Reservation request was successful  but
                 the capacity provisioning is still pending.
 
-              o failed - The Capacity Reservation request has  failed.  A  re-
-                quest  might  fail due to invalid request parameters, capacity
-                constraints, or instance limit  constraints.  Failed  requests
-                are retained for 60 minutes.
+              o failed  -  The  Capacity Reservation request has failed. A re-
+                quest can fail due to request parameters that are  not  valid,
+                capacity  constraints,  or instance limit constraints. You can
+                view a failed request for 60 minutes.
+
+              o scheduled - (Future-dated Capacity Reservations only ) The fu-
+                ture-dated  Capacity  Reservation request was approved and the
+                Capacity Reservation is scheduled  for  delivery  on  the  re-
+                quested start date.
+
+              o assessing  - (Future-dated Capacity Reservations only ) Amazon
+                EC2 is assessing your  request  for  a  future-dated  Capacity
+                Reservation.
+
+              o delayed  -  (Future-dated  Capacity Reservations only ) Amazon
+                EC2 encountered a delay  in  provisioning  the  requested  fu-
+                ture-dated  Capacity  Reservation. Amazon EC2 is unable to de-
+                liver the requested capacity by the requested start  date  and
+                time.
+
+              o unsupported  - (Future-dated Capacity Reservations only ) Ama-
+                zon EC2 can't support the  future-dated  Capacity  Reservation
+                request  due to capacity constraints. You can view unsupported
+                requests for 30 days. The Capacity Reservation will not be de-
+                livered.
 
           StartDate -> (timestamp)
               The date and time at which the Capacity Reservation was started.
@@ -675,6 +770,27 @@ OUTPUT
           UnusedReservationBillingOwnerId -> (string)
               The  ID  of  the Amazon Web Services account to which billing of
               the unused capacity of the Capacity Reservation is assigned.
+
+          CommitmentInfo -> (structure)
+              Information about your commitment for  a  future-dated  Capacity
+              Reservation.
+
+              CommittedInstanceCount -> (integer)
+                 The  instance  capacity  that  you  committed to when you re-
+                 quested the future-dated Capacity Reservation.
+
+              CommitmentEndDate -> (timestamp)
+                 The date and time at which the commitment  duration  expires,
+                 in    the    ISO8601    format   in   the   UTC   time   zone
+                 (YYYY-MM-DDThh:mm:ss.sssZ ). You can't decrease the  instance
+                 count or cancel the Capacity Reservation before this date and
+                 time.
+
+          DeliveryPreference -> (string)
+              The delivery method for a future-dated Capacity Reservation. in-
+              cremental  indicates that the requested capacity is delivered in
+              addition to any running instances and reserved capacity that you
+              have in your account at the requested date and time.
 
 
 

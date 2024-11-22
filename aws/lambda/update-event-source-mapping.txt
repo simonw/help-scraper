@@ -27,27 +27,30 @@ DESCRIPTION
 
        o Amazon DocumentDB
 
-       The following error handling options  are  available  only  for  stream
-       sources (DynamoDB and Kinesis):
+       The following error handling options are available  only  for  DynamoDB
+       and Kinesis event sources:
 
        o BisectBatchOnFunctionError   If  the function returns an error, split
          the batch in two and retry.
 
-       o DestinationConfig  Send discarded records to an Amazon SQS  queue  or
-         Amazon SNS topic.
-
-       o MaximumRecordAgeInSeconds   Discard  records older than the specified
-         age. The default value is infinite (-1). When set to  infinite  (-1),
+       o MaximumRecordAgeInSeconds  Discard records older than  the  specified
+         age.  The  default value is infinite (-1). When set to infinite (-1),
          failed records are retried until the record expires
 
-       o MaximumRetryAttempts   Discard  records after the specified number of
-         retries. The default value is infinite (-1).  When  set  to  infinite
+       o MaximumRetryAttempts  Discard records after the specified  number  of
+         retries.  The  default  value  is infinite (-1). When set to infinite
          (-1), failed records are retried until the record expires.
 
-       o ParallelizationFactor   Process multiple batches from each shard con-
+       o ParallelizationFactor  Process multiple batches from each shard  con-
          currently.
 
-       For information about which  configuration  parameters  apply  to  each
+       For  stream  sources  (DynamoDB,  Kinesis, Amazon MSK, and self-managed
+       Apache Kafka), the following option is also available:
+
+       o DestinationConfig  Send discarded records to  an  Amazon  SQS  queue,
+         Amazon SNS topic, or Amazon S3 bucket.
+
+       For  information  about  which  configuration  parameters apply to each
        event source, see the following topics.
 
        o Amazon DynamoDB Streams
@@ -85,6 +88,7 @@ SYNOPSIS
           [--scaling-config <value>]
           [--document-db-event-source-config <value>]
           [--kms-key-arn <value>]
+          [--metrics-config <value>]
           [--cli-input-json <value>]
           [--generate-cli-skeleton <value>]
           [--debug]
@@ -115,34 +119,34 @@ OPTIONS
           o Function  ARN   arn:aws:lambda:us-west-2:123456789012:function:My-
             Function .
 
-          o Version or Alias ARN   arn:aws:lambda:us-west-2:123456789012:func-
+          o Version  or Alias ARN  arn:aws:lambda:us-west-2:123456789012:func-
             tion:MyFunction:PROD .
 
           o Partial ARN  123456789012:function:MyFunction .
 
-          The  length  constraint applies only to the full ARN. If you specify
+          The length constraint applies only to the full ARN. If  you  specify
           only the function name, it's limited to 64 characters in length.
 
        --enabled | --no-enabled (boolean)
-          When true, the event source mapping is active.  When  false,  Lambda
+          When  true,  the  event source mapping is active. When false, Lambda
           pauses polling and invocation.
 
           Default: True
 
        --batch-size (integer)
-          The  maximum  number of records in each batch that Lambda pulls from
-          your stream or queue and sends to your function. Lambda  passes  all
-          of  the records in the batch to the function in a single call, up to
+          The maximum number of records in each batch that Lambda  pulls  from
+          your  stream  or queue and sends to your function. Lambda passes all
+          of the records in the batch to the function in a single call, up  to
           the payload limit for synchronous invocation (6 MB).
 
           o Amazon Kinesis  Default 100. Max 10,000.
 
           o Amazon DynamoDB Streams  Default 100. Max 10,000.
 
-          o Amazon Simple Queue Service  Default 10. For standard  queues  the
+          o Amazon  Simple  Queue Service  Default 10. For standard queues the
             max is 10,000. For FIFO queues the max is 10.
 
-          o Amazon  Managed  Streaming  for  Apache  Kafka   Default  100. Max
+          o Amazon Managed  Streaming  for  Apache  Kafka   Default  100.  Max
             10,000.
 
           o Self-managed Apache Kafka  Default 100. Max 10,000.
@@ -152,15 +156,15 @@ OPTIONS
           o DocumentDB  Default 100. Max 10,000.
 
        --filter-criteria (structure)
-          An object that defines the filter criteria  that  determine  whether
-          Lambda  should  process  an  event. For more information, see Lambda
+          An  object  that  defines the filter criteria that determine whether
+          Lambda should process an event. For  more  information,  see  Lambda
           event filtering .
 
           Filters -> (list)
               A list of filters.
 
               (structure)
-                 A structure within a FilterCriteria object  that  defines  an
+                 A  structure  within  a FilterCriteria object that defines an
                  event filtering pattern.
 
                  Pattern -> (string)
@@ -184,17 +188,17 @@ OPTIONS
 
        --maximum-batching-window-in-seconds (integer)
           The maximum amount of time, in seconds, that Lambda spends gathering
-          records  before invoking the function. You can configure MaximumBat-
-          chingWindowInSeconds to any value from 0 seconds to 300  seconds  in
+          records before invoking the function. You can configure  MaximumBat-
+          chingWindowInSeconds  to  any value from 0 seconds to 300 seconds in
           increments of seconds.
 
-          For  Kinesis,  DynamoDB,  and  Amazon SQS event sources, the default
-          batching window is 0 seconds. For Amazon  MSK,  Self-managed  Apache
+          For Kinesis, DynamoDB, and Amazon SQS  event  sources,  the  default
+          batching  window  is  0 seconds. For Amazon MSK, Self-managed Apache
           Kafka, Amazon MQ, and DocumentDB event sources, the default batching
-          window is 500 ms. Note that because you can only change  MaximumBat-
-          chingWindowInSeconds  in  increments  of  seconds, you cannot revert
-          back to the 500 ms default batching window after  you  have  changed
-          it.  To  restore  the default batching window, you must create a new
+          window  is 500 ms. Note that because you can only change MaximumBat-
+          chingWindowInSeconds in increments of  seconds,  you  cannot  revert
+          back  to  the  500 ms default batching window after you have changed
+          it. To restore the default batching window, you must  create  a  new
           event source mapping.
 
           Related  setting:  For  Kinesis,  DynamoDB,  and  Amazon  SQS  event
@@ -203,7 +207,7 @@ OPTIONS
 
        --destination-config (structure)
           (Kinesis, DynamoDB Streams, Amazon MSK, and self-managed Kafka only)
-          A  configuration  object  that specifies the destination of an event
+          A configuration object that specifies the destination  of  an  event
           after Lambda processes it.
 
           OnSuccess -> (structure)
@@ -218,17 +222,15 @@ OPTIONS
               Destination -> (string)
                  The Amazon Resource Name (ARN) of the destination resource.
 
-                 To retain records of asynchronous invocations , you can  con-
-                 figure  an  Amazon  SNS topic, Amazon SQS queue, Lambda func-
-                 tion, or Amazon EventBridge event bus as the destination.
+                 To  retain records of unsuccessful asynchronous invocations ,
+                 you can configure an Amazon SNS topic, Amazon SQS queue, Ama-
+                 zon  S3  bucket, Lambda function, or Amazon EventBridge event
+                 bus as the destination.
 
-                 To retain records of failed invocations from Kinesis and  Dy-
-                 namoDB  event sources , you can configure an Amazon SNS topic
-                 or Amazon SQS queue as the destination.
-
-                 To retain records of  failed  invocations  from  self-managed
-                 Kafka  or Amazon MSK , you can configure an Amazon SNS topic,
-                 Amazon SQS queue, or Amazon S3 bucket as the destination.
+                 To retain  records  of  failed  invocations  from  Kinesis  ,
+                 DynamoDB , self-managed Kafka or Amazon MSK , you can config-
+                 ure an Amazon SNS topic,  Amazon  SQS  queue,  or  Amazon  S3
+                 bucket as the destination.
 
        Shorthand Syntax:
 
@@ -246,18 +248,18 @@ OPTIONS
           }
 
        --maximum-record-age-in-seconds (integer)
-          (Kinesis and DynamoDB Streams only) Discard records older  than  the
+          (Kinesis  and  DynamoDB Streams only) Discard records older than the
           specified age. The default value is infinite (-1).
 
-       --bisect-batch-on-function-error  | --no-bisect-batch-on-function-error
+       --bisect-batch-on-function-error |  --no-bisect-batch-on-function-error
        (boolean)
-          (Kinesis and DynamoDB Streams only) If the function returns  an  er-
+          (Kinesis  and  DynamoDB Streams only) If the function returns an er-
           ror, split the batch in two and retry.
 
        --maximum-retry-attempts (integer)
           (Kinesis and DynamoDB Streams only) Discard records after the speci-
           fied number of retries. The default value is infinite (-1). When set
-          to  infinite  (-1),  failed records are retried until the record ex-
+          to infinite (-1), failed records are retried until  the  record  ex-
           pires.
 
        --parallelization-factor (integer)
@@ -265,62 +267,62 @@ OPTIONS
           from each shard concurrently.
 
        --source-access-configurations (list)
-          An  array  of authentication protocols or VPC components required to
+          An array of authentication protocols or VPC components  required  to
           secure your event source.
 
           (structure)
-              To secure and define access to your event source, you can  spec-
-              ify  the  authentication  protocol,  VPC  components, or virtual
+              To  secure and define access to your event source, you can spec-
+              ify the authentication  protocol,  VPC  components,  or  virtual
               host.
 
               Type -> (string)
-                 The type of authentication protocol, VPC components, or  vir-
-                 tual    host    for   your   event   source.   For   example:
+                 The  type of authentication protocol, VPC components, or vir-
+                 tual   host   for   your   event   source.    For    example:
                  "Type":"SASL_SCRAM_512_AUTH" .
 
-                 o BASIC_AUTH  (Amazon MQ) The  Secrets  Manager  secret  that
+                 o BASIC_AUTH   (Amazon  MQ)  The  Secrets Manager secret that
                    stores your broker credentials.
 
                  o BASIC_AUTH  (Self-managed Apache Kafka) The Secrets Manager
-                   ARN of your secret key used for  SASL/PLAIN  authentication
+                   ARN  of  your secret key used for SASL/PLAIN authentication
                    of your Apache Kafka brokers.
 
                  o VPC_SUBNET  (Self-managed Apache Kafka) The subnets associ-
-                   ated with your VPC. Lambda connects  to  these  subnets  to
+                   ated  with  your  VPC.  Lambda connects to these subnets to
                    fetch data from your self-managed Apache Kafka cluster.
 
                  o VPC_SECURITY_GROUP  (Self-managed Apache Kafka) The VPC se-
-                   curity group used to manage  access  to  your  self-managed
+                   curity  group  used  to  manage access to your self-managed
                    Apache Kafka brokers.
 
-                 o SASL_SCRAM_256_AUTH   (Self-managed  Apache  Kafka) The Se-
+                 o SASL_SCRAM_256_AUTH  (Self-managed Apache  Kafka)  The  Se-
                    crets  Manager  ARN  of  your  secret  key  used  for  SASL
-                   SCRAM-256  authentication of your self-managed Apache Kafka
+                   SCRAM-256 authentication of your self-managed Apache  Kafka
                    brokers.
 
-                 o SASL_SCRAM_512_AUTH   (Amazon  MSK,   Self-managed   Apache
-                   Kafka)  The Secrets Manager ARN of your secret key used for
-                   SASL SCRAM-512 authentication of your  self-managed  Apache
+                 o SASL_SCRAM_512_AUTH    (Amazon   MSK,  Self-managed  Apache
+                   Kafka) The Secrets Manager ARN of your secret key used  for
+                   SASL  SCRAM-512  authentication of your self-managed Apache
                    Kafka brokers.
 
-                 o VIRTUAL_HOST  -  (RabbitMQ) The name of the virtual host in
+                 o VIRTUAL_HOST - (RabbitMQ) The name of the virtual  host  in
                    your RabbitMQ broker. Lambda uses this RabbitMQ host as the
                    event source. This property cannot be specified in an Upda-
                    teEventSourceMapping API call.
 
-                 o CLIENT_CERTIFICATE_TLS_AUTH   (Amazon   MSK,   self-managed
-                   Apache  Kafka)  The  Secrets Manager ARN of your secret key
-                   containing the certificate chain (X.509 PEM),  private  key
-                   (PKCS#8  PEM), and private key password (optional) used for
+                 o CLIENT_CERTIFICATE_TLS_AUTH    (Amazon   MSK,  self-managed
+                   Apache Kafka) The Secrets Manager ARN of  your  secret  key
+                   containing  the  certificate chain (X.509 PEM), private key
+                   (PKCS#8 PEM), and private key password (optional) used  for
                    mutual TLS authentication of your MSK/Apache Kafka brokers.
 
                  o SERVER_ROOT_CA_CERTIFICATE  (Self-managed Apache Kafka) The
-                   Secrets  Manager ARN of your secret key containing the root
-                   CA certificate (X.509 PEM) used for TLS encryption of  your
+                   Secrets Manager ARN of your secret key containing the  root
+                   CA  certificate (X.509 PEM) used for TLS encryption of your
                    Apache Kafka brokers.
 
               URI -> (string)
-                 The  value  for your chosen configuration in Type . For exam-
+                 The value for your chosen configuration in Type .  For  exam-
                  ple: "URI": "arn:aws:secretsmanager:us-east-1:01234567890:se-
                  cret:MyBrokerSecretName" .
 
@@ -339,12 +341,12 @@ OPTIONS
           ]
 
        --tumbling-window-in-seconds (integer)
-          (Kinesis  and  DynamoDB  Streams  only) The duration in seconds of a
-          processing window for DynamoDB and Kinesis Streams event sources.  A
+          (Kinesis and DynamoDB Streams only) The duration  in  seconds  of  a
+          processing  window for DynamoDB and Kinesis Streams event sources. A
           value of 0 seconds indicates no tumbling window.
 
        --function-response-types (list)
-          (Kinesis,  DynamoDB  Streams,  and Amazon SQS) A list of current re-
+          (Kinesis, DynamoDB Streams, and Amazon SQS) A list  of  current  re-
           sponse type enums applied to the event source mapping.
 
           (string)
@@ -357,12 +359,12 @@ OPTIONS
             ReportBatchItemFailures
 
        --scaling-config (structure)
-          (Amazon SQS only) The scaling configuration for  the  event  source.
+          (Amazon  SQS  only)  The scaling configuration for the event source.
           For more information, see Configuring maximum concurrency for Amazon
           SQS event sources .
 
           MaximumConcurrency -> (integer)
-              Limits the number of concurrent instances that  the  Amazon  SQS
+              Limits  the  number  of concurrent instances that the Amazon SQS
               event source can invoke.
 
        Shorthand Syntax:
@@ -379,18 +381,18 @@ OPTIONS
           Specific configuration settings for a DocumentDB event source.
 
           DatabaseName -> (string)
-              The  name of the database to consume within the DocumentDB clus-
+              The name of the database to consume within the DocumentDB  clus-
               ter.
 
           CollectionName -> (string)
-              The name of the collection to consume within  the  database.  If
-              you  do  not  specify  a collection, Lambda consumes all collec-
+              The  name  of  the collection to consume within the database. If
+              you do not specify a collection,  Lambda  consumes  all  collec-
               tions.
 
           FullDocument -> (string)
-              Determines what DocumentDB sends to  your  event  stream  during
-              document  update  operations. If set to UpdateLookup, DocumentDB
-              sends a delta describing the changes, along with a copy  of  the
+              Determines  what  DocumentDB  sends  to your event stream during
+              document update operations. If set to  UpdateLookup,  DocumentDB
+              sends  a  delta describing the changes, along with a copy of the
               entire document. Otherwise, DocumentDB sends only a partial doc-
               ument that contains the changes.
 
@@ -407,10 +409,33 @@ OPTIONS
           }
 
        --kms-key-arn (string)
-          The ARN of the Key Management Service  (KMS)  customer  managed  key
+          The  ARN  of  the  Key Management Service (KMS) customer managed key
           that Lambda uses to encrypt your function's filter criteria . By de-
-          fault, Lambda does not encrypt your filter criteria object.  Specify
+          fault,  Lambda does not encrypt your filter criteria object. Specify
           this property to encrypt data using your own customer managed key.
+
+       --metrics-config (structure)
+          The metrics configuration for your event source. For  more  informa-
+          tion, see Event source mapping metrics .
+
+          Metrics -> (list)
+              The  metrics  you want your event source mapping to produce. In-
+              clude EventCount to receive event source mapping metrics related
+              to  the number of events processed by your event source mapping.
+              For more information about these metrics, see Event source  map-
+              ping metrics .
+
+              (string)
+
+       Shorthand Syntax:
+
+          Metrics=string,string
+
+       JSON Syntax:
+
+          {
+            "Metrics": ["EventCount", ...]
+          }
 
        --cli-input-json  (string) Performs service operation based on the JSON
        string provided. The JSON string follows the format provided by  --gen-
@@ -648,17 +673,15 @@ OUTPUT
               Destination -> (string)
                  The Amazon Resource Name (ARN) of the destination resource.
 
-                 To retain records of asynchronous invocations , you can  con-
-                 figure  an  Amazon  SNS topic, Amazon SQS queue, Lambda func-
-                 tion, or Amazon EventBridge event bus as the destination.
+                 To retain records of unsuccessful asynchronous invocations  ,
+                 you can configure an Amazon SNS topic, Amazon SQS queue, Ama-
+                 zon S3 bucket, Lambda function, or Amazon  EventBridge  event
+                 bus as the destination.
 
-                 To retain records of failed invocations from Kinesis and  Dy-
-                 namoDB  event sources , you can configure an Amazon SNS topic
-                 or Amazon SQS queue as the destination.
-
-                 To retain records of  failed  invocations  from  self-managed
-                 Kafka  or Amazon MSK , you can configure an Amazon SNS topic,
-                 Amazon SQS queue, or Amazon S3 bucket as the destination.
+                 To  retain  records  of  failed  invocations  from  Kinesis ,
+                 DynamoDB , self-managed Kafka or Amazon MSK , you can config-
+                 ure  an  Amazon  SNS  topic,  Amazon  SQS queue, or Amazon S3
+                 bucket as the destination.
 
        Topics -> (list)
           The name of the Kafka topic.
@@ -844,6 +867,19 @@ OUTPUT
 
        EventSourceMappingArn -> (string)
           The Amazon Resource Name (ARN) of the event source mapping.
+
+       MetricsConfig -> (structure)
+          The  metrics  configuration for your event source. For more informa-
+          tion, see Event source mapping metrics .
+
+          Metrics -> (list)
+              The metrics you want your event source mapping to  produce.  In-
+              clude EventCount to receive event source mapping metrics related
+              to the number of events processed by your event source  mapping.
+              For  more information about these metrics, see Event source map-
+              ping metrics .
+
+              (string)
 
 
 

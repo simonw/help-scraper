@@ -52,6 +52,7 @@ SYNOPSIS
           [--policy-type <value>]
           [--step-scaling-policy-configuration <value>]
           [--target-tracking-scaling-policy-configuration <value>]
+          [--predictive-scaling-policy-configuration <value>]
           [--cli-input-json <value>]
           [--generate-cli-skeleton <value>]
           [--debug]
@@ -338,6 +339,8 @@ OPTIONS
           o StepScaling
 
           o TargetTrackingScaling
+
+          o PredictiveScaling
 
        --step-scaling-policy-configuration (structure)
           A step scaling policy.
@@ -744,17 +747,543 @@ OPTIONS
             "DisableScaleIn": true|false
           }
 
-       --cli-input-json (string) Performs service operation based on the  JSON
-       string  provided. The JSON string follows the format provided by --gen-
-       erate-cli-skeleton. If other arguments  are  provided  on  the  command
-       line,  the CLI values will override the JSON-provided values. It is not
+       --predictive-scaling-policy-configuration (structure)
+          The configuration of the predictive scaling policy.
+
+          MetricSpecifications -> (list)
+              This structure includes the metrics and  target  utilization  to
+              use for predictive scaling.
+
+              This  is an array, but we currently only support a single metric
+              specification. That is, you can specify a  target  value  and  a
+              single metric pair, or a target value and one scaling metric and
+              one load metric.
+
+              (structure)
+                 This structure specifies the metrics and  target  utilization
+                 settings for a predictive scaling policy.
+
+                 You must specify either a metric pair, or a load metric and a
+                 scaling metric individually. Specifying a metric pair instead
+                 of  individual  metrics  provides  a simpler way to configure
+                 metrics for a scaling policy. You choose the metric pair, and
+                 the  policy  automatically  knows the correct sum and average
+                 statistics to use for the load metric and the scaling metric.
+
+                 TargetValue -> (double)
+                     Specifies the target utilization.
+
+                 PredefinedMetricPairSpecification -> (structure)
+                     The predefined metric pair specification that  determines
+                     the appropriate scaling metric and load metric to use.
+
+                     PredefinedMetricType -> (string)
+                        Indicates  which metrics to use. There are two differ-
+                        ent types of metrics for each metric type:  one  is  a
+                        load metric and one is a scaling metric.
+
+                     ResourceLabel -> (string)
+                        A  label  that  uniquely  identifies a specific target
+                        group from which to determine the  total  and  average
+                        request count.
+
+                 PredefinedScalingMetricSpecification -> (structure)
+                     The predefined scaling metric specification.
+
+                     PredefinedMetricType -> (string)
+                        The metric type.
+
+                     ResourceLabel -> (string)
+                        A  label  that  uniquely  identifies a specific target
+                        group from which  to  determine  the  average  request
+                        count.
+
+                 PredefinedLoadMetricSpecification -> (structure)
+                     The predefined load metric specification.
+
+                     PredefinedMetricType -> (string)
+                        The metric type.
+
+                     ResourceLabel -> (string)
+                        A label that uniquely identifies a target group.
+
+                 CustomizedScalingMetricSpecification -> (structure)
+                     The customized scaling metric specification.
+
+                     MetricDataQueries -> (list)
+                        One or more metric data queries to provide data points
+                        for a metric specification.
+
+                        (structure)
+                            The metric data to return.  Also  defines  whether
+                            this  call  is returning data for one metric only,
+                            or whether it is performing a math  expression  on
+                            the values of returned metric statistics to create
+                            a new time series. A time series is  a  series  of
+                            data  points,  each  of which is associated with a
+                            timestamp.
+
+                            Id -> (string)
+                               A short name that identifies the  object's  re-
+                               sults in the response. This name must be unique
+                               among all MetricDataQuery objects specified for
+                               a  single scaling policy. If you are performing
+                               math expressions on this set of data, this name
+                               represents  that  data and can serve as a vari-
+                               able in the mathematical expression. The  valid
+                               characters  are  letters,  numbers,  and under-
+                               scores. The first character must be a lowercase
+                               letter.
+
+                            Expression -> (string)
+                               The  math expression to perform on the returned
+                               data, if this object is performing a  math  ex-
+                               pression. This expression can use the Id of the
+                               other metrics to refer to  those  metrics,  and
+                               can also use the Id of other expressions to use
+                               the result of those expressions.
+
+                               Conditional: Within  each  MetricDataQuery  ob-
+                               ject,  you  must  specify  either Expression or
+                               MetricStat , but not both.
+
+                            MetricStat -> (structure)
+                               Information about the metric data to return.
+
+                               Conditional: Within  each  MetricDataQuery  ob-
+                               ject,  you  must  specify  either Expression or
+                               MetricStat , but not both.
+
+                               Metric -> (structure)
+                                   The CloudWatch metric to return,  including
+                                   the metric name, namespace, and dimensions.
+                                   To get the exact  metric  name,  namespace,
+                                   and  dimensions,  inspect the Metric object
+                                   that is returned by a call to ListMetrics .
+
+                                   Dimensions -> (list)
+                                      Describes the dimensions of the metric.
+
+                                      (structure)
+                                          Describes the dimension of a metric.
+
+                                          Name -> (string)
+                                             The name of the dimension.
+
+                                          Value -> (string)
+                                             The value of the dimension.
+
+                                   MetricName -> (string)
+                                      The name of the metric.
+
+                                   Namespace -> (string)
+                                      The namespace of the metric.
+
+                               Stat -> (string)
+                                   The statistic to return. It can include any
+                                   CloudWatch statistic or extended statistic.
+                                   For a list of valid values, see  the  table
+                                   in Statistics in the Amazon CloudWatch User
+                                   Guide .
+
+                                   The most commonly used metrics for  predic-
+                                   tive scaling are Average and Sum .
+
+                               Unit -> (string)
+                                   The  unit  to  use  for  the  returned data
+                                   points. For a complete list  of  the  units
+                                   that    CloudWatch    supports,   see   the
+                                   MetricDatum data type in the Amazon  Cloud-
+                                   Watch API Reference .
+
+                            Label -> (string)
+                               A  human-readable  label for this metric or ex-
+                               pression. This is especially useful if this  is
+                               a  math  expression,  so that you know what the
+                               value represents.
+
+                            ReturnData -> (boolean)
+                               Indicates whether to return the timestamps  and
+                               raw data values of this metric.
+
+                               If  you  use any math expressions, specify true
+                               for this value for only the final math  expres-
+                               sion that the metric specification is based on.
+                               You must specify false for ReturnData  for  all
+                               the  other  metrics and expressions used in the
+                               metric specification.
+
+                               If you are only retrieving metrics and not per-
+                               forming  any  math  expressions, do not specify
+                               anything for ReturnData . This sets it  to  its
+                               default (true ).
+
+                 CustomizedLoadMetricSpecification -> (structure)
+                     The customized load metric specification.
+
+                     MetricDataQueries -> (list)
+                        One or more metric data queries to provide data points
+                        for a metric specification.
+
+                        (structure)
+                            The metric data to return.  Also  defines  whether
+                            this  call  is returning data for one metric only,
+                            or whether it is performing a math  expression  on
+                            the values of returned metric statistics to create
+                            a new time series. A time series is  a  series  of
+                            data  points,  each  of which is associated with a
+                            timestamp.
+
+                            Id -> (string)
+                               A short name that identifies the  object's  re-
+                               sults in the response. This name must be unique
+                               among all MetricDataQuery objects specified for
+                               a  single scaling policy. If you are performing
+                               math expressions on this set of data, this name
+                               represents  that  data and can serve as a vari-
+                               able in the mathematical expression. The  valid
+                               characters  are  letters,  numbers,  and under-
+                               scores. The first character must be a lowercase
+                               letter.
+
+                            Expression -> (string)
+                               The  math expression to perform on the returned
+                               data, if this object is performing a  math  ex-
+                               pression. This expression can use the Id of the
+                               other metrics to refer to  those  metrics,  and
+                               can also use the Id of other expressions to use
+                               the result of those expressions.
+
+                               Conditional: Within  each  MetricDataQuery  ob-
+                               ject,  you  must  specify  either Expression or
+                               MetricStat , but not both.
+
+                            MetricStat -> (structure)
+                               Information about the metric data to return.
+
+                               Conditional: Within  each  MetricDataQuery  ob-
+                               ject,  you  must  specify  either Expression or
+                               MetricStat , but not both.
+
+                               Metric -> (structure)
+                                   The CloudWatch metric to return,  including
+                                   the metric name, namespace, and dimensions.
+                                   To get the exact  metric  name,  namespace,
+                                   and  dimensions,  inspect the Metric object
+                                   that is returned by a call to ListMetrics .
+
+                                   Dimensions -> (list)
+                                      Describes the dimensions of the metric.
+
+                                      (structure)
+                                          Describes the dimension of a metric.
+
+                                          Name -> (string)
+                                             The name of the dimension.
+
+                                          Value -> (string)
+                                             The value of the dimension.
+
+                                   MetricName -> (string)
+                                      The name of the metric.
+
+                                   Namespace -> (string)
+                                      The namespace of the metric.
+
+                               Stat -> (string)
+                                   The statistic to return. It can include any
+                                   CloudWatch statistic or extended statistic.
+                                   For a list of valid values, see  the  table
+                                   in Statistics in the Amazon CloudWatch User
+                                   Guide .
+
+                                   The most commonly used metrics for  predic-
+                                   tive scaling are Average and Sum .
+
+                               Unit -> (string)
+                                   The  unit  to  use  for  the  returned data
+                                   points. For a complete list  of  the  units
+                                   that    CloudWatch    supports,   see   the
+                                   MetricDatum data type in the Amazon  Cloud-
+                                   Watch API Reference .
+
+                            Label -> (string)
+                               A  human-readable  label for this metric or ex-
+                               pression. This is especially useful if this  is
+                               a  math  expression,  so that you know what the
+                               value represents.
+
+                            ReturnData -> (boolean)
+                               Indicates whether to return the timestamps  and
+                               raw data values of this metric.
+
+                               If  you  use any math expressions, specify true
+                               for this value for only the final math  expres-
+                               sion that the metric specification is based on.
+                               You must specify false for ReturnData  for  all
+                               the  other  metrics and expressions used in the
+                               metric specification.
+
+                               If you are only retrieving metrics and not per-
+                               forming  any  math  expressions, do not specify
+                               anything for ReturnData . This sets it  to  its
+                               default (true ).
+
+                 CustomizedCapacityMetricSpecification -> (structure)
+                     The customized capacity metric specification.
+
+                     MetricDataQueries -> (list)
+                        One or more metric data queries to provide data points
+                        for a metric specification.
+
+                        (structure)
+                            The metric data to return.  Also  defines  whether
+                            this  call  is returning data for one metric only,
+                            or whether it is performing a math  expression  on
+                            the values of returned metric statistics to create
+                            a new time series. A time series is  a  series  of
+                            data  points,  each  of which is associated with a
+                            timestamp.
+
+                            Id -> (string)
+                               A short name that identifies the  object's  re-
+                               sults in the response. This name must be unique
+                               among all MetricDataQuery objects specified for
+                               a  single scaling policy. If you are performing
+                               math expressions on this set of data, this name
+                               represents  that  data and can serve as a vari-
+                               able in the mathematical expression. The  valid
+                               characters  are  letters,  numbers,  and under-
+                               scores. The first character must be a lowercase
+                               letter.
+
+                            Expression -> (string)
+                               The  math expression to perform on the returned
+                               data, if this object is performing a  math  ex-
+                               pression. This expression can use the Id of the
+                               other metrics to refer to  those  metrics,  and
+                               can also use the Id of other expressions to use
+                               the result of those expressions.
+
+                               Conditional: Within  each  MetricDataQuery  ob-
+                               ject,  you  must  specify  either Expression or
+                               MetricStat , but not both.
+
+                            MetricStat -> (structure)
+                               Information about the metric data to return.
+
+                               Conditional: Within  each  MetricDataQuery  ob-
+                               ject,  you  must  specify  either Expression or
+                               MetricStat , but not both.
+
+                               Metric -> (structure)
+                                   The CloudWatch metric to return,  including
+                                   the metric name, namespace, and dimensions.
+                                   To get the exact  metric  name,  namespace,
+                                   and  dimensions,  inspect the Metric object
+                                   that is returned by a call to ListMetrics .
+
+                                   Dimensions -> (list)
+                                      Describes the dimensions of the metric.
+
+                                      (structure)
+                                          Describes the dimension of a metric.
+
+                                          Name -> (string)
+                                             The name of the dimension.
+
+                                          Value -> (string)
+                                             The value of the dimension.
+
+                                   MetricName -> (string)
+                                      The name of the metric.
+
+                                   Namespace -> (string)
+                                      The namespace of the metric.
+
+                               Stat -> (string)
+                                   The statistic to return. It can include any
+                                   CloudWatch statistic or extended statistic.
+                                   For a list of valid values, see  the  table
+                                   in Statistics in the Amazon CloudWatch User
+                                   Guide .
+
+                                   The most commonly used metrics for  predic-
+                                   tive scaling are Average and Sum .
+
+                               Unit -> (string)
+                                   The  unit  to  use  for  the  returned data
+                                   points. For a complete list  of  the  units
+                                   that    CloudWatch    supports,   see   the
+                                   MetricDatum data type in the Amazon  Cloud-
+                                   Watch API Reference .
+
+                            Label -> (string)
+                               A  human-readable  label for this metric or ex-
+                               pression. This is especially useful if this  is
+                               a  math  expression,  so that you know what the
+                               value represents.
+
+                            ReturnData -> (boolean)
+                               Indicates whether to return the timestamps  and
+                               raw data values of this metric.
+
+                               If  you  use any math expressions, specify true
+                               for this value for only the final math  expres-
+                               sion that the metric specification is based on.
+                               You must specify false for ReturnData  for  all
+                               the  other  metrics and expressions used in the
+                               metric specification.
+
+                               If you are only retrieving metrics and not per-
+                               forming  any  math  expressions, do not specify
+                               anything for ReturnData . This sets it  to  its
+                               default (true ).
+
+          Mode -> (string)
+              The  predictive  scaling  mode.  Defaults to ForecastOnly if not
+              specified.
+
+          SchedulingBufferTime -> (integer)
+              The amount of time, in seconds, that the start time can  be  ad-
+              vanced.
+
+              The  value  must  be less than the forecast interval duration of
+              3600 seconds (60 minutes). Defaults to 300 seconds if not speci-
+              fied.
+
+          MaxCapacityBreachBehavior -> (string)
+              Defines  the behavior that should be applied if the forecast ca-
+              pacity approaches or exceeds the maximum capacity.  Defaults  to
+              HonorMaxCapacity if not specified.
+
+          MaxCapacityBuffer -> (integer)
+              The  size of the capacity buffer to use when the forecast capac-
+              ity is close to or exceeds the maximum capacity.  The  value  is
+              specified as a percentage relative to the forecast capacity. For
+              example, if the buffer is 10, this means a  10  percent  buffer,
+              such that if the forecast capacity is 50, and the maximum capac-
+              ity is 40, then the effective maximum capacity is 55.
+
+              Required if the MaxCapacityBreachBehavior property is set to In-
+              creaseMaxCapacity , and cannot be used otherwise.
+
+       JSON Syntax:
+
+          {
+            "MetricSpecifications": [
+              {
+                "TargetValue": double,
+                "PredefinedMetricPairSpecification": {
+                  "PredefinedMetricType": "string",
+                  "ResourceLabel": "string"
+                },
+                "PredefinedScalingMetricSpecification": {
+                  "PredefinedMetricType": "string",
+                  "ResourceLabel": "string"
+                },
+                "PredefinedLoadMetricSpecification": {
+                  "PredefinedMetricType": "string",
+                  "ResourceLabel": "string"
+                },
+                "CustomizedScalingMetricSpecification": {
+                  "MetricDataQueries": [
+                    {
+                      "Id": "string",
+                      "Expression": "string",
+                      "MetricStat": {
+                        "Metric": {
+                          "Dimensions": [
+                            {
+                              "Name": "string",
+                              "Value": "string"
+                            }
+                            ...
+                          ],
+                          "MetricName": "string",
+                          "Namespace": "string"
+                        },
+                        "Stat": "string",
+                        "Unit": "string"
+                      },
+                      "Label": "string",
+                      "ReturnData": true|false
+                    }
+                    ...
+                  ]
+                },
+                "CustomizedLoadMetricSpecification": {
+                  "MetricDataQueries": [
+                    {
+                      "Id": "string",
+                      "Expression": "string",
+                      "MetricStat": {
+                        "Metric": {
+                          "Dimensions": [
+                            {
+                              "Name": "string",
+                              "Value": "string"
+                            }
+                            ...
+                          ],
+                          "MetricName": "string",
+                          "Namespace": "string"
+                        },
+                        "Stat": "string",
+                        "Unit": "string"
+                      },
+                      "Label": "string",
+                      "ReturnData": true|false
+                    }
+                    ...
+                  ]
+                },
+                "CustomizedCapacityMetricSpecification": {
+                  "MetricDataQueries": [
+                    {
+                      "Id": "string",
+                      "Expression": "string",
+                      "MetricStat": {
+                        "Metric": {
+                          "Dimensions": [
+                            {
+                              "Name": "string",
+                              "Value": "string"
+                            }
+                            ...
+                          ],
+                          "MetricName": "string",
+                          "Namespace": "string"
+                        },
+                        "Stat": "string",
+                        "Unit": "string"
+                      },
+                      "Label": "string",
+                      "ReturnData": true|false
+                    }
+                    ...
+                  ]
+                }
+              }
+              ...
+            ],
+            "Mode": "ForecastOnly"|"ForecastAndScale",
+            "SchedulingBufferTime": integer,
+            "MaxCapacityBreachBehavior": "HonorMaxCapacity"|"IncreaseMaxCapacity",
+            "MaxCapacityBuffer": integer
+          }
+
+       --cli-input-json  (string) Performs service operation based on the JSON
+       string provided. The JSON string follows the format provided by  --gen-
+       erate-cli-skeleton.  If  other  arguments  are  provided on the command
+       line, the CLI values will override the JSON-provided values. It is  not
        possible to pass arbitrary binary values using a JSON-provided value as
        the string will be taken literally.
 
-       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
+       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
        output without sending an API request. If provided with no value or the
        value input, prints a sample input JSON that can be used as an argument
-       for --cli-input-json. If provided with the value output,  it  validates
+       for  --cli-input-json.  If provided with the value output, it validates
        the command inputs and returns a sample output JSON for that command.
 
 GLOBAL OPTIONS
@@ -768,13 +1297,13 @@ GLOBAL OPTIONS
 
        --no-verify-ssl (boolean)
 
-       By  default, the AWS CLI uses SSL when communicating with AWS services.
+       By default, the AWS CLI uses SSL when communicating with AWS  services.
        For each SSL connection, the AWS CLI will verify SSL certificates. This
        option overrides the default behavior of verifying SSL certificates.
 
        --no-paginate (boolean)
 
-       Disable  automatic pagination. If automatic pagination is disabled, the
+       Disable automatic pagination. If automatic pagination is disabled,  the
        AWS CLI will only make one call, for the first page of results.
 
        --output (string)
@@ -815,7 +1344,7 @@ GLOBAL OPTIONS
 
        --no-sign-request (boolean)
 
-       Do not sign requests. Credentials will not be loaded if  this  argument
+       Do  not  sign requests. Credentials will not be loaded if this argument
        is provided.
 
        --ca-bundle (string)
@@ -825,35 +1354,35 @@ GLOBAL OPTIONS
 
        --cli-read-timeout (int)
 
-       The maximum socket read time in seconds. If the value is set to 0,  the
-       socket  read  will be blocking and not timeout. The default value is 60
+       The  maximum socket read time in seconds. If the value is set to 0, the
+       socket read will be blocking and not timeout. The default value  is  60
        seconds.
 
        --cli-connect-timeout (int)
 
-       The maximum socket connect time in seconds. If the value is set  to  0,
-       the  socket connect will be blocking and not timeout. The default value
+       The  maximum  socket connect time in seconds. If the value is set to 0,
+       the socket connect will be blocking and not timeout. The default  value
        is 60 seconds.
 
 EXAMPLES
        NOTE:
-          To use the following examples, you must have the AWS  CLI  installed
-          and  configured.  See  the Getting started guide in the AWS CLI User
+          To  use  the following examples, you must have the AWS CLI installed
+          and configured. See the Getting started guide in the  AWS  CLI  User
           Guide for more information.
 
-          Unless otherwise  stated,  all  examples  have  unix-like  quotation
-          rules.  These  examples  will  need to be adapted to your terminal's
+          Unless  otherwise  stated,  all  examples  have  unix-like quotation
+          rules. These examples will need to be  adapted  to  your  terminal's
           quoting rules. See Using quotation marks with strings in the AWS CLI
           User Guide .
 
-       Example  1: To apply a target tracking scaling policy with a predefined
+       Example 1: To apply a target tracking scaling policy with a  predefined
        metric specification
 
-       The following put-scaling-policy  example  applies  a  target  tracking
-       scaling  policy with a predefined metric specification to an Amazon ECS
+       The  following  put-scaling-policy  example  applies  a target tracking
+       scaling policy with a predefined metric specification to an Amazon  ECS
        service called web-app in the default cluster. The policy keeps the av-
-       erage  CPU utilization of the service at 75 percent, with scale-out and
-       scale-in cooldown periods of 60 seconds. The output contains  the  ARNs
+       erage CPU utilization of the service at 75 percent, with scale-out  and
+       scale-in  cooldown  periods of 60 seconds. The output contains the ARNs
        and names of the two CloudWatch alarms created on your behalf.
 
           aws application-autoscaling put-scaling-policy --service-namespace ecs \
@@ -862,7 +1391,7 @@ EXAMPLES
           --policy-name cpu75-target-tracking-scaling-policy --policy-type TargetTrackingScaling \
           --target-tracking-scaling-policy-configuration file://config.json
 
-       This  example  assumes  that you have a config.json file in the current
+       This example assumes that you have a config.json file  in  the  current
        directory with the following contents:
 
           {
@@ -890,14 +1419,14 @@ EXAMPLES
               ]
           }
 
-       Example 2: To apply a target tracking scaling policy with a  customized
+       Example  2: To apply a target tracking scaling policy with a customized
        metric specification
 
-       The  following  put-scaling-policy  example  applies  a target tracking
-       scaling policy with a customized metric specification to an Amazon  ECS
+       The following put-scaling-policy  example  applies  a  target  tracking
+       scaling  policy with a customized metric specification to an Amazon ECS
        service called web-app in the default cluster. The policy keeps the av-
-       erage utilization of the service at  75  percent,  with  scale-out  and
-       scale-in  cooldown  periods of 60 seconds. The output contains the ARNs
+       erage  utilization  of  the  service  at 75 percent, with scale-out and
+       scale-in cooldown periods of 60 seconds. The output contains  the  ARNs
        and names of the two CloudWatch alarms created on your behalf.
 
           aws application-autoscaling put-scaling-policy --service-namespace ecs \
@@ -907,7 +1436,7 @@ EXAMPLES
           --policy-type TargetTrackingScaling \
           --target-tracking-scaling-policy-configuration file://config.json
 
-       This example assumes that you have a config.json file  in  the  current
+       This  example  assumes  that you have a config.json file in the current
        directory with the following contents:
 
           {
@@ -946,11 +1475,11 @@ EXAMPLES
 
        Example 3: To apply a target tracking scaling policy for scale out only
 
-       The  following  put-scaling-policy  example  applies  a target tracking
-       scaling policy to an Amazon ECS service called web-app in  the  default
-       cluster.  The  policy is used to scale out the ECS service when the Re-
-       questCountPerTarget metric from the Application Load  Balancer  exceeds
-       the  threshold.  The output contains the ARN and name of the CloudWatch
+       The following put-scaling-policy  example  applies  a  target  tracking
+       scaling  policy  to an Amazon ECS service called web-app in the default
+       cluster. The policy is used to scale out the ECS service when  the  Re-
+       questCountPerTarget  metric  from the Application Load Balancer exceeds
+       the threshold. The output contains the ARN and name of  the  CloudWatch
        alarm created on your behalf.
 
           aws application-autoscaling put-scaling-policy \
@@ -994,7 +1523,7 @@ OUTPUT
           The Amazon Resource Name (ARN) of the resulting scaling policy.
 
        Alarms -> (list)
-          The  CloudWatch  alarms created for the target tracking scaling pol-
+          The CloudWatch alarms created for the target tracking  scaling  pol-
           icy.
 
           (structure)

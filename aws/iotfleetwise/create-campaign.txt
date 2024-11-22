@@ -16,6 +16,12 @@ DESCRIPTION
        For more information, see Collect and transfer data with  campaigns  in
        the Amazon Web Services IoT FleetWise Developer Guide .
 
+       WARNING:
+          Access to certain Amazon Web Services IoT FleetWise features is cur-
+          rently gated. For more information, see Amazon Web  Services  Region
+          and  feature  availability  in the Amazon Web Services IoT FleetWise
+          Developer Guide .
+
        See also: AWS API Documentation
 
 SYNOPSIS
@@ -36,6 +42,8 @@ SYNOPSIS
           [--data-extra-dimensions <value>]
           [--tags <value>]
           [--data-destination-configs <value>]
+          [--data-partitions <value>]
+          [--signals-to-fetch <value>]
           [--cli-input-json <value>]
           [--generate-cli-skeleton <value>]
           [--debug]
@@ -58,41 +66,39 @@ OPTIONS
           The name of the campaign to create.
 
        --description (string)
-          An  optional  description  of the campaign to help identify its pur-
+          An optional description of the campaign to help  identify  its  pur-
           pose.
 
        --signal-catalog-arn (string)
-          The Amazon Resource Name (ARN) of the signal  catalog  to  associate
+          The  Amazon  Resource  Name (ARN) of the signal catalog to associate
           with the campaign.
 
        --target-arn (string)
           The ARN of the vehicle or fleet to deploy a campaign to.
 
        --start-time (timestamp)
-          (Optional) The time, in milliseconds, to deliver a campaign after it
-          was approved. If it's not specified, 0 is used.
+          The time, in milliseconds, to deliver a campaign after  it  was  ap-
+          proved. If it's not specified, 0 is used.
 
           Default: 0
 
        --expiry-time (timestamp)
-          (Optional) The time the campaign expires,  in  seconds  since  epoch
-          (January 1, 1970 at midnight UTC time). Vehicle data isn't collected
-          after the campaign expires.
+          The  time  the  campaign expires, in seconds since epoch (January 1,
+          1970 at midnight UTC time). Vehicle data isn't collected  after  the
+          campaign expires.
 
           Default: 253402214400 (December 31, 9999, 00:00:00 UTC)
 
        --post-trigger-collection-duration (long)
-          (Optional) How long (in milliseconds) to collect raw  data  after  a
-          triggering  event initiates the collection. If it's not specified, 0
-          is used.
+          How  long  (in  milliseconds) to collect raw data after a triggering
+          event initiates the collection. If it's not specified, 0 is used.
 
           Default: 0
 
        --diagnostics-mode (string)
-          (Optional) Option for a vehicle to send diagnostic trouble codes  to
-          Amazon  Web  Services  IoT FleetWise. If you want to send diagnostic
-          trouble codes, use SEND_ACTIVE_DTCS . If it's not specified, OFF  is
-          used.
+          Option for a vehicle to send diagnostic trouble codes to Amazon  Web
+          Services  IoT  FleetWise.  If  you  want  to send diagnostic trouble
+          codes, use SEND_ACTIVE_DTCS . If it's not specified, OFF is used.
 
           Default: OFF
 
@@ -103,11 +109,11 @@ OPTIONS
           o SEND_ACTIVE_DTCS
 
        --spooling-mode (string)
-          (Optional)  Whether  to  store collected data after a vehicle lost a
+          Determines whether to store collected data after a  vehicle  lost  a
           connection with the cloud. After a connection is re-established, the
-          data  is  automatically  forwarded to Amazon Web Services IoT Fleet-
-          Wise. If you want to store collected data when a vehicle loses  con-
-          nection  with the cloud, use TO_DISK . If it's not specified, OFF is
+          data is automatically forwarded to Amazon Web  Services  IoT  Fleet-
+          Wise.  If you want to store collected data when a vehicle loses con-
+          nection with the cloud, use TO_DISK . If it's not specified, OFF  is
           used.
 
           Default: OFF
@@ -119,7 +125,7 @@ OPTIONS
           o TO_DISK
 
        --compression (string)
-          (Optional) Whether to compress signals before transmitting  data  to
+          Determines  whether  to compress signals before transmitting data to
           Amazon Web Services IoT FleetWise. If you don't want to compress the
           signals, use OFF . If it's not specified, SNAPPY is used.
 
@@ -132,15 +138,20 @@ OPTIONS
           o SNAPPY
 
        --priority (integer)
-          (Optional) A number indicating the priority of one campaign over an-
-          other  campaign  for a certain vehicle or fleet. A campaign with the
-          lowest value is deployed to vehicles before any other campaigns.  If
-          it's not specified, 0 is used.
+          A  number  indicating the priority of one campaign over another cam-
+          paign for a certain vehicle or fleet. A  campaign  with  the  lowest
+          value  is  deployed  to vehicles before any other campaigns. If it's
+          not specified, 0 is used.
 
           Default: 0
 
        --signals-to-collect (list)
-          (Optional) A list of information about signals to collect.
+          A list of information about signals to collect.
+
+          NOTE:
+              If you upload a signal as a condition in a data partition for  a
+              campaign, then those same signals must be included in signalsTo-
+              Collect .
 
           (structure)
               Information about a signal.
@@ -152,16 +163,36 @@ OPTIONS
                  The maximum number of samples to collect.
 
               minimumSamplingIntervalMs -> (long)
-                 The  minimum  duration  of time (in milliseconds) between two
+                 The minimum duration of time (in  milliseconds)  between  two
                  triggering events to collect data.
 
                  NOTE:
                      If a signal changes often, you might want to collect data
                      at a slower rate.
 
+              dataPartitionId -> (string)
+                 The ID of the data partition this signal is associated with.
+
+                 The ID must match one of the IDs provided in dataPartitions .
+                 This  is  accomplished either by specifying a particular data
+                 partition ID or by using default for an  established  default
+                 partition. You can establish a default partition in the Data-
+                 Partition data type.
+
+                 NOTE:
+                     If you upload a signal as a condition  for  a  campaign's
+                     data  partition, the same signal must be included in sig-
+                     nalsToCollect .
+
+                 WARNING:
+                     Access to certain Amazon Web Services IoT FleetWise  fea-
+                     tures  is  currently  gated.  For  more  information, see
+                     Amazon Web Services Region and  feature  availability  in
+                     the Amazon Web Services IoT FleetWise Developer Guide .
+
        Shorthand Syntax:
 
-          name=string,maxSampleCount=long,minimumSamplingIntervalMs=long ...
+          name=string,maxSampleCount=long,minimumSamplingIntervalMs=long,dataPartitionId=string ...
 
        JSON Syntax:
 
@@ -169,7 +200,8 @@ OPTIONS
             {
               "name": "string",
               "maxSampleCount": long,
-              "minimumSamplingIntervalMs": long
+              "minimumSamplingIntervalMs": long,
+              "dataPartitionId": "string"
             }
             ...
           ]
@@ -239,13 +271,12 @@ OPTIONS
           }
 
        --data-extra-dimensions (list)
-          (Optional)  A  list  of  vehicle attributes to associate with a cam-
-          paign.
+          A list of vehicle attributes to associate with a campaign.
 
-          Enrich the data with specified vehicle attributes. For example,  add
-          make  and  model to the campaign, and Amazon Web Services IoT Fleet-
-          Wise will associate the data with those attributes as dimensions  in
-          Amazon  Timestream.  You  can  then  query the data against make and
+          Enrich  the data with specified vehicle attributes. For example, add
+          make and model to the campaign, and Amazon Web Services  IoT  Fleet-
+          Wise  will associate the data with those attributes as dimensions in
+          Amazon Timestream. You can then query  the  data  against  make  and
           model .
 
           Default: An empty array
@@ -283,8 +314,11 @@ OPTIONS
           ]
 
        --data-destination-configs (list)
-          The destination where the campaign sends data.  You  can  choose  to
-          send data to be stored in Amazon S3 or Amazon Timestream.
+          The  destination where the campaign sends data. You can send data to
+          an MQTT topic, or store it in Amazon S3 or Amazon Timestream.
+
+          MQTT is the publish/subscribe messaging protocol used by Amazon  Web
+          Services IoT to communicate with your devices.
 
           Amazon S3 optimizes the cost of data storage and provides additional
           mechanisms to use vehicle data, such as data lakes, centralized data
@@ -298,13 +332,13 @@ OPTIONS
           trends and patterns.
 
           (tagged union structure)
-              The destination where the Amazon Web Services IoT FleetWise cam-
-              paign sends data. You can send data to be stored in Amazon S3 or
-              Amazon Timestream.
+              The destination where the campaign sends data. You can send data
+              to an MQTT topic, or store it in Amazon S3 or Amazon Timestream.
 
               NOTE:
-                 This is a Tagged Union structure. Only one of  the  following
-                 top level keys can be set: s3Config, timestreamConfig.
+                 This  is  a Tagged Union structure. Only one of the following
+                 top level keys can be set: s3Config, timestreamConfig,  mqtt-
+                 TopicConfig.
 
               s3Config -> (structure)
                  The Amazon S3 bucket where the Amazon Web Services IoT Fleet-
@@ -331,12 +365,12 @@ OPTIONS
                      timize the cost of data storage.
 
                  prefix -> (string)
-                     (Optional)  Enter  an S3 bucket prefix. The prefix is the
-                     string of characters after the bucket name and before the
-                     object  name.  You  can  use  the prefix to organize data
-                     stored in Amazon S3 buckets. For  more  information,  see
-                     Organizing  objects  using  prefixes in the Amazon Simple
-                     Storage Service User Guide .
+                     Enter  an  S3  bucket prefix. The prefix is the string of
+                     characters after the bucket name and  before  the  object
+                     name.  You  can use the prefix to organize data stored in
+                     Amazon S3 buckets. For more information,  see  Organizing
+                     objects  using prefixes in the Amazon Simple Storage Ser-
+                     vice User Guide .
 
                      By default, Amazon Web Services IoT  FleetWise  sets  the
                      prefix   processed-data/year=YY/month=MM/date=DD/hour=HH/
@@ -358,9 +392,27 @@ OPTIONS
                      that grants Amazon Web Services IoT FleetWise  permission
                      to deliver data to the Amazon Timestream table.
 
+              mqttTopicConfig -> (structure)
+                 The MQTT topic to which the Amazon Web Services IoT FleetWise
+                 campaign routes data.
+
+                 WARNING:
+                     Access to certain Amazon Web Services IoT FleetWise  fea-
+                     tures  is  currently  gated.  For  more  information, see
+                     Amazon Web Services Region and  feature  availability  in
+                     the Amazon Web Services IoT FleetWise Developer Guide .
+
+                 mqttTopicArn -> (string)
+                     The ARN of the MQTT topic.
+
+                 executionRoleArn -> (string)
+                     The  ARN  of the role that grants Amazon Web Services IoT
+                     FleetWise permission to access and act on  messages  sent
+                     to the MQTT topic.
+
        Shorthand Syntax:
 
-          s3Config={bucketArn=string,dataFormat=string,storageCompressionFormat=string,prefix=string},timestreamConfig={timestreamTableArn=string,executionRoleArn=string} ...
+          s3Config={bucketArn=string,dataFormat=string,storageCompressionFormat=string,prefix=string},timestreamConfig={timestreamTableArn=string,executionRoleArn=string},mqttTopicConfig={mqttTopicArn=string,executionRoleArn=string} ...
 
        JSON Syntax:
 
@@ -375,7 +427,186 @@ OPTIONS
               "timestreamConfig": {
                 "timestreamTableArn": "string",
                 "executionRoleArn": "string"
+              },
+              "mqttTopicConfig": {
+                "mqttTopicArn": "string",
+                "executionRoleArn": "string"
               }
+            }
+            ...
+          ]
+
+       --data-partitions (list)
+          The  data  partitions associated with the signals collected from the
+          vehicle.
+
+          (structure)
+              The configuration for signal data storage  and  upload  options.
+              You  can only specify these options when the campaign's spooling
+              mode is TO_DISK .
+
+              WARNING:
+                 Access to certain Amazon Web Services IoT FleetWise  features
+                 is currently gated. For more information, see Amazon Web Ser-
+                 vices Region and feature availability in the Amazon Web  Ser-
+                 vices IoT FleetWise Developer Guide .
+
+              id -> (string)
+                 The  ID  of the data partition. The data partition ID must be
+                 unique within a campaign. You can establish a data  partition
+                 as  the  default partition for a campaign by using default as
+                 the ID.
+
+              storageOptions -> (structure)
+                 The storage options for a data partition.
+
+                 maximumSize -> (structure)
+                     The maximum storage size of the data stored in  the  data
+                     partition.
+
+                     NOTE:
+                        Newer  data  overwrites  older data when the partition
+                        reaches the maximum size.
+
+                     unit -> (string)
+                        The data type of the data to store.
+
+                     value -> (integer)
+                        The maximum amount of time to store data.
+
+                 storageLocation -> (string)
+                     The folder name for the data partition under the campaign
+                     storage folder.
+
+                 minimumTimeToLive -> (structure)
+                     The  amount  of  time that data in this partition will be
+                     kept on disk.
+
+                     o After the designated amount of time  passes,  the  data
+                       can be removed, but it's not guaranteed to be removed.
+
+                     o Before  the  time  expires,  data in this partition can
+                       still be deleted if the partition reaches  its  config-
+                       ured maximum size.
+
+                     o Newer data will overwrite older data when the partition
+                       reaches the maximum size.
+
+                     unit -> (string)
+                        The time increment type.
+
+                     value -> (integer)
+                        The minimum amount of time to store the data.
+
+              uploadOptions -> (structure)
+                 The upload options for the data partition.
+
+                 expression -> (string)
+                     The logical expression used to  recognize  what  data  to
+                     collect.  For  example, $variable.`Vehicle.OutsideAirTem-
+                     perature` >= 105.0 .
+
+                 conditionLanguageVersion -> (integer)
+                     The version of the condition language.  Defaults  to  the
+                     most recent condition language version.
+
+       Shorthand Syntax:
+
+          id=string,storageOptions={maximumSize={unit=string,value=integer},storageLocation=string,minimumTimeToLive={unit=string,value=integer}},uploadOptions={expression=string,conditionLanguageVersion=integer} ...
+
+       JSON Syntax:
+
+          [
+            {
+              "id": "string",
+              "storageOptions": {
+                "maximumSize": {
+                  "unit": "MB"|"GB"|"TB",
+                  "value": integer
+                },
+                "storageLocation": "string",
+                "minimumTimeToLive": {
+                  "unit": "HOURS"|"DAYS"|"WEEKS",
+                  "value": integer
+                }
+              },
+              "uploadOptions": {
+                "expression": "string",
+                "conditionLanguageVersion": integer
+              }
+            }
+            ...
+          ]
+
+       --signals-to-fetch (list)
+          A list of information about signals to fetch.
+
+          (structure)
+              Information about the signal to be fetched.
+
+              WARNING:
+                 Access  to certain Amazon Web Services IoT FleetWise features
+                 is currently gated. For more information, see Amazon Web Ser-
+                 vices  Region and feature availability in the Amazon Web Ser-
+                 vices IoT FleetWise Developer Guide .
+
+              fullyQualifiedName -> (string)
+                 The fully qualified name of the signal to be fetched.
+
+              signalFetchConfig -> (tagged union structure)
+                 The configuration of the signal fetch operation.
+
+                 NOTE:
+                     This is a Tagged Union structure. Only one of the follow-
+                     ing top level keys can be set: timeBased, conditionBased.
+
+                 timeBased -> (structure)
+                     The configuration of a time-based signal fetch operation.
+
+                     executionFrequencyMs -> (long)
+                        The frequency with which the signal fetch will be exe-
+                        cuted.
+
+                 conditionBased -> (structure)
+                     The configuration of a condition-based signal fetch oper-
+                     ation.
+
+                     conditionExpression -> (string)
+                        The condition that must be satisfied to trigger a sig-
+                        nal fetch.
+
+                     triggerMode -> (string)
+                        Indicates the mode in which the signal fetch is  trig-
+                        gered.
+
+              conditionLanguageVersion -> (integer)
+                 The version of the condition language used.
+
+              actions -> (list)
+                 The actions to be performed by the signal fetch.
+
+                 (string)
+
+       Shorthand Syntax:
+
+          fullyQualifiedName=string,signalFetchConfig={timeBased={executionFrequencyMs=long},conditionBased={conditionExpression=string,triggerMode=string}},conditionLanguageVersion=integer,actions=string,string ...
+
+       JSON Syntax:
+
+          [
+            {
+              "fullyQualifiedName": "string",
+              "signalFetchConfig": {
+                "timeBased": {
+                  "executionFrequencyMs": long
+                },
+                "conditionBased": {
+                  "conditionExpression": "string",
+                  "triggerMode": "ALWAYS"|"RISING_EDGE"
+                }
+              },
+              "conditionLanguageVersion": integer,
+              "actions": ["string", ...]
             }
             ...
           ]
