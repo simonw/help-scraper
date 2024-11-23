@@ -22,13 +22,13 @@ DESCRIPTION
           accounts, or sign in.
 
           If  you have never used SMS text messages with Amazon Cognito or any
-          other Amazon Web Servicesservice, Amazon Simple Notification Service
-          might  place  your account in the SMS sandbox. In * sandbox mode * ,
-          you can send messages only to verified phone numbers. After you test
-          your  app  while in the sandbox environment, you can move out of the
-          sandbox and into production. For more information, see  SMS  message
-          settings  for Amazon Cognito user pools in the Amazon Cognito Devel-
-          oper Guide .
+          other Amazon Web Services service, Amazon Simple  Notification  Ser-
+          vice  might place your account in the SMS sandbox. In * sandbox mode
+          * , you can send messages only to verified phone numbers. After  you
+          test  your app while in the sandbox environment, you can move out of
+          the sandbox and into production. For more information, see SMS  mes-
+          sage  settings  for  Amazon Cognito user pools in the Amazon Cognito
+          Developer Guide .
 
        This message is based on a template that you configured in your call to
        create  or  update  a  user  pool.  This  template includes your custom
@@ -38,8 +38,14 @@ DESCRIPTION
        Alternatively,  you can call AdminCreateUser with SUPPRESS for the Mes-
        sageAction parameter, and Amazon Cognito won't send any email.
 
-       In either case, the user will be in the FORCE_CHANGE_PASSWORD state un-
-       til they sign in and change their password.
+       In either case, if the user  has  a  password,  they  will  be  in  the
+       FORCE_CHANGE_PASSWORD  state until they sign in and set their password.
+       Your invitation message template must have the {####}  password  place-
+       holder if your users have passwords. If your template doesn't have this
+       placeholder, Amazon Cognito doesn't deliver the invitation message.  In
+       this  case,  you must update your message template and resend the pass-
+       word with a new AdminCreateUser request with a MessageAction  value  of
+       RESEND .
 
        NOTE:
           Amazon  Cognito evaluates Identity and Access Management (IAM) poli-
@@ -118,23 +124,31 @@ OPTIONS
           to AdminCreateUser or in the Users tab of the Amazon Cognito console
           for managing your user pools.
 
+          You must also provide an email address or phone number when you  ex-
+          pect  the  user to do passwordless sign-in with an email or SMS OTP.
+          These attributes must be provided when passwordless options are  the
+          only available, or when you don't submit a TemporaryPassword .
+
           In your call to AdminCreateUser , you can set the email_verified at-
-          tribute  to  True , and you can set the phone_number_verified attri-
-          bute   to   True   .   You   can   also   do   this    by    calling
+          tribute to True , and you can set the  phone_number_verified  attri-
+          bute    to    True   .   You   can   also   do   this   by   calling
           AdminUpdateUserAttributes .
 
-          o email  :  The  email  address of the user to whom the message that
-            contains the code and username  will  be  sent.  Required  if  the
-            email_verified  attribute is set to True , or if "EMAIL" is speci-
+          o email : The email address of the user to  whom  the  message  that
+            contains  the  code  and  username  will  be sent. Required if the
+            email_verified attribute is set to True , or if "EMAIL" is  speci-
             fied in the DesiredDeliveryMediums parameter.
 
-          o phone_number : The phone number of the user to  whom  the  message
-            that  contains the code and username will be sent. Required if the
-            phone_number_verified attribute is set to True , or  if  "SMS"  is
+          o phone_number  :  The  phone number of the user to whom the message
+            that contains the code and username will be sent. Required if  the
+            phone_number_verified  attribute  is  set to True , or if "SMS" is
             specified in the DesiredDeliveryMediums parameter.
 
           (structure)
-              Specifies whether the attribute is standard or custom.
+              The name and value of a user attribute.
+
+              This    data    type    is    a     request     parameter     of
+              AdminUpdateUserAttributes and UpdateUserAttributes .
 
               Name -> (string)
                  The name of the attribute.
@@ -173,7 +187,10 @@ OPTIONS
           sign-up Lambda trigger .
 
           (structure)
-              Specifies whether the attribute is standard or custom.
+              The name and value of a user attribute.
+
+              This    data    type    is    a     request     parameter     of
+              AdminUpdateUserAttributes and UpdateUserAttributes .
 
               Name -> (string)
                  The name of the attribute.
@@ -196,16 +213,23 @@ OPTIONS
           ]
 
        --temporary-password (string)
-          The user's temporary password. This password  must  conform  to  the
+          The  user's  temporary  password.  This password must conform to the
           password policy that you specified when you created the user pool.
+
+          The exception to the requirement for a password is  when  your  user
+          pool supports passwordless sign-in with email or SMS OTPs. To create
+          a user with no password, omit  this  parameter  or  submit  a  blank
+          value.  You  can  only  create a passwordless user when passwordless
+          sign-in  is  available.  See  the   SignInPolicyType   property   of
+          CreateUserPool and UpdateUserPool .
 
           The  temporary  password  is  valid only once. To complete the Admin
           Create User flow, the user must enter the temporary password in  the
           sign-in  page,  along  with  a new password to be used in all future
           sign-ins.
 
-          This parameter isn't required. If you don't specify a value,  Amazon
-          Cognito generates one for you.
+          If you don't specify a value, Amazon Cognito generates one  for  you
+          unless you have passwordless options active for your user pool.
 
           The temporary password can only be used until the user account expi-
           ration limit that you set for your user pool. To reset  the  account
@@ -442,13 +466,16 @@ OUTPUT
           The newly created user.
 
           Username -> (string)
-              The user name of the user you want to describe.
+              The user's username.
 
           Attributes -> (list)
-              A container with information about the user type attributes.
+              Names and values of a user's attributes, for example email .
 
               (structure)
-                 Specifies whether the attribute is standard or custom.
+                 The name and value of a user attribute.
+
+                 This    data    type    is    a    request    parameter    of
+                 AdminUpdateUserAttributes and UpdateUserAttributes .
 
                  Name -> (string)
                      The name of the attribute.
@@ -457,7 +484,10 @@ OUTPUT
                      The value of the attribute.
 
           UserCreateDate -> (timestamp)
-              The creation date of the user.
+              The  date and time when the item was created. Amazon Cognito re-
+              turns this timestamp in UNIX epoch time format. Your  SDK  might
+              render  the output in a human-readable format like ISO 8601 or a
+              Java Date object.
 
           UserLastModifiedDate -> (timestamp)
               The date and time when the item was modified. Amazon Cognito re-
@@ -466,7 +496,7 @@ OUTPUT
               Java Date object.
 
           Enabled -> (boolean)
-              Specifies whether the user is enabled.
+              Indicates whether the user's account is enabled or disabled.
 
           UserStatus -> (string)
               The user status. This can be one of the following:
@@ -488,7 +518,7 @@ OUTPUT
                 anything else.
 
           MFAOptions -> (list)
-              The MFA options for the user.
+              The user's MFA configuration.
 
               (structure)
                      This  data  type  is no longer supported. Applies only to

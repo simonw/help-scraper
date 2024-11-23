@@ -197,7 +197,7 @@ OPTIONS
               NOTE:
                  This is a Tagged Union structure. Only one of  the  following
                  top level keys can be set: ModelQuantizationConfig, ModelCom-
-                 pilationConfig.
+                 pilationConfig, ModelShardingConfig.
 
               ModelQuantizationConfig -> (structure)
                  Settings for the model quantization technique that's  applied
@@ -231,9 +231,25 @@ OPTIONS
 
                      value -> (string)
 
+              ModelShardingConfig -> (structure)
+                 Settings for the model sharding technique that's applied by a
+                 model optimization job.
+
+                 Image -> (string)
+                     The  URI of an LMI DLC in Amazon ECR. SageMaker uses this
+                     image to run the optimization.
+
+                 OverrideEnvironment -> (map)
+                     Environment variables that override the default  ones  in
+                     the model container.
+
+                     key -> (string)
+
+                     value -> (string)
+
        Shorthand Syntax:
 
-          ModelQuantizationConfig={Image=string,OverrideEnvironment={KeyName1=string,KeyName2=string}},ModelCompilationConfig={Image=string,OverrideEnvironment={KeyName1=string,KeyName2=string}} ...
+          ModelQuantizationConfig={Image=string,OverrideEnvironment={KeyName1=string,KeyName2=string}},ModelCompilationConfig={Image=string,OverrideEnvironment={KeyName1=string,KeyName2=string}},ModelShardingConfig={Image=string,OverrideEnvironment={KeyName1=string,KeyName2=string}} ...
 
        JSON Syntax:
 
@@ -248,22 +264,27 @@ OPTIONS
                 "Image": "string",
                 "OverrideEnvironment": {"string": "string"
                   ...}
+              },
+              "ModelShardingConfig": {
+                "Image": "string",
+                "OverrideEnvironment": {"string": "string"
+                  ...}
               }
             }
             ...
           ]
 
        --output-config (structure)
-          Details for where to store the optimized model that you create  with
+          Details  for where to store the optimized model that you create with
           the optimization job.
 
           KmsKeyId -> (string)
-              The  Amazon  Resource Name (ARN) of a key in Amazon Web Services
+              The Amazon Resource Name (ARN) of a key in Amazon  Web  Services
               KMS. SageMaker uses they key to encrypt the artifacts of the op-
               timized model when SageMaker uploads the model to Amazon S3.
 
           S3OutputLocation -> (string)
-              The  Amazon  S3  URI for where to store the optimized model that
+              The Amazon S3 URI for where to store the  optimized  model  that
               you create with an optimization job.
 
        Shorthand Syntax:
@@ -278,60 +299,60 @@ OPTIONS
           }
 
        --stopping-condition (structure)
-          Specifies a limit to how long a job can run. When  the  job  reaches
+          Specifies  a  limit  to how long a job can run. When the job reaches
           the time limit, SageMaker ends the job. Use this API to cap costs.
 
-          To  stop  a  training job, SageMaker sends the algorithm the SIGTERM
+          To stop a training job, SageMaker sends the  algorithm  the  SIGTERM
           signal, which delays job termination for 120 seconds. Algorithms can
-          use  this  120-second window to save the model artifacts, so the re-
+          use this 120-second window to save the model artifacts, so  the  re-
           sults of training are not lost.
 
           The training algorithms provided by SageMaker automatically save the
           intermediate results of a model training job when possible. This at-
-          tempt to save artifacts is only a best effort case  as  model  might
+          tempt  to  save  artifacts is only a best effort case as model might
           not be in a state from which it can be saved. For example, if train-
-          ing has just started, the model might not be  ready  to  save.  When
+          ing  has  just  started,  the model might not be ready to save. When
           saved, this intermediate data is a valid model artifact. You can use
           it to create a model with CreateModel .
 
           NOTE:
-              The Neural Topic Model (NTM) currently does not  support  saving
+              The  Neural  Topic Model (NTM) currently does not support saving
               intermediate model artifacts. When training NTMs, make sure that
-              the maximum runtime is sufficient for the training job  to  com-
+              the  maximum  runtime is sufficient for the training job to com-
               plete.
 
           MaxRuntimeInSeconds -> (integer)
-              The  maximum length of time, in seconds, that a training or com-
+              The maximum length of time, in seconds, that a training or  com-
               pilation job can run before it is stopped.
 
-              For compilation jobs, if the job does not complete  during  this
-              time,  a  TimeOut error is generated. We recommend starting with
+              For  compilation  jobs, if the job does not complete during this
+              time, a TimeOut error is generated. We recommend  starting  with
               900 seconds and increasing as necessary based on your model.
 
-              For all other jobs, if the job does  not  complete  during  this
+              For  all  other  jobs,  if the job does not complete during this
               time, SageMaker ends the job. When RetryStrategy is specified in
-              the job request, MaxRuntimeInSeconds specifies the maximum  time
-              for  all  of the attempts in total, not each individual attempt.
+              the  job request, MaxRuntimeInSeconds specifies the maximum time
+              for all of the attempts in total, not each  individual  attempt.
               The default value is 1 day. The maximum value is 28 days.
 
-              The maximum time that a TrainingJob can run in total,  including
-              any  time  spent  publishing  metrics or archiving and uploading
+              The  maximum time that a TrainingJob can run in total, including
+              any time spent publishing metrics  or  archiving  and  uploading
               models after it has been stopped, is 30 days.
 
           MaxWaitTimeInSeconds -> (integer)
-              The maximum length of time, in  seconds,  that  a  managed  Spot
-              training  job  has  to  complete. It is the amount of time spent
-              waiting for Spot capacity plus the amount of time  the  job  can
-              run.  It  must be equal to or greater than MaxRuntimeInSeconds .
-              If the job does not complete during this  time,  SageMaker  ends
+              The  maximum  length  of  time,  in seconds, that a managed Spot
+              training job has to complete. It is the  amount  of  time  spent
+              waiting  for  Spot  capacity plus the amount of time the job can
+              run. It must be equal to or greater than  MaxRuntimeInSeconds  .
+              If  the  job  does not complete during this time, SageMaker ends
               the job.
 
-              When  RetryStrategy  is  specified  in the job request, MaxWait-
+              When RetryStrategy is specified in  the  job  request,  MaxWait-
               TimeInSeconds specifies the maximum time for all of the attempts
               in total, not each individual attempt.
 
           MaxPendingTimeInSeconds -> (integer)
-              The  maximum length of time, in seconds, that a training or com-
+              The maximum length of time, in seconds, that a training or  com-
               pilation job can be pending before it is stopped.
 
        Shorthand Syntax:
@@ -347,22 +368,22 @@ OPTIONS
           }
 
        --tags (list)
-          A list of key-value pairs associated with the optimization job.  For
-          more  information,  see Tagging Amazon Web Services resources in the
+          A  list of key-value pairs associated with the optimization job. For
+          more information, see Tagging Amazon Web Services resources  in  the
           Amazon Web Services General Reference Guide .
 
           (structure)
-              A tag object that consists of a key and an optional value,  used
+              A  tag object that consists of a key and an optional value, used
               to manage metadata for SageMaker Amazon Web Services resources.
 
-              You  can add tags to notebook instances, training jobs, hyperpa-
-              rameter tuning jobs,  batch  transform  jobs,  models,  labeling
-              jobs,  work  teams,  endpoint configurations, and endpoints. For
-              more information on adding  tags  to  SageMaker  resources,  see
+              You can add tags to notebook instances, training jobs,  hyperpa-
+              rameter  tuning  jobs,  batch  transform  jobs, models, labeling
+              jobs, work teams, endpoint configurations,  and  endpoints.  For
+              more  information  on  adding  tags  to SageMaker resources, see
               AddTags .
 
-              For  more information on adding metadata to your Amazon Web Ser-
-              vices resources with tagging, see Tagging  Amazon  Web  Services
+              For more information on adding metadata to your Amazon Web  Ser-
+              vices  resources  with  tagging, see Tagging Amazon Web Services
               resources . For advice on best practices for managing Amazon Web
               Services resources with tagging, see Tagging Best Practices: Im-
               plement an Effective Amazon Web Services Resource Tagging Strat-
@@ -392,14 +413,14 @@ OPTIONS
           A VPC in Amazon VPC that your optimized model has access to.
 
           SecurityGroupIds -> (list)
-              The VPC security group IDs, in the form  sg-xxxxxxxx  .  Specify
+              The  VPC  security  group IDs, in the form sg-xxxxxxxx . Specify
               the security groups for the VPC that is specified in the Subnets
               field.
 
               (string)
 
           Subnets -> (list)
-              The ID of the subnets in the VPC to which you  want  to  connect
+              The  ID  of  the subnets in the VPC to which you want to connect
               your optimized model.
 
               (string)
@@ -415,17 +436,17 @@ OPTIONS
             "Subnets": ["string", ...]
           }
 
-       --cli-input-json  (string) Performs service operation based on the JSON
-       string provided. The JSON string follows the format provided by  --gen-
-       erate-cli-skeleton.  If  other  arguments  are  provided on the command
-       line, the CLI values will override the JSON-provided values. It is  not
+       --cli-input-json (string) Performs service operation based on the  JSON
+       string  provided. The JSON string follows the format provided by --gen-
+       erate-cli-skeleton. If other arguments  are  provided  on  the  command
+       line,  the CLI values will override the JSON-provided values. It is not
        possible to pass arbitrary binary values using a JSON-provided value as
        the string will be taken literally.
 
-       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
+       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
        output without sending an API request. If provided with no value or the
        value input, prints a sample input JSON that can be used as an argument
-       for  --cli-input-json.  If provided with the value output, it validates
+       for --cli-input-json. If provided with the value output,  it  validates
        the command inputs and returns a sample output JSON for that command.
 
 GLOBAL OPTIONS
@@ -439,13 +460,13 @@ GLOBAL OPTIONS
 
        --no-verify-ssl (boolean)
 
-       By default, the AWS CLI uses SSL when communicating with AWS  services.
+       By  default, the AWS CLI uses SSL when communicating with AWS services.
        For each SSL connection, the AWS CLI will verify SSL certificates. This
        option overrides the default behavior of verifying SSL certificates.
 
        --no-paginate (boolean)
 
-       Disable automatic pagination. If automatic pagination is disabled,  the
+       Disable  automatic pagination. If automatic pagination is disabled, the
        AWS CLI will only make one call, for the first page of results.
 
        --output (string)
@@ -486,7 +507,7 @@ GLOBAL OPTIONS
 
        --no-sign-request (boolean)
 
-       Do  not  sign requests. Credentials will not be loaded if this argument
+       Do not sign requests. Credentials will not be loaded if  this  argument
        is provided.
 
        --ca-bundle (string)
@@ -496,14 +517,14 @@ GLOBAL OPTIONS
 
        --cli-read-timeout (int)
 
-       The  maximum socket read time in seconds. If the value is set to 0, the
-       socket read will be blocking and not timeout. The default value  is  60
+       The maximum socket read time in seconds. If the value is set to 0,  the
+       socket  read  will be blocking and not timeout. The default value is 60
        seconds.
 
        --cli-connect-timeout (int)
 
-       The  maximum  socket connect time in seconds. If the value is set to 0,
-       the socket connect will be blocking and not timeout. The default  value
+       The maximum socket connect time in seconds. If the value is set  to  0,
+       the  socket connect will be blocking and not timeout. The default value
        is 60 seconds.
 
 OUTPUT

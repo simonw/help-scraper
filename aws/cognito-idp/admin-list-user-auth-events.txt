@@ -208,47 +208,202 @@ OUTPUT
           Date , EventRisk , and EventResponse .
 
           (structure)
-              The authentication event type.
+              One  authentication  event  that Amazon Cognito logged in a user
+              pool with advanced security features active. Contains  user  and
+              device metadata and a risk assessment from your user pool.
+
+              This data type is a request parameter of AdminListUserAuthEvents
+              .
 
               EventId -> (string)
                  The event ID.
 
               EventType -> (string)
-                 The event type.
+                 The type of authentication event.
 
               CreationDate -> (timestamp)
-                 The  date  and time when the item was created. Amazon Cognito
-                 returns this timestamp in UNIX epoch time  format.  Your  SDK
-                 might  render  the output in a human-readable format like ISO
+                 The date and time when the item was created.  Amazon  Cognito
+                 returns  this  timestamp  in UNIX epoch time format. Your SDK
+                 might render the output in a human-readable format  like  ISO
                  8601 or a Java Date object.
 
               EventResponse -> (string)
                  The event response.
 
               EventRisk -> (structure)
-                 The event risk.
+                 The  threat  evaluation  from  your user pool about an event.
+                 Contains information about whether your  user  pool  detected
+                 compromised credentials, whether the event triggered an auto-
+                 mated response, and the level of risk.
 
                  RiskDecision -> (string)
-                     The risk decision.
+                     The action taken by adaptive authentication. If NoRisk  ,
+                     your  user pool took no action. If AccountTakeover , your
+                     user pool applied the adaptive  authentication  automated
+                     response  that  you configured. If Block , your user pool
+                     prevented the attempt.
 
                  RiskLevel -> (string)
-                     The risk level.
+                     The risk level that adaptive authentication assessed  for
+                     the authentication event.
 
                  CompromisedCredentialsDetected -> (boolean)
-                     Indicates whether compromised credentials  were  detected
+                     Indicates  whether  compromised credentials were detected
                      during an authentication event.
 
               ChallengeResponses -> (list)
-                 The challenge responses.
+                 A list of the challenges that the user was requested  to  an-
+                 swer, for example Password , and the result, for example Suc-
+                 cess .
 
                  (structure)
-                     The challenge response type.
+                     The responses to the challenge that you received  in  the
+                     previous request. Each challenge has its own required re-
+                     sponse parameters. The  following  examples  are  partial
+                     JSON request bodies that highlight challenge-response pa-
+                     rameters.
+
+                     WARNING:
+                            You must provide a SECRET_HASH  parameter  in  all
+                            challenge  responses  to  an app client that has a
+                            client secret. Include a DEVICE_KEY for device au-
+                            thentication.
+
+                            SELECT_CHALLENGE
+
+                        "ChallengeName":   "SELECT_CHALLENGE",   "ChallengeRe-
+                        sponses":  {   "USERNAME":   "[username]",   "ANSWER":
+                        "[Challenge name]"}
+
+                     Available   challenges  are  PASSWORD  ,  PASSWORD_SRP  ,
+                     EMAIL_OTP , SMS_OTP , and WEB_AUTHN .
+
+                     Complete authentication in the SELECT_CHALLENGE  response
+                     for PASSWORD , PASSWORD_SRP , and WEB_AUTHN :
+
+                     o "ChallengeName":    "SELECT_CHALLENGE",   "ChallengeRe-
+                       sponses": { "ANSWER": "WEB_AUTHN", "USERNAME":  "[user-
+                       name]",  "CREDENTIAL":  "[AuthenticationResponseJSON]"}
+                       See AuthenticationResponseJSON .
+
+                     o "ChallengeName":   "SELECT_CHALLENGE",    "ChallengeRe-
+                       sponses":  {  "ANSWER": "PASSWORD", "USERNAME": "[user-
+                       name]", "PASSWORD": "[password]"}
+
+                     o "ChallengeName":   "SELECT_CHALLENGE",    "ChallengeRe-
+                       sponses":   {   "ANSWER":  "PASSWORD_SRP",  "USERNAME":
+                       "[username]", "SRP_A": "[SRP_A]"}
+
+                     For SMS_OTP and EMAIL_OTP , respond with the username and
+                     answer.  Your  user pool will send a code for the user to
+                     submit in the next challenge response.
+
+                     o "ChallengeName":   "SELECT_CHALLENGE",    "ChallengeRe-
+                       sponses":  {  "ANSWER":  "SMS_OTP", "USERNAME": "[user-
+                       name]"}
+
+                     o "ChallengeName":   "SELECT_CHALLENGE",    "ChallengeRe-
+                       sponses":  { "ANSWER": "EMAIL_OTP", "USERNAME": "[user-
+                       name]"}
+
+                       SMS_OTP
+                        "ChallengeName":   "SMS_OTP",    "ChallengeResponses":
+                        {"SMS_OTP_CODE": "[code]", "USERNAME": "[username]"}
+                            EMAIL_OTP
+
+                        "ChallengeName":   "EMAIL_OTP",  "ChallengeResponses":
+                        {"EMAIL_OTP_CODE": "[code]", "USERNAME": "[username]"}
+                            SMS_MFA
+
+                        "ChallengeName":   "SMS_MFA",    "ChallengeResponses":
+                        {"SMS_MFA_CODE": "[code]", "USERNAME": "[username]"}
+                            PASSWORD_VERIFIER
+
+                     This  challenge  response is part of the SRP flow. Amazon
+                     Cognito requires that your application  respond  to  this
+                     challenge  within  a  few seconds. When the response time
+                     exceeds this period, your user pool returns  a  NotAutho-
+                     rizedException error.
+                        "ChallengeName":   "PASSWORD_VERIFIER",  "ChallengeRe-
+                        sponses": {"PASSWORD_CLAIM_SIGNATURE":  "[claim_signa-
+                        ture]",      "PASSWORD_CLAIM_SECRET_BLOCK":      "[se-
+                        cret_block]",  "TIMESTAMP":  [timestamp],  "USERNAME":
+                        "[username]"}
+
+                     Add  "DEVICE_KEY"  when you sign in with a remembered de-
+                     vice.
+                            CUSTOM_CHALLENGE
+
+                        "ChallengeName":   "CUSTOM_CHALLENGE",   "ChallengeRe-
+                        sponses": {"USERNAME": "[username]", "ANSWER": "[chal-
+                        lenge_answer]"}
+
+                     Add "DEVICE_KEY" when you sign in with a  remembered  de-
+                     vice.
+                            NEW_PASSWORD_REQUIRED
+
+                        "ChallengeName":   "NEW_PASSWORD_REQUIRED",  "Challen-
+                        geResponses":    {"NEW_PASSWORD":    "[new_password]",
+                        "USERNAME": "[username]"}
+
+                     To set any required attributes that InitiateAuth returned
+                     in  an   requiredAttributes   parameter,   add   "userAt-
+                     tributes.[attribute_name]":  "[attribute_value]"  .  This
+                     parameter can also set  values  for  writable  attributes
+                     that aren't required by your user pool.
+
+                     NOTE:
+                            In a NEW_PASSWORD_REQUIRED challenge response, you
+                            can't modify a required attribute that already has
+                            a  value.  In RespondToAuthChallenge , set a value
+                            for any keys that Amazon Cognito returned  in  the
+                            requiredAttributes  parameter,  then use the Upda-
+                            teUserAttributes API operation to modify the value
+                            of any additional attributes.
+
+                            SOFTWARE_TOKEN_MFA
+
+                        "ChallengeName":  "SOFTWARE_TOKEN_MFA",  "ChallengeRe-
+                        sponses":  {"USERNAME":  "[username]",   "SOFTWARE_TO-
+                        KEN_MFA_CODE": [authenticator_code]}
+                            DEVICE_SRP_AUTH
+
+                        "ChallengeName":    "DEVICE_SRP_AUTH",   "ChallengeRe-
+                        sponses":  {"USERNAME":  "[username]",   "DEVICE_KEY":
+                        "[device_key]", "SRP_A": "[srp_a]"}
+                            DEVICE_PASSWORD_VERIFIER
+
+                        "ChallengeName": "DEVICE_PASSWORD_VERIFIER", "Challen-
+                        geResponses":  {"DEVICE_KEY":  "[device_key]",  "PASS-
+                        WORD_CLAIM_SIGNATURE":   "[claim_signature]",   "PASS-
+                        WORD_CLAIM_SECRET_BLOCK":   "[secret_block]",   "TIME-
+                        STAMP": [timestamp], "USERNAME": "[username]"}
+                            MFA_SETUP
+
+                        "ChallengeName":   "MFA_SETUP",  "ChallengeResponses":
+                        {"USERNAME": "[username]"},  "SESSION":  "[Session  ID
+                        from VerifySoftwareToken]"
+                            SELECT_MFA_TYPE
+
+                        "ChallengeName":    "SELECT_MFA_TYPE",   "ChallengeRe-
+                        sponses":   {"USERNAME":    "[username]",    "ANSWER":
+                        "[SMS_MFA or SOFTWARE_TOKEN_MFA]"}
+
+                     For  more  information  about SECRET_HASH , see Computing
+                     secret hash values . For information about  DEVICE_KEY  ,
+                     see Working with user devices in your user pool .
+
+                     This    data    type    is   a   request   parameter   of
+                     RespondToAuthChallenge and AdminRespondToAuthChallenge .
 
                      ChallengeName -> (string)
-                        The challenge name.
+                        The type of challenge that your  previous  authentica-
+                        tion request returned in the parameter ChallengeName ,
+                        for example SMS_MFA .
 
                      ChallengeResponse -> (string)
-                        The challenge response.
+                        The set of key-value pairs that provides a response to
+                        the requested challenge.
 
               EventContextData -> (structure)
                  The  user  context  data captured at the time of an event re-
@@ -271,23 +426,30 @@ OUTPUT
                      The user's country.
 
               EventFeedback -> (structure)
-                 A  flag  specifying the user feedback captured at the time of
-                 an event request is good or bad.
+                 The  UpdateAuthEventFeedback  or AdminUpdateAuthEventFeedback
+                 feedback that you or your user provided in  response  to  the
+                 event. A value of Valid indicates that you disagreed with the
+                 level of risk that your user pool assigned, and  evaluated  a
+                 session to be valid, or likely safe. A value of Invalid indi-
+                 cates that you agreed with the user pool risk level and eval-
+                 uated a session to be invalid, or likely malicious.
 
                  FeedbackValue -> (string)
                      The authentication event feedback value. When you provide
-                     a  FeedbackValue value of valid , you tell Amazon Cognito
-                     that you trust a user session where  Amazon  Cognito  has
-                     evaluated  some  level  of risk. When you provide a Feed-
+                     a FeedbackValue value of valid , you tell Amazon  Cognito
+                     that  you  trust  a user session where Amazon Cognito has
+                     evaluated some level of risk. When you  provide  a  Feed-
                      backValue value of invalid , you tell Amazon Cognito that
                      you don't trust a user session, or you don't believe that
                      Amazon Cognito evaluated a high-enough risk level.
 
                  Provider -> (string)
-                     The provider.
+                     The  submitter of the event feedback. For example, if you
+                     submit event feedback in the Amazon Cognito console, this
+                     value is Admin .
 
                  FeedbackDate -> (timestamp)
-                     The event feedback date.
+                     The date that you or your user submitted the feedback.
 
        NextToken -> (string)
           A pagination token.

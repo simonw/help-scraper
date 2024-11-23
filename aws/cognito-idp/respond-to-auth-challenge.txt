@@ -35,13 +35,13 @@ DESCRIPTION
           accounts, or sign in.
 
           If  you have never used SMS text messages with Amazon Cognito or any
-          other Amazon Web Servicesservice, Amazon Simple Notification Service
-          might  place  your account in the SMS sandbox. In * sandbox mode * ,
-          you can send messages only to verified phone numbers. After you test
-          your  app  while in the sandbox environment, you can move out of the
-          sandbox and into production. For more information, see  SMS  message
-          settings  for Amazon Cognito user pools in the Amazon Cognito Devel-
-          oper Guide .
+          other Amazon Web Services service, Amazon Simple  Notification  Ser-
+          vice  might place your account in the SMS sandbox. In * sandbox mode
+          * , you can send messages only to verified phone numbers. After  you
+          test  your app while in the sandbox environment, you can move out of
+          the sandbox and into production. For more information, see SMS  mes-
+          sage  settings  for  Amazon Cognito user pools in the Amazon Cognito
+          Developer Guide .
 
        See also: AWS API Documentation
 
@@ -95,6 +95,8 @@ OPTIONS
 
           o CUSTOM_CHALLENGE
 
+          o SELECT_CHALLENGE
+
           o DEVICE_SRP_AUTH
 
           o DEVICE_PASSWORD_VERIFIER
@@ -102,6 +104,14 @@ OPTIONS
           o ADMIN_NO_SRP_AUTH
 
           o NEW_PASSWORD_REQUIRED
+
+          o SMS_OTP
+
+          o PASSWORD
+
+          o WEB_AUTHN
+
+          o PASSWORD_SRP
 
        --session (string)
           The session that should be passed both  ways  in  challenge-response
@@ -119,25 +129,62 @@ OPTIONS
 
           WARNING:
                  You must provide a SECRET_HASH parameter in all challenge re-
-                 sponses to an app client that has a client secret.
+                 sponses  to an app client that has a client secret. Include a
+                 DEVICE_KEY for device authentication.
 
-                 SMS_MFA
+                 SELECT_CHALLENGE
 
-              "ChallengeName":         "SMS_MFA",        "ChallengeResponses":
-              {"SMS_MFA_CODE": "[code]", "USERNAME": "[username]"}
+              "ChallengeName":  "SELECT_CHALLENGE",  "ChallengeResponses":   {
+              "USERNAME": "[username]", "ANSWER": "[Challenge name]"}
+
+          Available  challenges  are  PASSWORD  ,  PASSWORD_SRP  , EMAIL_OTP ,
+          SMS_OTP , and WEB_AUTHN .
+
+          Complete authentication in the SELECT_CHALLENGE response  for  PASS-
+          WORD , PASSWORD_SRP , and WEB_AUTHN :
+
+          o "ChallengeName":  "SELECT_CHALLENGE", "ChallengeResponses": { "AN-
+            SWER": "WEB_AUTHN", "USERNAME": "[username]", "CREDENTIAL":  "[Au-
+            thenticationResponseJSON]"}   See AuthenticationResponseJSON .
+
+          o "ChallengeName":  "SELECT_CHALLENGE", "ChallengeResponses": { "AN-
+            SWER": "PASSWORD", "USERNAME": "[username]",  "PASSWORD":  "[pass-
+            word]"}
+
+          o "ChallengeName":  "SELECT_CHALLENGE", "ChallengeResponses": { "AN-
+            SWER":   "PASSWORD_SRP",   "USERNAME":   "[username]",    "SRP_A":
+            "[SRP_A]"}
+
+          For  SMS_OTP  and  EMAIL_OTP , respond with the username and answer.
+          Your user pool will send a code for the user to submit in  the  next
+          challenge response.
+
+          o "ChallengeName":  "SELECT_CHALLENGE", "ChallengeResponses": { "AN-
+            SWER": "SMS_OTP", "USERNAME": "[username]"}
+
+          o "ChallengeName": "SELECT_CHALLENGE", "ChallengeResponses": {  "AN-
+            SWER": "EMAIL_OTP", "USERNAME": "[username]"}
+
+            SMS_OTP
+              "ChallengeName":         "SMS_OTP",        "ChallengeResponses":
+              {"SMS_OTP_CODE": "[code]", "USERNAME": "[username]"}
                  EMAIL_OTP
 
               "ChallengeName":       "EMAIL_OTP",        "ChallengeResponses":
               {"EMAIL_OTP_CODE": "[code]", "USERNAME": "[username]"}
+                 SMS_MFA
+
+              "ChallengeName":         "SMS_MFA",        "ChallengeResponses":
+              {"SMS_MFA_CODE": "[code]", "USERNAME": "[username]"}
                  PASSWORD_VERIFIER
 
-          This  challenge response is part of the SRP flow. Amazon Cognito re-
-          quires that your application respond to this challenge within a  few
-          seconds.  When the response time exceeds this period, your user pool
+          This challenge response is part of the SRP flow. Amazon Cognito  re-
+          quires  that your application respond to this challenge within a few
+          seconds. When the response time exceeds this period, your user  pool
           returns a NotAuthorizedException error.
-              "ChallengeName":   "PASSWORD_VERIFIER",    "ChallengeResponses":
+              "ChallengeName":    "PASSWORD_VERIFIER",   "ChallengeResponses":
               {"PASSWORD_CLAIM_SIGNATURE":     "[claim_signature]",     "PASS-
-              WORD_CLAIM_SECRET_BLOCK": "[secret_block]", "TIMESTAMP":  [time-
+              WORD_CLAIM_SECRET_BLOCK":  "[secret_block]", "TIMESTAMP": [time-
               stamp], "USERNAME": "[username]"}
 
           Add "DEVICE_KEY" when you sign in with a remembered device.
@@ -149,20 +196,20 @@ OPTIONS
           Add "DEVICE_KEY" when you sign in with a remembered device.
                  NEW_PASSWORD_REQUIRED
 
-              "ChallengeName": "NEW_PASSWORD_REQUIRED",  "ChallengeResponses":
+              "ChallengeName":  "NEW_PASSWORD_REQUIRED", "ChallengeResponses":
               {"NEW_PASSWORD": "[new_password]", "USERNAME": "[username]"}
 
-          To  set any required attributes that InitiateAuth returned in an re-
-          quiredAttributes parameter,  add  "userAttributes.[attribute_name]":
+          To set any required attributes that InitiateAuth returned in an  re-
+          quiredAttributes  parameter,  add "userAttributes.[attribute_name]":
           "[attribute_value]"  .  This  parameter  can  also  set  values  for
           writable attributes that aren't required by your user pool.
 
           NOTE:
                  In a NEW_PASSWORD_REQUIRED challenge response, you can't mod-
-                 ify  a  required  attribute  that already has a value. In Re-
-                 spondToAuthChallenge , set a value for any keys  that  Amazon
-                 Cognito  returned  in  the requiredAttributes parameter, then
-                 use the UpdateUserAttributes  API  operation  to  modify  the
+                 ify a required attribute that already has  a  value.  In  Re-
+                 spondToAuthChallenge  ,  set a value for any keys that Amazon
+                 Cognito returned in the  requiredAttributes  parameter,  then
+                 use  the  UpdateUserAttributes  API  operation  to modify the
                  value of any additional attributes.
 
                  SOFTWARE_TOKEN_MFA
@@ -172,29 +219,29 @@ OPTIONS
               cator_code]}
                  DEVICE_SRP_AUTH
 
-              "ChallengeName":     "DEVICE_SRP_AUTH",    "ChallengeResponses":
-              {"USERNAME":   "[username]",    "DEVICE_KEY":    "[device_key]",
+              "ChallengeName":    "DEVICE_SRP_AUTH",     "ChallengeResponses":
+              {"USERNAME":    "[username]",    "DEVICE_KEY":   "[device_key]",
               "SRP_A": "[srp_a]"}
                  DEVICE_PASSWORD_VERIFIER
 
               "ChallengeName":    "DEVICE_PASSWORD_VERIFIER",    "ChallengeRe-
-              sponses": {"DEVICE_KEY": "[device_key]",  "PASSWORD_CLAIM_SIGNA-
+              sponses":  {"DEVICE_KEY": "[device_key]", "PASSWORD_CLAIM_SIGNA-
               TURE": "[claim_signature]", "PASSWORD_CLAIM_SECRET_BLOCK": "[se-
-              cret_block]",  "TIMESTAMP":  [timestamp],  "USERNAME":   "[user-
+              cret_block]",   "TIMESTAMP":  [timestamp],  "USERNAME":  "[user-
               name]"}
                  MFA_SETUP
 
               "ChallengeName": "MFA_SETUP", "ChallengeResponses": {"USERNAME":
-              "[username]"}, "SESSION": "[Session  ID  from  VerifySoftwareTo-
+              "[username]"},  "SESSION":  "[Session  ID from VerifySoftwareTo-
               ken]"
                  SELECT_MFA_TYPE
 
-              "ChallengeName":     "SELECT_MFA_TYPE",    "ChallengeResponses":
-              {"USERNAME": "[username]", "ANSWER": "[SMS_MFA  or  SOFTWARE_TO-
+              "ChallengeName":    "SELECT_MFA_TYPE",     "ChallengeResponses":
+              {"USERNAME":  "[username]",  "ANSWER": "[SMS_MFA or SOFTWARE_TO-
               KEN_MFA]"}
 
-          For  more  information about SECRET_HASH , see Computing secret hash
-          values . For information about DEVICE_KEY , see  Working  with  user
+          For more information about SECRET_HASH , see Computing  secret  hash
+          values  .  For  information about DEVICE_KEY , see Working with user
           devices in your user pool .
 
           key -> (string)
@@ -215,7 +262,8 @@ OPTIONS
           rics for RespondToAuthChallenge calls.
 
           AnalyticsEndpointId -> (string)
-              The endpoint ID.
+              The  endpoint  ID.  Information  that you want to pass to Amazon
+              Pinpoint about where to send notifications.
 
        Shorthand Syntax:
 
@@ -454,29 +502,30 @@ OUTPUT
           spond to the authentication challenge.
 
           AccessToken -> (string)
-              A valid access token that Amazon Cognito issued to the user  who
-              you want to authenticate.
+              Your user's access token.
 
           ExpiresIn -> (integer)
               The expiration period of the authentication result in seconds.
 
           TokenType -> (string)
-              The token type.
+              The intended use of the token, for example Bearer .
 
           RefreshToken -> (string)
-              The refresh token.
+              Your user's refresh token.
 
           IdToken -> (string)
-              The ID token.
+              Your user's ID token.
 
           NewDeviceMetadata -> (structure)
               The new device metadata from an authentication result.
 
               DeviceKey -> (string)
-                 The device key.
+                 The device key, an identifier  used  in  generating  the  DE-
+                 VICE_PASSWORD_VERIFIER for device SRP authentication.
 
               DeviceGroupKey -> (string)
-                 The device group key.
+                 The  device  group  key, an identifier used in generating the
+                 DEVICE_PASSWORD_VERIFIER for device SRP authentication.
 
 
 
