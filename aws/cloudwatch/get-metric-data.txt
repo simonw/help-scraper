@@ -542,6 +542,130 @@ GLOBAL OPTIONS
        the  socket connect will be blocking and not timeout. The default value
        is 60 seconds.
 
+EXAMPLES
+       NOTE:
+          To use the following examples, you must have the AWS  CLI  installed
+          and  configured.  See  the Getting started guide in the AWS CLI User
+          Guide for more information.
+
+          Unless otherwise  stated,  all  examples  have  unix-like  quotation
+          rules.  These  examples  will  need to be adapted to your terminal's
+          quoting rules. See Using quotation marks with strings in the AWS CLI
+          User Guide .
+
+       Example  1:  To  get the Average Total IOPS for the specified EC2 using
+       math expression
+
+       The following get-metric-data example retrieves CloudWatch metric  val-
+       ues for the EC2 instance with InstanceID i-abcdef using metric math ex-
+       prssion that combines EBSReadOps and EBSWriteOps metrics.
+
+          aws cloudwatch get-metric-data \
+              --metric-data-queries file://file.json \
+              --start-time 2024-09-29T22:10:00Z \
+              --end-time 2024-09-29T22:15:00Z
+
+       Contents of file.json:
+
+          [
+              {
+                  "Id": "m3",
+                  "Expression": "(m1+m2)/300",
+                  "Label": "Avg Total IOPS"
+              },
+              {
+                  "Id": "m1",
+                  "MetricStat": {
+                      "Metric": {
+                          "Namespace": "AWS/EC2",
+                          "MetricName": "EBSReadOps",
+                          "Dimensions": [
+                              {
+                                  "Name": "InstanceId",
+                                  "Value": "i-abcdef"
+                              }
+                          ]
+                      },
+                      "Period": 300,
+                      "Stat": "Sum",
+                      "Unit": "Count"
+                  },
+                  "ReturnData": false
+              },
+              {
+                  "Id": "m2",
+                  "MetricStat": {
+                      "Metric": {
+                          "Namespace": "AWS/EC2",
+                          "MetricName": "EBSWriteOps",
+                          "Dimensions": [
+                              {
+                                  "Name": "InstanceId",
+                                  "Value": "i-abcdef"
+                              }
+                          ]
+                      },
+                      "Period": 300,
+                      "Stat": "Sum",
+                      "Unit": "Count"
+                  },
+                  "ReturnData": false
+              }
+          ]
+
+       Output:
+
+          {
+              "MetricDataResults": [
+                  {
+                      "Id": "m3",
+                      "Label": "Avg Total IOPS",
+                      "Timestamps": [
+                          "2024-09-29T22:10:00+00:00"
+                      ],
+                      "Values": [
+                          96.85
+                      ],
+                      "StatusCode": "Complete"
+                  }
+              ],
+              "Messages": []
+          }
+
+       Example 2: To  monitor  the  estimated  AWS  charges  using  CloudWatch
+       billing metrics
+
+       The following get-metric-data example retrieves EstimatedCharges Cloud-
+       Watch metric from AWS/Billing namespace.
+
+          aws cloudwatch get-metric-data \
+              --metric-data-queries '[{"Id":"m1","MetricStat":{"Metric":{"Namespace":"AWS/Billing","MetricName":"EstimatedCharges","Dimensions":[{"Name":"Currency","Value":"USD"}]},"Period":21600,"Stat":"Maximum"}}]' \
+              --start-time 2024-09-26T12:00:00Z \
+              --end-time 2024-09-26T18:00:00Z \
+              --region us-east-1
+
+       Output:
+
+          {
+              "MetricDataResults": [
+                  {
+                      "Id": "m1",
+                      "Label": "EstimatedCharges",
+                      "Timestamps": [
+                          "2024-09-26T12:00:00+00:00"
+                      ],
+                      "Values": [
+                          542.38
+                      ],
+                      "StatusCode": "Complete"
+                  }
+              ],
+              "Messages": []
+          }
+
+       For more information, see Using math expressions with  CloudWatch  met-
+       rics in the Amazon CloudWatch User Guide.
+
 OUTPUT
        MetricDataResults -> (list)
           The metrics that are returned, including the metric name, namespace,
@@ -549,8 +673,8 @@ OUTPUT
 
           (structure)
               A GetMetricData call returns an array of MetricDataResult struc-
-              tures. Each of these structures includes  the  data  points  for
-              that  metric, along with the timestamps of those data points and
+              tures.  Each  of  these  structures includes the data points for
+              that metric, along with the timestamps of those data points  and
               other identifying information.
 
               Id -> (string)
@@ -560,28 +684,28 @@ OUTPUT
                  The human-readable label associated with the data.
 
               Timestamps -> (list)
-                 The timestamps for the data points, formatted in  Unix  time-
-                 stamp  format.  The  number  of timestamps always matches the
-                 number of values and the  value  for  Timestamps[x]  is  Val-
+                 The  timestamps  for the data points, formatted in Unix time-
+                 stamp format. The number of  timestamps  always  matches  the
+                 number  of  values  and  the  value for Timestamps[x] is Val-
                  ues[x].
 
                  (timestamp)
 
               Values -> (list)
-                 The  data points for the metric corresponding to Timestamps .
-                 The number of values always matches the number of  timestamps
+                 The data points for the metric corresponding to Timestamps  .
+                 The  number of values always matches the number of timestamps
                  and the timestamp for Values[x] is Timestamps[x].
 
                  (double)
 
               StatusCode -> (string)
-                 The  status of the returned data. Complete indicates that all
-                 data points in the requested time range were  returned.  Par-
+                 The status of the returned data. Complete indicates that  all
+                 data  points  in the requested time range were returned. Par-
                  tialData means that an incomplete set of data points were re-
                  turned. You can use the NextToken value that was returned and
                  repeat your request to get more data points. NextToken is not
                  returned if you are performing a math expression. InternalEr-
-                 ror  indicates that an error occurred. Retry your request us-
+                 ror indicates that an error occurred. Retry your request  us-
                  ing NextToken , if present.
 
               Messages -> (list)
@@ -589,13 +713,13 @@ OUTPUT
                  returned.
 
                  (structure)
-                     A  message returned by the GetMetricData API, including a
+                     A message returned by the GetMetricData API, including  a
                      code and a description.
 
-                     If a cross-Region GetMetricData operation  fails  with  a
-                     code  of Forbidden and a value of Authentication too com-
-                     plex to retrieve cross region data , you can correct  the
-                     problem  by  running  the  GetMetricData operation in the
+                     If  a  cross-Region  GetMetricData operation fails with a
+                     code of Forbidden and a value of Authentication too  com-
+                     plex  to retrieve cross region data , you can correct the
+                     problem by running the  GetMetricData  operation  in  the
                      same Region where the metric data is.
 
                      Code -> (string)
@@ -610,23 +734,23 @@ OUTPUT
 
        Messages -> (list)
           Contains a message about this GetMetricData operation, if the opera-
-          tion results in such a message. An example of a message  that  might
+          tion  results  in such a message. An example of a message that might
           be returned is Maximum number of allowed metrics exceeded . If there
-          is a message, as much of the operation as  possible  is  still  exe-
+          is  a  message,  as  much of the operation as possible is still exe-
           cuted.
 
-          A  message  appears here only if it is related to the global GetMet-
-          ricData operation. Any message about a specific metric  returned  by
-          the  operation  appears  in the MetricDataResult object returned for
+          A message appears here only if it is related to the  global  GetMet-
+          ricData  operation.  Any message about a specific metric returned by
+          the operation appears in the MetricDataResult  object  returned  for
           that metric.
 
           (structure)
-              A message returned by the GetMetricData API,  including  a  code
+              A  message  returned  by the GetMetricData API, including a code
               and a description.
 
-              If  a  cross-Region GetMetricData operation fails with a code of
-              Forbidden and a value of Authentication too complex to  retrieve
-              cross  region  data , you can correct the problem by running the
+              If a cross-Region GetMetricData operation fails with a  code  of
+              Forbidden  and a value of Authentication too complex to retrieve
+              cross region data , you can correct the problem by  running  the
               GetMetricData operation in the same Region where the metric data
               is.
 
