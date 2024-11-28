@@ -6,19 +6,23 @@ NAME
        describe-configuration-recorders -
 
 DESCRIPTION
-       Returns  the  details for the specified configuration recorders. If the
-       configuration recorder is not specified, this action  returns  the  de-
-       tails for all configuration recorders associated with the account.
+       Returns details for the configuration recorder you specify.
+
+       If  a  configuration  recorder is not specified, this operation returns
+       details for the customer managed configuration recorder configured  for
+       the account, if applicable.
 
        NOTE:
-          You  can specify only one configuration recorder for each Amazon Web
-          Services Region for each account.
+          When  making  a  request to this operation, you can only specify one
+          configuration recorder.
 
        See also: AWS API Documentation
 
 SYNOPSIS
             describe-configuration-recorders
           [--configuration-recorder-names <value>]
+          [--service-principal <value>]
+          [--arn <value>]
           [--cli-input-json <value>]
           [--generate-cli-skeleton <value>]
           [--debug]
@@ -38,13 +42,23 @@ SYNOPSIS
 
 OPTIONS
        --configuration-recorder-names (list)
-          A list of configuration recorder names.
+          A list of names of the configuration  recorders  that  you  want  to
+          specify.
 
           (string)
 
        Syntax:
 
           "string" "string" ...
+
+       --service-principal (string)
+          For  service-linked configuration recorders, you can use the service
+          principal of the linked Amazon Web Services service to  specify  the
+          configuration recorder.
+
+       --arn (string)
+          The  Amazon  Resource  Name (ARN) of the configuration recorder that
+          you want to specify.
 
        --cli-input-json (string) Performs service operation based on the  JSON
        string  provided. The JSON string follows the format provided by --gen-
@@ -177,78 +191,112 @@ OUTPUT
           recorders.
 
           (structure)
-              Records  configuration changes to your specified resource types.
-              For more information about the  configuration  recorder,  see  `
-              Managing           the           Configuration          Recorder
+              Records configuration changes to the resource types in scope.
+
+              For  more  information  about  the configuration recorder, see `
+              Working       with       the       Configuration        Recorder
               https://docs.aws.amazon.com/config/latest/developerguide/stop-start-recorder.html`__
               in the Config Developer Guide .
 
-              name -> (string)
-                 The  name of the configuration recorder. Config automatically
-                 assigns the name of "default" when creating the configuration
+              arn -> (string)
+                 The Amazon Resource Name (ARN) of the specified configuration
                  recorder.
 
+              name -> (string)
+                 The name of the configuration recorder.
+
+                 For customer managed configuration recorders, Config automat-
+                 ically assigns the name of "default" when creating a configu-
+                 ration  recorder  if  you  do  not specify a name at creation
+                 time.
+
+                 For service-linked configuration recorders, Config  automati-
+                 cally assigns a name that has the prefix "AWS " to a new ser-
+                 vice-linked configuration recorder.
+
                  NOTE:
-                     You  cannot change the name of the configuration recorder
-                     after it has been created. To  change  the  configuration
-                     recorder  name,  you must delete it and create a new con-
-                     figuration recorder with a new name.
+                        Changing the name of a configuration recorder
+
+                     To change the name of the customer managed  configuration
+                     recorder,  you  must  delete it and create a new customer
+                     managed configuration recorder with a new name.
+
+                     You cannot change the name of a service-linked configura-
+                     tion recorder.
 
               roleARN -> (string)
-                 Amazon Resource Name (ARN) of the IAM role assumed by  Config
-                 and used by the configuration recorder.
+                 The  Amazon  Resource  Name  (ARN) of the IAM role assumed by
+                 Config and used by the specified configuration recorder.
 
                  NOTE:
+                        The server will reject a  request  without  a  defined
+                        ``roleARN`` for the configuration recorder
+
                      While  the  API  model  does  not require this field, the
                      server will reject a request without  a  defined  roleARN
                      for the configuration recorder.
+                        Policies and compliance results
 
-                 NOTE:
-                        Pre-existing Config role
+                        IAM  policies  and other policies managed in Organiza-
+                        tions can impact whether  Config  has  permissions  to
+                        record configuration changes for your resources. Addi-
+                        tionally, rules directly evaluate the configuration of
+                        a  resource  and  rules  don't take into account these
+                        policies when running evaluations. Make sure that  the
+                        policies  in  effect  align with how you intend to use
+                        Config.
 
-                     If you have used an Amazon Web Services service that uses
-                     Config, such as Security Hub or  Control  Tower,  and  an
-                     Config  role has already been created, make sure that the
-                     IAM role that you use when setting up  Config  keeps  the
-                     same  minimum  permissions  as the already created Config
-                     role. You must do this so that the other Amazon Web  Ser-
-                     vices service continues to run as expected.
+                        Keep Minimum Permisions When Reusing an IAM role
+
+                     If you use an Amazon Web Services service that uses  Con-
+                     fig,  such  as  Security Hub or Control Tower, and an IAM
+                     role has already been created, make  sure  that  the  IAM
+                     role  that  you use when setting up Config keeps the same
+                     minimum permissions as the  pre-existing  IAM  role.  You
+                     must do this to ensure that the other Amazon Web Services
+                     service continues to run as expected.
 
                      For example, if Control Tower has an IAM role that allows
-                     Config to read Amazon Simple Storage Service (Amazon  S3)
-                     objects,  make sure that the same permissions are granted
-                     within the IAM role you use when setting up Config.  Oth-
-                     erwise, it may interfere with how Control Tower operates.
-                     For more information about IAM roles for  Config,  see  `
-                     Identity     and    Access    Management    for    Config
-                     https://docs.aws.amazon.com/config/latest/developerguide/security-iam.html`__
-                     in the Config Developer Guide .
+                     Config  to  read S3 objects, make sure that the same per-
+                     missions are granted to the IAM role you use when setting
+                     up  Config.  Otherwise, it may interfere with how Control
+                     Tower operates.
+                        The service-linked IAM role for Config  must  be  used
+                        for service-linked configuration recorders
+
+                     For  service-linked configuration recorders, you must use
+                     the    service-linked    IAM     role     for     Config:
+                     AWSServiceRoleForConfig .
 
               recordingGroup -> (structure)
-                 Specifies  which resource types Config records for configura-
-                 tion changes.
+                 Specifies  which resource types are in scope for the configu-
+                 ration recorder to record.
 
                  NOTE:
                         High Number of Config Evaluations
 
-                     You may notice increased activity in your account  during
-                     your initial month recording with Config when compared to
-                     subsequent  months.  During  the  initial   bootstrapping
-                     process,  Config runs evaluations on all the resources in
-                     your account that you have selected for Config to record.
+                     You might notice increased activity in your account  dur-
+                     ing  your  initial  month recording with Config when com-
+                     pared to subsequent months. During the initial bootstrap-
+                     ping  process,  Config  runs  evaluations  on all the re-
+                     sources in your account that you have selected for Config
+                     to record.
 
-                     If you are running ephemeral workloads, you may  see  in-
-                     creased  activity from Config as it records configuration
-                     changes associated with creating and deleting these  tem-
-                     porary  resources.  An  ephemeral workload is a temporary
-                     use of computing resources that are loaded and  run  when
-                     needed.  Examples  include  Amazon  Elastic Compute Cloud
-                     (Amazon EC2) Spot Instances, Amazon EMR  jobs,  and  Auto
-                     Scaling. If you want to avoid the increased activity from
-                     running ephemeral workloads, you can run these  types  of
-                     workloads in a separate account with Config turned off to
-                     avoid increased configuration recording and rule  evalua-
-                     tions.
+                     If  you  are running ephemeral workloads, you may see in-
+                     creased activity from Config as it records  configuration
+                     changes  associated with creating and deleting these tem-
+                     porary resources. An ephemeral workload  is  a  temporary
+                     use  of  computing resources that are loaded and run when
+                     needed. Examples include  Amazon  Elastic  Compute  Cloud
+                     (Amazon  EC2)  Spot  Instances, Amazon EMR jobs, and Auto
+                     Scaling.
+
+                     If you want to avoid the increased activity from  running
+                     ephemeral  workloads,  you  can  set up the configuration
+                     recorder to  exclude  these  resource  types  from  being
+                     recorded,  or  run these types of workloads in a separate
+                     account with Config turned off to avoid increased config-
+                     uration recording and rule evaluations.
 
                  allSupported -> (boolean)
                      Specifies  whether  Config  records configuration changes
@@ -278,23 +326,9 @@ OUTPUT
                      can  only  be  recorded by Config in Regions where Config
                      was available before February 2022. You cannot be  record
                      the global IAM resouce types in Regions supported by Con-
-                     fig after February  2022.  This  list  where  you  cannot
-                     record the global IAM resource types includes the follow-
-                     ing Regions:
-
-                     o Asia Pacific (Hyderabad)
-
-                     o Asia Pacific (Melbourne)
-
-                     o Canada West (Calgary)
-
-                     o Europe (Spain)
-
-                     o Europe (Zurich)
-
-                     o Israel (Tel Aviv)
-
-                     o Middle East (UAE)
+                     fig after February 2022. For a list of those Regions, see
+                     Recording  Amazon  Web  Services  Resources  | Global Re-
+                     sources .
 
                      WARNING:
                             Aurora global clusters are recorded in all enabled
@@ -499,23 +533,9 @@ OUTPUT
                         the configuration recorder if that is a  Region  where
                         Config  was available before February 2022. You cannot
                         be record the global IAM resouce types in Regions sup-
-                        ported  by Config after February 2022. This list where
-                        you cannot record the global IAM  resource  types  in-
-                        cludes the following Regions:
-
-                        o Asia Pacific (Hyderabad)
-
-                        o Asia Pacific (Melbourne)
-
-                        o Canada West (Calgary)
-
-                        o Europe (Spain)
-
-                        o Europe (Zurich)
-
-                        o Israel (Tel Aviv)
-
-                        o Middle East (UAE)
+                        ported  by  Config  after February 2022. For a list of
+                        those Regions, see Recording Amazon Web  Services  Re-
+                        sources | Global Resources .
 
                      useOnly -> (string)
                         The recording strategy for the configuration recorder.
@@ -615,9 +635,9 @@ OUTPUT
                             o Middle East (UAE)
 
               recordingMode -> (structure)
-                 Specifies the default recording frequency that Config uses to
-                 record  configuration  changes.  Config  supports  Continuous
-                 recording and Daily recording .
+                 Specifies the default recording frequency for the  configura-
+                 tion recorder. Config supports Continuous recording and Daily
+                 recording .
 
                  o Continuous recording allows  you  to  record  configuration
                    changes continuously whenever a change occurs.
@@ -628,6 +648,8 @@ OUTPUT
                    the previous CI recorded.
 
                  NOTE:
+                        Some resource types require continuous recording
+
                      Firewall Manager depends on continuous recording to moni-
                      tor your resources. If you are using Firewall Manager, it
                      is recommended that you set the  recording  frequency  to
@@ -641,8 +663,8 @@ OUTPUT
                      record configuration changes.
 
                      WARNING:
-                        Daily recording is not supported for the following re-
-                        source types:
+                        Daily  recording cannot be specified for the following
+                        resource types:
 
                         o AWS::Config::ResourceCompliance
 
@@ -674,8 +696,8 @@ OUTPUT
                             source types Config includes in the override.
 
                             WARNING:
-                               Daily  recording  is not supported for the fol-
-                               lowing resource types:
+                               Daily  recording  cannot  be  specified for the
+                               following resource types:
 
                                o AWS::Config::ResourceCompliance
 
@@ -704,6 +726,16 @@ OUTPUT
                                ing to monitor your resources. If you are using
                                Firewall  Manager,  it  is recommended that you
                                set the recording frequency to Continuous.
+
+              recordingScope -> (string)
+                 Specifies whether the ConfigurationItems  in  scope  for  the
+                 specified  configuration  recorder are recorded for free (IN-
+                 TERNAL ) or if it impacts the costs to your bill (PAID ).
+
+              servicePrincipal -> (string)
+                 For service-linked  configuration  recorders,  specifies  the
+                 linked  Amazon  Web  Services  service  for the configuration
+                 recorder.
 
 
 
