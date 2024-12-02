@@ -43,11 +43,11 @@ OPTIONS
           A description for the configured table.
 
        --table-reference (tagged union structure)
-          A reference to the Glue table being configured.
+          A reference to the table being configured.
 
           NOTE:
               This  is a Tagged Union structure. Only one of the following top
-              level keys can be set: glue.
+              level keys can be set: glue, snowflake, athena.
 
           glue -> (structure)
               If present, a reference to the Glue table referred  to  by  this
@@ -59,9 +59,65 @@ OPTIONS
               databaseName -> (string)
                  The name of the database the Glue table belongs to.
 
-       Shorthand Syntax:
+          snowflake -> (structure)
+              If  present,  a  reference to the Snowflake table referred to by
+              this table reference.
 
-          glue={tableName=string,databaseName=string}
+              secretArn -> (string)
+                 The secret ARN of the Snowflake table reference.
+
+              accountIdentifier -> (string)
+                 The account identifier for the Snowflake table reference.
+
+              databaseName -> (string)
+                 The name of the database the Snowflake table belongs to.
+
+              tableName -> (string)
+                 The name of the Snowflake table.
+
+              schemaName -> (string)
+                 The schema name of the Snowflake table reference.
+
+              tableSchema -> (tagged union structure)
+                 The schema of the Snowflake table.
+
+                 NOTE:
+                     This is a Tagged Union structure. Only one of the follow-
+                     ing top level keys can be set: v1.
+
+                 v1 -> (list)
+                     The schema of a Snowflake table.
+
+                     (structure)
+                        The Snowflake table schema.
+
+                        columnName -> (string)
+                            The column name.
+
+                        columnType -> (string)
+                            The  column's data type. Supported data types: AR-
+                            RAY , BIGINT , BOOLEAN , CHAR , DATE ,  DECIMAL  ,
+                            DOUBLE , DOUBLE PRECISION , FLOAT , FLOAT4 , INT ,
+                            INTEGER , MAP , NUMERIC , NUMBER , REAL , SMALLINT
+                            ,  STRING  ,  TIMESTAMP  ,  TIMESTAMP_LTZ  , TIME-
+                            STAMP_NTZ , DATETIME , TINYINT , VARCHAR , TEXT  ,
+                            CHARACTER .
+
+          athena -> (structure)
+              If  present, a reference to the Athena table referred to by this
+              table reference.
+
+              workGroup -> (string)
+                 The workgroup of the Athena table reference.
+
+              outputLocation -> (string)
+                 The output location for the Athena table.
+
+              databaseName -> (string)
+                 The database name.
+
+              tableName -> (string)
+                 The table reference.
 
        JSON Syntax:
 
@@ -69,11 +125,33 @@ OPTIONS
             "glue": {
               "tableName": "string",
               "databaseName": "string"
+            },
+            "snowflake": {
+              "secretArn": "string",
+              "accountIdentifier": "string",
+              "databaseName": "string",
+              "tableName": "string",
+              "schemaName": "string",
+              "tableSchema": {
+                "v1": [
+                  {
+                    "columnName": "string",
+                    "columnType": "string"
+                  }
+                  ...
+                ]
+              }
+            },
+            "athena": {
+              "workGroup": "string",
+              "outputLocation": "string",
+              "databaseName": "string",
+              "tableName": "string"
             }
           }
 
        --allowed-columns (list)
-          The  columns  of the underlying table that can be used by collabora-
+          The columns of the underlying table that can be used  by  collabora-
           tions or analysis rules.
 
           (string)
@@ -83,7 +161,7 @@ OPTIONS
           "string" "string" ...
 
        --analysis-method (string)
-          The analysis method for the configured tables. The only valid  value
+          The  analysis method for the configured tables. The only valid value
           is currently DIRECT_QUERY.
 
           Possible values:
@@ -91,9 +169,9 @@ OPTIONS
           o DIRECT_QUERY
 
        --tags (map)
-          An  optional label that you can assign to a resource when you create
-          it. Each tag consists of a key and an optional value, both of  which
-          you  define. When you use tagging, you can also use tag-based access
+          An optional label that you can assign to a resource when you  create
+          it.  Each tag consists of a key and an optional value, both of which
+          you define. When you use tagging, you can also use tag-based  access
           control in IAM policies to control access to this resource.
 
           key -> (string)
@@ -109,17 +187,17 @@ OPTIONS
           {"string": "string"
             ...}
 
-       --cli-input-json (string) Performs service operation based on the  JSON
-       string  provided. The JSON string follows the format provided by --gen-
-       erate-cli-skeleton. If other arguments  are  provided  on  the  command
-       line,  the CLI values will override the JSON-provided values. It is not
+       --cli-input-json  (string) Performs service operation based on the JSON
+       string provided. The JSON string follows the format provided by  --gen-
+       erate-cli-skeleton.  If  other  arguments  are  provided on the command
+       line, the CLI values will override the JSON-provided values. It is  not
        possible to pass arbitrary binary values using a JSON-provided value as
        the string will be taken literally.
 
-       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
+       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
        output without sending an API request. If provided with no value or the
        value input, prints a sample input JSON that can be used as an argument
-       for --cli-input-json. If provided with the value output,  it  validates
+       for  --cli-input-json.  If provided with the value output, it validates
        the command inputs and returns a sample output JSON for that command.
 
 GLOBAL OPTIONS
@@ -133,13 +211,13 @@ GLOBAL OPTIONS
 
        --no-verify-ssl (boolean)
 
-       By  default, the AWS CLI uses SSL when communicating with AWS services.
+       By default, the AWS CLI uses SSL when communicating with AWS  services.
        For each SSL connection, the AWS CLI will verify SSL certificates. This
        option overrides the default behavior of verifying SSL certificates.
 
        --no-paginate (boolean)
 
-       Disable  automatic pagination. If automatic pagination is disabled, the
+       Disable automatic pagination. If automatic pagination is disabled,  the
        AWS CLI will only make one call, for the first page of results.
 
        --output (string)
@@ -180,7 +258,7 @@ GLOBAL OPTIONS
 
        --no-sign-request (boolean)
 
-       Do not sign requests. Credentials will not be loaded if  this  argument
+       Do  not  sign requests. Credentials will not be loaded if this argument
        is provided.
 
        --ca-bundle (string)
@@ -190,14 +268,14 @@ GLOBAL OPTIONS
 
        --cli-read-timeout (int)
 
-       The maximum socket read time in seconds. If the value is set to 0,  the
-       socket  read  will be blocking and not timeout. The default value is 60
+       The  maximum socket read time in seconds. If the value is set to 0, the
+       socket read will be blocking and not timeout. The default value  is  60
        seconds.
 
        --cli-connect-timeout (int)
 
-       The maximum socket connect time in seconds. If the value is set  to  0,
-       the  socket connect will be blocking and not timeout. The default value
+       The  maximum  socket connect time in seconds. If the value is set to 0,
+       the socket connect will be blocking and not timeout. The default  value
        is 60 seconds.
 
 OUTPUT
@@ -217,11 +295,11 @@ OUTPUT
               A description for the configured table.
 
           tableReference -> (tagged union structure)
-              The Glue table that this configured table represents.
+              The table that this configured table represents.
 
               NOTE:
-                 This is a Tagged Union structure. Only one of  the  following
-                 top level keys can be set: glue.
+                 This  is  a Tagged Union structure. Only one of the following
+                 top level keys can be set: glue, snowflake, athena.
 
               glue -> (structure)
                  If present, a reference to the Glue table referred to by this
@@ -232,6 +310,66 @@ OUTPUT
 
                  databaseName -> (string)
                      The name of the database the Glue table belongs to.
+
+              snowflake -> (structure)
+                 If present, a reference to the Snowflake table referred to by
+                 this table reference.
+
+                 secretArn -> (string)
+                     The secret ARN of the Snowflake table reference.
+
+                 accountIdentifier -> (string)
+                     The account identifier for the Snowflake table reference.
+
+                 databaseName -> (string)
+                     The name of the database the Snowflake table belongs to.
+
+                 tableName -> (string)
+                     The name of the Snowflake table.
+
+                 schemaName -> (string)
+                     The schema name of the Snowflake table reference.
+
+                 tableSchema -> (tagged union structure)
+                     The schema of the Snowflake table.
+
+                     NOTE:
+                        This is a Tagged Union structure. Only one of the fol-
+                        lowing top level keys can be set: v1.
+
+                     v1 -> (list)
+                        The schema of a Snowflake table.
+
+                        (structure)
+                            The Snowflake table schema.
+
+                            columnName -> (string)
+                               The column name.
+
+                            columnType -> (string)
+                               The  column's  data type. Supported data types:
+                               ARRAY , BIGINT , BOOLEAN , CHAR , DATE ,  DECI-
+                               MAL  ,  DOUBLE  ,  DOUBLE  PRECISION  , FLOAT ,
+                               FLOAT4 , INT , INTEGER , MAP , NUMERIC , NUMBER
+                               ,  REAL , SMALLINT , STRING , TIMESTAMP , TIME-
+                               STAMP_LTZ , TIMESTAMP_NTZ , DATETIME ,  TINYINT
+                               , VARCHAR , TEXT , CHARACTER .
+
+              athena -> (structure)
+                 If  present,  a  reference to the Athena table referred to by
+                 this table reference.
+
+                 workGroup -> (string)
+                     The workgroup of the Athena table reference.
+
+                 outputLocation -> (string)
+                     The output location for the Athena table.
+
+                 databaseName -> (string)
+                     The database name.
+
+                 tableName -> (string)
+                     The table reference.
 
           createTime -> (timestamp)
               The time the configured table was created.

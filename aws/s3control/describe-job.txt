@@ -345,10 +345,20 @@ OUTPUT
 
                      o Directory  buckets  - For example, to copy objects to a
                        directory bucket named destinationBucket in the  Avail-
-                       ability  Zone;  identified  by the AZ ID usw2-az1 , set
-                       the TargetResource property  to  arn:aws:s3express:*re-
-                       gion*          :*account_id*         :/bucket/*destina-
-                       tion_bucket_base_name* --*usw2-az1* --x-s3 .
+                       ability Zone identified by the AZ ID usw2-az1 , set the
+                       TargetResource property  to  arn:aws:s3express:*region*
+                       :*account_id*   :/bucket/*destination_bucket_base_name*
+                       --*usw2-az1* --x-s3 . A directory bucket as a  destina-
+                       tion bucket can be in Availability Zone or Local Zone.
+
+                     NOTE:
+                        Copying  objects  across different Amazon Web Services
+                        Regions isn't supported when the source or destination
+                        bucket  is  in  Amazon  Web  Services Local Zones. The
+                        source and destination buckets must have the same par-
+                        ent  Amazon Web Services Region. Otherwise, you get an
+                        HTTP 400 Bad Request error with  the  error  code  In-
+                        validRequest .
 
                  CannedAccessControlList -> (string)
 
@@ -379,7 +389,7 @@ OUTPUT
                  NewObjectMetadata -> (structure)
                      If you don't provide this parameter, Amazon S3 copies all
                      the metadata from the original objects. If you specify an
-                     empty set, the new objects will have no tags.  Otherwise,
+                     empty  set, the new objects will have no tags. Otherwise,
                      Amazon S3 assigns the supplied tags to the new objects.
 
                      CacheControl -> (string)
@@ -409,11 +419,17 @@ OUTPUT
                         This member has been deprecated.
 
                      SSEAlgorithm -> (string)
-
-                        NOTE:
-                            For  directory  buckets,  only the server-side en-
-                            cryption with  Amazon  S3  managed  keys  (SSE-S3)
-                            (AES256 ) is supported.
+                        The server-side encryption algorithm used when storing
+                        objects in Amazon S3.
+                            Directory  buckets  - For directory buckets, there
+                            are only two supported options for server-side en-
+                            cryption:  server-side  encryption  with Amazon S3
+                            managed keys (SSE-S3) (AES256  )  and  server-side
+                            encryption  with  KMS  keys  (SSE-KMS) (KMS ). For
+                            more  information,  see   Protecting   data   with
+                            server-side encryption in the Amazon S3 User Guide
+                            . For the Copy operation in Batch Operations , see
+                            S3CopyObjectOperation .
 
                  NewObjectTagging -> (list)
                      Specifies  a  list  of tags to add to the destination ob-
@@ -466,10 +482,33 @@ OUTPUT
                  UnModifiedSinceConstraint -> (timestamp)
 
                  SSEAwsKmsKeyId -> (string)
+                     Specifies  the KMS key ID (Key ID, Key ARN, or Key Alias)
+                     to use for object encryption. If the KMS key doesn't  ex-
+                     ist  in  the same account that's issuing the command, you
+                     must use the full Key ARN not the Key ID.
 
                      NOTE:
-                        This functionality is not supported by directory buck-
-                        ets.
+                        Directory buckets - If you specify  SSEAlgorithm  with
+                        KMS  ,  you  must specify the SSEAwsKmsKeyId parameter
+                        with the ID (Key ID or Key ARN) of the  KMS  symmetric
+                        encryption customer managed key to use. Otherwise, you
+                        get an HTTP 400 Bad Request error. The key alias  for-
+                        mat of the KMS key isn't supported. To encrypt new ob-
+                        ject copies in a directory bucket  with  SSE-KMS,  you
+                        must specify SSE-KMS as the directory bucket's default
+                        encryption configuration with a KMS key (specifically,
+                        a customer managed key ). The Amazon Web Services man-
+                        aged key (aws/s3 ) isn't supported. Your SSE-KMS  con-
+                        figuration can only support 1 customer managed key per
+                        directory bucket for the lifetime of the bucket. After
+                        you  specify a customer managed key for SSE-KMS as the
+                        bucket default encryption, you can't override the cus-
+                        tomer  managed key for the bucket's SSE-KMS configura-
+                        tion. Then, when you  specify  server-side  encryption
+                        settings  for new object copies with SSE-KMS, you must
+                        make sure the encryption key is the same customer man-
+                        aged key that you specified for the directory bucket's
+                        default encryption configuration.
 
                  TargetKeyPrefix -> (string)
                      Specifies the folder prefix that you want the objects  to
@@ -508,12 +547,18 @@ OUTPUT
                      true causes Amazon S3 to use an S3 Bucket Key for  object
                      encryption with SSE-KMS.
 
-                     Specifying  this  header with an object action doesnt af-
-                     fect bucket-level settings for S3 Bucket Key.
+                     Specifying  this header with an Copy action doesnt affect
+                     bucket-level settings for S3 Bucket Key.
 
                      NOTE:
-                        This functionality is not supported by directory buck-
-                        ets.
+                        Directory buckets - S3 Bucket Keys  aren't  supported,
+                        when  you  copy SSE-KMS encrypted objects from general
+                        purpose buckets to directory buckets,  from  directory
+                        buckets  to general purpose buckets, or between direc-
+                        tory buckets, through the Copy operation in Batch  Op-
+                        erations . In this case, Amazon S3 makes a call to KMS
+                        every time a copy request is made for a  KMS-encrypted
+                        object.
 
                  ChecksumAlgorithm -> (string)
                      Indicates the algorithm that you want Amazon S3 to use to

@@ -25,6 +25,7 @@ DESCRIPTION
 
 SYNOPSIS
             retrieve
+          [--guardrail-configuration <value>]
           --knowledge-base-id <value>
           [--retrieval-configuration <value>]
           --retrieval-query <value>
@@ -48,6 +49,26 @@ SYNOPSIS
           [--cli-connect-timeout <value>]
 
 OPTIONS
+       --guardrail-configuration (structure)
+          Guardrail settings.
+
+          guardrailId -> (string)
+              The unique identifier for the guardrail.
+
+          guardrailVersion -> (string)
+              The version of the guardrail.
+
+       Shorthand Syntax:
+
+          guardrailId=string,guardrailVersion=string
+
+       JSON Syntax:
+
+          {
+            "guardrailId": "string",
+            "guardrailVersion": "string"
+          }
+
        --knowledge-base-id (string)
           The unique identifier of the knowledge base to query.
 
@@ -796,6 +817,27 @@ OPTIONS
                         The  value  to whcih to compare the value of the meta-
                         data attribute.
 
+              implicitFilterConfiguration -> (structure)
+                 Settings for implicit filtering.
+
+                 metadataAttributes -> (list)
+                     Metadata that can be used in a filter.
+
+                     (structure)
+                        Details about a metadata attribute.
+
+                        description -> (string)
+                            The attribute's description.
+
+                        key -> (string)
+                            The attribute's key.
+
+                        type -> (string)
+                            The attribute's type.
+
+                 modelArn -> (string)
+                     The model that generates the filter.
+
               numberOfResults -> (integer)
                  The number of source chunks to retrieve.
 
@@ -808,6 +850,86 @@ OPTIONS
                  using only vector embeddings. For other vector store configu-
                  rations, only SEMANTIC search is available. For more informa-
                  tion, see Test a knowledge base .
+
+              rerankingConfiguration -> (structure)
+                 Contains  configurations for reranking the retrieved results.
+                 For more information, see Improve the relevance of query  re-
+                 sponses with a reranker model .
+
+                 bedrockRerankingConfiguration -> (structure)
+                     Contains  configurations  for  an Amazon Bedrock reranker
+                     model.
+
+                     metadataConfiguration -> (structure)
+                        Contains configurations for the  metadata  to  use  in
+                        reranking.
+
+                        selectionMode -> (string)
+                            Specifies  whether  to  consider all metadata when
+                            reranking, or only the metadata that  you  select.
+                            If  you specify SELECTIVE , include the selective-
+                            ModeConfiguration field.
+
+                        selectiveModeConfiguration -> (tagged union structure)
+                            Contains configurations for the metadata fields to
+                            include or exclude when considering reranking.
+
+                            NOTE:
+                               This  is  a Tagged Union structure. Only one of
+                               the following top level keys can be set: field-
+                               sToExclude, fieldsToInclude.
+
+                            fieldsToExclude -> (list)
+                               An  array of objects, each of which specifies a
+                               metadata field to  exclude  from  consideration
+                               when reranking.
+
+                               (structure)
+                                   Contains  information  for a metadata field
+                                   to include in or exclude from consideration
+                                   when reranking.
+
+                                   fieldName -> (string)
+                                      The  name of a metadata field to include
+                                      in or exclude  from  consideration  when
+                                      reranking.
+
+                            fieldsToInclude -> (list)
+                               An  array of objects, each of which specifies a
+                               metadata field to include in consideration when
+                               reranking.  The  remaining  metadata fields are
+                               ignored.
+
+                               (structure)
+                                   Contains information for a  metadata  field
+                                   to include in or exclude from consideration
+                                   when reranking.
+
+                                   fieldName -> (string)
+                                      The name of a metadata field to  include
+                                      in  or  exclude  from consideration when
+                                      reranking.
+
+                     modelConfiguration -> (structure)
+                        Contains configurations for the reranker model.
+
+                        additionalModelRequestFields -> (map)
+                            A JSON object whose keys are  request  fields  for
+                            the  model  and  whose values are values for those
+                            fields.
+
+                            key -> (string)
+
+                            value -> (document)
+
+                        modelArn -> (string)
+                            The ARN of the reranker model to use.
+
+                     numberOfRerankedResults -> (integer)
+                        The number of results to return after reranking.
+
+                 type -> (string)
+                     The type of reranker model.
 
        JSON Syntax:
 
@@ -973,8 +1095,47 @@ OPTIONS
                   "value": {...}
                 }
               },
+              "implicitFilterConfiguration": {
+                "metadataAttributes": [
+                  {
+                    "description": "string",
+                    "key": "string",
+                    "type": "STRING"|"NUMBER"|"BOOLEAN"|"STRING_LIST"
+                  }
+                  ...
+                ],
+                "modelArn": "string"
+              },
               "numberOfResults": integer,
-              "overrideSearchType": "HYBRID"|"SEMANTIC"
+              "overrideSearchType": "HYBRID"|"SEMANTIC",
+              "rerankingConfiguration": {
+                "bedrockRerankingConfiguration": {
+                  "metadataConfiguration": {
+                    "selectionMode": "SELECTIVE"|"ALL",
+                    "selectiveModeConfiguration": {
+                      "fieldsToExclude": [
+                        {
+                          "fieldName": "string"
+                        }
+                        ...
+                      ],
+                      "fieldsToInclude": [
+                        {
+                          "fieldName": "string"
+                        }
+                        ...
+                      ]
+                    }
+                  },
+                  "modelConfiguration": {
+                    "additionalModelRequestFields": {"string": {...}
+                      ...},
+                    "modelArn": "string"
+                  },
+                  "numberOfRerankedResults": integer
+                },
+                "type": "BEDROCK_RERANKING_MODEL"
+              }
             }
           }
 
@@ -994,35 +1155,35 @@ OPTIONS
             "text": "string"
           }
 
-       --cli-input-json  (string) Performs service operation based on the JSON
-       string provided. The JSON string follows the format provided by  --gen-
-       erate-cli-skeleton.  If  other  arguments  are  provided on the command
-       line, the CLI values will override the JSON-provided values. It is  not
+       --cli-input-json (string) Performs service operation based on the  JSON
+       string  provided. The JSON string follows the format provided by --gen-
+       erate-cli-skeleton. If other arguments  are  provided  on  the  command
+       line,  the CLI values will override the JSON-provided values. It is not
        possible to pass arbitrary binary values using a JSON-provided value as
        the string will be taken literally.
 
        --starting-token (string)
-          A token to specify where to start paginating. This is the  NextToken
+          A  token to specify where to start paginating. This is the NextToken
           from a previously truncated response.
 
           For usage examples, see Pagination in the AWS Command Line Interface
           User Guide .
 
        --max-items (integer)
-          The total number of items to return in the command's output. If  the
-          total  number of items available is more than the value specified, a
+          The  total number of items to return in the command's output. If the
+          total number of items available is more than the value specified,  a
           NextToken is provided in the command's output. To resume pagination,
           provide the NextToken value in the starting-token argument of a sub-
-          sequent command. Do not use the NextToken response element  directly
+          sequent  command. Do not use the NextToken response element directly
           outside of the AWS CLI.
 
           For usage examples, see Pagination in the AWS Command Line Interface
           User Guide .
 
-       --generate-cli-skeleton (string) Prints a  JSON  skeleton  to  standard
+       --generate-cli-skeleton  (string)  Prints  a  JSON skeleton to standard
        output without sending an API request. If provided with no value or the
        value input, prints a sample input JSON that can be used as an argument
-       for  --cli-input-json.  If provided with the value output, it validates
+       for --cli-input-json. If provided with the value output,  it  validates
        the command inputs and returns a sample output JSON for that command.
 
 GLOBAL OPTIONS
@@ -1036,13 +1197,13 @@ GLOBAL OPTIONS
 
        --no-verify-ssl (boolean)
 
-       By default, the AWS CLI uses SSL when communicating with AWS  services.
+       By  default, the AWS CLI uses SSL when communicating with AWS services.
        For each SSL connection, the AWS CLI will verify SSL certificates. This
        option overrides the default behavior of verifying SSL certificates.
 
        --no-paginate (boolean)
 
-       Disable automatic pagination. If automatic pagination is disabled,  the
+       Disable  automatic pagination. If automatic pagination is disabled, the
        AWS CLI will only make one call, for the first page of results.
 
        --output (string)
@@ -1083,7 +1244,7 @@ GLOBAL OPTIONS
 
        --no-sign-request (boolean)
 
-       Do  not  sign requests. Credentials will not be loaded if this argument
+       Do not sign requests. Credentials will not be loaded if  this  argument
        is provided.
 
        --ca-bundle (string)
@@ -1093,20 +1254,23 @@ GLOBAL OPTIONS
 
        --cli-read-timeout (int)
 
-       The  maximum socket read time in seconds. If the value is set to 0, the
-       socket read will be blocking and not timeout. The default value  is  60
+       The maximum socket read time in seconds. If the value is set to 0,  the
+       socket  read  will be blocking and not timeout. The default value is 60
        seconds.
 
        --cli-connect-timeout (int)
 
-       The  maximum  socket connect time in seconds. If the value is set to 0,
-       the socket connect will be blocking and not timeout. The default  value
+       The maximum socket connect time in seconds. If the value is set  to  0,
+       the  socket connect will be blocking and not timeout. The default value
        is 60 seconds.
 
 OUTPUT
+       guardrailAction -> (string)
+          Specifies if there is a guardrail intervention in the response.
+
        nextToken -> (string)
           If there are more results than can fit in the response, the response
-          returns a nextToken . Use this token in the nextToken field  of  an-
+          returns  a  nextToken . Use this token in the nextToken field of an-
           other request to retrieve the next batch of results.
 
        retrievalResults -> (list)
@@ -1120,7 +1284,7 @@ OUTPUT
               o Retrieve response  in the retrievalResults field
 
               content -> (structure)
-                 Contains  a chunk of text from a data source in the knowledge
+                 Contains a chunk of text from a data source in the  knowledge
                  base.
 
                  text -> (string)
@@ -1134,6 +1298,13 @@ OUTPUT
 
                      url -> (string)
                         The Confluence host URL for the data source location.
+
+                 customDocumentLocation -> (structure)
+                     Specifies  the  location  of  a document in a custom data
+                     source.
+
+                     id -> (string)
+                        The ID of the document.
 
                  s3Location -> (structure)
                      The S3 data source location.
