@@ -15,6 +15,18 @@ DESCRIPTION
 
        This operation requires permission for the bedrock:InvokeModel action.
 
+       WARNING:
+          To deny all inference access to resources that you  specify  in  the
+          modelId  field,  you  need to deny access to the bedrock:InvokeModel
+          and bedrock:InvokeModelWithResponseStream actions. Doing  this  also
+          denies  access  to  the resource through the Converse API actions (-
+          Converse and ConverseStream ). For more information see Deny  access
+          for inference on specific models .
+
+       For  troubleshooting some of the common errors you might encounter when
+       using the InvokeModel API, see Troubleshooting Amazon Bedrock API Error
+       Codes in the Amazon Bedrock User Guide
+
        See also: AWS API Documentation
 
 SYNOPSIS
@@ -26,6 +38,7 @@ SYNOPSIS
           [--trace <value>]
           [--guardrail-identifier <value>]
           [--guardrail-version <value>]
+          [--performance-config-latency <value>]
           <outfile>
           [--debug]
           [--endpoint-url <value>]
@@ -44,10 +57,10 @@ SYNOPSIS
 
 OPTIONS
        --body (blob)
-          The prompt and inference parameters in the format specified  in  the
+          The  prompt  and inference parameters in the format specified in the
           contentType in the header. You must provide the body in JSON format.
           To see the format and content of the request and response bodies for
-          different  models, refer to Inference parameters . For more informa-
+          different models, refer to Inference parameters . For more  informa-
           tion, see Run inference in the Bedrock User Guide.
 
        --content-type (string)
@@ -61,28 +74,34 @@ OPTIONS
        --model-id (string)
           The unique identifier of the model to invoke to run inference.
 
-          The modelId to provide depends on the type of model that you use:
+          The  modelId  to  provide depends on the type of model or throughput
+          that you use:
 
           o If you use a base model, specify the model ID or its  ARN.  For  a
             list  of  model IDs for base models, see Amazon Bedrock base model
             IDs (on-demand throughput) in the Amazon Bedrock User Guide.
 
+          o If you use an inference profile, specify the inference profile  ID
+            or its ARN. For a list of inference profile IDs, see Supported Re-
+            gions and models for cross-region inference in the Amazon  Bedrock
+            User Guide.
+
           o If you use a provisioned model, specify the ARN of the Provisioned
             Throughput. For more information, see Run inference using a Provi-
             sioned Throughput in the Amazon Bedrock User Guide.
 
-          o If you use a custom model, first purchase  Provisioned  Throughput
-            for  it.  Then specify the ARN of the resulting provisioned model.
-            For more information, see Use a custom model in Amazon Bedrock  in
+          o If  you  use a custom model, first purchase Provisioned Throughput
+            for it. Then specify the ARN of the resulting  provisioned  model.
+            For  more information, see Use a custom model in Amazon Bedrock in
             the Amazon Bedrock User Guide.
 
-          o If  you  use  an  imported model , specify the ARN of the imported
-            model. You can get  the  model  ARN  from  a  successful  call  to
-            CreateModelImportJob  or from the Imported models page in the Ama-
+          o If you use an imported model , specify the  ARN  of  the  imported
+            model.  You  can  get  the  model  ARN  from  a successful call to
+            CreateModelImportJob or from the Imported models page in the  Ama-
             zon Bedrock console.
 
        --trace (string)
-          Specifies whether to enable or disable the  Bedrock  trace.  If  en-
+          Specifies  whether  to  enable  or disable the Bedrock trace. If en-
           abled, you can see the full Bedrock trace.
 
           Possible values:
@@ -92,22 +111,31 @@ OPTIONS
           o DISABLED
 
        --guardrail-identifier (string)
-          The  unique identifier of the guardrail that you want to use. If you
+          The unique identifier of the guardrail that you want to use. If  you
           don't provide a value, no guardrail is applied to the invocation.
 
           An error will be thrown in the following situations.
 
-          o You don't provide a guardrail identifier but you specify the  ama-
+          o You  don't provide a guardrail identifier but you specify the ama-
             zon-bedrock-guardrailConfig field in the request body.
 
-          o You  enable  the  guardrail  but  the  contentType  isn't applica-
+          o You enable  the  guardrail  but  the  contentType  isn't  applica-
             tion/json .
 
-          o You provide a guardrail  identifier,  but  guardrailVersion  isn't
+          o You  provide  a  guardrail  identifier, but guardrailVersion isn't
             specified.
 
        --guardrail-version (string)
           The version number for the guardrail. The value can also be DRAFT .
+
+       --performance-config-latency (string)
+          Model performance settings for the request.
+
+          Possible values:
+
+          o standard
+
+          o optimized
 
        outfile (string) Filename where the content will be saved
 
@@ -122,13 +150,13 @@ GLOBAL OPTIONS
 
        --no-verify-ssl (boolean)
 
-       By  default, the AWS CLI uses SSL when communicating with AWS services.
+       By default, the AWS CLI uses SSL when communicating with AWS  services.
        For each SSL connection, the AWS CLI will verify SSL certificates. This
        option overrides the default behavior of verifying SSL certificates.
 
        --no-paginate (boolean)
 
-       Disable  automatic pagination. If automatic pagination is disabled, the
+       Disable automatic pagination. If automatic pagination is disabled,  the
        AWS CLI will only make one call, for the first page of results.
 
        --output (string)
@@ -169,7 +197,7 @@ GLOBAL OPTIONS
 
        --no-sign-request (boolean)
 
-       Do not sign requests. Credentials will not be loaded if  this  argument
+       Do  not  sign requests. Credentials will not be loaded if this argument
        is provided.
 
        --ca-bundle (string)
@@ -179,25 +207,28 @@ GLOBAL OPTIONS
 
        --cli-read-timeout (int)
 
-       The maximum socket read time in seconds. If the value is set to 0,  the
-       socket  read  will be blocking and not timeout. The default value is 60
+       The  maximum socket read time in seconds. If the value is set to 0, the
+       socket read will be blocking and not timeout. The default value  is  60
        seconds.
 
        --cli-connect-timeout (int)
 
-       The maximum socket connect time in seconds. If the value is set  to  0,
-       the  socket connect will be blocking and not timeout. The default value
+       The  maximum  socket connect time in seconds. If the value is set to 0,
+       the socket connect will be blocking and not timeout. The default  value
        is 60 seconds.
 
 OUTPUT
        body -> (blob)
-          Inference response from the model in the  format  specified  in  the
+          Inference  response  from  the  model in the format specified in the
           contentType header. To see the format and content of the request and
-          response bodies for different models, refer to Inference  parameters
+          response  bodies for different models, refer to Inference parameters
           .
 
        contentType -> (string)
           The MIME type of the inference result.
+
+       performanceConfigLatency -> (string)
+          Model performance settings for the request.
 
 
 
