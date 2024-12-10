@@ -278,105 +278,120 @@ OUTPUT
                      maximumPercent value for a service using the REPLICA ser-
                      vice scheduler is 200%.
 
-                     If  a service is using either the blue/green (CODE_DEPLOY
-                     ) or EXTERNAL deployment types, and tasks in the  service
+                     The  Amazon  ECS scheduler uses this parameter to replace
+                     unhealthy tasks by starting replacement tasks  first  and
+                     then stopping the unhealthy tasks, as long as cluster re-
+                     sources for starting replacement tasks are available. For
+                     more  information  about  how  the scheduler replaces un-
+                     healthy tasks, see Amazon ECS services .
+
+                     If a service is using either the blue/green  (CODE_DEPLOY
+                     )  or EXTERNAL deployment types, and tasks in the service
                      use the EC2 launch type, the maximum percent value is set
-                     to the default value. The maximum percent value  is  used
-                     to  define  the upper limit on the number of the tasks in
-                     the service that remain in the RUNNING  state  while  the
+                     to  the  default value. The maximum percent value is used
+                     to define the upper limit on the number of the  tasks  in
+                     the  service  that  remain in the RUNNING state while the
                      container instances are in the DRAINING state.
 
                      NOTE:
-                        You  can't specify a custom maximumPercent value for a
+                        You can't specify a custom maximumPercent value for  a
                         service that uses either the blue/green (CODE_DEPLOY )
-                        or  EXTERNAL  deployment  types and has tasks that use
+                        or EXTERNAL deployment types and has  tasks  that  use
                         the EC2 launch type.
 
-                     If the tasks in the service use the Fargate launch  type,
+                     If  the tasks in the service use the Fargate launch type,
                      the maximum percent value is not used, although it is re-
                      turned when describing your service.
 
                  minimumHealthyPercent -> (integer)
-                     If a service is using the rolling update (ECS  )  deploy-
-                     ment  type,  the minimumHealthyPercent represents a lower
+                     If  a  service is using the rolling update (ECS ) deploy-
+                     ment type, the minimumHealthyPercent represents  a  lower
                      limit on the number of your service's tasks that must re-
-                     main  in the RUNNING state during a deployment, as a per-
-                     centage of the desiredCount (rounded up  to  the  nearest
-                     integer).  This  parameter  enables you to deploy without
-                     using additional cluster capacity. For example,  if  your
-                     service  has  a  desiredCount  of  four tasks and a mini-
-                     mumHealthyPercent of 50%, the service scheduler may  stop
-                     two  existing  tasks  to  free up cluster capacity before
+                     main in the RUNNING state during a deployment, as a  per-
+                     centage  of  the  desiredCount (rounded up to the nearest
+                     integer). This parameter enables you  to  deploy  without
+                     using  additional  cluster capacity. For example, if your
+                     service has a desiredCount of  four  tasks  and  a  mini-
+                     mumHealthyPercent  of 50%, the service scheduler may stop
+                     two existing tasks to free  up  cluster  capacity  before
                      starting two new tasks.
+
+                     If  any tasks are unhealthy and if maximumPercent doesn't
+                     allow the  Amazon  ECS  scheduler  to  start  replacement
+                     tasks, the scheduler stops the unhealthy tasks one-by-one
+                     using the minimumHealthyPercent as a constraint  to clear
+                     up  capacity to launch replacement tasks. For more infor-
+                     mation about how the scheduler replaces unhealthy  tasks,
+                     see Amazon ECS services .
 
                      For services that do not use a load balancer, the follow-
                      ing should be noted:
 
-                     o A  service  is considered healthy if all essential con-
-                       tainers within the tasks  in  the  service  pass  their
+                     o A service is considered healthy if all  essential  con-
+                       tainers  within  the  tasks  in  the service pass their
                        health checks.
 
-                     o If  a  task  has  no essential containers with a health
-                       check defined, the service scheduler will wait  for  40
+                     o If a task has no essential  containers  with  a  health
+                       check  defined,  the service scheduler will wait for 40
                        seconds after a task reaches a RUNNING state before the
                        task is counted towards the minimum healthy percent to-
                        tal.
 
-                     o If  a  task has one or more essential containers with a
-                       health check defined, the service scheduler  will  wait
-                       for  the task to reach a healthy status before counting
+                     o If a task has one or more essential containers  with  a
+                       health  check  defined, the service scheduler will wait
+                       for the task to reach a healthy status before  counting
                        it towards the minimum healthy percent total. A task is
                        considered healthy when all essential containers within
                        the task have passed their health checks. The amount of
-                       time  the  service scheduler can wait for is determined
+                       time the service scheduler can wait for  is  determined
                        by the container health check settings.
 
-                     For services that do use a load balancer,  the  following
+                     For  services  that do use a load balancer, the following
                      should be noted:
 
-                     o If  a  task  has  no essential containers with a health
-                       check defined, the service scheduler will wait for  the
-                       load  balancer  target  group  health check to return a
-                       healthy status before counting  the  task  towards  the
+                     o If a task has no essential  containers  with  a  health
+                       check  defined, the service scheduler will wait for the
+                       load balancer target group health  check  to  return  a
+                       healthy  status  before  counting  the task towards the
                        minimum healthy percent total.
 
-                     o If  a  task  has  an  essential container with a health
+                     o If a task has an  essential  container  with  a  health
                        check defined, the service scheduler will wait for both
-                       the  task  to  reach a healthy status and the load bal-
-                       ancer target group health check  to  return  a  healthy
-                       status  before  counting  the  task towards the minimum
+                       the task to reach a healthy status and  the  load  bal-
+                       ancer  target  group  health  check to return a healthy
+                       status before counting the  task  towards  the  minimum
                        healthy percent total.
 
                      The  default  value  for  a  replica  service  for  mini-
                      mumHealthyPercent is 100%. The default minimumHealthyPer-
-                     cent value for a service using the DAEMON service  sched-
-                     ule  is 0% for the CLI, the Amazon Web Services SDKs, and
-                     the APIs and 50% for the Amazon Web  Services  Management
+                     cent  value for a service using the DAEMON service sched-
+                     ule is 0% for the CLI, the Amazon Web Services SDKs,  and
+                     the  APIs  and 50% for the Amazon Web Services Management
                      Console.
 
-                     The  minimum  number of healthy tasks during a deployment
-                     is the desiredCount multiplied by the  minimumHealthyPer-
+                     The minimum number of healthy tasks during  a  deployment
+                     is  the desiredCount multiplied by the minimumHealthyPer-
                      cent /100, rounded up to the nearest integer value.
 
-                     If  a service is using either the blue/green (CODE_DEPLOY
-                     ) or EXTERNAL deployment types and is running tasks  that
-                     use  the  EC2  launch  type,  the minimum healthy percent
-                     value is set to the default value.  The  minimum  healthy
-                     percent  value  is  used to define the lower limit on the
-                     number of the tasks in the service  that  remain  in  the
-                     RUNNING  state  while  the container instances are in the
+                     If a service is using either the blue/green  (CODE_DEPLOY
+                     )  or EXTERNAL deployment types and is running tasks that
+                     use the EC2 launch  type,  the  minimum  healthy  percent
+                     value  is  set  to the default value. The minimum healthy
+                     percent value is used to define the lower  limit  on  the
+                     number  of  the  tasks  in the service that remain in the
+                     RUNNING state while the container instances  are  in  the
                      DRAINING state.
 
                      NOTE:
                         You can't specify a custom minimumHealthyPercent value
-                        for   a   service  that  uses  either  the  blue/green
-                        (CODE_DEPLOY ) or EXTERNAL deployment  types  and  has
+                        for  a  service  that  uses  either   the   blue/green
+                        (CODE_DEPLOY  )  or  EXTERNAL deployment types and has
                         tasks that use the EC2 launch type.
 
-                     If  a service is using either the blue/green (CODE_DEPLOY
-                     ) or EXTERNAL deployment types and is running tasks  that
-                     use  the Fargate launch type, the minimum healthy percent
-                     value is not used, although it is returned when  describ-
+                     If a service is using either the blue/green  (CODE_DEPLOY
+                     )  or EXTERNAL deployment types and is running tasks that
+                     use the Fargate launch type, the minimum healthy  percent
+                     value  is not used, although it is returned when describ-
                      ing your service.
 
                  alarms -> (structure)
@@ -389,14 +404,14 @@ OUTPUT
                         (string)
 
                      rollback -> (boolean)
-                        Determines whether to configure  Amazon  ECS  to  roll
-                        back  the  service  if  a service deployment fails. If
+                        Determines  whether  to  configure  Amazon ECS to roll
+                        back the service if a  service  deployment  fails.  If
                         rollback is used, when a service deployment fails, the
-                        service  is  rolled  back  to the last deployment that
+                        service is rolled back to  the  last  deployment  that
                         completed successfully.
 
                      enable -> (boolean)
-                        Determines whether to use the CloudWatch alarm  option
+                        Determines  whether to use the CloudWatch alarm option
                         in the service deployment process.
 
               rollback -> (structure)
@@ -404,22 +419,22 @@ OUTPUT
                  ployment fails.
 
                  reason -> (string)
-                     The reason the rollback happened. For example,  the  cir-
+                     The  reason  the rollback happened. For example, the cir-
                      cuit breaker initiated the rollback operation.
 
                  startedAt -> (timestamp)
-                     Time  time  that  the  rollback  started.  The  format is
+                     Time time  that  the  rollback  started.  The  format  is
                      yyyy-MM-dd HH:mm:ss.SSSSSS.
 
                  serviceRevisionArn -> (string)
-                     The ARN of the service revision deployed as part  of  the
+                     The  ARN  of the service revision deployed as part of the
                      rollback.
 
-                     When  the type is GPU , the value is the number of physi-
-                     cal GPUs the Amazon ECS container agent reserves for  the
-                     container.  The  number  of  GPUs that's reserved for all
+                     When the type is GPU , the value is the number of  physi-
+                     cal  GPUs the Amazon ECS container agent reserves for the
+                     container. The number of GPUs  that's  reserved  for  all
                      containers in a task can't exceed the number of available
-                     GPUs  on the container instance that the task is launched
+                     GPUs on the container instance that the task is  launched
                      on.
 
                      When the type is InferenceAccelerator , the value matches
@@ -427,48 +442,48 @@ OUTPUT
                      task definition.
 
               deploymentCircuitBreaker -> (structure)
-                 The circuit breaker configuration that determines  a  service
+                 The  circuit  breaker configuration that determines a service
                  deployment failed.
 
                  status -> (string)
-                     The  circuit  breaker status. Amazon ECS is not using the
-                     circuit breaker for service deployment failures when  the
+                     The circuit breaker status. Amazon ECS is not  using  the
+                     circuit  breaker for service deployment failures when the
                      status is DISABLED .
 
                  failureCount -> (integer)
-                     The  number  of times the circuit breaker detected a ser-
+                     The number of times the circuit breaker detected  a  ser-
                      vice deploymeny failure.
 
                  threshold -> (integer)
-                     The threshhold which determines that the service  deploy-
+                     The  threshhold which determines that the service deploy-
                      ment failed.
 
-                     The  deployment  circuit breaker calculates the threshold
-                     value, and then uses the value to determine when to  move
-                     the  deployment to a FAILED state. The deployment circuit
-                     breaker has a  minimum  threshold  of  3  and  a  maximum
-                     threshold  of  200.  and uses the values in the following
+                     The deployment circuit breaker calculates  the  threshold
+                     value,  and then uses the value to determine when to move
+                     the deployment to a FAILED state. The deployment  circuit
+                     breaker  has  a  minimum  threshold  of  3  and a maximum
+                     threshold of 200. and uses the values  in  the  following
                      formula to determine the deployment failure.
                         0.5 * desired task count
 
               alarms -> (structure)
-                 The CloudWatch alarms that determine when a  service  deploy-
+                 The  CloudWatch  alarms that determine when a service deploy-
                  ment fails.
 
                  status -> (string)
-                     The  status  of the alarms check. Amazon ECS is not using
+                     The status of the alarms check. Amazon ECS is  not  using
                      alarms for service deployment failures when the status is
                      DISABLED .
 
                  alarmNames -> (list)
-                     The  name  of the CloudWatch alarms that determine when a
+                     The name of the CloudWatch alarms that determine  when  a
                      service deployment failed. A "," separates the alarms.
 
                      (string)
 
                  triggeredAlarmNames -> (list)
-                     One or more CloudWatch alarm names that have  been  trig-
-                     gered  during the service deployment. A "," separates the
+                     One  or  more CloudWatch alarm names that have been trig-
+                     gered during the service deployment. A "," separates  the
                      alarm names.
 
                      (string)
@@ -476,13 +491,13 @@ OUTPUT
        failures -> (list)
           Any failures associated with the call.
 
-          If you decsribe a deployment with a service revision created  before
-          October  25,  2024, the call fails. The failure includes the service
+          If  you decsribe a deployment with a service revision created before
+          October 25, 2024, the call fails. The failure includes  the  service
           revision ARN and the reason set to MISSING .
 
           (structure)
-              A failed resource. For a list of common causes, see API  failure
-              reasons  in the Amazon Elastic Container Service Developer Guide
+              A  failed resource. For a list of common causes, see API failure
+              reasons in the Amazon Elastic Container Service Developer  Guide
               .
 
               arn -> (string)
