@@ -6130,6 +6130,15 @@ type CVSS {
   vectorString: String
 }
 
+"""The Common Vulnerability Scoring System"""
+type CvssSeverities {
+  """The CVSS v3 severity associated with this advisory"""
+  cvssV3: CVSS
+
+  """The CVSS v4 severity associated with this advisory"""
+  cvssV4: CVSS
+}
+
 """A common weakness enumeration"""
 type CWE implements Node {
   """The id of the CWE"""
@@ -6777,6 +6786,11 @@ type DependencyGraphDependency {
   The name of the package in the canonical form used by the package manager.
   """
   packageName: String!
+
+  """
+  Public preview: The relationship of the dependency. Can be direct, transitive, or unknown
+  """
+  relationship: String!
 
   """The repository containing the package"""
   repository: Repository
@@ -8607,6 +8621,31 @@ type Enterprise implements AnnouncementBannerI & Node {
 
   """The HTTP URL for this enterprise."""
   url: URI!
+
+  """
+  A list of repositories that belong to users. Only available for enterprises with Enterprise Managed Users.
+  """
+  userNamespaceRepositories(
+    """The search string to look for."""
+    query: String
+
+    """Ordering options for repositories returned from the connection."""
+    orderBy: RepositoryOrder = {field: NAME, direction: ASC}
+
+    """Returns the elements in the list that come after the specified cursor."""
+    after: String
+
+    """
+    Returns the elements in the list that come before the specified cursor.
+    """
+    before: String
+
+    """Returns the first _n_ elements from the list."""
+    first: Int
+
+    """Returns the last _n_ elements from the list."""
+    last: Int
+  ): UserNamespaceRepositoryConnection!
 
   """Is the current viewer an admin of this enterprise?"""
   viewerIsAdmin: Boolean!
@@ -32890,6 +32929,9 @@ type SecurityAdvisory implements Node {
   """The CVSS associated with this advisory"""
   cvss: CVSS! @deprecated(reason: "`cvss` will be removed. New `cvss_severities` field will now contain both `cvss_v3` and `cvss_v4` properties. Removal on 2025-10-01 UTC.")
 
+  """The CVSS associated with this advisory"""
+  cvssSeverities: CvssSeverities!
+
   """CWEs associated with this Advisory"""
   cwes(
     """Returns the elements in the list that come after the specified cursor."""
@@ -41723,6 +41765,32 @@ type UserNamespaceRepository implements Node {
 
   """The repository owned by an enterprise managed user."""
   repository: RepositoryInfo
+}
+
+"""
+A list of repositories owned by users in an enterprise with Enterprise Managed Users.
+"""
+type UserNamespaceRepositoryConnection {
+  """A list of edges."""
+  edges: [UserNamespaceRepositoryEdge]
+
+  """A list of nodes."""
+  nodes: [UserNamespaceRepository]
+
+  """Information to aid in pagination."""
+  pageInfo: PageInfo!
+
+  """Identifies the total count of items in the connection."""
+  totalCount: Int!
+}
+
+"""An edge in a connection."""
+type UserNamespaceRepositoryEdge {
+  """A cursor for use in pagination."""
+  cursor: String!
+
+  """The item at the end of the edge."""
+  node: UserNamespaceRepository
 }
 
 """The user's description of what they're currently doing."""
