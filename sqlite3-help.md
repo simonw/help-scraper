@@ -95,7 +95,7 @@ Version: `3.50.0`
 
 .log FILE|on|off         Turn logging on or off.  FILE can be stderr/stdout
 
-.mode MODE ?OPTIONS?     Set output mode
+.mode ?MODE? ?OPTIONS?   Set output mode
    MODE is one of:
      ascii       Columns/rows delimited by 0x1F and 0x1E
      box         Tables using unicode box-drawing characters
@@ -113,6 +113,7 @@ Version: `3.50.0`
      tabs        Tab-separated values
      tcl         TCL list elements
    OPTIONS: (for columnar modes or insert mode):
+     --escape T     ctrl-char escape; T is one of: symbol, ascii, off
      --wrap N       Wrap output lines to no longer than N characters
      --wordwrap B   Wrap or not at word boundaries per B (on/off)
      --ww           Shorthand for "--wordwrap 1"
