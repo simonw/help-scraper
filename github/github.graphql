@@ -11162,7 +11162,8 @@ input FileExtensionRestrictionParametersInput {
 }
 
 """
-Prevent commits that include changes in specified file paths from being pushed to the commit graph.
+Prevent commits that include changes in specified file and folder paths from
+being pushed to the commit graph. This includes absolute paths that contain file names.
 """
 type FilePathRestrictionParameters {
   """
@@ -11172,7 +11173,8 @@ type FilePathRestrictionParameters {
 }
 
 """
-Prevent commits that include changes in specified file paths from being pushed to the commit graph.
+Prevent commits that include changes in specified file and folder paths from
+being pushed to the commit graph. This includes absolute paths that contain file names.
 """
 input FilePathRestrictionParametersInput {
   """
@@ -13127,7 +13129,7 @@ type IssueTimelineItemEdge {
 }
 
 """An item in an issue timeline"""
-union IssueTimelineItems = AddedToProjectEvent | AssignedEvent | ClosedEvent | CommentDeletedEvent | ConnectedEvent | ConvertedNoteToIssueEvent | ConvertedToDiscussionEvent | CrossReferencedEvent | DemilestonedEvent | DisconnectedEvent | IssueComment | LabeledEvent | LockedEvent | MarkedAsDuplicateEvent | MentionedEvent | MilestonedEvent | MovedColumnsInProjectEvent | ParentIssueAddedEvent | ParentIssueRemovedEvent | PinnedEvent | ReferencedEvent | RemovedFromProjectEvent | RenamedTitleEvent | ReopenedEvent | SubIssueAddedEvent | SubIssueRemovedEvent | SubscribedEvent | TransferredEvent | UnassignedEvent | UnlabeledEvent | UnlockedEvent | UnmarkedAsDuplicateEvent | UnpinnedEvent | UnsubscribedEvent | UserBlockedEvent
+union IssueTimelineItems = AddedToProjectEvent | AssignedEvent | ClosedEvent | CommentDeletedEvent | ConnectedEvent | ConvertedNoteToIssueEvent | ConvertedToDiscussionEvent | CrossReferencedEvent | DemilestonedEvent | DisconnectedEvent | IssueComment | IssueTypeAddedEvent | IssueTypeChangedEvent | IssueTypeRemovedEvent | LabeledEvent | LockedEvent | MarkedAsDuplicateEvent | MentionedEvent | MilestonedEvent | MovedColumnsInProjectEvent | ParentIssueAddedEvent | ParentIssueRemovedEvent | PinnedEvent | ReferencedEvent | RemovedFromProjectEvent | RenamedTitleEvent | ReopenedEvent | SubIssueAddedEvent | SubIssueRemovedEvent | SubscribedEvent | TransferredEvent | UnassignedEvent | UnlabeledEvent | UnlockedEvent | UnmarkedAsDuplicateEvent | UnpinnedEvent | UnsubscribedEvent | UserBlockedEvent
 
 """The connection type for IssueTimelineItems."""
 type IssueTimelineItemsConnection {
@@ -13273,6 +13275,15 @@ enum IssueTimelineItemsItemType {
   """Represents an 'unsubscribed' event on a given `Subscribable`."""
   UNSUBSCRIBED_EVENT
 
+  """Represents a 'issue_type_added' event on a given issue."""
+  ISSUE_TYPE_ADDED_EVENT
+
+  """Represents a 'issue_type_removed' event on a given issue."""
+  ISSUE_TYPE_REMOVED_EVENT
+
+  """Represents a 'issue_type_changed' event on a given issue."""
+  ISSUE_TYPE_CHANGED_EVENT
+
   """Represents a 'sub_issue_added' event on a given issue."""
   SUB_ISSUE_ADDED_EVENT
 
@@ -13337,6 +13348,39 @@ type IssueType implements Node {
 
   """The issue type's name."""
   name: String!
+}
+
+"""Represents a 'issue_type_added' event on a given issue."""
+type IssueTypeAddedEvent implements Node {
+  """Identifies the actor who performed the event."""
+  actor: Actor
+
+  """Identifies the date and time when the object was created."""
+  createdAt: DateTime!
+
+  """The Node ID of the IssueTypeAddedEvent object"""
+  id: ID!
+
+  """The issue type added."""
+  issueType: IssueType
+}
+
+"""Represents a 'issue_type_changed' event on a given issue."""
+type IssueTypeChangedEvent implements Node {
+  """Identifies the actor who performed the event."""
+  actor: Actor
+
+  """Identifies the date and time when the object was created."""
+  createdAt: DateTime!
+
+  """The Node ID of the IssueTypeChangedEvent object"""
+  id: ID!
+
+  """The issue type added."""
+  issueType: IssueType
+
+  """The issue type removed."""
+  prevIssueType: IssueType
 }
 
 """The possible color for an issue type"""
@@ -13406,6 +13450,21 @@ enum IssueTypeOrderField {
 
   """Order issue types by name"""
   NAME
+}
+
+"""Represents a 'issue_type_removed' event on a given issue."""
+type IssueTypeRemovedEvent implements Node {
+  """Identifies the actor who performed the event."""
+  actor: Actor
+
+  """Identifies the date and time when the object was created."""
+  createdAt: DateTime!
+
+  """The Node ID of the IssueTypeRemovedEvent object"""
+  id: ID!
+
+  """The issue type removed."""
+  issueType: IssueType
 }
 
 """Represents a user signing up for a GitHub account."""
@@ -14370,23 +14429,23 @@ type MarkPullRequestReadyForReviewPayload {
 }
 
 """
-Prevent commits that include file paths that exceed a specified character limit from being pushed to the commit graph.
+Prevent commits that include file paths that exceed the specified character limit from being pushed to the commit graph.
 """
 type MaxFilePathLengthParameters {
-  """The maximum amount of characters allowed in file paths"""
+  """The maximum amount of characters allowed in file paths."""
   maxFilePathLength: Int!
 }
 
 """
-Prevent commits that include file paths that exceed a specified character limit from being pushed to the commit graph.
+Prevent commits that include file paths that exceed the specified character limit from being pushed to the commit graph.
 """
 input MaxFilePathLengthParametersInput {
-  """The maximum amount of characters allowed in file paths"""
+  """The maximum amount of characters allowed in file paths."""
   maxFilePathLength: Int!
 }
 
 """
-Prevent commits that exceed a specified file size limit from being pushed to the commit graph.
+Prevent commits with individual files that exceed the specified limit from being pushed to the commit graph.
 """
 type MaxFileSizeParameters {
   """
@@ -14396,7 +14455,7 @@ type MaxFileSizeParameters {
 }
 
 """
-Prevent commits that exceed a specified file size limit from being pushed to the commit graph.
+Prevent commits with individual files that exceed the specified limit from being pushed to the commit graph.
 """
 input MaxFileSizeParametersInput {
   """
@@ -26142,7 +26201,7 @@ type PullRequestTimelineItemEdge {
 }
 
 """An item in a pull request timeline"""
-union PullRequestTimelineItems = AddedToMergeQueueEvent | AddedToProjectEvent | AssignedEvent | AutoMergeDisabledEvent | AutoMergeEnabledEvent | AutoRebaseEnabledEvent | AutoSquashEnabledEvent | AutomaticBaseChangeFailedEvent | AutomaticBaseChangeSucceededEvent | BaseRefChangedEvent | BaseRefDeletedEvent | BaseRefForcePushedEvent | ClosedEvent | CommentDeletedEvent | ConnectedEvent | ConvertToDraftEvent | ConvertedNoteToIssueEvent | ConvertedToDiscussionEvent | CrossReferencedEvent | DemilestonedEvent | DeployedEvent | DeploymentEnvironmentChangedEvent | DisconnectedEvent | HeadRefDeletedEvent | HeadRefForcePushedEvent | HeadRefRestoredEvent | IssueComment | LabeledEvent | LockedEvent | MarkedAsDuplicateEvent | MentionedEvent | MergedEvent | MilestonedEvent | MovedColumnsInProjectEvent | ParentIssueAddedEvent | ParentIssueRemovedEvent | PinnedEvent | PullRequestCommit | PullRequestCommitCommentThread | PullRequestReview | PullRequestReviewThread | PullRequestRevisionMarker | ReadyForReviewEvent | ReferencedEvent | RemovedFromMergeQueueEvent | RemovedFromProjectEvent | RenamedTitleEvent | ReopenedEvent | ReviewDismissedEvent | ReviewRequestRemovedEvent | ReviewRequestedEvent | SubIssueAddedEvent | SubIssueRemovedEvent | SubscribedEvent | TransferredEvent | UnassignedEvent | UnlabeledEvent | UnlockedEvent | UnmarkedAsDuplicateEvent | UnpinnedEvent | UnsubscribedEvent | UserBlockedEvent
+union PullRequestTimelineItems = AddedToMergeQueueEvent | AddedToProjectEvent | AssignedEvent | AutoMergeDisabledEvent | AutoMergeEnabledEvent | AutoRebaseEnabledEvent | AutoSquashEnabledEvent | AutomaticBaseChangeFailedEvent | AutomaticBaseChangeSucceededEvent | BaseRefChangedEvent | BaseRefDeletedEvent | BaseRefForcePushedEvent | ClosedEvent | CommentDeletedEvent | ConnectedEvent | ConvertToDraftEvent | ConvertedNoteToIssueEvent | ConvertedToDiscussionEvent | CrossReferencedEvent | DemilestonedEvent | DeployedEvent | DeploymentEnvironmentChangedEvent | DisconnectedEvent | HeadRefDeletedEvent | HeadRefForcePushedEvent | HeadRefRestoredEvent | IssueComment | IssueTypeAddedEvent | IssueTypeChangedEvent | IssueTypeRemovedEvent | LabeledEvent | LockedEvent | MarkedAsDuplicateEvent | MentionedEvent | MergedEvent | MilestonedEvent | MovedColumnsInProjectEvent | ParentIssueAddedEvent | ParentIssueRemovedEvent | PinnedEvent | PullRequestCommit | PullRequestCommitCommentThread | PullRequestReview | PullRequestReviewThread | PullRequestRevisionMarker | ReadyForReviewEvent | ReferencedEvent | RemovedFromMergeQueueEvent | RemovedFromProjectEvent | RenamedTitleEvent | ReopenedEvent | ReviewDismissedEvent | ReviewRequestRemovedEvent | ReviewRequestedEvent | SubIssueAddedEvent | SubIssueRemovedEvent | SubscribedEvent | TransferredEvent | UnassignedEvent | UnlabeledEvent | UnlockedEvent | UnmarkedAsDuplicateEvent | UnpinnedEvent | UnsubscribedEvent | UserBlockedEvent
 
 """The connection type for PullRequestTimelineItems."""
 type PullRequestTimelineItemsConnection {
@@ -26380,6 +26439,15 @@ enum PullRequestTimelineItemsItemType {
 
   """Represents an 'unsubscribed' event on a given `Subscribable`."""
   UNSUBSCRIBED_EVENT
+
+  """Represents a 'issue_type_added' event on a given issue."""
+  ISSUE_TYPE_ADDED_EVENT
+
+  """Represents a 'issue_type_removed' event on a given issue."""
+  ISSUE_TYPE_REMOVED_EVENT
+
+  """Represents a 'issue_type_changed' event on a given issue."""
+  ISSUE_TYPE_CHANGED_EVENT
 
   """Represents a 'sub_issue_added' event on a given issue."""
   SUB_ISSUE_ADDED_EVENT
@@ -32077,12 +32145,13 @@ enum RepositoryRuleType {
   TAG_NAME_PATTERN
 
   """
-  Prevent commits that include changes in specified file paths from being pushed to the commit graph.
+  Prevent commits that include changes in specified file and folder paths from
+  being pushed to the commit graph. This includes absolute paths that contain file names.
   """
   FILE_PATH_RESTRICTION
 
   """
-  Prevent commits that include file paths that exceed a specified character limit from being pushed to the commit graph.
+  Prevent commits that include file paths that exceed the specified character limit from being pushed to the commit graph.
   """
   MAX_FILE_PATH_LENGTH
 
@@ -32092,7 +32161,7 @@ enum RepositoryRuleType {
   FILE_EXTENSION_RESTRICTION
 
   """
-  Prevent commits that exceed a specified file size limit from being pushed to the commit graph.
+  Prevent commits with individual files that exceed the specified limit from being pushed to the commit graph.
   """
   MAX_FILE_SIZE
 
